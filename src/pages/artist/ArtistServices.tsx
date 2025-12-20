@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, Pencil, Trash2, DollarSign, Clock, Briefcase, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +26,7 @@ import {
   useDeleteService,
   ArtistService,
 } from "@/hooks/useArtistDashboard";
+import { SERVICE_CATEGORIES } from "@/hooks/useArtists";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -203,12 +211,21 @@ const ArtistServices = () => {
                 </div>
                 <div>
                   <Label htmlFor="category">Category</Label>
-                  <Input
-                    id="category"
+                  <Select
                     value={serviceForm.category}
-                    onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value })}
-                    placeholder="e.g., Bridal, Party, Natural"
-                  />
+                    onValueChange={(value) => setServiceForm({ ...serviceForm, category: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SERVICE_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="active">Active</Label>

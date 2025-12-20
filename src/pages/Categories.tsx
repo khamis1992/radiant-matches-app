@@ -4,7 +4,7 @@ import { ArrowLeft, Star, MapPin } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useArtists } from "@/hooks/useArtists";
+import { useArtistsByCategory } from "@/hooks/useArtists";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import categoryMakeup from "@/assets/category-makeup.jpg";
@@ -18,43 +18,43 @@ import artist1 from "@/assets/artist-1.jpg";
 
 const categories = [
   { 
-    id: "makeup", 
+    id: "Makeup", 
     name: "Makeup", 
     image: categoryMakeup,
     description: "Professional makeup for any occasion"
   },
   { 
-    id: "hair-styling", 
+    id: "Hair Styling", 
     name: "Hair Styling", 
     image: categoryHairstyling,
     description: "Beautiful hairstyles and treatments"
   },
   { 
-    id: "henna", 
+    id: "Henna", 
     name: "Henna", 
     image: categoryHenna,
     description: "Traditional and modern henna designs"
   },
   { 
-    id: "lashes-brows", 
+    id: "Lashes & Brows", 
     name: "Lashes & Brows", 
     image: categoryLashes,
     description: "Lash extensions and brow styling"
   },
   { 
-    id: "nails", 
+    id: "Nails", 
     name: "Nails", 
     image: categoryNails,
     description: "Manicures, pedicures, and nail art"
   },
   { 
-    id: "bridal", 
+    id: "Bridal", 
     name: "Bridal", 
     image: categoryBridal,
     description: "Complete bridal beauty packages"
   },
   { 
-    id: "photoshoot", 
+    id: "Photoshoot", 
     name: "Photoshoot", 
     image: categoryPhotoshoot,
     description: "Camera-ready looks for any shoot"
@@ -64,7 +64,7 @@ const categories = [
 const Categories = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const { data: artists, isLoading } = useArtists();
+  const { data: artists, isLoading } = useArtistsByCategory(selectedCategory);
 
   const handleCategoryClick = (categoryId: string) => {
     setSelectedCategory(selectedCategory === categoryId ? null : categoryId);
@@ -189,7 +189,8 @@ const Categories = () => {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                <p>No artists available for this category yet</p>
+                <p>No artists available for {selectedCategoryData?.name} yet</p>
+                <p className="text-sm mt-1">Artists need to add services in this category</p>
               </div>
             )}
           </div>
