@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,13 +19,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Briefcase, LogOut } from "lucide-react";
+import { Pencil, Briefcase, LogOut, Star, MessageSquare } from "lucide-react";
 import PortfolioUpload from "@/components/PortfolioUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useCurrentArtist, useUpdateArtistProfile } from "@/hooks/useArtistDashboard";
+import { useArtistReviews } from "@/hooks/useReviews";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 const ArtistProfilePage = () => {
   const navigate = useNavigate();
@@ -32,6 +35,7 @@ const ArtistProfilePage = () => {
   const { data: profile } = useProfile();
   const { data: artist, isLoading: artistLoading } = useCurrentArtist();
   const updateProfile = useUpdateArtistProfile();
+  const { data: reviews = [], isLoading: reviewsLoading } = useArtistReviews(artist?.id);
 
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
@@ -196,6 +200,72 @@ const ArtistProfilePage = () => {
         {/* Portfolio Section */}
         <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
           <PortfolioUpload artistId={artist.id} />
+        </div>
+
+        {/* Reviews Section */}
+        <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground">Reviews</h2>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <Star className="w-4 h-4 fill-primary text-primary" />
+              <span>{artist.rating?.toFixed(1) || "0.0"}</span>
+              <span>({artist.total_reviews || 0})</span>
+            </div>
+          </div>
+
+          {reviewsLoading ? (
+            <div className="space-y-3">
+              {[1, 2].map((i) => (
+                <Skeleton key={i} className="h-20 w-full rounded-xl" />
+              ))}
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="text-center py-8">
+              <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">No reviews yet</p>
+              <p className="text-sm text-muted-foreground mt-1">Complete bookings to receive reviews</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((review) => (
+                <div key={review.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={review.customer_profile?.avatar_url || ""} />
+                      <AvatarFallback>
+                        {review.customer_profile?.full_name?.charAt(0) || "C"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium text-foreground truncate">
+                          {review.customer_profile?.full_name || "Customer"}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3 h-3 ${
+                                i < review.rating
+                                  ? "fill-primary text-primary"
+                                  : "text-muted-foreground"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {format(new Date(review.created_at), "MMM d, yyyy")}
+                      </p>
+                      {review.comment && (
+                        <p className="text-sm text-foreground mt-2">{review.comment}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Account Info */}
