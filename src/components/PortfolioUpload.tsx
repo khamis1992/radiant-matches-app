@@ -694,7 +694,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
-            {/* Apply category to all */}
+            {/* Apply category to all & Clear all */}
             {pendingUploads.length > 1 && (
               <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
                 <Label className="text-sm whitespace-nowrap">Apply category to all:</Label>
@@ -715,6 +715,18 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                     ))}
                   </SelectContent>
                 </Select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setPendingUploads([]);
+                    setBatchDialogOpen(false);
+                  }}
+                  disabled={uploading}
+                  className="text-destructive hover:text-destructive"
+                >
+                  Clear All
+                </Button>
               </div>
             )}
             
