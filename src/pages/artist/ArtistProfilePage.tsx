@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Pencil, Briefcase } from "lucide-react";
+import { Pencil, Briefcase, LogOut } from "lucide-react";
 import PortfolioUpload from "@/components/PortfolioUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useCurrentArtist, useUpdateArtistProfile } from "@/hooks/useArtistDashboard";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const ArtistProfilePage = () => {
@@ -79,6 +80,16 @@ const ArtistProfilePage = () => {
       setEditingProfile(false);
     } catch (error) {
       toast.error("Failed to update profile");
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Signed out successfully");
+      navigate("/");
+    } catch (error) {
+      toast.error("Failed to sign out");
     }
   };
 
@@ -194,6 +205,16 @@ const ArtistProfilePage = () => {
             </div>
           </div>
         </div>
+
+        {/* Logout Button */}
+        <Button 
+          variant="outline" 
+          className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+          onClick={handleSignOut}
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Log Out
+        </Button>
       </div>
 
       <BottomNavigation />
