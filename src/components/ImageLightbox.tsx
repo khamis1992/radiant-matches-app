@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,9 @@ interface ImageLightboxProps {
 
 const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightboxProps) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  const minSwipeDistance = 50;
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
@@ -24,6 +27,33 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
   const goToNext = useCallback(() => {
     setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
   }, [images.length]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchEndX.current = null;
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const isSwipe = Math.abs(distance) > minSwipeDistance;
+    
+    if (isSwipe) {
+      if (distance > 0) {
+        goToNext();
+      } else {
+        goToPrevious();
+      }
+    }
+    
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -76,11 +106,17 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
         )}
 
         {/* Image Container */}
-        <div className="flex items-center justify-center w-full h-[85vh] p-8">
+        <div 
+          className="flex items-center justify-center w-full h-[85vh] p-8"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <img
             src={currentImage.url}
             alt={currentImage.title || "Portfolio image"}
-            className="max-w-full max-h-full object-contain rounded-lg animate-fade-in"
+            className="max-w-full max-h-full object-contain rounded-lg animate-fade-in select-none"
+            draggable={false}
           />
         </div>
 
