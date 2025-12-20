@@ -95,6 +95,7 @@ const Home = () => {
                   id={artist.id}
                   name={artist.profile?.full_name || "Unknown Artist"}
                   image={artist.profile?.avatar_url || artist1}
+                  featuredImage={artist.featured_image}
                   rating={Number(artist.rating) || 0}
                   reviews={artist.total_reviews || 0}
                   specialty={artist.bio?.split(".")[0] || "Makeup Artist"}
