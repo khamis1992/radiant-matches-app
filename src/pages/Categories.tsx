@@ -175,34 +175,38 @@ const Categories = () => {
       </header>
 
       <div className="px-5 py-6">
-        {/* Categories Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => handleCategoryClick(category.id)}
-              className={`relative overflow-hidden rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg ${
-                selectedCategory === category.id 
-                  ? "ring-2 ring-primary ring-offset-2" 
-                  : ""
-              }`}
-            >
-              <div className="aspect-square">
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <h3 className="text-white font-semibold text-lg">{category.name}</h3>
-                  <p className="text-white/80 text-xs mt-0.5 line-clamp-1">
-                    {category.description}
-                  </p>
+        {/* Categories Horizontal Scroll */}
+        <div className="overflow-x-auto pb-4 -mx-5 px-5 scrollbar-hide">
+          <div className="flex gap-4">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryClick(category.id)}
+                className="flex flex-col items-center gap-2 flex-shrink-0"
+              >
+                <div 
+                  className={`w-20 h-20 rounded-2xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg ${
+                    selectedCategory === category.id 
+                      ? "ring-2 ring-primary ring-offset-2" 
+                      : ""
+                  }`}
+                >
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              </div>
-            </button>
-          ))}
+                <span className={`text-xs font-medium text-center max-w-20 truncate ${
+                  selectedCategory === category.id 
+                    ? "text-primary" 
+                    : "text-foreground"
+                }`}>
+                  {category.name}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Selected Category Content */}
