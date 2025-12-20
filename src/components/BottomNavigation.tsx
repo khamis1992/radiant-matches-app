@@ -22,7 +22,6 @@ const artistNavItems: NavItem[] = [
   { icon: Calendar, label: "Bookings", path: "/artist-bookings", showBadge: true },
   { icon: Image, label: "Gallery", path: "/artist-gallery" },
   { icon: Palette, label: "Services", path: "/artist-services" },
-  { icon: User, label: "Profile", path: "/artist-profile" },
 ];
 
 const BottomNavigation = () => {
