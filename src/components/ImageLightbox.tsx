@@ -1,18 +1,41 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Pencil, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 interface ImageLightboxProps {
   images: { url: string; title?: string | null; category?: string }[];
   initialIndex: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editable?: boolean;
+  categories?: readonly string[];
+  onUpdateImage?: (index: number, updates: { title?: string; category?: string }) => void;
 }
 
-const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightboxProps) => {
+const ImageLightbox = ({ 
+  images, 
+  initialIndex, 
+  open, 
+  onOpenChange,
+  editable = false,
+  categories = [],
+  onUpdateImage,
+}: ImageLightboxProps) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [scale, setScale] = useState(1);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editCategory, setEditCategory] = useState("");
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const initialPinchDistance = useRef<number | null>(null);
@@ -23,13 +46,19 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
     setCurrentIndex(initialIndex);
     setScale(1);
     lastScale.current = 1;
+    setIsEditing(false);
   }, [initialIndex]);
 
-  // Reset zoom when image changes
+  // Reset zoom and editing when image changes
   useEffect(() => {
     setScale(1);
     lastScale.current = 1;
-  }, [currentIndex]);
+    setIsEditing(false);
+    if (images[currentIndex]) {
+      setEditTitle(images[currentIndex].title || "");
+      setEditCategory(images[currentIndex].category || "");
+    }
+  }, [currentIndex, images]);
 
   const goToPrevious = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
@@ -48,11 +77,9 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
-      // Pinch start
       initialPinchDistance.current = getDistance(e.touches);
       lastScale.current = scale;
     } else if (e.touches.length === 1 && scale === 1) {
-      // Swipe start (only when not zoomed)
       touchEndX.current = null;
       touchStartX.current = e.targetTouches[0].clientX;
     }
@@ -60,19 +87,16 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 2 && initialPinchDistance.current) {
-      // Pinch move
       const currentDistance = getDistance(e.touches);
       const newScale = lastScale.current * (currentDistance / initialPinchDistance.current);
-      setScale(Math.min(Math.max(newScale, 1), 4)); // Clamp between 1x and 4x
+      setScale(Math.min(Math.max(newScale, 1), 4));
     } else if (e.touches.length === 1 && scale === 1) {
-      // Swipe move (only when not zoomed)
       touchEndX.current = e.targetTouches[0].clientX;
     }
   };
 
   const handleTouchEnd = () => {
     if (initialPinchDistance.current) {
-      // Pinch end
       initialPinchDistance.current = null;
       lastScale.current = scale;
       return;
@@ -95,7 +119,6 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
     touchEndX.current = null;
   };
 
-  // Double tap to reset zoom
   const lastTap = useRef<number>(0);
   const handleDoubleTap = () => {
     const now = Date.now();
@@ -106,9 +129,34 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
     lastTap.current = now;
   };
 
+  const handleStartEdit = () => {
+    if (!editable || !onUpdateImage) return;
+    setEditTitle(images[currentIndex]?.title || "");
+    setEditCategory(images[currentIndex]?.category || "");
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!onUpdateImage) return;
+    onUpdateImage(currentIndex, {
+      title: editTitle,
+      category: editCategory,
+    });
+    setIsEditing(false);
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!open) return;
+      
+      if (isEditing) {
+        if (e.key === "Escape") {
+          setIsEditing(false);
+        } else if (e.key === "Enter") {
+          handleSaveEdit();
+        }
+        return;
+      }
       
       if (e.key === "ArrowLeft") {
         goToPrevious();
@@ -116,12 +164,14 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
         goToNext();
       } else if (e.key === "Escape") {
         onOpenChange(false);
+      } else if (e.key === "e" && editable) {
+        handleStartEdit();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, goToPrevious, goToNext, onOpenChange]);
+  }, [open, goToPrevious, goToNext, onOpenChange, isEditing, editable]);
 
   if (!images.length) return null;
 
@@ -137,6 +187,17 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
         >
           <X className="w-5 h-5 text-foreground" />
         </button>
+
+        {/* Edit Button */}
+        {editable && onUpdateImage && !isEditing && (
+          <button
+            onClick={handleStartEdit}
+            className="absolute top-4 right-16 z-50 p-2 rounded-full bg-background/80 hover:bg-background transition-colors"
+            title="Edit (E)"
+          >
+            <Pencil className="w-5 h-5 text-foreground" />
+          </button>
+        )}
 
         {/* Navigation Arrows */}
         {images.length > 1 && (
@@ -175,16 +236,46 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
 
         {/* Image Info & Dots */}
         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-background to-transparent p-6">
-          {/* Title & Category */}
-          {(currentImage.title || currentImage.category) && (
-            <div className="text-center mb-4">
-              {currentImage.title && (
-                <h3 className="text-lg font-semibold text-foreground">{currentImage.title}</h3>
+          {/* Editing Form */}
+          {isEditing ? (
+            <div className="flex items-center justify-center gap-2 mb-4 max-w-md mx-auto">
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="Title (optional)"
+                className="flex-1 bg-background/80"
+                autoFocus
+              />
+              {categories.length > 0 && (
+                <Select value={editCategory} onValueChange={setEditCategory}>
+                  <SelectTrigger className="w-[140px] bg-background/80">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
-              {currentImage.category && (
-                <p className="text-sm text-muted-foreground">{currentImage.category}</p>
-              )}
+              <Button size="icon" onClick={handleSaveEdit} title="Save">
+                <Check className="w-4 h-4" />
+              </Button>
             </div>
+          ) : (
+            /* Title & Category Display */
+            (currentImage.title || currentImage.category) && (
+              <div className="text-center mb-4">
+                {currentImage.title && (
+                  <h3 className="text-lg font-semibold text-foreground">{currentImage.title}</h3>
+                )}
+                {currentImage.category && (
+                  <p className="text-sm text-muted-foreground">{currentImage.category}</p>
+                )}
+              </div>
+            )
           )}
 
           {/* Pagination Dots */}
