@@ -7,7 +7,10 @@ import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import ArtistProfile from "./pages/ArtistProfile";
-import ArtistDashboard from "./pages/ArtistDashboard";
+import ArtistEarnings from "./pages/artist/ArtistEarnings";
+import ArtistBookings from "./pages/artist/ArtistBookings";
+import ArtistServices from "./pages/artist/ArtistServices";
+import ArtistProfilePage from "./pages/artist/ArtistProfilePage";
 import Booking from "./pages/Booking";
 import Bookings from "./pages/Bookings";
 import Messages from "./pages/Messages";
@@ -27,7 +30,10 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/home" element={<Home />} />
           <Route path="/artist/:id" element={<ArtistProfile />} />
-          <Route path="/artist-dashboard" element={<ArtistDashboard />} />
+          <Route path="/artist-dashboard" element={<ArtistEarnings />} />
+          <Route path="/artist-bookings" element={<ArtistBookings />} />
+          <Route path="/artist-services" element={<ArtistServices />} />
+          <Route path="/artist-profile" element={<ArtistProfilePage />} />
           <Route path="/booking/:id" element={<Booking />} />
           <Route path="/bookings" element={<Bookings />} />
           <Route path="/messages" element={<Messages />} />
