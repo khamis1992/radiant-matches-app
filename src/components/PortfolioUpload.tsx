@@ -20,6 +20,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -878,18 +889,38 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                         <RotateCcw className="w-4 h-4 mr-1" />
                         Reset All
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setPendingUploads([]);
-                          setBatchDialogOpen(false);
-                        }}
-                        disabled={uploading}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        Clear All
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={uploading}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            Clear All
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Clear all uploads?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will remove all {pendingUploads.length} pending images and any edits you have made. This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                setPendingUploads([]);
+                                setBatchDialogOpen(false);
+                              }}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Clear All
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                     <Badge variant={editedCount > 0 ? "default" : "secondary"} className="ml-2 whitespace-nowrap">
                       {editedCount > 0 ? `${editedCount}/${totalCount} edited` : "No edits"}
