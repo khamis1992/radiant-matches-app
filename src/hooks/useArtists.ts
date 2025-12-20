@@ -16,6 +16,7 @@ export interface Artist {
     avatar_url: string | null;
     location: string | null;
   } | null;
+  featured_image?: string | null;
 }
 
 export const useArtists = () => {
@@ -33,6 +34,8 @@ export const useArtists = () => {
 
       // Fetch profiles for all artists
       const userIds = artists.map(a => a.user_id);
+      const artistIds = artists.map(a => a.id);
+      
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, full_name, avatar_url, location")
@@ -40,11 +43,23 @@ export const useArtists = () => {
 
       if (profilesError) throw profilesError;
 
-      // Map profiles to artists
+      // Fetch featured portfolio images for all artists
+      const { data: featuredItems, error: featuredError } = await supabase
+        .from("portfolio_items")
+        .select("artist_id, image_url")
+        .in("artist_id", artistIds)
+        .eq("is_featured", true);
+
+      if (featuredError) throw featuredError;
+
+      // Map profiles and featured images to artists
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+      const featuredMap = new Map(featuredItems?.map(f => [f.artist_id, f.image_url]) || []);
+      
       return artists.map(artist => ({
         ...artist,
         profile: profileMap.get(artist.user_id) || null,
+        featured_image: featuredMap.get(artist.id) || null,
       })) as Artist[];
     },
   });
