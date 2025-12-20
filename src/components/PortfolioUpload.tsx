@@ -747,22 +747,35 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                       <Crop className="w-4 h-4" />
                     </Button>
                   </div>
-                  <Select 
-                    value={item.category} 
-                    onValueChange={(v) => handleUpdatePendingItem(index, { category: v as PortfolioCategory })}
-                    disabled={uploading}
-                  >
-                    <SelectTrigger className="text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PORTFOLIO_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex gap-2 items-center">
+                    <Select 
+                      value={item.category} 
+                      onValueChange={(v) => handleUpdatePendingItem(index, { category: v as PortfolioCategory })}
+                      disabled={uploading}
+                    >
+                      <SelectTrigger className="text-sm flex-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PORTFOLIO_CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {item.originalSize !== item.compressedSize ? (
+                        <>
+                          <span className="line-through">{formatFileSize(item.originalSize)}</span>
+                          {" → "}
+                          <span className="text-primary font-medium">{formatFileSize(item.compressedSize)}</span>
+                        </>
+                      ) : (
+                        formatFileSize(item.compressedSize)
+                      )}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
