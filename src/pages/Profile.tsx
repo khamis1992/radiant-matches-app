@@ -1,9 +1,10 @@
 import BottomNavigation from "@/components/BottomNavigation";
-import { Settings, Heart, CreditCard, Bell, HelpCircle, LogOut, ChevronRight, User } from "lucide-react";
+import { Settings, Heart, CreditCard, Bell, HelpCircle, LogOut, ChevronRight, User, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile, useProfileStats } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
+import { useCurrentArtist } from "@/hooks/useArtistDashboard";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -22,6 +23,7 @@ const Profile = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: stats, isLoading: statsLoading } = useProfileStats();
+  const { data: artist } = useCurrentArtist();
 
   const handleSignOut = async () => {
     await signOut();
@@ -125,6 +127,21 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Artist Dashboard Link */}
+      {artist && (
+        <div className="px-5 pb-2">
+          <Link to="/artist-dashboard">
+            <button className="w-full flex items-center gap-3 p-4 bg-primary/10 rounded-2xl hover:bg-primary/20 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <Briefcase className="w-5 h-5 text-primary" />
+              </div>
+              <span className="flex-1 text-left font-medium text-primary">Artist Dashboard</span>
+              <ChevronRight className="w-5 h-5 text-primary" />
+            </button>
+          </Link>
+        </div>
+      )}
 
       {/* Menu */}
       <div className="px-5 py-6">
