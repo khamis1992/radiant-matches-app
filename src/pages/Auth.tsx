@@ -13,6 +13,16 @@ const passwordSchema = z.string().min(6, "Password must be at least 6 characters
 
 type AuthMode = "login" | "signup" | "forgot-password";
 
+const checkIfArtist = async (userId: string): Promise<boolean> => {
+  const { data } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "artist")
+    .single();
+  return !!data;
+};
+
 const Auth = () => {
   const navigate = useNavigate();
   const [mode, setMode] = useState<AuthMode>("login");
@@ -24,15 +34,22 @@ const Auth = () => {
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
 
   useEffect(() => {
+    const redirectUser = async (userId: string) => {
+      const isArtist = await checkIfArtist(userId);
+      navigate(isArtist ? "/artist-dashboard" : "/home");
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
-        navigate("/home");
+        setTimeout(() => {
+          redirectUser(session.user.id);
+        }, 0);
       }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        navigate("/home");
+        redirectUser(session.user.id);
       }
     });
 

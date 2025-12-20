@@ -1,24 +1,35 @@
-import { Home, Calendar, MessageCircle, User } from "lucide-react";
+import { Home, Calendar, MessageCircle, User, LayoutDashboard, Palette } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
 
-const navItems = [
-  { icon: Home, label: "Home", path: "/" },
+const customerNavItems = [
+  { icon: Home, label: "Home", path: "/home" },
   { icon: Calendar, label: "Bookings", path: "/bookings" },
   { icon: MessageCircle, label: "Messages", path: "/messages" },
   { icon: User, label: "Profile", path: "/profile" },
 ];
 
+const artistNavItems = [
+  { icon: LayoutDashboard, label: "Dashboard", path: "/artist-dashboard" },
+  { icon: Calendar, label: "Bookings", path: "/artist-dashboard", hash: "bookings" },
+  { icon: Palette, label: "Services", path: "/artist-dashboard", hash: "services" },
+  { icon: User, label: "Profile", path: "/artist-dashboard", hash: "profile" },
+];
+
 const BottomNavigation = () => {
   const location = useLocation();
+  const { isArtist } = useUserRole();
+  
+  const navItems = isArtist ? artistNavItems : customerNavItems;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg animate-slide-in-bottom">
       <div className="flex items-center justify-around h-16 max-w-md mx-auto px-4">
-        {navItems.map((item) => {
+        {navItems.map((item, index) => {
           const isActive = location.pathname === item.path;
           return (
             <Link
-              key={item.path}
+              key={`${item.path}-${index}`}
               to={item.path}
               className={`flex flex-col items-center justify-center gap-1 py-2 px-4 rounded-xl transition-all duration-300 ${
                 isActive
