@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -20,10 +20,28 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   useArtistPortfolio,
   useAddPortfolioItem,
   useUpdatePortfolioItem,
   useDeletePortfolioItem,
+  useReorderPortfolio,
   PORTFOLIO_CATEGORIES,
   PortfolioItem,
   PortfolioCategory,
@@ -33,11 +51,88 @@ interface PortfolioUploadProps {
   artistId: string;
 }
 
+interface SortableImageProps {
+  item: PortfolioItem;
+  onEdit: (item: PortfolioItem) => void;
+  onDelete: (item: PortfolioItem) => void;
+  isDeleting: boolean;
+}
+
+const SortableImage = ({ item, onEdit, onDelete, isDeleting }: SortableImageProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="relative aspect-square group"
+    >
+      <img
+        src={item.image_url}
+        alt={item.title || `Portfolio`}
+        className="w-full h-full object-cover rounded-lg"
+      />
+      
+      {/* Drag Handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="absolute top-1 left-1 p-1.5 bg-background/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+      >
+        <GripVertical className="w-4 h-4 text-foreground" />
+      </button>
+
+      {/* Actions */}
+      <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={() => onEdit(item)}
+          className="p-1.5 bg-background/80 backdrop-blur-sm rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
+        >
+          <Tag className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => onDelete(item)}
+          disabled={isDeleting}
+          className="p-1.5 bg-background/80 backdrop-blur-sm rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
+        >
+          {isDeleting ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <X className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+
+      {/* Category Badge */}
+      <div className="absolute bottom-1 left-1">
+        <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+          {item.category}
+        </Badge>
+      </div>
+    </div>
+  );
+};
+
 const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const { data: portfolioItems = [], isLoading } = useArtistPortfolio(artistId);
   const addItem = useAddPortfolioItem();
   const updateItem = useUpdatePortfolioItem();
   const deleteItem = useDeletePortfolioItem();
+  const reorderItems = useReorderPortfolio();
 
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -49,6 +144,43 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const [title, setTitle] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = portfolioItems.findIndex(item => item.id === active.id);
+    const newIndex = portfolioItems.findIndex(item => item.id === over.id);
+    
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reorderedItems = arrayMove(portfolioItems, oldIndex, newIndex);
+    
+    // Update display_order for all items
+    const updates = reorderedItems.map((item, index) => ({
+      id: item.id,
+      display_order: index + 1,
+    }));
+
+    try {
+      await reorderItems.mutateAsync({ artistId, items: updates });
+      toast.success("Order updated");
+    } catch (error) {
+      toast.error("Failed to reorder");
+    }
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -93,11 +225,17 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         .from("portfolio")
         .getPublicUrl(fileName);
 
+      // New items get highest display_order
+      const maxOrder = portfolioItems.length > 0 
+        ? Math.max(...portfolioItems.map(p => p.display_order)) 
+        : 0;
+
       await addItem.mutateAsync({
         artist_id: artistId,
         image_url: publicUrl,
         category: selectedCategory,
         title: title || null,
+        display_order: maxOrder + 1,
       });
 
       toast.success("Image uploaded successfully");
@@ -179,7 +317,12 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-foreground">Portfolio</h3>
+        <div>
+          <h3 className="font-semibold text-foreground">Portfolio</h3>
+          {portfolioItems.length > 1 && (
+            <p className="text-xs text-muted-foreground">Drag to reorder</p>
+          )}
+        </div>
         <Button
           variant="outline"
           size="sm"
@@ -221,41 +364,25 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
       )}
 
       {filteredItems.length > 0 ? (
-        <div className="grid grid-cols-3 gap-2">
-          {filteredItems.map((item) => (
-            <div key={item.id} className="relative aspect-square group">
-              <img
-                src={item.image_url}
-                alt={item.title || `Portfolio`}
-                className="w-full h-full object-cover rounded-lg"
-              />
-              <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
-                <button
-                  onClick={() => openEditDialog(item)}
-                  className="p-2 bg-card rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  <Tag className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(item)}
-                  disabled={deletingId === item.id}
-                  className="p-2 bg-card rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                >
-                  {deletingId === item.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <X className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-              <div className="absolute bottom-1 left-1">
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
-                  {item.category}
-                </Badge>
-              </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={filteredItems.map(i => i.id)} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-3 gap-2">
+              {filteredItems.map((item) => (
+                <SortableImage
+                  key={item.id}
+                  item={item}
+                  onEdit={openEditDialog}
+                  onDelete={handleDelete}
+                  isDeleting={deletingId === item.id}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       ) : (
         <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-border rounded-xl text-muted-foreground">
           <ImageIcon className="w-10 h-10 mb-2 opacity-50" />

@@ -7,6 +7,7 @@ export interface PortfolioItem {
   image_url: string;
   category: string;
   title: string | null;
+  display_order: number;
   created_at: string;
 }
 
@@ -32,7 +33,7 @@ export const useArtistPortfolio = (artistId: string | undefined) => {
         .from("portfolio_items")
         .select("*")
         .eq("artist_id", artistId)
-        .order("created_at", { ascending: false });
+        .order("display_order", { ascending: true });
 
       if (error) throw error;
       return data as PortfolioItem[];
@@ -45,7 +46,7 @@ export const useAddPortfolioItem = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (item: Omit<PortfolioItem, "id" | "created_at">) => {
+    mutationFn: async (item: Omit<PortfolioItem, "id" | "created_at" | "display_order"> & { display_order?: number }) => {
       const { data, error } = await supabase
         .from("portfolio_items")
         .insert(item)
@@ -57,6 +58,29 @@ export const useAddPortfolioItem = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["portfolio", variables.artist_id] });
+    },
+  });
+};
+
+export const useReorderPortfolio = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ artistId, items }: { artistId: string; items: { id: string; display_order: number }[] }) => {
+      // Update each item's display_order
+      const updates = items.map(item => 
+        supabase
+          .from("portfolio_items")
+          .update({ display_order: item.display_order })
+          .eq("id", item.id)
+      );
+      
+      const results = await Promise.all(updates);
+      const errors = results.filter(r => r.error);
+      if (errors.length > 0) throw errors[0].error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["portfolio", variables.artistId] });
     },
   });
 };
