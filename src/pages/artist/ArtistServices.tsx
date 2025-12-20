@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Plus, Pencil, Trash2, DollarSign, Clock, Briefcase } from "lucide-react";
+import { Plus, Pencil, Trash2, DollarSign, Clock, Briefcase, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import {
   useCurrentArtist,
   useArtistServices,
@@ -29,6 +31,7 @@ import {
 const ArtistServices = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { data: profile } = useProfile();
   const { data: artist, isLoading: artistLoading } = useCurrentArtist();
   const { data: services, isLoading: servicesLoading } = useArtistServices();
   const createService = useCreateService();
@@ -131,7 +134,17 @@ const ArtistServices = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-        <h1 className="text-xl font-bold text-foreground">Services</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-foreground">Services</h1>
+          <Link to="/artist-profile">
+            <Avatar className="h-9 w-9 border-2 border-primary/20">
+              <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || "Profile"} />
+              <AvatarFallback className="bg-primary/10 text-primary">
+                <User className="h-4 w-4" />
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+        </div>
       </header>
 
       <div className="px-5 py-4 space-y-4">
