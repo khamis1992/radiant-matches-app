@@ -67,6 +67,124 @@ export const useCurrentArtist = () => {
   });
 };
 
+export interface EarningsData {
+  totalEarnings: number;
+  thisMonthEarnings: number;
+  lastMonthEarnings: number;
+  pendingEarnings: number;
+  completedBookings: number;
+  monthlyTrend: { month: string; earnings: number; bookings: number }[];
+  serviceBreakdown: { name: string; earnings: number; count: number }[];
+}
+
+export const useArtistEarnings = () => {
+  const { data: artist } = useCurrentArtist();
+  
+  return useQuery({
+    queryKey: ["artist-earnings", artist?.id],
+    queryFn: async (): Promise<EarningsData> => {
+      if (!artist?.id) {
+        return {
+          totalEarnings: 0,
+          thisMonthEarnings: 0,
+          lastMonthEarnings: 0,
+          pendingEarnings: 0,
+          completedBookings: 0,
+          monthlyTrend: [],
+          serviceBreakdown: [],
+        };
+      }
+
+      const { data: bookings, error } = await supabase
+        .from("bookings")
+        .select("*, service:services(name)")
+        .eq("artist_id", artist.id);
+
+      if (error) throw error;
+      if (!bookings || bookings.length === 0) {
+        return {
+          totalEarnings: 0,
+          thisMonthEarnings: 0,
+          lastMonthEarnings: 0,
+          pendingEarnings: 0,
+          completedBookings: 0,
+          monthlyTrend: [],
+          serviceBreakdown: [],
+        };
+      }
+
+      const now = new Date();
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+      // Calculate totals
+      const completedBookings = bookings.filter(b => b.status === "completed");
+      const confirmedBookings = bookings.filter(b => b.status === "confirmed");
+      
+      const totalEarnings = completedBookings.reduce((sum, b) => sum + Number(b.total_price), 0);
+      const pendingEarnings = confirmedBookings.reduce((sum, b) => sum + Number(b.total_price), 0);
+
+      const thisMonthBookings = completedBookings.filter(b => {
+        const date = new Date(b.booking_date);
+        return date >= thisMonthStart;
+      });
+      const thisMonthEarnings = thisMonthBookings.reduce((sum, b) => sum + Number(b.total_price), 0);
+
+      const lastMonthBookings = completedBookings.filter(b => {
+        const date = new Date(b.booking_date);
+        return date >= lastMonthStart && date <= lastMonthEnd;
+      });
+      const lastMonthEarnings = lastMonthBookings.reduce((sum, b) => sum + Number(b.total_price), 0);
+
+      // Monthly trend (last 6 months)
+      const monthlyTrend: { month: string; earnings: number; bookings: number }[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+        const monthName = monthDate.toLocaleDateString("en-US", { month: "short" });
+        
+        const monthBookings = completedBookings.filter(b => {
+          const date = new Date(b.booking_date);
+          return date >= monthDate && date <= monthEnd;
+        });
+        
+        monthlyTrend.push({
+          month: monthName,
+          earnings: monthBookings.reduce((sum, b) => sum + Number(b.total_price), 0),
+          bookings: monthBookings.length,
+        });
+      }
+
+      // Service breakdown
+      const serviceMap = new Map<string, { earnings: number; count: number }>();
+      completedBookings.forEach(b => {
+        const serviceName = (b.service as any)?.name || "Unknown";
+        const existing = serviceMap.get(serviceName) || { earnings: 0, count: 0 };
+        serviceMap.set(serviceName, {
+          earnings: existing.earnings + Number(b.total_price),
+          count: existing.count + 1,
+        });
+      });
+
+      const serviceBreakdown = Array.from(serviceMap.entries())
+        .map(([name, data]) => ({ name, ...data }))
+        .sort((a, b) => b.earnings - a.earnings);
+
+      return {
+        totalEarnings,
+        thisMonthEarnings,
+        lastMonthEarnings,
+        pendingEarnings,
+        completedBookings: completedBookings.length,
+        monthlyTrend,
+        serviceBreakdown,
+      };
+    },
+    enabled: !!artist?.id,
+  });
+};
+
 export const useArtistBookings = () => {
   const { data: artist } = useCurrentArtist();
   

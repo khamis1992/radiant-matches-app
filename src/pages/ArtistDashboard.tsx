@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Calendar, Clock, MapPin, User, Plus, Pencil, Trash2, 
-  Check, X, DollarSign, Briefcase, Star, ArrowLeft
+  Check, X, DollarSign, Briefcase, Star, ArrowLeft, TrendingUp, TrendingDown
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -17,6 +17,7 @@ import {
   useCurrentArtist,
   useArtistBookings,
   useArtistServices,
+  useArtistEarnings,
   useUpdateArtistProfile,
   useUpdateBookingStatus,
   useCreateService,
@@ -24,6 +25,7 @@ import {
   useDeleteService,
   ArtistService,
 } from "@/hooks/useArtistDashboard";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -42,6 +44,7 @@ const ArtistDashboard = () => {
   const { data: artist, isLoading: artistLoading } = useCurrentArtist();
   const { data: bookings, isLoading: bookingsLoading } = useArtistBookings();
   const { data: services, isLoading: servicesLoading } = useArtistServices();
+  const { data: earnings, isLoading: earningsLoading } = useArtistEarnings();
   
   const updateProfile = useUpdateArtistProfile();
   const updateBookingStatus = useUpdateBookingStatus();
@@ -232,12 +235,158 @@ const ArtistDashboard = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="bookings" className="px-5">
-        <TabsList className="w-full grid grid-cols-3 mb-4">
+      <Tabs defaultValue="earnings" className="px-5">
+        <TabsList className="w-full grid grid-cols-4 mb-4">
+          <TabsTrigger value="earnings">Earnings</TabsTrigger>
           <TabsTrigger value="bookings">Bookings</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>
+
+        {/* Earnings Tab */}
+        <TabsContent value="earnings" className="space-y-4">
+          {earningsLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-32 w-full rounded-2xl" />
+              <Skeleton className="h-48 w-full rounded-2xl" />
+            </div>
+          ) : (
+            <>
+              {/* Revenue Stats */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+                  <p className="text-sm text-muted-foreground">Total Earnings</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">
+                    ${earnings?.totalEarnings.toFixed(2) || "0.00"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {earnings?.completedBookings || 0} completed bookings
+                  </p>
+                </div>
+                <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+                  <p className="text-sm text-muted-foreground">Pending</p>
+                  <p className="text-2xl font-bold text-primary mt-1">
+                    ${earnings?.pendingEarnings.toFixed(2) || "0.00"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Confirmed bookings
+                  </p>
+                </div>
+              </div>
+
+              {/* Monthly Comparison */}
+              <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+                <h3 className="font-semibold text-foreground mb-3">This Month</h3>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-3xl font-bold text-foreground">
+                      ${earnings?.thisMonthEarnings.toFixed(2) || "0.00"}
+                    </p>
+                    {earnings && earnings.lastMonthEarnings > 0 && (
+                      <div className="flex items-center gap-1 mt-1">
+                        {earnings.thisMonthEarnings >= earnings.lastMonthEarnings ? (
+                          <>
+                            <TrendingUp className="w-4 h-4 text-green-500" />
+                            <span className="text-sm text-green-500">
+                              +{(((earnings.thisMonthEarnings - earnings.lastMonthEarnings) / earnings.lastMonthEarnings) * 100).toFixed(0)}%
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <TrendingDown className="w-4 h-4 text-destructive" />
+                            <span className="text-sm text-destructive">
+                              {(((earnings.thisMonthEarnings - earnings.lastMonthEarnings) / earnings.lastMonthEarnings) * 100).toFixed(0)}%
+                            </span>
+                          </>
+                        )}
+                        <span className="text-sm text-muted-foreground">vs last month</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Last month</p>
+                    <p className="text-lg font-medium text-muted-foreground">
+                      ${earnings?.lastMonthEarnings.toFixed(2) || "0.00"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Earnings Chart */}
+              {earnings && earnings.monthlyTrend.length > 0 && (
+                <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+                  <h3 className="font-semibold text-foreground mb-4">Revenue Trend</h3>
+                  <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={earnings.monthlyTrend}>
+                        <defs>
+                          <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis 
+                          dataKey="month" 
+                          axisLine={false} 
+                          tickLine={false}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                        />
+                        <YAxis 
+                          axisLine={false} 
+                          tickLine={false}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                          tickFormatter={(value) => `$${value}`}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px",
+                          }}
+                          formatter={(value: number) => [`$${value.toFixed(2)}`, "Earnings"]}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="earnings"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth={2}
+                          fill="url(#earningsGradient)"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
+              {/* Service Breakdown */}
+              {earnings && earnings.serviceBreakdown.length > 0 && (
+                <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+                  <h3 className="font-semibold text-foreground mb-3">Top Services</h3>
+                  <div className="space-y-3">
+                    {earnings.serviceBreakdown.slice(0, 5).map((service) => (
+                      <div key={service.name} className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground">{service.name}</p>
+                          <p className="text-sm text-muted-foreground">{service.count} bookings</p>
+                        </div>
+                        <p className="font-semibold text-foreground">${service.earnings.toFixed(2)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {earnings && earnings.completedBookings === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <DollarSign className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No earnings yet</p>
+                  <p className="text-sm mt-1">Complete your first booking to see earnings</p>
+                </div>
+              )}
+            </>
+          )}
+        </TabsContent>
 
         {/* Bookings Tab */}
         <TabsContent value="bookings" className="space-y-6">
