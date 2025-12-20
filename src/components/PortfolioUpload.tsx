@@ -191,6 +191,8 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [pendingLightboxOpen, setPendingLightboxOpen] = useState(false);
+  const [pendingLightboxIndex, setPendingLightboxIndex] = useState(0);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
@@ -722,7 +724,11 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                   <img
                     src={item.croppedPreview || item.preview}
                     alt={`Preview ${index + 1}`}
-                    className="w-full h-full object-cover rounded-md"
+                    className="w-full h-full object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => {
+                      setPendingLightboxIndex(index);
+                      setPendingLightboxOpen(true);
+                    }}
                   />
                   {item.isFeatured && (
                     <div className="absolute top-0 left-0 right-0 flex justify-center">
@@ -906,6 +912,18 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Pending Uploads Lightbox */}
+      <ImageLightbox
+        images={pendingUploads.map(item => ({
+          url: item.croppedPreview || item.preview,
+          title: item.title || null,
+          category: item.category,
+        }))}
+        initialIndex={pendingLightboxIndex}
+        open={pendingLightboxOpen}
+        onOpenChange={setPendingLightboxOpen}
+      />
     </div>
   );
 };
