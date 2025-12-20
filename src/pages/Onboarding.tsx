@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-makeup.jpg";
 
 const slides = [
@@ -22,12 +23,24 @@ const slides = [
 const Onboarding = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        navigate("/home", { replace: true });
+      } else {
+        setCheckingAuth(false);
+        const timer = setTimeout(() => setShowSplash(false), 2000);
+        return () => clearTimeout(timer);
+      }
+    });
+  }, [navigate]);
+
+  if (checkingAuth) {
+    return null;
+  }
 
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
