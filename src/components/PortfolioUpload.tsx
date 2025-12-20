@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
+import ImageCropper from "@/components/ImageCropper";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -168,8 +169,10 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingPreview, setPendingPreview] = useState<string | null>(null);
+  const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<PortfolioCategory>("General");
   const [title, setTitle] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -230,13 +233,28 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
 
     setPendingFile(file);
     setPendingPreview(URL.createObjectURL(file));
+    setCroppedPreview(null);
     setSelectedCategory("General");
     setTitle("");
-    setUploadDialogOpen(true);
+    setCropDialogOpen(true);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const croppedFile = new File([croppedBlob], pendingFile?.name || "cropped.jpg", { type: "image/jpeg" });
+    setPendingFile(croppedFile);
+    setCroppedPreview(URL.createObjectURL(croppedBlob));
+    setCropDialogOpen(false);
+    setUploadDialogOpen(true);
+  };
+
+  const handleSkipCrop = () => {
+    setCroppedPreview(null);
+    setCropDialogOpen(false);
+    setUploadDialogOpen(true);
   };
 
   const handleUpload = async () => {
@@ -454,6 +472,27 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         onOpenChange={setLightboxOpen}
       />
 
+      {/* Crop Dialog */}
+      <Dialog open={cropDialogOpen} onOpenChange={setCropDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crop className="w-5 h-5" />
+              Crop Image
+            </DialogTitle>
+          </DialogHeader>
+          <div className="pt-4">
+            {pendingPreview && (
+              <ImageCropper
+                imageSrc={pendingPreview}
+                onCropComplete={handleCropComplete}
+                onCancel={handleSkipCrop}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Upload Dialog */}
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
         <DialogContent>
@@ -461,13 +500,28 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
             <DialogTitle>Add Portfolio Image</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
-            {pendingPreview && (
-              <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+            {(croppedPreview || pendingPreview) && (
+              <div className="aspect-video rounded-lg overflow-hidden bg-muted relative">
                 <img
-                  src={pendingPreview}
+                  src={croppedPreview || pendingPreview || ""}
                   alt="Preview"
                   className="w-full h-full object-contain"
                 />
+                {croppedPreview && (
+                  <div className="absolute top-2 right-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setUploadDialogOpen(false);
+                        setCropDialogOpen(true);
+                      }}
+                    >
+                      <Crop className="w-4 h-4 mr-1" />
+                      Re-crop
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
             <div>
