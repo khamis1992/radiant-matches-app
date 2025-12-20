@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Star, MapPin, Clock, DollarSign, ArrowUpDown } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Clock, DollarSign, ArrowUpDown, SlidersHorizontal } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useArtistsByCategory } from "@/hooks/useArtists";
 import { useServicesByCategory, ServiceWithArtist } from "@/hooks/useServices";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -77,13 +83,28 @@ const Categories = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"services" | "artists">("services");
   const [sortBy, setSortBy] = useState<SortOption>("price-low");
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { data: artists, isLoading: artistsLoading } = useArtistsByCategory(selectedCategory);
   const { data: services, isLoading: servicesLoading } = useServicesByCategory(selectedCategory);
 
-  const sortedServices = useMemo(() => {
+  // Calculate min/max prices from services
+  const priceStats = useMemo(() => {
+    if (!services || services.length === 0) return { min: 0, max: 1000 };
+    const prices = services.map(s => s.price);
+    return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) };
+  }, [services]);
+
+  const filteredAndSortedServices = useMemo(() => {
     if (!services) return [];
     
-    return [...services].sort((a, b) => {
+    // Filter by price range
+    const filtered = services.filter(
+      s => s.price >= priceRange[0] && s.price <= priceRange[1]
+    );
+    
+    // Sort
+    return filtered.sort((a, b) => {
       switch (sortBy) {
         case "price-low":
           return a.price - b.price;
@@ -99,7 +120,7 @@ const Categories = () => {
           return 0;
       }
     });
-  }, [services, sortBy]);
+  }, [services, sortBy, priceRange]);
 
   const handleCategoryClick = (categoryId: string) => {
     if (selectedCategory === categoryId) {
@@ -108,8 +129,17 @@ const Categories = () => {
       setSelectedCategory(categoryId);
       setActiveTab("services");
       setSortBy("price-low");
+      setPriceRange([0, 1000]); // Reset price range
+      setIsFilterOpen(false);
     }
   };
+
+  // Update price range when services load
+  const handlePriceRangeChange = (values: number[]) => {
+    setPriceRange([values[0], values[1]]);
+  };
+
+  const isFiltered = priceRange[0] > priceStats.min || priceRange[1] < priceStats.max;
 
   const selectedCategoryData = categories.find(c => c.id === selectedCategory);
 
@@ -186,26 +216,73 @@ const Categories = () => {
 
               {/* Services Tab */}
               <TabsContent value="services" className="mt-0">
-                {/* Sort Options */}
+                {/* Price Filter */}
                 {services && services.length > 0 && (
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm text-muted-foreground">
-                      {sortedServices.length} services
-                    </span>
-                    <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                      <SelectTrigger className="w-[160px] h-9">
-                        <ArrowUpDown className="w-3.5 h-3.5 mr-2" />
-                        <SelectValue placeholder="Sort by" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="price-low">Price: Low to High</SelectItem>
-                        <SelectItem value="price-high">Price: High to Low</SelectItem>
-                        <SelectItem value="rating">Highest Rated</SelectItem>
-                        <SelectItem value="duration-short">Duration: Shortest</SelectItem>
-                        <SelectItem value="duration-long">Duration: Longest</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen} className="mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm text-muted-foreground">
+                        {filteredAndSortedServices.length} of {services.length} services
+                        {isFiltered && " (filtered)"}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <CollapsibleTrigger asChild>
+                          <Button 
+                            variant={isFiltered ? "default" : "outline"} 
+                            size="sm" 
+                            className="h-9"
+                          >
+                            <SlidersHorizontal className="w-3.5 h-3.5 mr-2" />
+                            Filters
+                          </Button>
+                        </CollapsibleTrigger>
+                        <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                          <SelectTrigger className="w-[160px] h-9">
+                            <ArrowUpDown className="w-3.5 h-3.5 mr-2" />
+                            <SelectValue placeholder="Sort by" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="price-low">Price: Low to High</SelectItem>
+                            <SelectItem value="price-high">Price: High to Low</SelectItem>
+                            <SelectItem value="rating">Highest Rated</SelectItem>
+                            <SelectItem value="duration-short">Duration: Shortest</SelectItem>
+                            <SelectItem value="duration-long">Duration: Longest</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <CollapsibleContent className="space-y-4">
+                      <div className="bg-muted/50 rounded-xl p-4 border border-border">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-medium text-foreground">Price Range</span>
+                          <span className="text-sm text-primary font-semibold">
+                            ${priceRange[0]} - ${priceRange[1]}
+                          </span>
+                        </div>
+                        <Slider
+                          value={priceRange}
+                          onValueChange={handlePriceRangeChange}
+                          min={priceStats.min}
+                          max={priceStats.max}
+                          step={5}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                          <span>${priceStats.min}</span>
+                          <span>${priceStats.max}</span>
+                        </div>
+                        {isFiltered && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="mt-3 w-full"
+                            onClick={() => setPriceRange([priceStats.min, priceStats.max])}
+                          >
+                            Clear Filter
+                          </Button>
+                        )}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 )}
 
                 {servicesLoading ? (
@@ -214,9 +291,9 @@ const Categories = () => {
                       <Skeleton key={i} className="h-28 w-full rounded-xl" />
                     ))}
                   </div>
-                ) : sortedServices.length > 0 ? (
+                ) : filteredAndSortedServices.length > 0 ? (
                   <div className="space-y-3">
-                    {sortedServices.map((service) => (
+                    {filteredAndSortedServices.map((service) => (
                       <div
                         key={service.id}
                         onClick={() => navigate(`/artist/${service.artist_id}`)}
