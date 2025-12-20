@@ -12,13 +12,24 @@ interface ImageLightboxProps {
 
 const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightboxProps) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [scale, setScale] = useState(1);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
+  const initialPinchDistance = useRef<number | null>(null);
+  const lastScale = useRef(1);
   const minSwipeDistance = 50;
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
+    setScale(1);
+    lastScale.current = 1;
   }, [initialIndex]);
+
+  // Reset zoom when image changes
+  useEffect(() => {
+    setScale(1);
+    lastScale.current = 1;
+  }, [currentIndex]);
 
   const goToPrevious = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
@@ -28,17 +39,46 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
     setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
   }, [images.length]);
 
+  const getDistance = (touches: React.TouchList) => {
+    return Math.hypot(
+      touches[0].clientX - touches[1].clientX,
+      touches[0].clientY - touches[1].clientY
+    );
+  };
+
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchEndX.current = null;
-    touchStartX.current = e.targetTouches[0].clientX;
+    if (e.touches.length === 2) {
+      // Pinch start
+      initialPinchDistance.current = getDistance(e.touches);
+      lastScale.current = scale;
+    } else if (e.touches.length === 1 && scale === 1) {
+      // Swipe start (only when not zoomed)
+      touchEndX.current = null;
+      touchStartX.current = e.targetTouches[0].clientX;
+    }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
+    if (e.touches.length === 2 && initialPinchDistance.current) {
+      // Pinch move
+      const currentDistance = getDistance(e.touches);
+      const newScale = lastScale.current * (currentDistance / initialPinchDistance.current);
+      setScale(Math.min(Math.max(newScale, 1), 4)); // Clamp between 1x and 4x
+    } else if (e.touches.length === 1 && scale === 1) {
+      // Swipe move (only when not zoomed)
+      touchEndX.current = e.targetTouches[0].clientX;
+    }
   };
 
   const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return;
+    if (initialPinchDistance.current) {
+      // Pinch end
+      initialPinchDistance.current = null;
+      lastScale.current = scale;
+      return;
+    }
+
+    if (!touchStartX.current || !touchEndX.current || scale !== 1) return;
     
     const distance = touchStartX.current - touchEndX.current;
     const isSwipe = Math.abs(distance) > minSwipeDistance;
@@ -53,6 +93,17 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
     
     touchStartX.current = null;
     touchEndX.current = null;
+  };
+
+  // Double tap to reset zoom
+  const lastTap = useRef<number>(0);
+  const handleDoubleTap = () => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) {
+      setScale(scale === 1 ? 2 : 1);
+      lastScale.current = scale === 1 ? 2 : 1;
+    }
+    lastTap.current = now;
   };
 
   useEffect(() => {
@@ -107,15 +158,17 @@ const ImageLightbox = ({ images, initialIndex, open, onOpenChange }: ImageLightb
 
         {/* Image Container */}
         <div 
-          className="flex items-center justify-center w-full h-[85vh] p-8"
+          className="flex items-center justify-center w-full h-[85vh] p-8 touch-none"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onClick={handleDoubleTap}
         >
           <img
             src={currentImage.url}
             alt={currentImage.title || "Portfolio image"}
-            className="max-w-full max-h-full object-contain rounded-lg animate-fade-in select-none"
+            className="max-w-full max-h-full object-contain rounded-lg animate-fade-in select-none transition-transform duration-100"
+            style={{ transform: `scale(${scale})` }}
             draggable={false}
           />
         </div>
