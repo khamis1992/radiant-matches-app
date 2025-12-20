@@ -235,51 +235,71 @@ const ArtistProfile = () => {
 
                 {/* Portfolio Grid */}
                 <div className="grid grid-cols-2 gap-3">
-                  {(portfolioFilter === "all" 
-                    ? portfolioItems 
-                    : portfolioItems.filter(item => item.category === portfolioFilter)
-                  ).map((item, index) => (
-                    <div
-                      key={item.id}
-                      className="aspect-[4/5] rounded-xl overflow-hidden shadow-md relative group cursor-pointer"
-                      onClick={() => {
-                        const filteredList = portfolioFilter === "all" 
-                          ? portfolioItems 
-                          : portfolioItems.filter(i => i.category === portfolioFilter);
-                        const actualIndex = filteredList.findIndex(i => i.id === item.id);
-                        setLightboxIndex(actualIndex);
-                        setLightboxOpen(true);
-                      }}
-                    >
-                      <img
-                        src={item.image_url}
-                        alt={item.title || `Portfolio`}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute bottom-2 left-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {item.category}
-                        </Badge>
-                      </div>
-                      {item.title && (
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/80 to-transparent p-3 pt-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <p className="text-sm font-medium text-foreground">{item.title}</p>
+                  {(() => {
+                    const filtered = portfolioFilter === "all" 
+                      ? portfolioItems 
+                      : portfolioItems.filter(item => item.category === portfolioFilter);
+                    // Sort to put featured image first
+                    const sorted = [...filtered].sort((a, b) => {
+                      if (a.is_featured && !b.is_featured) return -1;
+                      if (!a.is_featured && b.is_featured) return 1;
+                      return a.display_order - b.display_order;
+                    });
+                    return sorted.map((item, index) => (
+                      <div
+                        key={item.id}
+                        className="aspect-[4/5] rounded-xl overflow-hidden shadow-md relative group cursor-pointer"
+                        onClick={() => {
+                          setLightboxIndex(index);
+                          setLightboxOpen(true);
+                        }}
+                      >
+                        <img
+                          src={item.image_url}
+                          alt={item.title || `Portfolio`}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                        {/* Featured indicator */}
+                        {item.is_featured && (
+                          <div className="absolute top-2 right-2">
+                            <Badge className="bg-primary text-primary-foreground text-xs gap-1">
+                              <Star className="w-3 h-3 fill-current" />
+                              Featured
+                            </Badge>
+                          </div>
+                        )}
+                        <div className="absolute bottom-2 left-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {item.category}
+                          </Badge>
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        {item.title && (
+                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/80 to-transparent p-3 pt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <p className="text-sm font-medium text-foreground">{item.title}</p>
+                          </div>
+                        )}
+                      </div>
+                    ));
+                  })()}
                 </div>
 
                 {/* Lightbox */}
                 <ImageLightbox
-                  images={(portfolioFilter === "all" 
-                    ? portfolioItems 
-                    : portfolioItems.filter(item => item.category === portfolioFilter)
-                  ).map(item => ({
-                    url: item.image_url,
-                    title: item.title,
-                    category: item.category,
-                  }))}
+                  images={(() => {
+                    const filtered = portfolioFilter === "all" 
+                      ? portfolioItems 
+                      : portfolioItems.filter(item => item.category === portfolioFilter);
+                    // Sort to put featured image first (same order as grid)
+                    return [...filtered].sort((a, b) => {
+                      if (a.is_featured && !b.is_featured) return -1;
+                      if (!a.is_featured && b.is_featured) return 1;
+                      return a.display_order - b.display_order;
+                    }).map(item => ({
+                      url: item.image_url,
+                      title: item.title,
+                      category: item.category,
+                    }));
+                  })()}
                   initialIndex={lightboxIndex}
                   open={lightboxOpen}
                   onOpenChange={setLightboxOpen}

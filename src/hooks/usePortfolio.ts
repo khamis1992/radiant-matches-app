@@ -8,6 +8,7 @@ export interface PortfolioItem {
   category: string;
   title: string | null;
   display_order: number;
+  is_featured: boolean;
   created_at: string;
 }
 
@@ -46,7 +47,7 @@ export const useAddPortfolioItem = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (item: Omit<PortfolioItem, "id" | "created_at" | "display_order"> & { display_order?: number }) => {
+    mutationFn: async (item: Omit<PortfolioItem, "id" | "created_at" | "display_order" | "is_featured"> & { display_order?: number; is_featured?: boolean }) => {
       const { data, error } = await supabase
         .from("portfolio_items")
         .insert(item)
@@ -89,7 +90,7 @@ export const useUpdatePortfolioItem = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, artistId, ...updates }: { id: string; artistId: string; category?: string; title?: string }) => {
+    mutationFn: async ({ id, artistId, ...updates }: { id: string; artistId: string; category?: string; title?: string; is_featured?: boolean }) => {
       const { data, error } = await supabase
         .from("portfolio_items")
         .update(updates)
