@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, X, Pencil, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Pencil, Check, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,13 +13,13 @@ import {
 import { Button } from "@/components/ui/button";
 
 interface ImageLightboxProps {
-  images: { url: string; title?: string | null; category?: string }[];
+  images: { url: string; title?: string | null; category?: string; isFeatured?: boolean }[];
   initialIndex: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editable?: boolean;
   categories?: readonly string[];
-  onUpdateImage?: (index: number, updates: { title?: string; category?: string }) => void;
+  onUpdateImage?: (index: number, updates: { title?: string; category?: string; isFeatured?: boolean }) => void;
 }
 
 const ImageLightbox = ({ 
@@ -166,6 +166,8 @@ const ImageLightbox = ({
         onOpenChange(false);
       } else if (e.key === "e" && editable) {
         handleStartEdit();
+      } else if (e.key === "f" && editable && onUpdateImage) {
+        onUpdateImage(currentIndex, { isFeatured: !images[currentIndex]?.isFeatured });
       }
     };
 
@@ -188,11 +190,27 @@ const ImageLightbox = ({
           <X className="w-5 h-5 text-foreground" />
         </button>
 
+        {/* Featured Toggle Button */}
+        {editable && onUpdateImage && !isEditing && (
+          <button
+            onClick={() => onUpdateImage(currentIndex, { isFeatured: !currentImage.isFeatured })}
+            className={cn(
+              "absolute top-4 right-16 z-50 p-2 rounded-full transition-colors",
+              currentImage.isFeatured 
+                ? "bg-yellow-500 text-white hover:bg-yellow-600" 
+                : "bg-background/80 hover:bg-background"
+            )}
+            title={currentImage.isFeatured ? "Remove from featured (F)" : "Mark as featured (F)"}
+          >
+            <Star className={cn("w-5 h-5", currentImage.isFeatured ? "fill-current" : "text-foreground")} />
+          </button>
+        )}
+
         {/* Edit Button */}
         {editable && onUpdateImage && !isEditing && (
           <button
             onClick={handleStartEdit}
-            className="absolute top-4 right-16 z-50 p-2 rounded-full bg-background/80 hover:bg-background transition-colors"
+            className="absolute top-4 right-28 z-50 p-2 rounded-full bg-background/80 hover:bg-background transition-colors"
             title="Edit (E)"
           >
             <Pencil className="w-5 h-5 text-foreground" />
