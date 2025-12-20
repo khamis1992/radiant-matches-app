@@ -15,6 +15,7 @@ interface ArtistCardProps {
   price: number;
   location: string;
   tagline?: string;
+  categories?: string[];
 }
 
 const ArtistCard = ({
@@ -27,6 +28,7 @@ const ArtistCard = ({
   specialty,
   location,
   tagline,
+  categories = [],
 }: ArtistCardProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const coverImage = featuredImage || image;
@@ -77,9 +79,28 @@ const ArtistCard = ({
           <h3 className="font-semibold text-foreground text-lg">{name}</h3>
           <p className="text-sm text-muted-foreground">{specialty}</p>
           
+          {/* Category Badges */}
+          {categories.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-1 mt-2">
+              {categories.slice(0, 3).map((category) => (
+                <span
+                  key={category}
+                  className="px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full"
+                >
+                  {category}
+                </span>
+              ))}
+              {categories.length > 3 && (
+                <span className="px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded-full">
+                  +{categories.length - 3}
+                </span>
+              )}
+            </div>
+          )}
+          
           {/* Tagline */}
           {tagline && (
-            <p className="text-sm text-primary italic mt-1">"{tagline}"</p>
+            <p className="text-sm text-primary italic mt-2">"{tagline}"</p>
           )}
 
           {/* Rating */}

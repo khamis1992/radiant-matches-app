@@ -139,6 +139,7 @@ const Home = () => {
                   price={0}
                   location={artist.profile?.location || artist.studio_address || "Location TBD"}
                   tagline={artist.bio?.split(".")[0] || undefined}
+                  categories={artist.categories}
                 />
               </div>
             ))
