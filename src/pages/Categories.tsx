@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Star, MapPin, Clock, DollarSign, ArrowUpDown, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Clock, DollarSign, ArrowUpDown, SlidersHorizontal, Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,7 @@ const Categories = () => {
   const [sortBy, setSortBy] = useState<SortOption>("price-low");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { data: artists, isLoading: artistsLoading } = useArtistsByCategory(selectedCategory);
   const { data: services, isLoading: servicesLoading } = useServicesByCategory(selectedCategory);
 
@@ -98,8 +100,19 @@ const Categories = () => {
   const filteredAndSortedServices = useMemo(() => {
     if (!services) return [];
     
+    // Filter by search query
+    const searchFiltered = services.filter(s => {
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        s.name.toLowerCase().includes(query) ||
+        (s.description?.toLowerCase().includes(query)) ||
+        (s.artist?.profile?.full_name?.toLowerCase().includes(query))
+      );
+    });
+    
     // Filter by price range
-    const filtered = services.filter(
+    const filtered = searchFiltered.filter(
       s => s.price >= priceRange[0] && s.price <= priceRange[1]
     );
     
@@ -120,7 +133,7 @@ const Categories = () => {
           return 0;
       }
     });
-  }, [services, sortBy, priceRange]);
+  }, [services, sortBy, priceRange, searchQuery]);
 
   const handleCategoryClick = (categoryId: string) => {
     if (selectedCategory === categoryId) {
@@ -131,6 +144,7 @@ const Categories = () => {
       setSortBy("price-low");
       setPriceRange([0, 1000]); // Reset price range
       setIsFilterOpen(false);
+      setSearchQuery(""); // Reset search
     }
   };
 
@@ -140,6 +154,7 @@ const Categories = () => {
   };
 
   const isFiltered = priceRange[0] > priceStats.min || priceRange[1] < priceStats.max;
+  const hasActiveFilters = isFiltered || searchQuery.trim().length > 0;
 
   const selectedCategoryData = categories.find(c => c.id === selectedCategory);
 
@@ -216,13 +231,34 @@ const Categories = () => {
 
               {/* Services Tab */}
               <TabsContent value="services" className="mt-0">
+                {/* Search Bar */}
+                {services && services.length > 0 && (
+                  <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search services by name, description, or artist..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 pr-10"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full"
+                      >
+                        <X className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 {/* Price Filter */}
                 {services && services.length > 0 && (
                   <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen} className="mb-4">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm text-muted-foreground">
                         {filteredAndSortedServices.length} of {services.length} services
-                        {isFiltered && " (filtered)"}
+                        {hasActiveFilters && " (filtered)"}
                       </span>
                       <div className="flex items-center gap-2">
                         <CollapsibleTrigger asChild>
