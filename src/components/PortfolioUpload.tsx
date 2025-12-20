@@ -1,11 +1,11 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import ImageLightbox from "@/components/ImageLightbox";
 import ImageCropper from "@/components/ImageCropper";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { compressImage, formatFileSize } from "@/lib/imageCompression";
+import { compressImage, formatFileSize, rotateImage } from "@/lib/imageCompression";
 import { toast } from "sonner";
 import {
   Select,
@@ -377,6 +377,30 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     setCurrentCropIndex(index);
     setBatchDialogOpen(false);
     setCropDialogOpen(true);
+  };
+
+  const handleRotateImage = async (index: number) => {
+    const item = pendingUploads[index];
+    if (!item) return;
+
+    try {
+      const { file: rotatedFile, previewUrl } = await rotateImage(item.file);
+      
+      // Revoke old preview URL to free memory
+      if (item.croppedPreview) {
+        URL.revokeObjectURL(item.croppedPreview);
+      }
+      
+      setPendingUploads(prev => prev.map((p, idx) => 
+        idx === index 
+          ? { ...p, file: rotatedFile, croppedPreview: previewUrl, compressedSize: rotatedFile.size }
+          : p
+      ));
+      toast.success("Image rotated");
+    } catch (error) {
+      console.error("Rotation error:", error);
+      toast.error("Failed to rotate image");
+    }
   };
 
   const handleRemoveFromBatch = (index: number) => {
@@ -828,6 +852,15 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                             title={item.isFeatured ? "Remove featured" : "Set as featured"}
                           >
                             <Star className={`w-4 h-4 ${item.isFeatured ? 'fill-current' : ''}`} />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleRotateImage(index)}
+                            disabled={uploading}
+                            title="Rotate image"
+                          >
+                            <RotateCw className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="outline"
