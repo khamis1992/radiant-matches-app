@@ -816,78 +816,88 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           </DialogHeader>
           <div className="space-y-4 pt-4">
             {/* Bulk actions */}
-            {pendingUploads.length > 1 && (
-              <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Label className="text-sm whitespace-nowrap">Apply to all:</Label>
-                  <Select 
-                    onValueChange={(v) => {
-                      setPendingUploads(prev => prev.map(item => ({ ...item, category: v as PortfolioCategory })));
-                      toast.success(`Category set to "${v}" for all images`);
-                    }}
-                    disabled={uploading}
-                  >
-                    <SelectTrigger className="text-sm flex-1">
-                      <SelectValue placeholder="Set category..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PORTFOLIO_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const hasAnyFeatured = pendingUploads.some(p => p.isFeatured);
-                      setPendingUploads(prev => prev.map(item => ({ ...item, isFeatured: !hasAnyFeatured })));
-                      toast.success(hasAnyFeatured ? "Cleared featured from all" : "Note: Only one image can be featured after upload");
-                    }}
-                    disabled={uploading}
-                  >
-                    <Star className={`w-4 h-4 mr-1 ${pendingUploads.some(p => p.isFeatured) ? 'fill-current' : ''}`} />
-                    {pendingUploads.some(p => p.isFeatured) ? "Clear Featured" : "Set Featured"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setPendingUploads(prev => prev.map(item => {
-                        if (item.historyIndex === 0) return item;
-                        const state = item.editHistory[0];
-                        return {
-                          ...item,
-                          file: state.file,
-                          croppedPreview: undefined,
-                          compressedSize: state.file.size,
-                          historyIndex: 0,
-                        };
-                      }));
-                      toast.success("All images reset to original");
-                    }}
-                    disabled={uploading || pendingUploads.every(p => p.historyIndex === 0)}
-                  >
-                    <RotateCcw className="w-4 h-4 mr-1" />
-                    Reset All
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setPendingUploads([]);
-                      setBatchDialogOpen(false);
-                    }}
-                    disabled={uploading}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    Clear All
-                  </Button>
+            {pendingUploads.length > 1 && (() => {
+              const editedCount = pendingUploads.filter(p => p.historyIndex > 0).length;
+              const totalCount = pendingUploads.length;
+              
+              return (
+                <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-wrap flex-1">
+                      <Label className="text-sm whitespace-nowrap">Apply to all:</Label>
+                      <Select 
+                        onValueChange={(v) => {
+                          setPendingUploads(prev => prev.map(item => ({ ...item, category: v as PortfolioCategory })));
+                          toast.success(`Category set to "${v}" for all images`);
+                        }}
+                        disabled={uploading}
+                      >
+                        <SelectTrigger className="text-sm w-[140px]">
+                          <SelectValue placeholder="Set category..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PORTFOLIO_CATEGORIES.map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const hasAnyFeatured = pendingUploads.some(p => p.isFeatured);
+                          setPendingUploads(prev => prev.map(item => ({ ...item, isFeatured: !hasAnyFeatured })));
+                          toast.success(hasAnyFeatured ? "Cleared featured from all" : "Note: Only one image can be featured after upload");
+                        }}
+                        disabled={uploading}
+                      >
+                        <Star className={`w-4 h-4 mr-1 ${pendingUploads.some(p => p.isFeatured) ? 'fill-current' : ''}`} />
+                        {pendingUploads.some(p => p.isFeatured) ? "Clear Featured" : "Set Featured"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setPendingUploads(prev => prev.map(item => {
+                            if (item.historyIndex === 0) return item;
+                            const state = item.editHistory[0];
+                            return {
+                              ...item,
+                              file: state.file,
+                              croppedPreview: undefined,
+                              compressedSize: state.file.size,
+                              historyIndex: 0,
+                            };
+                          }));
+                          toast.success("All images reset to original");
+                        }}
+                        disabled={uploading || editedCount === 0}
+                      >
+                        <RotateCcw className="w-4 h-4 mr-1" />
+                        Reset All
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setPendingUploads([]);
+                          setBatchDialogOpen(false);
+                        }}
+                        disabled={uploading}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        Clear All
+                      </Button>
+                    </div>
+                    <Badge variant={editedCount > 0 ? "default" : "secondary"} className="ml-2 whitespace-nowrap">
+                      {editedCount > 0 ? `${editedCount}/${totalCount} edited` : "No edits"}
+                    </Badge>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
             
             <DndContext
               sensors={sensors}
