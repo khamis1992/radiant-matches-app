@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw, Undo2, Redo2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import ImageLightbox from "@/components/ImageLightbox";
 import ImageCropper from "@/components/ImageCropper";
@@ -167,6 +167,11 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const deleteItem = useDeletePortfolioItem();
   const reorderItems = useReorderPortfolio();
 
+  interface EditState {
+    file: File;
+    preview: string;
+  }
+
   interface PendingUpload {
     id: string;
     file: File;
@@ -177,6 +182,8 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     category: PortfolioCategory;
     title: string;
     isFeatured: boolean;
+    editHistory: EditState[];
+    historyIndex: number;
   }
 
   const [uploading, setUploading] = useState(false);
@@ -268,28 +275,34 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         const originalSize = file.size;
         const compressedFile = await compressImage(file);
         
+        const previewUrl = URL.createObjectURL(compressedFile);
         pendingItems.push({
           id: `pending-${Date.now()}-${Math.random().toString(36).substring(7)}`,
           file: compressedFile,
           originalSize,
           compressedSize: compressedFile.size,
-          preview: URL.createObjectURL(compressedFile),
+          preview: previewUrl,
           category: "General",
           title: "",
           isFeatured: false,
+          editHistory: [{ file: compressedFile, preview: previewUrl }],
+          historyIndex: 0,
         });
       } catch (error) {
         console.error("Compression error:", error);
         // Fall back to original file if compression fails
+        const previewUrl = URL.createObjectURL(file);
         pendingItems.push({
           id: `pending-${Date.now()}-${Math.random().toString(36).substring(7)}`,
           file,
           originalSize: file.size,
           compressedSize: file.size,
-          preview: URL.createObjectURL(file),
+          preview: previewUrl,
           category: "General",
           title: "",
           isFeatured: false,
+          editHistory: [{ file, preview: previewUrl }],
+          historyIndex: 0,
         });
       }
     }
@@ -357,11 +370,22 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     const croppedFile = new File([croppedBlob], pendingUploads[currentCropIndex]?.file.name || "cropped.jpg", { type: "image/jpeg" });
     const croppedPreviewUrl = URL.createObjectURL(croppedBlob);
     
-    setPendingUploads(prev => prev.map((item, idx) => 
-      idx === currentCropIndex 
-        ? { ...item, file: croppedFile, croppedPreview: croppedPreviewUrl }
-        : item
-    ));
+    setPendingUploads(prev => prev.map((item, idx) => {
+      if (idx !== currentCropIndex) return item;
+      
+      // Truncate future history and add new state
+      const newHistory = item.editHistory.slice(0, item.historyIndex + 1);
+      newHistory.push({ file: croppedFile, preview: croppedPreviewUrl });
+      
+      return {
+        ...item,
+        file: croppedFile,
+        croppedPreview: croppedPreviewUrl,
+        compressedSize: croppedFile.size,
+        editHistory: newHistory,
+        historyIndex: newHistory.length - 1,
+      };
+    }));
     setCropDialogOpen(false);
     setCurrentCropIndex(null);
     setBatchDialogOpen(true);
@@ -386,21 +410,61 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     try {
       const { file: rotatedFile, previewUrl } = await rotateImage(item.file);
       
-      // Revoke old preview URL to free memory
-      if (item.croppedPreview) {
-        URL.revokeObjectURL(item.croppedPreview);
-      }
-      
-      setPendingUploads(prev => prev.map((p, idx) => 
-        idx === index 
-          ? { ...p, file: rotatedFile, croppedPreview: previewUrl, compressedSize: rotatedFile.size }
-          : p
-      ));
+      setPendingUploads(prev => prev.map((p, idx) => {
+        if (idx !== index) return p;
+        
+        // Truncate future history and add new state
+        const newHistory = p.editHistory.slice(0, p.historyIndex + 1);
+        newHistory.push({ file: rotatedFile, preview: previewUrl });
+        
+        return {
+          ...p,
+          file: rotatedFile,
+          croppedPreview: previewUrl,
+          compressedSize: rotatedFile.size,
+          editHistory: newHistory,
+          historyIndex: newHistory.length - 1,
+        };
+      }));
       toast.success("Image rotated");
     } catch (error) {
       console.error("Rotation error:", error);
       toast.error("Failed to rotate image");
     }
+  };
+
+  const handleUndo = (index: number) => {
+    setPendingUploads(prev => prev.map((item, idx) => {
+      if (idx !== index || item.historyIndex <= 0) return item;
+      
+      const newIndex = item.historyIndex - 1;
+      const state = item.editHistory[newIndex];
+      
+      return {
+        ...item,
+        file: state.file,
+        croppedPreview: state.preview,
+        compressedSize: state.file.size,
+        historyIndex: newIndex,
+      };
+    }));
+  };
+
+  const handleRedo = (index: number) => {
+    setPendingUploads(prev => prev.map((item, idx) => {
+      if (idx !== index || item.historyIndex >= item.editHistory.length - 1) return item;
+      
+      const newIndex = item.historyIndex + 1;
+      const state = item.editHistory[newIndex];
+      
+      return {
+        ...item,
+        file: state.file,
+        croppedPreview: state.preview,
+        compressedSize: state.file.size,
+        historyIndex: newIndex,
+      };
+    }));
   };
 
   const handleRemoveFromBatch = (index: number) => {
@@ -852,6 +916,24 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                             title={item.isFeatured ? "Remove featured" : "Set as featured"}
                           >
                             <Star className={`w-4 h-4 ${item.isFeatured ? 'fill-current' : ''}`} />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleUndo(index)}
+                            disabled={uploading || item.historyIndex <= 0}
+                            title="Undo"
+                          >
+                            <Undo2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleRedo(index)}
+                            disabled={uploading || item.historyIndex >= item.editHistory.length - 1}
+                            title="Redo"
+                          >
+                            <Redo2 className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="outline"
