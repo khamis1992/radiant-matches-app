@@ -4,12 +4,14 @@ import { ArrowLeft, Star, MapPin, Heart, Share2, Clock, Award, MessageCircle } f
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import ServiceCard from "@/components/ServiceCard";
 import ReviewCard from "@/components/ReviewCard";
 import { useArtist } from "@/hooks/useArtists";
 import { useArtistServices } from "@/hooks/useServices";
 import { useArtistReviews } from "@/hooks/useReviews";
-import { format, formatDistanceToNow } from "date-fns";
+import { useArtistPortfolio } from "@/hooks/usePortfolio";
+import { formatDistanceToNow } from "date-fns";
 
 import artist1 from "@/assets/artist-1.jpg";
 
@@ -17,10 +19,12 @@ const ArtistProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
+  const [portfolioFilter, setPortfolioFilter] = useState<string>("all");
 
   const { data: artist, isLoading: artistLoading } = useArtist(id);
   const { data: services, isLoading: servicesLoading } = useArtistServices(id);
   const { data: reviews, isLoading: reviewsLoading } = useArtistReviews(id);
+  const { data: portfolioItems = [], isLoading: portfolioLoading } = useArtistPortfolio(id);
 
   const handleBookService = (serviceName: string) => {
     navigate(`/booking/${id}?service=${encodeURIComponent(serviceName)}`);
@@ -191,27 +195,75 @@ const ArtistProfile = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="portfolio" className="mt-4">
-            <div className="grid grid-cols-2 gap-3">
-              {artist.portfolio_images && artist.portfolio_images.length > 0 ? (
-                artist.portfolio_images.map((image, index) => (
-                  <div
-                    key={index}
-                    className="aspect-[4/5] rounded-xl overflow-hidden shadow-md"
+          <TabsContent value="portfolio" className="mt-4 space-y-4">
+            {portfolioLoading ? (
+              <div className="grid grid-cols-2 gap-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="aspect-[4/5] rounded-xl" />
+                ))}
+              </div>
+            ) : portfolioItems.length > 0 ? (
+              <>
+                {/* Category Filter */}
+                <div className="flex gap-2 flex-wrap">
+                  <Badge
+                    variant={portfolioFilter === "all" ? "default" : "outline"}
+                    className="cursor-pointer"
+                    onClick={() => setPortfolioFilter("all")}
                   >
-                    <img
-                      src={image}
-                      alt={`Portfolio ${index + 1}`}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                ))
-              ) : (
-                <p className="col-span-2 text-center text-muted-foreground py-4">
-                  No portfolio images
-                </p>
-              )}
-            </div>
+                    All ({portfolioItems.length})
+                  </Badge>
+                  {Object.entries(
+                    portfolioItems.reduce((acc, item) => {
+                      acc[item.category] = (acc[item.category] || 0) + 1;
+                      return acc;
+                    }, {} as Record<string, number>)
+                  ).map(([category, count]) => (
+                    <Badge
+                      key={category}
+                      variant={portfolioFilter === category ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => setPortfolioFilter(category)}
+                    >
+                      {category} ({count})
+                    </Badge>
+                  ))}
+                </div>
+
+                {/* Portfolio Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  {(portfolioFilter === "all" 
+                    ? portfolioItems 
+                    : portfolioItems.filter(item => item.category === portfolioFilter)
+                  ).map((item) => (
+                    <div
+                      key={item.id}
+                      className="aspect-[4/5] rounded-xl overflow-hidden shadow-md relative group"
+                    >
+                      <img
+                        src={item.image_url}
+                        alt={item.title || `Portfolio`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute bottom-2 left-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {item.category}
+                        </Badge>
+                      </div>
+                      {item.title && (
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/80 to-transparent p-3 pt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <p className="text-sm font-medium text-foreground">{item.title}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">
+                No portfolio images yet
+              </p>
+            )}
           </TabsContent>
 
           <TabsContent value="reviews" className="mt-4 space-y-3">
