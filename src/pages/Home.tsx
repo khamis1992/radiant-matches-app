@@ -1,9 +1,12 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
 import ArtistCard from "@/components/ArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
 import { useArtists } from "@/hooks/useArtists";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import categoryBridal from "@/assets/category-bridal.jpg";
@@ -21,7 +24,27 @@ const categories = [
 ];
 
 const Home = () => {
+  const navigate = useNavigate();
+  const { isArtist, loading: roleLoading } = useUserRole();
   const { data: artists, isLoading } = useArtists();
+
+  useEffect(() => {
+    if (!roleLoading && isArtist) {
+      navigate("/artist-dashboard", { replace: true });
+    }
+  }, [isArtist, roleLoading, navigate]);
+
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Skeleton className="h-8 w-32" />
+      </div>
+    );
+  }
+
+  if (isArtist) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
