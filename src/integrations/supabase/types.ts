@@ -127,6 +127,7 @@ export type Database = {
           display_order: number
           id: string
           image_url: string
+          is_featured: boolean
           title: string | null
         }
         Insert: {
@@ -136,6 +137,7 @@ export type Database = {
           display_order?: number
           id?: string
           image_url: string
+          is_featured?: boolean
           title?: string | null
         }
         Update: {
@@ -145,6 +147,7 @@ export type Database = {
           display_order?: number
           id?: string
           image_url?: string
+          is_featured?: boolean
           title?: string | null
         }
         Relationships: [

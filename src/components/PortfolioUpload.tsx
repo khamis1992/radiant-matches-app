@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,10 +58,11 @@ interface SortableImageProps {
   onEdit: (item: PortfolioItem) => void;
   onDelete: (item: PortfolioItem) => void;
   onView: (index: number) => void;
+  onSetFeatured: (item: PortfolioItem) => void;
   isDeleting: boolean;
 }
 
-const SortableImage = ({ item, index, onEdit, onDelete, onView, isDeleting }: SortableImageProps) => {
+const SortableImage = ({ item, index, onEdit, onDelete, onView, onSetFeatured, isDeleting }: SortableImageProps) => {
   const {
     attributes,
     listeners,
@@ -91,6 +92,16 @@ const SortableImage = ({ item, index, onEdit, onDelete, onView, isDeleting }: So
         onClick={() => onView(index)}
       />
       
+      {/* Featured Badge */}
+      {item.is_featured && (
+        <div className="absolute top-1 left-1/2 -translate-x-1/2">
+          <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 gap-1">
+            <Star className="w-3 h-3 fill-current" />
+            Featured
+          </Badge>
+        </div>
+      )}
+      
       {/* Drag Handle */}
       <button
         {...attributes}
@@ -102,6 +113,15 @@ const SortableImage = ({ item, index, onEdit, onDelete, onView, isDeleting }: So
 
       {/* Actions */}
       <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {!item.is_featured && (
+          <button
+            onClick={() => onSetFeatured(item)}
+            className="p-1.5 bg-background/80 backdrop-blur-sm rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
+            title="Set as featured"
+          >
+            <Star className="w-4 h-4" />
+          </button>
+        )}
         <button
           onClick={() => onView(index)}
           className="p-1.5 bg-background/80 backdrop-blur-sm rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
@@ -296,6 +316,19 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     }
   };
 
+  const handleSetFeatured = async (item: PortfolioItem) => {
+    try {
+      await updateItem.mutateAsync({
+        id: item.id,
+        artistId: item.artist_id,
+        is_featured: true,
+      });
+      toast.success("Set as featured image");
+    } catch (error) {
+      toast.error("Failed to set featured");
+    }
+  };
+
   const openEditDialog = (item: PortfolioItem) => {
     setEditingItem(item);
     setSelectedCategory(item.category as PortfolioCategory);
@@ -390,6 +423,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                   index={index}
                   onEdit={openEditDialog}
                   onDelete={handleDelete}
+                  onSetFeatured={handleSetFeatured}
                   onView={(idx) => {
                     setLightboxIndex(idx);
                     setLightboxOpen(true);
