@@ -867,7 +867,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           </DialogHeader>
           <div className="space-y-4 pt-4">
             {/* Bulk actions */}
-            {pendingUploads.length > 1 && (() => {
+            {pendingUploads.length >= 1 && (() => {
               const editedCount = pendingUploads.filter(p => p.historyIndex > 0).length;
               const totalCount = pendingUploads.length;
               
