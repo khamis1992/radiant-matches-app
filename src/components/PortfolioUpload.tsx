@@ -1355,6 +1355,14 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         initialIndex={pendingLightboxIndex}
         open={pendingLightboxOpen}
         onOpenChange={setPendingLightboxOpen}
+        editable
+        categories={PORTFOLIO_CATEGORIES}
+        onUpdateImage={(index, updates) => {
+          handleUpdatePendingItem(index, {
+            ...(updates.title !== undefined && { title: updates.title }),
+            ...(updates.category !== undefined && { category: updates.category as PortfolioCategory }),
+          });
+        }}
       />
 
       {/* Close Confirmation Dialog */}
