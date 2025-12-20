@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw, Undo2, Redo2 } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw, Undo2, Redo2, RotateCcw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import ImageLightbox from "@/components/ImageLightbox";
 import ImageCropper from "@/components/ImageCropper";
@@ -465,6 +465,23 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         historyIndex: newIndex,
       };
     }));
+  };
+
+  const handleReset = (index: number) => {
+    setPendingUploads(prev => prev.map((item, idx) => {
+      if (idx !== index || item.historyIndex === 0) return item;
+      
+      const state = item.editHistory[0];
+      
+      return {
+        ...item,
+        file: state.file,
+        croppedPreview: undefined,
+        compressedSize: state.file.size,
+        historyIndex: 0,
+      };
+    }));
+    toast.success("Image reset to original");
   };
 
   const handleRemoveFromBatch = (index: number) => {
@@ -934,6 +951,15 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                             title="Redo"
                           >
                             <Redo2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleReset(index)}
+                            disabled={uploading || item.historyIndex === 0}
+                            title="Reset to original"
+                          >
+                            <RotateCcw className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="outline"
