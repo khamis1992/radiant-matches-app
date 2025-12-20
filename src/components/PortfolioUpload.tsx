@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn } from "lucide-react";
+import ImageLightbox from "@/components/ImageLightbox";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -53,12 +54,14 @@ interface PortfolioUploadProps {
 
 interface SortableImageProps {
   item: PortfolioItem;
+  index: number;
   onEdit: (item: PortfolioItem) => void;
   onDelete: (item: PortfolioItem) => void;
+  onView: (index: number) => void;
   isDeleting: boolean;
 }
 
-const SortableImage = ({ item, onEdit, onDelete, isDeleting }: SortableImageProps) => {
+const SortableImage = ({ item, index, onEdit, onDelete, onView, isDeleting }: SortableImageProps) => {
   const {
     attributes,
     listeners,
@@ -84,7 +87,8 @@ const SortableImage = ({ item, onEdit, onDelete, isDeleting }: SortableImageProp
       <img
         src={item.image_url}
         alt={item.title || `Portfolio`}
-        className="w-full h-full object-cover rounded-lg"
+        className="w-full h-full object-cover rounded-lg cursor-pointer"
+        onClick={() => onView(index)}
       />
       
       {/* Drag Handle */}
@@ -98,6 +102,12 @@ const SortableImage = ({ item, onEdit, onDelete, isDeleting }: SortableImageProp
 
       {/* Actions */}
       <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={() => onView(index)}
+          className="p-1.5 bg-background/80 backdrop-blur-sm rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
+        >
+          <ZoomIn className="w-4 h-4" />
+        </button>
         <button
           onClick={() => onEdit(item)}
           className="p-1.5 bg-background/80 backdrop-blur-sm rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
@@ -143,6 +153,8 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const [selectedCategory, setSelectedCategory] = useState<PortfolioCategory>("General");
   const [title, setTitle] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sensors = useSensors(
@@ -371,12 +383,17 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         >
           <SortableContext items={filteredItems.map(i => i.id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-3 gap-2">
-              {filteredItems.map((item) => (
+              {filteredItems.map((item, index) => (
                 <SortableImage
                   key={item.id}
                   item={item}
+                  index={index}
                   onEdit={openEditDialog}
                   onDelete={handleDelete}
+                  onView={(idx) => {
+                    setLightboxIndex(idx);
+                    setLightboxOpen(true);
+                  }}
                   isDeleting={deletingId === item.id}
                 />
               ))}
@@ -390,6 +407,18 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           <p className="text-xs mt-1">Add photos to showcase your work</p>
         </div>
       )}
+
+      {/* Lightbox */}
+      <ImageLightbox
+        images={filteredItems.map(item => ({
+          url: item.image_url,
+          title: item.title,
+          category: item.category,
+        }))}
+        initialIndex={lightboxIndex}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+      />
 
       {/* Upload Dialog */}
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>

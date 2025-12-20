@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import ServiceCard from "@/components/ServiceCard";
 import ReviewCard from "@/components/ReviewCard";
+import ImageLightbox from "@/components/ImageLightbox";
 import { useArtist } from "@/hooks/useArtists";
 import { useArtistServices } from "@/hooks/useServices";
 import { useArtistReviews } from "@/hooks/useReviews";
@@ -20,6 +21,8 @@ const ArtistProfile = () => {
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
   const [portfolioFilter, setPortfolioFilter] = useState<string>("all");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const { data: artist, isLoading: artistLoading } = useArtist(id);
   const { data: services, isLoading: servicesLoading } = useArtistServices(id);
@@ -235,10 +238,18 @@ const ArtistProfile = () => {
                   {(portfolioFilter === "all" 
                     ? portfolioItems 
                     : portfolioItems.filter(item => item.category === portfolioFilter)
-                  ).map((item) => (
+                  ).map((item, index) => (
                     <div
                       key={item.id}
-                      className="aspect-[4/5] rounded-xl overflow-hidden shadow-md relative group"
+                      className="aspect-[4/5] rounded-xl overflow-hidden shadow-md relative group cursor-pointer"
+                      onClick={() => {
+                        const filteredList = portfolioFilter === "all" 
+                          ? portfolioItems 
+                          : portfolioItems.filter(i => i.category === portfolioFilter);
+                        const actualIndex = filteredList.findIndex(i => i.id === item.id);
+                        setLightboxIndex(actualIndex);
+                        setLightboxOpen(true);
+                      }}
                     >
                       <img
                         src={item.image_url}
@@ -258,6 +269,21 @@ const ArtistProfile = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* Lightbox */}
+                <ImageLightbox
+                  images={(portfolioFilter === "all" 
+                    ? portfolioItems 
+                    : portfolioItems.filter(item => item.category === portfolioFilter)
+                  ).map(item => ({
+                    url: item.image_url,
+                    title: item.title,
+                    category: item.category,
+                  }))}
+                  initialIndex={lightboxIndex}
+                  open={lightboxOpen}
+                  onOpenChange={setLightboxOpen}
+                />
               </>
             ) : (
               <p className="text-center text-muted-foreground py-8">
