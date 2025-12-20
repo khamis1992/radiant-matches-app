@@ -855,6 +855,28 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                     variant="outline"
                     size="sm"
                     onClick={() => {
+                      setPendingUploads(prev => prev.map(item => {
+                        if (item.historyIndex === 0) return item;
+                        const state = item.editHistory[0];
+                        return {
+                          ...item,
+                          file: state.file,
+                          croppedPreview: undefined,
+                          compressedSize: state.file.size,
+                          historyIndex: 0,
+                        };
+                      }));
+                      toast.success("All images reset to original");
+                    }}
+                    disabled={uploading || pendingUploads.every(p => p.historyIndex === 0)}
+                  >
+                    <RotateCcw className="w-4 h-4 mr-1" />
+                    Reset All
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
                       setPendingUploads([]);
                       setBatchDialogOpen(false);
                     }}
