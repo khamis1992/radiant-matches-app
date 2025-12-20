@@ -119,6 +119,41 @@ export type Database = {
           },
         ]
       }
+      portfolio_items: {
+        Row: {
+          artist_id: string
+          category: string
+          created_at: string
+          id: string
+          image_url: string
+          title: string | null
+        }
+        Insert: {
+          artist_id: string
+          category?: string
+          created_at?: string
+          id?: string
+          image_url: string
+          title?: string | null
+        }
+        Update: {
+          artist_id?: string
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_items_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

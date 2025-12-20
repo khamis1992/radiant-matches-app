@@ -1,113 +1,180 @@
 import { useState, useRef } from "react";
-import { Plus, X, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  useArtistPortfolio,
+  useAddPortfolioItem,
+  useUpdatePortfolioItem,
+  useDeletePortfolioItem,
+  PORTFOLIO_CATEGORIES,
+  PortfolioItem,
+  PortfolioCategory,
+} from "@/hooks/usePortfolio";
 
 interface PortfolioUploadProps {
   artistId: string;
-  images: string[];
-  onImagesChange: (images: string[]) => void;
 }
 
-const PortfolioUpload = ({ artistId, images, onImagesChange }: PortfolioUploadProps) => {
+const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
+  const { data: portfolioItems = [], isLoading } = useArtistPortfolio(artistId);
+  const addItem = useAddPortfolioItem();
+  const updateItem = useUpdatePortfolioItem();
+  const deleteItem = useDeletePortfolioItem();
+
   const [uploading, setUploading] = useState(false);
-  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<PortfolioCategory>("General");
+  const [title, setTitle] = useState("");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    setUploading(true);
-    const newImages: string[] = [];
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
 
-    try {
-      for (const file of Array.from(files)) {
-        // Validate file type
-        if (!file.type.startsWith("image/")) {
-          toast.error(`${file.name} is not an image`);
-          continue;
-        }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
 
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          toast.error(`${file.name} is too large (max 5MB)`);
-          continue;
-        }
+    setPendingFile(file);
+    setPendingPreview(URL.createObjectURL(file));
+    setSelectedCategory("General");
+    setTitle("");
+    setUploadDialogOpen(true);
 
-        // Generate unique filename
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${artistId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-
-        // Upload to Supabase Storage
-        const { error: uploadError } = await supabase.storage
-          .from("portfolio")
-          .upload(fileName, file, { upsert: true });
-
-        if (uploadError) {
-          console.error("Upload error:", uploadError);
-          toast.error(`Failed to upload ${file.name}`);
-          continue;
-        }
-
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from("portfolio")
-          .getPublicUrl(fileName);
-
-        newImages.push(publicUrl);
-      }
-
-      if (newImages.length > 0) {
-        const updatedImages = [...images, ...newImages];
-        onImagesChange(updatedImages);
-        toast.success(`${newImages.length} image(s) uploaded`);
-      }
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Failed to upload images");
-    } finally {
-      setUploading(false);
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
-  const handleDelete = async (index: number) => {
-    setDeletingIndex(index);
+  const handleUpload = async () => {
+    if (!pendingFile) return;
+
+    setUploading(true);
     try {
-      const imageUrl = images[index];
-      
-      // Extract file path from URL
-      const urlParts = imageUrl.split("/portfolio/");
-      if (urlParts.length > 1) {
-        const filePath = urlParts[1];
-        
-        // Delete from storage
-        const { error } = await supabase.storage
-          .from("portfolio")
-          .remove([filePath]);
+      const fileExt = pendingFile.name.split(".").pop();
+      const fileName = `${artistId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-        if (error) {
-          console.error("Delete error:", error);
-          // Continue anyway - might be an old URL format
-        }
-      }
+      const { error: uploadError } = await supabase.storage
+        .from("portfolio")
+        .upload(fileName, pendingFile, { upsert: true });
 
-      // Remove from array
-      const updatedImages = images.filter((_, i) => i !== index);
-      onImagesChange(updatedImages);
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("portfolio")
+        .getPublicUrl(fileName);
+
+      await addItem.mutateAsync({
+        artist_id: artistId,
+        image_url: publicUrl,
+        category: selectedCategory,
+        title: title || null,
+      });
+
+      toast.success("Image uploaded successfully");
+      setUploadDialogOpen(false);
+      setPendingFile(null);
+      setPendingPreview(null);
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDelete = async (item: PortfolioItem) => {
+    setDeletingId(item.id);
+    try {
+      await deleteItem.mutateAsync({
+        id: item.id,
+        artistId: item.artist_id,
+        imageUrl: item.image_url,
+      });
       toast.success("Image removed");
     } catch (error) {
       console.error("Delete error:", error);
       toast.error("Failed to remove image");
     } finally {
-      setDeletingIndex(null);
+      setDeletingId(null);
     }
   };
+
+  const handleUpdateCategory = async () => {
+    if (!editingItem) return;
+    
+    try {
+      await updateItem.mutateAsync({
+        id: editingItem.id,
+        artistId: editingItem.artist_id,
+        category: selectedCategory,
+        title: title || undefined,
+      });
+      toast.success("Updated successfully");
+      setEditingItem(null);
+    } catch (error) {
+      toast.error("Failed to update");
+    }
+  };
+
+  const openEditDialog = (item: PortfolioItem) => {
+    setEditingItem(item);
+    setSelectedCategory(item.category as PortfolioCategory);
+    setTitle(item.title || "");
+  };
+
+  const filteredItems = filterCategory === "all" 
+    ? portfolioItems 
+    : portfolioItems.filter(item => item.category === filterCategory);
+
+  const categoryCounts = portfolioItems.reduce((acc, item) => {
+    acc[item.category] = (acc[item.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-foreground">Portfolio</h3>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="aspect-square bg-muted animate-pulse rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -117,50 +184,75 @@ const PortfolioUpload = ({ artistId, images, onImagesChange }: PortfolioUploadPr
           variant="outline"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
         >
-          {uploading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-              Uploading...
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4 mr-1" />
-              Add Photos
-            </>
-          )}
+          <Plus className="w-4 h-4 mr-1" />
+          Add Photo
         </Button>
         <input
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          multiple
           className="hidden"
           onChange={handleFileSelect}
         />
       </div>
 
-      {images.length > 0 ? (
+      {/* Category Filter */}
+      {portfolioItems.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          <Badge
+            variant={filterCategory === "all" ? "default" : "outline"}
+            className="cursor-pointer"
+            onClick={() => setFilterCategory("all")}
+          >
+            All ({portfolioItems.length})
+          </Badge>
+          {Object.entries(categoryCounts).map(([category, count]) => (
+            <Badge
+              key={category}
+              variant={filterCategory === category ? "default" : "outline"}
+              className="cursor-pointer"
+              onClick={() => setFilterCategory(category)}
+            >
+              {category} ({count})
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {filteredItems.length > 0 ? (
         <div className="grid grid-cols-3 gap-2">
-          {images.map((image, index) => (
-            <div key={index} className="relative aspect-square group">
+          {filteredItems.map((item) => (
+            <div key={item.id} className="relative aspect-square group">
               <img
-                src={image}
-                alt={`Portfolio ${index + 1}`}
+                src={item.image_url}
+                alt={item.title || `Portfolio`}
                 className="w-full h-full object-cover rounded-lg"
               />
-              <button
-                onClick={() => handleDelete(index)}
-                disabled={deletingIndex === index}
-                className="absolute top-1 right-1 p-1 bg-background/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
-              >
-                {deletingIndex === index ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <X className="w-4 h-4" />
-                )}
-              </button>
+              <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                <button
+                  onClick={() => openEditDialog(item)}
+                  className="p-2 bg-card rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <Tag className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(item)}
+                  disabled={deletingId === item.id}
+                  className="p-2 bg-card rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                >
+                  {deletingId === item.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <X className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+              <div className="absolute bottom-1 left-1">
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+                  {item.category}
+                </Badge>
+              </div>
             </div>
           ))}
         </div>
@@ -171,6 +263,107 @@ const PortfolioUpload = ({ artistId, images, onImagesChange }: PortfolioUploadPr
           <p className="text-xs mt-1">Add photos to showcase your work</p>
         </div>
       )}
+
+      {/* Upload Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Portfolio Image</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            {pendingPreview && (
+              <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                <img
+                  src={pendingPreview}
+                  alt="Preview"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            )}
+            <div>
+              <Label htmlFor="title">Title (optional)</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g., Summer Wedding Look"
+              />
+            </div>
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as PortfolioCategory)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PORTFOLIO_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button className="w-full" onClick={handleUpload} disabled={uploading}>
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                "Upload Image"
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Portfolio Item</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            {editingItem && (
+              <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                <img
+                  src={editingItem.image_url}
+                  alt="Preview"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            )}
+            <div>
+              <Label htmlFor="edit-title">Title (optional)</Label>
+              <Input
+                id="edit-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g., Summer Wedding Look"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-category">Category</Label>
+              <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as PortfolioCategory)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PORTFOLIO_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button className="w-full" onClick={handleUpdateCategory}>
+              Save Changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

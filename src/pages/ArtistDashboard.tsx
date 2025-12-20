@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -54,7 +54,6 @@ const ArtistDashboard = () => {
   const deleteService = useDeleteService();
 
   const [editingProfile, setEditingProfile] = useState(false);
-  const [portfolioImages, setPortfolioImages] = useState<string[]>(artist?.portfolio_images || []);
   const [profileForm, setProfileForm] = useState({
     bio: "",
     experience_years: 0,
@@ -72,13 +71,6 @@ const ArtistDashboard = () => {
     category: "",
     is_active: true,
   });
-
-  // Sync portfolio images when artist data loads
-  useEffect(() => {
-    if (artist?.portfolio_images) {
-      setPortfolioImages(artist.portfolio_images);
-    }
-  }, [artist?.portfolio_images]);
 
   if (authLoading || artistLoading) {
     return (
@@ -130,15 +122,6 @@ const ArtistDashboard = () => {
       setEditingProfile(false);
     } catch (error) {
       toast.error("Failed to update profile");
-    }
-  };
-
-  const handlePortfolioChange = async (newImages: string[]) => {
-    try {
-      setPortfolioImages(newImages);
-      await updateProfile.mutateAsync({ portfolio_images: newImages });
-    } catch (error) {
-      toast.error("Failed to update portfolio");
     }
   };
 
@@ -752,11 +735,7 @@ const ArtistDashboard = () => {
 
           {/* Portfolio Section */}
           <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-            <PortfolioUpload
-              artistId={artist.id}
-              images={portfolioImages}
-              onImagesChange={handlePortfolioChange}
-            />
+            <PortfolioUpload artistId={artist.id} />
           </div>
 
           {/* Account Info */}
