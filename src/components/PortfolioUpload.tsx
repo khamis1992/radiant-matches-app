@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw, Undo2, Redo2, RotateCcw, LayoutGrid, List } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw, Undo2, Redo2, RotateCcw, LayoutGrid, List, Maximize } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import ImageLightbox from "@/components/ImageLightbox";
 import ImageCropper from "@/components/ImageCropper";
@@ -831,6 +831,19 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                 Upload {pendingUploads.length} Image{pendingUploads.length > 1 ? 's' : ''}
               </DialogTitle>
               <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    setPendingLightboxIndex(0);
+                    setPendingLightboxOpen(true);
+                  }}
+                  title="Fullscreen preview"
+                  disabled={pendingUploads.length === 0}
+                >
+                  <Maximize className="w-4 h-4" />
+                </Button>
                 <Button
                   variant={viewMode === "list" ? "default" : "outline"}
                   size="icon"
