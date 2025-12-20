@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,8 +9,9 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Calendar, Clock, MapPin, User, Plus, Pencil, Trash2, 
-  Check, X, DollarSign, Briefcase, Star, ArrowLeft, TrendingUp, TrendingDown
+  Check, X, DollarSign, Briefcase, Star, ArrowLeft, TrendingUp, TrendingDown, Image
 } from "lucide-react";
+import PortfolioUpload from "@/components/PortfolioUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import {
@@ -53,6 +54,7 @@ const ArtistDashboard = () => {
   const deleteService = useDeleteService();
 
   const [editingProfile, setEditingProfile] = useState(false);
+  const [portfolioImages, setPortfolioImages] = useState<string[]>(artist?.portfolio_images || []);
   const [profileForm, setProfileForm] = useState({
     bio: "",
     experience_years: 0,
@@ -70,6 +72,13 @@ const ArtistDashboard = () => {
     category: "",
     is_active: true,
   });
+
+  // Sync portfolio images when artist data loads
+  useEffect(() => {
+    if (artist?.portfolio_images) {
+      setPortfolioImages(artist.portfolio_images);
+    }
+  }, [artist?.portfolio_images]);
 
   if (authLoading || artistLoading) {
     return (
@@ -121,6 +130,15 @@ const ArtistDashboard = () => {
       setEditingProfile(false);
     } catch (error) {
       toast.error("Failed to update profile");
+    }
+  };
+
+  const handlePortfolioChange = async (newImages: string[]) => {
+    try {
+      setPortfolioImages(newImages);
+      await updateProfile.mutateAsync({ portfolio_images: newImages });
+    } catch (error) {
+      toast.error("Failed to update portfolio");
     }
   };
 
@@ -730,6 +748,15 @@ const ArtistDashboard = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Portfolio Section */}
+          <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+            <PortfolioUpload
+              artistId={artist.id}
+              images={portfolioImages}
+              onImagesChange={handlePortfolioChange}
+            />
           </div>
 
           {/* Account Info */}
