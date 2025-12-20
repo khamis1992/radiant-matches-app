@@ -165,14 +165,22 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const deleteItem = useDeletePortfolioItem();
   const reorderItems = useReorderPortfolio();
 
+  interface PendingUpload {
+    file: File;
+    preview: string;
+    croppedPreview?: string;
+    category: PortfolioCategory;
+    title: string;
+  }
+
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [batchDialogOpen, setBatchDialogOpen] = useState(false);
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingPreview, setPendingPreview] = useState<string | null>(null);
-  const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
+  const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
+  const [currentCropIndex, setCurrentCropIndex] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<PortfolioCategory>("General");
   const [title, setTitle] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -218,25 +226,40 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
-      return;
+    const validFiles: PendingUpload[] = [];
+    
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name} is not an image file`);
+        continue;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} is larger than 5MB`);
+        continue;
+      }
+
+      validFiles.push({
+        file,
+        preview: URL.createObjectURL(file),
+        category: "General",
+        title: "",
+      });
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be less than 5MB");
-      return;
-    }
+    if (validFiles.length === 0) return;
 
-    setPendingFile(file);
-    setPendingPreview(URL.createObjectURL(file));
-    setCroppedPreview(null);
-    setSelectedCategory("General");
-    setTitle("");
-    setCropDialogOpen(true);
+    setPendingUploads(validFiles);
+    
+    if (validFiles.length === 1) {
+      setCurrentCropIndex(0);
+      setCropDialogOpen(true);
+    } else {
+      setBatchDialogOpen(true);
+    }
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -244,60 +267,104 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   };
 
   const handleCropComplete = (croppedBlob: Blob) => {
-    const croppedFile = new File([croppedBlob], pendingFile?.name || "cropped.jpg", { type: "image/jpeg" });
-    setPendingFile(croppedFile);
-    setCroppedPreview(URL.createObjectURL(croppedBlob));
+    if (currentCropIndex === null) return;
+    
+    const croppedFile = new File([croppedBlob], pendingUploads[currentCropIndex]?.file.name || "cropped.jpg", { type: "image/jpeg" });
+    const croppedPreviewUrl = URL.createObjectURL(croppedBlob);
+    
+    setPendingUploads(prev => prev.map((item, idx) => 
+      idx === currentCropIndex 
+        ? { ...item, file: croppedFile, croppedPreview: croppedPreviewUrl }
+        : item
+    ));
     setCropDialogOpen(false);
-    setUploadDialogOpen(true);
+    setCurrentCropIndex(null);
+    setBatchDialogOpen(true);
   };
 
   const handleSkipCrop = () => {
-    setCroppedPreview(null);
     setCropDialogOpen(false);
-    setUploadDialogOpen(true);
+    setCurrentCropIndex(null);
+    setBatchDialogOpen(true);
   };
 
-  const handleUpload = async () => {
-    if (!pendingFile) return;
+  const handleCropImage = (index: number) => {
+    setCurrentCropIndex(index);
+    setBatchDialogOpen(false);
+    setCropDialogOpen(true);
+  };
+
+  const handleRemoveFromBatch = (index: number) => {
+    setPendingUploads(prev => {
+      const updated = prev.filter((_, idx) => idx !== index);
+      if (updated.length === 0) {
+        setBatchDialogOpen(false);
+      }
+      return updated;
+    });
+  };
+
+  const handleUpdatePendingItem = (index: number, updates: Partial<PendingUpload>) => {
+    setPendingUploads(prev => prev.map((item, idx) => 
+      idx === index ? { ...item, ...updates } : item
+    ));
+  };
+
+  const handleBatchUpload = async () => {
+    if (pendingUploads.length === 0) return;
 
     setUploading(true);
-    try {
-      const fileExt = pendingFile.name.split(".").pop();
-      const fileName = `${artistId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    setUploadProgress({ current: 0, total: pendingUploads.length });
+    
+    let successCount = 0;
+    const maxOrder = portfolioItems.length > 0 
+      ? Math.max(...portfolioItems.map(p => p.display_order)) 
+      : 0;
 
-      const { error: uploadError } = await supabase.storage
-        .from("portfolio")
-        .upload(fileName, pendingFile, { upsert: true });
+    for (let i = 0; i < pendingUploads.length; i++) {
+      const item = pendingUploads[i];
+      setUploadProgress({ current: i + 1, total: pendingUploads.length });
+      
+      try {
+        const fileExt = item.file.name.split(".").pop();
+        const fileName = `${artistId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-      if (uploadError) throw uploadError;
+        const { error: uploadError } = await supabase.storage
+          .from("portfolio")
+          .upload(fileName, item.file, { upsert: true });
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("portfolio")
-        .getPublicUrl(fileName);
+        if (uploadError) throw uploadError;
 
-      // New items get highest display_order
-      const maxOrder = portfolioItems.length > 0 
-        ? Math.max(...portfolioItems.map(p => p.display_order)) 
-        : 0;
+        const { data: { publicUrl } } = supabase.storage
+          .from("portfolio")
+          .getPublicUrl(fileName);
 
-      await addItem.mutateAsync({
-        artist_id: artistId,
-        image_url: publicUrl,
-        category: selectedCategory,
-        title: title || null,
-        display_order: maxOrder + 1,
-      });
+        await addItem.mutateAsync({
+          artist_id: artistId,
+          image_url: publicUrl,
+          category: item.category,
+          title: item.title || null,
+          display_order: maxOrder + i + 1,
+        });
 
-      toast.success("Image uploaded successfully");
-      setUploadDialogOpen(false);
-      setPendingFile(null);
-      setPendingPreview(null);
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Failed to upload image");
-    } finally {
-      setUploading(false);
+        successCount++;
+      } catch (error) {
+        console.error("Upload error:", error);
+      }
     }
+
+    if (successCount === pendingUploads.length) {
+      toast.success(`${successCount} image${successCount > 1 ? 's' : ''} uploaded successfully`);
+    } else if (successCount > 0) {
+      toast.warning(`${successCount} of ${pendingUploads.length} images uploaded`);
+    } else {
+      toast.error("Failed to upload images");
+    }
+
+    setBatchDialogOpen(false);
+    setPendingUploads([]);
+    setUploading(false);
+    setUploadProgress({ current: 0, total: 0 });
   };
 
   const handleDelete = async (item: PortfolioItem) => {
@@ -398,6 +465,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           ref={fileInputRef}
           type="file"
           accept="image/*"
+          multiple
           className="hidden"
           onChange={handleFileSelect}
         />
@@ -473,18 +541,26 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
       />
 
       {/* Crop Dialog */}
-      <Dialog open={cropDialogOpen} onOpenChange={setCropDialogOpen}>
+      <Dialog open={cropDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setCropDialogOpen(false);
+          if (currentCropIndex !== null) {
+            setCurrentCropIndex(null);
+            setBatchDialogOpen(true);
+          }
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Crop className="w-5 h-5" />
-              Crop Image
+              Crop Image {pendingUploads.length > 1 && currentCropIndex !== null ? `(${currentCropIndex + 1}/${pendingUploads.length})` : ''}
             </DialogTitle>
           </DialogHeader>
           <div className="pt-4">
-            {pendingPreview && (
+            {currentCropIndex !== null && pendingUploads[currentCropIndex] && (
               <ImageCropper
-                imageSrc={pendingPreview}
+                imageSrc={pendingUploads[currentCropIndex].preview}
                 onCropComplete={handleCropComplete}
                 onCancel={handleSkipCrop}
               />
@@ -493,74 +569,93 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Upload Dialog */}
-      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-        <DialogContent>
+      {/* Batch Upload Dialog */}
+      <Dialog open={batchDialogOpen} onOpenChange={(open) => {
+        if (!open && !uploading) {
+          setBatchDialogOpen(false);
+          setPendingUploads([]);
+        }
+      }}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add Portfolio Image</DialogTitle>
+            <DialogTitle>
+              Upload {pendingUploads.length} Image{pendingUploads.length > 1 ? 's' : ''}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
-            {(croppedPreview || pendingPreview) && (
-              <div className="aspect-video rounded-lg overflow-hidden bg-muted relative">
-                <img
-                  src={croppedPreview || pendingPreview || ""}
-                  alt="Preview"
-                  className="w-full h-full object-contain"
-                />
-                {croppedPreview && (
-                  <div className="absolute top-2 right-2">
+            {pendingUploads.map((item, index) => (
+              <div key={index} className="flex gap-3 p-3 border border-border rounded-lg">
+                <div className="relative w-20 h-20 flex-shrink-0">
+                  <img
+                    src={item.croppedPreview || item.preview}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                  <button
+                    onClick={() => handleRemoveFromBatch(index)}
+                    className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full"
+                    disabled={uploading}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={item.title}
+                      onChange={(e) => handleUpdatePendingItem(index, { title: e.target.value })}
+                      placeholder="Title (optional)"
+                      className="text-sm"
+                      disabled={uploading}
+                    />
                     <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => {
-                        setUploadDialogOpen(false);
-                        setCropDialogOpen(true);
-                      }}
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleCropImage(index)}
+                      disabled={uploading}
+                      title="Crop image"
                     >
-                      <Crop className="w-4 h-4 mr-1" />
-                      Re-crop
+                      <Crop className="w-4 h-4" />
                     </Button>
                   </div>
-                )}
+                  <Select 
+                    value={item.category} 
+                    onValueChange={(v) => handleUpdatePendingItem(index, { category: v as PortfolioCategory })}
+                    disabled={uploading}
+                  >
+                    <SelectTrigger className="text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PORTFOLIO_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            )}
-            <div>
-              <Label htmlFor="title">Title (optional)</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Summer Wedding Look"
-              />
-            </div>
-            <div>
-              <Label htmlFor="category">Category</Label>
-              <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as PortfolioCategory)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PORTFOLIO_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button className="w-full" onClick={handleUpload} disabled={uploading}>
+            ))}
+            
+            <Button 
+              className="w-full" 
+              onClick={handleBatchUpload} 
+              disabled={uploading || pendingUploads.length === 0}
+            >
               {uploading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Uploading...
+                  Uploading {uploadProgress.current}/{uploadProgress.total}...
                 </>
               ) : (
-                "Upload Image"
+                `Upload ${pendingUploads.length} Image${pendingUploads.length > 1 ? 's' : ''}`
               )}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
 
       {/* Edit Dialog */}
       <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
