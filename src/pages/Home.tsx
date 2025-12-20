@@ -89,16 +89,20 @@ const Home = () => {
             See All
           </button>
         </div>
-        <div className="grid gap-4">
+        <div className="grid grid-cols-2 gap-4">
           {isLoading ? (
             <>
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="bg-card rounded-2xl overflow-hidden shadow-md">
-                  <Skeleton className="h-48 w-full" />
-                  <div className="p-4 space-y-2">
-                    <Skeleton className="h-6 w-32" />
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-32 w-full" />
+                  <div className="flex justify-center -mt-10">
+                    <Skeleton className="w-20 h-20 rounded-full" />
+                  </div>
+                  <div className="p-4 pt-3 space-y-2 flex flex-col items-center">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-10 w-full mt-2" />
                   </div>
                 </div>
               ))}
@@ -117,14 +121,15 @@ const Home = () => {
                   featuredImage={artist.featured_image}
                   rating={Number(artist.rating) || 0}
                   reviews={artist.total_reviews || 0}
-                  specialty={artist.bio?.split(".")[0] || "Makeup Artist"}
-                  price={0} // Will be fetched from services
+                  specialty="Make-Up Artist"
+                  price={0}
                   location={artist.profile?.location || artist.studio_address || "Location TBD"}
+                  tagline={artist.bio?.split(".")[0] || undefined}
                 />
               </div>
             ))
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="col-span-2 text-center py-8 text-muted-foreground">
               <p>No artists available yet</p>
             </div>
           )}
