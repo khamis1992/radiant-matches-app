@@ -1,12 +1,19 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Star, MapPin, Clock, DollarSign } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Clock, DollarSign, ArrowUpDown } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useArtistsByCategory } from "@/hooks/useArtists";
-import { useServicesByCategory } from "@/hooks/useServices";
+import { useServicesByCategory, ServiceWithArtist } from "@/hooks/useServices";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import categoryMakeup from "@/assets/category-makeup.jpg";
@@ -63,12 +70,36 @@ const categories = [
   },
 ];
 
+type SortOption = "price-low" | "price-high" | "rating" | "duration-short" | "duration-long";
+
 const Categories = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"services" | "artists">("services");
+  const [sortBy, setSortBy] = useState<SortOption>("price-low");
   const { data: artists, isLoading: artistsLoading } = useArtistsByCategory(selectedCategory);
   const { data: services, isLoading: servicesLoading } = useServicesByCategory(selectedCategory);
+
+  const sortedServices = useMemo(() => {
+    if (!services) return [];
+    
+    return [...services].sort((a, b) => {
+      switch (sortBy) {
+        case "price-low":
+          return a.price - b.price;
+        case "price-high":
+          return b.price - a.price;
+        case "rating":
+          return (b.artist?.rating || 0) - (a.artist?.rating || 0);
+        case "duration-short":
+          return a.duration_minutes - b.duration_minutes;
+        case "duration-long":
+          return b.duration_minutes - a.duration_minutes;
+        default:
+          return 0;
+      }
+    });
+  }, [services, sortBy]);
 
   const handleCategoryClick = (categoryId: string) => {
     if (selectedCategory === categoryId) {
@@ -76,6 +107,7 @@ const Categories = () => {
     } else {
       setSelectedCategory(categoryId);
       setActiveTab("services");
+      setSortBy("price-low");
     }
   };
 
@@ -154,15 +186,37 @@ const Categories = () => {
 
               {/* Services Tab */}
               <TabsContent value="services" className="mt-0">
+                {/* Sort Options */}
+                {services && services.length > 0 && (
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm text-muted-foreground">
+                      {sortedServices.length} services
+                    </span>
+                    <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                      <SelectTrigger className="w-[160px] h-9">
+                        <ArrowUpDown className="w-3.5 h-3.5 mr-2" />
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="price-low">Price: Low to High</SelectItem>
+                        <SelectItem value="price-high">Price: High to Low</SelectItem>
+                        <SelectItem value="rating">Highest Rated</SelectItem>
+                        <SelectItem value="duration-short">Duration: Shortest</SelectItem>
+                        <SelectItem value="duration-long">Duration: Longest</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 {servicesLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3].map((i) => (
                       <Skeleton key={i} className="h-28 w-full rounded-xl" />
                     ))}
                   </div>
-                ) : services && services.length > 0 ? (
+                ) : sortedServices.length > 0 ? (
                   <div className="space-y-3">
-                    {services.map((service) => (
+                    {sortedServices.map((service) => (
                       <div
                         key={service.id}
                         onClick={() => navigate(`/artist/${service.artist_id}`)}
