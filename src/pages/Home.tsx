@@ -70,15 +70,24 @@ const Home = () => {
 
       {/* Categories */}
       <section className="px-5 py-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">
-          Browse by Category
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-foreground">
+            Browse by Category
+          </h2>
+          <button 
+            onClick={() => navigate("/categories")}
+            className="text-sm text-primary font-medium hover:underline"
+          >
+            See All
+          </button>
+        </div>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
           {categories.map((category) => (
             <CategoryCard
               key={category.name}
               name={category.name}
               image={category.image}
+              onClick={() => navigate("/categories")}
             />
           ))}
         </div>
