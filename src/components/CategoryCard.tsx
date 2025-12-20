@@ -1,22 +1,23 @@
+import { LucideIcon } from "lucide-react";
+
 interface CategoryCardProps {
   name: string;
-  image: string;
+  icon: LucideIcon;
+  color: string;
   onClick?: () => void;
 }
 
-const CategoryCard = ({ name, image, onClick }: CategoryCardProps) => {
+const CategoryCard = ({ name, icon: Icon, color, onClick }: CategoryCardProps) => {
   return (
     <button
       onClick={onClick}
-      className="relative flex-shrink-0 w-24 group"
+      className="relative flex-shrink-0 w-20 group"
     >
-      <div className="relative w-20 h-20 mx-auto overflow-hidden rounded-2xl shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
+      <div 
+        className="relative w-16 h-16 mx-auto overflow-hidden rounded-2xl shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 flex items-center justify-center"
+        style={{ backgroundColor: color }}
+      >
+        <Icon className="w-7 h-7 text-white" />
       </div>
       <p className="mt-2 text-xs font-medium text-center text-foreground truncate">
         {name}
