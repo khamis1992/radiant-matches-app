@@ -99,23 +99,52 @@ const Onboarding = () => {
 
         {/* Buttons */}
         <div className="mt-auto pt-8 space-y-3">
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={handleNext}
-          >
-            {currentSlide === slides.length - 1 ? "Get Started" : "Next"}
-            <ChevronRight className="w-5 h-5 ml-1" />
-          </Button>
-          {currentSlide < slides.length - 1 && (
-            <Button
-              variant="ghost"
-              size="lg"
-              className="w-full text-muted-foreground"
-              onClick={handleSkip}
-            >
-              Skip
-            </Button>
+          {currentSlide === slides.length - 1 ? (
+            <>
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => navigate("/auth")}
+              >
+                Create Account
+                <ChevronRight className="w-5 h-5 ml-1" />
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full"
+                onClick={() => navigate("/auth")}
+              >
+                Sign In
+              </Button>
+              <Button
+                variant="ghost"
+                size="lg"
+                className="w-full text-muted-foreground"
+                onClick={() => navigate("/home")}
+              >
+                Continue as Guest
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={handleNext}
+              >
+                Next
+                <ChevronRight className="w-5 h-5 ml-1" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="lg"
+                className="w-full text-muted-foreground"
+                onClick={handleSkip}
+              >
+                Skip
+              </Button>
+            </>
           )}
         </div>
       </div>
