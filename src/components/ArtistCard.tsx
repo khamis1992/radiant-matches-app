@@ -1,8 +1,8 @@
-import { Star, MapPin, Heart } from "lucide-react";
+import { Star, MapPin } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { useState } from "react";
+import { FavoriteButton } from "./FavoriteButton";
 
 interface ArtistCardProps {
   id: string;
@@ -30,14 +30,7 @@ const ArtistCard = ({
   tagline,
   categories = [],
 }: ArtistCardProps) => {
-  const [isFavorite, setIsFavorite] = useState(false);
   const coverImage = featuredImage || image;
-
-  const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsFavorite(!isFavorite);
-  };
 
   return (
     <Link to={`/artist/${id}`} className="block">
@@ -50,18 +43,13 @@ const ArtistCard = ({
             className="w-full h-full object-cover"
           />
           {/* Favorite Button */}
-          <button
-            onClick={handleFavoriteClick}
-            className="absolute top-3 right-3 p-1.5 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card transition-colors"
-          >
-            <Heart
-              className={`w-5 h-5 transition-colors ${
-                isFavorite
-                  ? "fill-[hsl(350,70%,65%)] text-[hsl(350,70%,65%)]"
-                  : "text-muted-foreground"
-              }`}
+          <div className="absolute top-3 right-3">
+            <FavoriteButton
+              itemType="artist"
+              itemId={id}
+              className="bg-card/80 backdrop-blur-sm hover:bg-card"
             />
-          </button>
+          </div>
         </div>
 
         {/* Avatar - overlapping cover */}
