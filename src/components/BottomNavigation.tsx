@@ -6,7 +6,6 @@ interface NavItem {
   icon: LucideIcon;
   label: string;
   path: string;
-  hash?: string;
 }
 
 const customerNavItems: NavItem[] = [
@@ -18,9 +17,9 @@ const customerNavItems: NavItem[] = [
 
 const artistNavItems: NavItem[] = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/artist-dashboard" },
-  { icon: Calendar, label: "Bookings", path: "/artist-dashboard", hash: "bookings" },
-  { icon: Palette, label: "Services", path: "/artist-dashboard", hash: "services" },
-  { icon: User, label: "Profile", path: "/artist-dashboard", hash: "profile" },
+  { icon: Calendar, label: "Bookings", path: "/artist-bookings" },
+  { icon: Palette, label: "Services", path: "/artist-services" },
+  { icon: User, label: "Profile", path: "/artist-profile" },
 ];
 
 const BottomNavigation = () => {
@@ -33,15 +32,12 @@ const BottomNavigation = () => {
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg animate-slide-in-bottom">
       <div className="flex items-center justify-around h-16 max-w-md mx-auto px-4">
         {navItems.map((item, index) => {
-          const fullPath = item.hash ? `${item.path}#${item.hash}` : item.path;
-          const isActive = item.hash 
-            ? location.pathname === item.path && location.hash === `#${item.hash}`
-            : location.pathname === item.path && !location.hash;
+          const isActive = location.pathname === item.path;
           
           return (
             <Link
               key={`${item.path}-${index}`}
-              to={fullPath}
+              to={item.path}
               className={`flex flex-col items-center justify-center gap-1 py-2 px-4 rounded-xl transition-all duration-300 ${
                 isActive
                   ? "text-primary bg-primary/10"
