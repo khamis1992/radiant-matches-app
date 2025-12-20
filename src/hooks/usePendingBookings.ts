@@ -1,11 +1,37 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useUserRole } from "./useUserRole";
+import { useEffect } from "react";
 
 export const usePendingBookingsCount = () => {
   const { user } = useAuth();
   const { isArtist } = useUserRole();
+  const queryClient = useQueryClient();
+
+  // Set up real-time subscription for pending bookings count
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('pending-bookings-count-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["pending-bookings-count"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   return useQuery({
     queryKey: ["pending-bookings-count", user?.id, isArtist],
@@ -43,6 +69,5 @@ export const usePendingBookingsCount = () => {
       }
     },
     enabled: !!user?.id,
-    refetchInterval: 30000, // Refetch every 30 seconds
   });
 };
