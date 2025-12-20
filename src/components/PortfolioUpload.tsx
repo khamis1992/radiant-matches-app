@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw, Undo2, Redo2, RotateCcw } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw, Undo2, Redo2, RotateCcw, LayoutGrid, List } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import ImageLightbox from "@/components/ImageLightbox";
 import ImageCropper from "@/components/ImageCropper";
@@ -214,6 +214,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const [pendingLightboxIndex, setPendingLightboxIndex] = useState(0);
   const [isDragOver, setIsDragOver] = useState(false);
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
@@ -825,9 +826,31 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
       }}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              Upload {pendingUploads.length} Image{pendingUploads.length > 1 ? 's' : ''}
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>
+                Upload {pendingUploads.length} Image{pendingUploads.length > 1 ? 's' : ''}
+              </DialogTitle>
+              <div className="flex gap-1">
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setViewMode("list")}
+                  title="List view"
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setViewMode("grid")}
+                  title="Grid view"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             {/* Bulk actions */}
@@ -934,177 +957,280 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
               );
             })()}
             
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handlePendingDragEnd}
-            >
-              <SortableContext
-                items={pendingUploads.map(item => item.id)}
-                strategy={rectSortingStrategy}
+            {viewMode === "grid" ? (
+              /* Grid View */
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handlePendingDragEnd}
               >
-                {pendingUploads.map((item, index) => {
-                  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
-                  const style = {
-                    transform: CSS.Transform.toString(transform),
-                    transition,
-                    opacity: isDragging ? 0.5 : 1,
-                    zIndex: isDragging ? 10 : 1,
-                  };
-                  
-                  return (
-                    <div 
-                      key={item.id}
-                      ref={setNodeRef}
-                      style={style}
-                      className={`flex gap-3 p-3 border rounded-lg ${item.isFeatured ? 'border-primary bg-primary/5' : 'border-border'}`}
-                    >
-                      {/* Drag Handle */}
-                      <button
-                        {...attributes}
-                        {...listeners}
-                        className="flex items-center justify-center p-1 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
-                        disabled={uploading}
-                      >
-                        <GripVertical className="w-5 h-5" />
-                      </button>
-                      <div className="relative w-20 h-20 flex-shrink-0">
-                        <img
-                          src={item.croppedPreview || item.preview}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-full object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => {
-                            setPendingLightboxIndex(index);
-                            setPendingLightboxOpen(true);
-                          }}
-                        />
-                        {item.isFeatured && (
-                          <div className="absolute top-0 left-0 right-0 flex justify-center">
-                            <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 gap-1 -mt-2">
-                              <Star className="w-3 h-3 fill-current" />
-                              Featured
-                            </Badge>
-                          </div>
-                        )}
-                        {item.historyIndex > 0 && (
-                          <div className="absolute bottom-1 left-1">
+                <SortableContext
+                  items={pendingUploads.map(item => item.id)}
+                  strategy={rectSortingStrategy}
+                >
+                  <div className="grid grid-cols-3 gap-2">
+                    {pendingUploads.map((item, index) => {
+                      const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+                      const style = {
+                        transform: CSS.Transform.toString(transform),
+                        transition,
+                        opacity: isDragging ? 0.5 : 1,
+                        zIndex: isDragging ? 10 : 1,
+                      };
+                      
+                      return (
+                        <div
+                          key={item.id}
+                          ref={setNodeRef}
+                          style={style}
+                          className={`relative aspect-square group rounded-lg overflow-hidden ${item.isFeatured ? 'ring-2 ring-primary' : ''}`}
+                        >
+                          <img
+                            src={item.croppedPreview || item.preview}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-full object-cover cursor-pointer"
+                            onClick={() => {
+                              setPendingLightboxIndex(index);
+                              setPendingLightboxOpen(true);
+                            }}
+                          />
+                          {/* Drag Handle */}
+                          <button
+                            {...attributes}
+                            {...listeners}
+                            className="absolute top-1 left-1 p-1 bg-background/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+                            disabled={uploading}
+                          >
+                            <GripVertical className="w-4 h-4 text-foreground" />
+                          </button>
+                          {/* Remove Button */}
+                          <button
+                            onClick={() => handleRemoveFromBatch(index)}
+                            className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            disabled={uploading}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          {/* Badges */}
+                          {item.isFeatured && (
+                            <div className="absolute top-1 left-1/2 -translate-x-1/2">
+                              <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 gap-1">
+                                <Star className="w-3 h-3 fill-current" />
+                              </Badge>
+                            </div>
+                          )}
+                          {item.historyIndex > 0 && (
+                            <div className="absolute bottom-1 left-1">
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+                                Edited
+                              </Badge>
+                            </div>
+                          )}
+                          {/* Category Badge */}
+                          <div className="absolute bottom-1 right-1">
                             <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
-                              Edited
+                              {item.category}
                             </Badge>
                           </div>
-                        )}
+                          {/* Quick Actions on Hover */}
+                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => handleRotateImage(index)}
+                              className="p-1 bg-background/80 backdrop-blur-sm rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
+                              disabled={uploading}
+                              title="Rotate"
+                            >
+                              <RotateCw className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => handleCropImage(index)}
+                              className="p-1 bg-background/80 backdrop-blur-sm rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
+                              disabled={uploading}
+                              title="Crop"
+                            >
+                              <Crop className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            ) : (
+              /* List View */
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handlePendingDragEnd}
+              >
+                <SortableContext
+                  items={pendingUploads.map(item => item.id)}
+                  strategy={rectSortingStrategy}
+                >
+                  {pendingUploads.map((item, index) => {
+                    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+                    const style = {
+                      transform: CSS.Transform.toString(transform),
+                      transition,
+                      opacity: isDragging ? 0.5 : 1,
+                      zIndex: isDragging ? 10 : 1,
+                    };
+                    
+                    return (
+                      <div 
+                        key={item.id}
+                        ref={setNodeRef}
+                        style={style}
+                        className={`flex gap-3 p-3 border rounded-lg ${item.isFeatured ? 'border-primary bg-primary/5' : 'border-border'}`}
+                      >
+                        {/* Drag Handle */}
                         <button
-                          onClick={() => handleRemoveFromBatch(index)}
-                          className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full"
+                          {...attributes}
+                          {...listeners}
+                          className="flex items-center justify-center p-1 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
                           disabled={uploading}
                         >
-                          <X className="w-3 h-3" />
+                          <GripVertical className="w-5 h-5" />
                         </button>
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex gap-2">
-                          <Input
-                            value={item.title}
-                            onChange={(e) => handleUpdatePendingItem(index, { title: e.target.value })}
-                            placeholder="Title (optional)"
-                            className="text-sm"
-                            disabled={uploading}
-                          />
-                          <Button
-                            variant={item.isFeatured ? "default" : "outline"}
-                            size="icon"
+                        <div className="relative w-20 h-20 flex-shrink-0">
+                          <img
+                            src={item.croppedPreview || item.preview}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-full object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={() => {
-                              setPendingUploads(prev => prev.map((p, idx) => ({
-                                ...p,
-                                isFeatured: idx === index ? !p.isFeatured : false
-                              })));
+                              setPendingLightboxIndex(index);
+                              setPendingLightboxOpen(true);
                             }}
+                          />
+                          {item.isFeatured && (
+                            <div className="absolute top-0 left-0 right-0 flex justify-center">
+                              <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 gap-1 -mt-2">
+                                <Star className="w-3 h-3 fill-current" />
+                                Featured
+                              </Badge>
+                            </div>
+                          )}
+                          {item.historyIndex > 0 && (
+                            <div className="absolute bottom-1 left-1">
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+                                Edited
+                              </Badge>
+                            </div>
+                          )}
+                          <button
+                            onClick={() => handleRemoveFromBatch(index)}
+                            className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full"
                             disabled={uploading}
-                            title={item.isFeatured ? "Remove featured" : "Set as featured"}
                           >
-                            <Star className={`w-4 h-4 ${item.isFeatured ? 'fill-current' : ''}`} />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleUndo(index)}
-                            disabled={uploading || item.historyIndex <= 0}
-                            title="Undo"
-                          >
-                            <Undo2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleRedo(index)}
-                            disabled={uploading || item.historyIndex >= item.editHistory.length - 1}
-                            title="Redo"
-                          >
-                            <Redo2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleReset(index)}
-                            disabled={uploading || item.historyIndex === 0}
-                            title="Reset to original"
-                          >
-                            <RotateCcw className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleRotateImage(index)}
-                            disabled={uploading}
-                            title="Rotate image"
-                          >
-                            <RotateCw className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleCropImage(index)}
-                            disabled={uploading}
-                            title="Crop image"
-                          >
-                            <Crop className="w-4 h-4" />
-                          </Button>
+                            <X className="w-3 h-3" />
+                          </button>
                         </div>
-                        <div className="flex gap-2 items-center">
-                          <Select 
-                            value={item.category} 
-                            onValueChange={(v) => handleUpdatePendingItem(index, { category: v as PortfolioCategory })}
-                            disabled={uploading}
-                          >
-                            <SelectTrigger className="text-sm flex-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {PORTFOLIO_CATEGORIES.map((cat) => (
-                                <SelectItem key={cat} value={cat}>
-                                  {cat}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {item.originalSize !== item.compressedSize ? (
-                              <>
-                                <span className="line-through">{formatFileSize(item.originalSize)}</span>
-                                {" → "}
-                                <span className="text-primary font-medium">{formatFileSize(item.compressedSize)}</span>
-                              </>
-                            ) : (
-                              formatFileSize(item.compressedSize)
-                            )}
-                          </span>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex gap-2">
+                            <Input
+                              value={item.title}
+                              onChange={(e) => handleUpdatePendingItem(index, { title: e.target.value })}
+                              placeholder="Title (optional)"
+                              className="text-sm"
+                              disabled={uploading}
+                            />
+                            <Button
+                              variant={item.isFeatured ? "default" : "outline"}
+                              size="icon"
+                              onClick={() => {
+                                setPendingUploads(prev => prev.map((p, idx) => ({
+                                  ...p,
+                                  isFeatured: idx === index ? !p.isFeatured : false
+                                })));
+                              }}
+                              disabled={uploading}
+                              title={item.isFeatured ? "Remove featured" : "Set as featured"}
+                            >
+                              <Star className={`w-4 h-4 ${item.isFeatured ? 'fill-current' : ''}`} />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleUndo(index)}
+                              disabled={uploading || item.historyIndex <= 0}
+                              title="Undo"
+                            >
+                              <Undo2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleRedo(index)}
+                              disabled={uploading || item.historyIndex >= item.editHistory.length - 1}
+                              title="Redo"
+                            >
+                              <Redo2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleReset(index)}
+                              disabled={uploading || item.historyIndex === 0}
+                              title="Reset to original"
+                            >
+                              <RotateCcw className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleRotateImage(index)}
+                              disabled={uploading}
+                              title="Rotate image"
+                            >
+                              <RotateCw className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleCropImage(index)}
+                              disabled={uploading}
+                              title="Crop image"
+                            >
+                              <Crop className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="flex gap-2 items-center">
+                            <Select 
+                              value={item.category} 
+                              onValueChange={(v) => handleUpdatePendingItem(index, { category: v as PortfolioCategory })}
+                              disabled={uploading}
+                            >
+                              <SelectTrigger className="text-sm flex-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {PORTFOLIO_CATEGORIES.map((cat) => (
+                                  <SelectItem key={cat} value={cat}>
+                                    {cat}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {item.originalSize !== item.compressedSize ? (
+                                <>
+                                  <span className="line-through">{formatFileSize(item.originalSize)}</span>
+                                  {" → "}
+                                  <span className="text-primary font-medium">{formatFileSize(item.compressedSize)}</span>
+                                </>
+                              ) : (
+                                formatFileSize(item.compressedSize)
+                              )}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </SortableContext>
-            </DndContext>
+                    );
+                  })}
+                </SortableContext>
+              </DndContext>
+            )}
             
             {/* Compression Savings Summary */}
             {pendingUploads.length > 0 && (() => {
