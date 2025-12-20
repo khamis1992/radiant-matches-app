@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Sparkles, Scissors, Hand, Eye, Palette, Heart, Camera } from "lucide-react";
+import { Bell } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
 import ArtistCard from "@/components/ArtistCard";
@@ -11,15 +11,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import logoImage from "@/assets/logo.png";
 import artist1 from "@/assets/artist-1.jpg";
+import categoryMakeup from "@/assets/category-makeup.jpg";
+import categoryHairstyling from "@/assets/category-hairstyling.jpg";
+import categoryHenna from "@/assets/category-henna.jpg";
+import categoryLashes from "@/assets/category-lashes.jpg";
+import categoryNails from "@/assets/category-nails.jpg";
+import categoryBridal from "@/assets/category-bridal.jpg";
+import categoryPhotoshoot from "@/assets/category-photoshoot.jpg";
 
 const categories = [
-  { name: "Makeup", icon: Sparkles, color: "hsl(350, 70%, 65%)" },
-  { name: "Hair Styling", icon: Scissors, color: "hsl(280, 60%, 55%)" },
-  { name: "Henna", icon: Hand, color: "hsl(25, 70%, 50%)" },
-  { name: "Lashes & Brows", icon: Eye, color: "hsl(200, 60%, 50%)" },
-  { name: "Nails", icon: Palette, color: "hsl(330, 65%, 55%)" },
-  { name: "Bridal", icon: Heart, color: "hsl(350, 60%, 60%)" },
-  { name: "Photoshoot", icon: Camera, color: "hsl(45, 70%, 50%)" },
+  { name: "Makeup", image: categoryMakeup },
+  { name: "Hair Styling", image: categoryHairstyling },
+  { name: "Henna", image: categoryHenna },
+  { name: "Lashes & Brows", image: categoryLashes },
+  { name: "Nails", image: categoryNails },
+  { name: "Bridal", image: categoryBridal },
+  { name: "Photoshoot", image: categoryPhotoshoot },
 ];
 
 const Home = () => {
@@ -71,8 +78,7 @@ const Home = () => {
             <CategoryCard
               key={category.name}
               name={category.name}
-              icon={category.icon}
-              color={category.color}
+              image={category.image}
             />
           ))}
         </div>
