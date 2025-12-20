@@ -3,6 +3,8 @@ import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
 import ArtistCard from "@/components/ArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
+import { useArtists } from "@/hooks/useArtists";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import categoryBridal from "@/assets/category-bridal.jpg";
 import categoryParty from "@/assets/category-party.jpg";
@@ -10,8 +12,6 @@ import categoryPhotoshoot from "@/assets/category-photoshoot.jpg";
 import categoryNatural from "@/assets/category-natural.jpg";
 
 import artist1 from "@/assets/artist-1.jpg";
-import artist2 from "@/assets/artist-2.jpg";
-import artist3 from "@/assets/artist-3.jpg";
 
 const categories = [
   { name: "Bridal", image: categoryBridal },
@@ -20,40 +20,9 @@ const categories = [
   { name: "Natural", image: categoryNatural },
 ];
 
-const featuredArtists = [
-  {
-    id: "1",
-    name: "Sofia Chen",
-    image: artist1,
-    rating: 4.9,
-    reviews: 127,
-    specialty: "Bridal & Wedding",
-    price: 150,
-    location: "Manhattan, NY",
-  },
-  {
-    id: "2",
-    name: "Elena Rodriguez",
-    image: artist2,
-    rating: 4.8,
-    reviews: 98,
-    specialty: "Party & Events",
-    price: 120,
-    location: "Brooklyn, NY",
-  },
-  {
-    id: "3",
-    name: "Mia Thompson",
-    image: artist3,
-    rating: 4.7,
-    reviews: 85,
-    specialty: "Natural & Everyday",
-    price: 85,
-    location: "Queens, NY",
-  },
-];
-
 const Home = () => {
+  const { data: artists, isLoading } = useArtists();
+
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
@@ -102,15 +71,43 @@ const Home = () => {
           </button>
         </div>
         <div className="grid gap-4">
-          {featuredArtists.map((artist, index) => (
-            <div
-              key={artist.id}
-              className="animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <ArtistCard {...artist} />
+          {isLoading ? (
+            <>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-card rounded-2xl overflow-hidden shadow-md">
+                  <Skeleton className="h-48 w-full" />
+                  <div className="p-4 space-y-2">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : artists && artists.length > 0 ? (
+            artists.map((artist, index) => (
+              <div
+                key={artist.id}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <ArtistCard
+                  id={artist.id}
+                  name={artist.profile?.full_name || "Unknown Artist"}
+                  image={artist.profile?.avatar_url || artist1}
+                  rating={Number(artist.rating) || 0}
+                  reviews={artist.total_reviews || 0}
+                  specialty={artist.bio?.split(".")[0] || "Makeup Artist"}
+                  price={0} // Will be fetched from services
+                  location={artist.profile?.location || artist.studio_address || "Location TBD"}
+                />
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No artists available yet</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
 

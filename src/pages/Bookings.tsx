@@ -1,39 +1,72 @@
 import BottomNavigation from "@/components/BottomNavigation";
 import { Calendar, Clock, MapPin, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useUserBookings } from "@/hooks/useBookings";
+import { useAuth } from "@/hooks/useAuth";
+import { format } from "date-fns";
+import { Link } from "react-router-dom";
 
 import artist1 from "@/assets/artist-1.jpg";
-import artist2 from "@/assets/artist-2.jpg";
-
-const upcomingBookings = [
-  {
-    id: "1",
-    artist: "Sofia Chen",
-    artistImage: artist1,
-    service: "Bridal Makeup",
-    date: "Dec 28, 2025",
-    time: "10:00 AM",
-    location: "Artist's Studio",
-    status: "confirmed",
-    price: 350,
-  },
-];
-
-const pastBookings = [
-  {
-    id: "2",
-    artist: "Elena Rodriguez",
-    artistImage: artist2,
-    service: "Party Glam",
-    date: "Dec 15, 2025",
-    time: "6:00 PM",
-    location: "Your Location",
-    status: "completed",
-    price: 120,
-  },
-];
 
 const Bookings = () => {
+  const { user, loading: authLoading } = useAuth();
+  const { data: bookings, isLoading } = useUserBookings();
+
+  if (authLoading || isLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
+          <h1 className="text-xl font-bold text-foreground">My Bookings</h1>
+        </header>
+        <div className="px-5 py-6 space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-40 w-full rounded-2xl" />
+          ))}
+        </div>
+        <BottomNavigation />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
+          <h1 className="text-xl font-bold text-foreground">My Bookings</h1>
+        </header>
+        <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
+          <Calendar className="w-16 h-16 text-muted-foreground mb-4" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">Sign in to view bookings</h2>
+          <p className="text-muted-foreground mb-6">You need to be logged in to see your bookings</p>
+          <Link to="/">
+            <Button>Sign In</Button>
+          </Link>
+        </div>
+        <BottomNavigation />
+      </div>
+    );
+  }
+
+  const { upcoming = [], past = [] } = bookings || {};
+
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(":");
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes));
+    return format(date, "h:mm a");
+  };
+
+  const getStatusBadge = (status: string) => {
+    const styles: Record<string, string> = {
+      pending: "bg-yellow-500/10 text-yellow-600",
+      confirmed: "bg-primary/10 text-primary",
+      completed: "bg-muted text-muted-foreground",
+      cancelled: "bg-destructive/10 text-destructive",
+    };
+    return styles[status] || styles.pending;
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
@@ -44,40 +77,44 @@ const Bookings = () => {
         {/* Upcoming */}
         <section className="mb-8">
           <h2 className="text-lg font-semibold text-foreground mb-4">Upcoming</h2>
-          {upcomingBookings.length > 0 ? (
+          {upcoming.length > 0 ? (
             <div className="space-y-4">
-              {upcomingBookings.map((booking) => (
+              {upcoming.map((booking) => (
                 <div
                   key={booking.id}
                   className="bg-card rounded-2xl border border-border p-4 shadow-sm"
                 >
                   <div className="flex items-start gap-3">
                     <img
-                      src={booking.artistImage}
-                      alt={booking.artist}
+                      src={booking.artist?.profile?.avatar_url || artist1}
+                      alt={booking.artist?.profile?.full_name || "Artist"}
                       className="w-14 h-14 rounded-full object-cover"
                     />
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-foreground">{booking.artist}</h3>
-                        <span className="px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full">
-                          Confirmed
+                        <h3 className="font-semibold text-foreground">
+                          {booking.artist?.profile?.full_name || "Unknown Artist"}
+                        </h3>
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full capitalize ${getStatusBadge(booking.status)}`}>
+                          {booking.status}
                         </span>
                       </div>
-                      <p className="text-sm text-primary mt-0.5">{booking.service}</p>
+                      <p className="text-sm text-primary mt-0.5">
+                        {booking.service?.name || "Service"}
+                      </p>
                       <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3.5 h-3.5" />
-                          <span>{booking.date}</span>
+                          <span>{format(new Date(booking.booking_date), "MMM d, yyyy")}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5" />
-                          <span>{booking.time}</span>
+                          <span>{formatTime(booking.booking_time)}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
                         <MapPin className="w-3.5 h-3.5" />
-                        <span>{booking.location}</span>
+                        <span>{booking.location_address || booking.location_type}</span>
                       </div>
                     </div>
                   </div>
@@ -104,49 +141,61 @@ const Bookings = () => {
         {/* Past */}
         <section>
           <h2 className="text-lg font-semibold text-foreground mb-4">Past</h2>
-          <div className="space-y-4">
-            {pastBookings.map((booking) => (
-              <div
-                key={booking.id}
-                className="bg-card rounded-2xl border border-border p-4 shadow-sm opacity-80"
-              >
-                <div className="flex items-start gap-3">
-                  <img
-                    src={booking.artistImage}
-                    alt={booking.artist}
-                    className="w-14 h-14 rounded-full object-cover grayscale"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-foreground">{booking.artist}</h3>
-                      <span className="px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded-full">
-                        Completed
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-0.5">{booking.service}</p>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>{booking.date}</span>
+          {past.length > 0 ? (
+            <div className="space-y-4">
+              {past.map((booking) => (
+                <div
+                  key={booking.id}
+                  className="bg-card rounded-2xl border border-border p-4 shadow-sm opacity-80"
+                >
+                  <div className="flex items-start gap-3">
+                    <img
+                      src={booking.artist?.profile?.avatar_url || artist1}
+                      alt={booking.artist?.profile?.full_name || "Artist"}
+                      className="w-14 h-14 rounded-full object-cover grayscale"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-foreground">
+                          {booking.artist?.profile?.full_name || "Unknown Artist"}
+                        </h3>
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full capitalize ${getStatusBadge(booking.status)}`}>
+                          {booking.status}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{booking.time}</span>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        {booking.service?.name || "Service"}
+                      </p>
+                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>{format(new Date(booking.booking_date), "MMM d, yyyy")}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>{formatTime(booking.booking_time)}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
+                  <div className="flex gap-2 mt-4 pt-4 border-t border-border">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      Leave Review
+                    </Button>
+                    <Link to={`/artist/${booking.artist?.id}`} className="flex-1">
+                      <Button variant="soft" size="sm" className="w-full">
+                        Book Again
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-                <div className="flex gap-2 mt-4 pt-4 border-t border-border">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    Leave Review
-                  </Button>
-                  <Button variant="soft" size="sm" className="flex-1">
-                    Book Again
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No past bookings</p>
+            </div>
+          )}
         </section>
       </div>
 
