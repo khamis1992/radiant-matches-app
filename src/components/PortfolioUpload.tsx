@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, FileDown } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import ImageLightbox from "@/components/ImageLightbox";
 import ImageCropper from "@/components/ImageCropper";
 import { Button } from "@/components/ui/button";
@@ -766,6 +767,23 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
               </div>
             ))}
             
+            {uploading && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Uploading {uploadProgress.current} of {uploadProgress.total}...
+                  </span>
+                  <span className="font-medium">
+                    {Math.round((uploadProgress.current / uploadProgress.total) * 100)}%
+                  </span>
+                </div>
+                <Progress 
+                  value={(uploadProgress.current / uploadProgress.total) * 100} 
+                  className="h-2"
+                />
+              </div>
+            )}
+            
             <Button 
               className="w-full" 
               onClick={handleBatchUpload} 
@@ -774,7 +792,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
               {uploading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Uploading {uploadProgress.current}/{uploadProgress.total}...
+                  Uploading...
                 </>
               ) : (
                 `Upload ${pendingUploads.length} Image${pendingUploads.length > 1 ? 's' : ''}`
