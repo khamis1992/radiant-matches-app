@@ -23,16 +23,20 @@ export const useUserRole = () => {
         const { data, error } = await supabase
           .from("user_roles")
           .select("role")
-          .eq("user_id", user.id)
-          .single();
+          .eq("user_id", user.id);
 
-        if (error && error.code !== "PGRST116") {
+        if (error) {
           console.error("Error fetching user role:", error);
         }
 
-        const userRole = data?.role as AppRole | undefined;
-        setRole(userRole || "customer");
-        setIsArtist(userRole === "artist");
+        const roles = (data || []).map((r) => r.role as AppRole);
+        const hasArtistRole = roles.includes("artist");
+        const hasAdminRole = roles.includes("admin");
+        
+        // Priority: admin > artist > customer
+        const primaryRole = hasAdminRole ? "admin" : hasArtistRole ? "artist" : "customer";
+        setRole(primaryRole);
+        setIsArtist(hasArtistRole);
       } catch (error) {
         console.error("Error fetching user role:", error);
         setRole("customer");
