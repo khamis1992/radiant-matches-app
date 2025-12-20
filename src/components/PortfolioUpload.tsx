@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
 import ImageCropper from "@/components/ImageCropper";
 import { Button } from "@/components/ui/button";
@@ -186,7 +186,9 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -225,8 +227,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     }
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
+  const processFiles = useCallback((files: File[]) => {
     if (files.length === 0) return;
 
     const validFiles: PendingUpload[] = [];
@@ -260,11 +261,41 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     } else {
       setBatchDialogOpen(true);
     }
+  }, []);
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    processFiles(files);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
+
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    processFiles(files);
+  }, [processFiles]);
+
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Only set to false if we're leaving the drop zone entirely
+    if (dropZoneRef.current && !dropZoneRef.current.contains(e.relatedTarget as Node)) {
+      setIsDragOver(false);
+    }
+  }, []);
 
   const handleCropComplete = (croppedBlob: Blob) => {
     if (currentCropIndex === null) return;
@@ -494,39 +525,67 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         </div>
       )}
 
-      {filteredItems.length > 0 ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext items={filteredItems.map(i => i.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-3 gap-2">
-              {filteredItems.map((item, index) => (
-                <SortableImage
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  onEdit={openEditDialog}
-                  onDelete={handleDelete}
-                  onSetFeatured={handleSetFeatured}
-                  onView={(idx) => {
-                    setLightboxIndex(idx);
-                    setLightboxOpen(true);
-                  }}
-                  isDeleting={deletingId === item.id}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-border rounded-xl text-muted-foreground">
-          <ImageIcon className="w-10 h-10 mb-2 opacity-50" />
-          <p className="text-sm">No portfolio images yet</p>
-          <p className="text-xs mt-1">Add photos to showcase your work</p>
-        </div>
-      )}
+      {/* Drop Zone */}
+      <div
+        ref={dropZoneRef}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className={`relative rounded-xl transition-all ${
+          isDragOver 
+            ? "ring-2 ring-primary ring-offset-2 ring-offset-background" 
+            : ""
+        }`}
+      >
+        {/* Drag overlay */}
+        {isDragOver && (
+          <div className="absolute inset-0 bg-primary/10 backdrop-blur-sm rounded-xl z-10 flex flex-col items-center justify-center border-2 border-dashed border-primary">
+            <Upload className="w-10 h-10 text-primary mb-2" />
+            <p className="text-sm font-medium text-primary">Drop images here</p>
+          </div>
+        )}
+
+        {filteredItems.length > 0 ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={filteredItems.map(i => i.id)} strategy={rectSortingStrategy}>
+              <div className="grid grid-cols-3 gap-2">
+                {filteredItems.map((item, index) => (
+                  <SortableImage
+                    key={item.id}
+                    item={item}
+                    index={index}
+                    onEdit={openEditDialog}
+                    onDelete={handleDelete}
+                    onSetFeatured={handleSetFeatured}
+                    onView={(idx) => {
+                      setLightboxIndex(idx);
+                      setLightboxOpen(true);
+                    }}
+                    isDeleting={deletingId === item.id}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        ) : (
+          <div 
+            className={`flex flex-col items-center justify-center py-8 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+              isDragOver 
+                ? "border-primary bg-primary/5" 
+                : "border-border text-muted-foreground hover:border-primary/50"
+            }`}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <ImageIcon className="w-10 h-10 mb-2 opacity-50" />
+            <p className="text-sm">No portfolio images yet</p>
+            <p className="text-xs mt-1">Click or drag photos to upload</p>
+          </div>
+        )}
+      </div>
 
       {/* Lightbox */}
       <ImageLightbox
