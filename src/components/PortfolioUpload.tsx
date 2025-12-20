@@ -1,9 +1,10 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, FileDown } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
 import ImageCropper from "@/components/ImageCropper";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { compressImage, formatFileSize } from "@/lib/imageCompression";
 import { toast } from "sonner";
 import {
   Select,
@@ -167,6 +168,8 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
 
   interface PendingUpload {
     file: File;
+    originalSize: number;
+    compressedSize: number;
     preview: string;
     croppedPreview?: string;
     category: PortfolioCategory;
@@ -227,10 +230,10 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     }
   };
 
-  const processFiles = useCallback((files: File[]) => {
+  const processFiles = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
 
-    const validFiles: PendingUpload[] = [];
+    const validFiles: File[] = [];
     
     for (const file of files) {
       if (!file.type.startsWith("image/")) {
@@ -238,24 +241,66 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         continue;
       }
 
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} is larger than 5MB`);
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`${file.name} is larger than 10MB`);
         continue;
       }
 
-      validFiles.push({
-        file,
-        preview: URL.createObjectURL(file),
-        category: "General",
-        title: "",
-      });
+      validFiles.push(file);
     }
 
     if (validFiles.length === 0) return;
 
-    setPendingUploads(validFiles);
+    // Show compressing toast for multiple files
+    const toastId = validFiles.length > 1 
+      ? toast.loading(`Compressing ${validFiles.length} images...`) 
+      : undefined;
+
+    const pendingItems: PendingUpload[] = [];
+
+    for (const file of validFiles) {
+      try {
+        const originalSize = file.size;
+        const compressedFile = await compressImage(file);
+        
+        pendingItems.push({
+          file: compressedFile,
+          originalSize,
+          compressedSize: compressedFile.size,
+          preview: URL.createObjectURL(compressedFile),
+          category: "General",
+          title: "",
+        });
+      } catch (error) {
+        console.error("Compression error:", error);
+        // Fall back to original file if compression fails
+        pendingItems.push({
+          file,
+          originalSize: file.size,
+          compressedSize: file.size,
+          preview: URL.createObjectURL(file),
+          category: "General",
+          title: "",
+        });
+      }
+    }
+
+    if (toastId) toast.dismiss(toastId);
+
+    if (pendingItems.length === 0) return;
+
+    // Show compression savings summary
+    const totalOriginal = pendingItems.reduce((sum, item) => sum + item.originalSize, 0);
+    const totalCompressed = pendingItems.reduce((sum, item) => sum + item.compressedSize, 0);
+    const savings = totalOriginal - totalCompressed;
     
-    if (validFiles.length === 1) {
+    if (savings > 1024) {
+      toast.success(`Compressed ${pendingItems.length} image${pendingItems.length > 1 ? 's' : ''} (saved ${formatFileSize(savings)})`);
+    }
+
+    setPendingUploads(pendingItems);
+    
+    if (pendingItems.length === 1) {
       setCurrentCropIndex(0);
       setCropDialogOpen(true);
     } else {
