@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Star, MapPin } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Clock, DollarSign } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useArtistsByCategory } from "@/hooks/useArtists";
+import { useServicesByCategory } from "@/hooks/useServices";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import categoryMakeup from "@/assets/category-makeup.jpg";
@@ -64,10 +66,17 @@ const categories = [
 const Categories = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const { data: artists, isLoading } = useArtistsByCategory(selectedCategory);
+  const [activeTab, setActiveTab] = useState<"services" | "artists">("services");
+  const { data: artists, isLoading: artistsLoading } = useArtistsByCategory(selectedCategory);
+  const { data: services, isLoading: servicesLoading } = useServicesByCategory(selectedCategory);
 
   const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategory(selectedCategory === categoryId ? null : categoryId);
+    if (selectedCategory === categoryId) {
+      setSelectedCategory(null);
+    } else {
+      setSelectedCategory(categoryId);
+      setActiveTab("services");
+    }
   };
 
   const selectedCategoryData = categories.find(c => c.id === selectedCategory);
@@ -118,12 +127,12 @@ const Categories = () => {
           ))}
         </div>
 
-        {/* Selected Category Artists */}
+        {/* Selected Category Content */}
         {selectedCategory && (
           <div className="animate-fade-in">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">
-                {selectedCategoryData?.name} Artists
+                {selectedCategoryData?.name}
               </h2>
               <button 
                 onClick={() => setSelectedCategory(null)}
@@ -133,73 +142,155 @@ const Categories = () => {
               </button>
             </div>
 
-            {isLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-24 w-full rounded-xl" />
-                ))}
-              </div>
-            ) : artists && artists.length > 0 ? (
-              <div className="space-y-3">
-                {artists.map((artist) => (
-                  <div
-                    key={artist.id}
-                    onClick={() => navigate(`/artist/${artist.id}`)}
-                    className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-all cursor-pointer"
-                  >
-                    <Avatar className="w-16 h-16 border-2 border-primary/20">
-                      <AvatarImage 
-                        src={artist.profile?.avatar_url || artist1} 
-                        alt={artist.profile?.full_name || "Artist"} 
-                      />
-                      <AvatarFallback>
-                        {artist.profile?.full_name?.charAt(0) || "A"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">
-                        {artist.profile?.full_name || "Unknown Artist"}
-                      </h3>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {selectedCategoryData?.name} Specialist
-                      </p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-3.5 h-3.5 fill-primary text-primary" />
-                          <span className="text-sm font-medium">
-                            {Number(artist.rating).toFixed(1)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            ({artist.total_reviews})
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <MapPin className="w-3 h-3" />
-                          <span className="text-xs truncate">
-                            {artist.profile?.location || "Location TBD"}
-                          </span>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "services" | "artists")}>
+              <TabsList className="w-full mb-4">
+                <TabsTrigger value="services" className="flex-1">
+                  Services ({services?.length || 0})
+                </TabsTrigger>
+                <TabsTrigger value="artists" className="flex-1">
+                  Artists ({artists?.length || 0})
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Services Tab */}
+              <TabsContent value="services" className="mt-0">
+                {servicesLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-28 w-full rounded-xl" />
+                    ))}
+                  </div>
+                ) : services && services.length > 0 ? (
+                  <div className="space-y-3">
+                    {services.map((service) => (
+                      <div
+                        key={service.id}
+                        onClick={() => navigate(`/artist/${service.artist_id}`)}
+                        className="bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                      >
+                        <div className="flex items-start gap-3">
+                          <Avatar className="w-12 h-12 border-2 border-primary/20">
+                            <AvatarImage 
+                              src={service.artist?.profile?.avatar_url || artist1} 
+                              alt={service.artist?.profile?.full_name || "Artist"} 
+                            />
+                            <AvatarFallback>
+                              {service.artist?.profile?.full_name?.charAt(0) || "A"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-foreground">{service.name}</h3>
+                            <p className="text-sm text-muted-foreground truncate">
+                              by {service.artist?.profile?.full_name || "Unknown Artist"}
+                            </p>
+                            {service.description && (
+                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                {service.description}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-4 mt-2">
+                              <div className="flex items-center gap-1 text-sm">
+                                <DollarSign className="w-3.5 h-3.5 text-primary" />
+                                <span className="font-semibold text-foreground">${service.price}</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>{service.duration_minutes} min</span>
+                              </div>
+                              {service.artist?.rating && (
+                                <div className="flex items-center gap-1 text-sm">
+                                  <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+                                  <span>{Number(service.artist.rating).toFixed(1)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <Button size="sm" className="shrink-0">
+                            Book
+                          </Button>
                         </div>
                       </div>
-                    </div>
-                    <Button size="sm" variant="outline">
-                      View
-                    </Button>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No artists available for {selectedCategoryData?.name} yet</p>
-                <p className="text-sm mt-1">Artists need to add services in this category</p>
-              </div>
-            )}
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No services available for {selectedCategoryData?.name} yet</p>
+                    <p className="text-sm mt-1">Artists need to add services in this category</p>
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Artists Tab */}
+              <TabsContent value="artists" className="mt-0">
+                {artistsLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                    ))}
+                  </div>
+                ) : artists && artists.length > 0 ? (
+                  <div className="space-y-3">
+                    {artists.map((artist) => (
+                      <div
+                        key={artist.id}
+                        onClick={() => navigate(`/artist/${artist.id}`)}
+                        className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-all cursor-pointer"
+                      >
+                        <Avatar className="w-16 h-16 border-2 border-primary/20">
+                          <AvatarImage 
+                            src={artist.profile?.avatar_url || artist1} 
+                            alt={artist.profile?.full_name || "Artist"} 
+                          />
+                          <AvatarFallback>
+                            {artist.profile?.full_name?.charAt(0) || "A"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-foreground truncate">
+                            {artist.profile?.full_name || "Unknown Artist"}
+                          </h3>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {selectedCategoryData?.name} Specialist
+                          </p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <div className="flex items-center gap-1">
+                              <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+                              <span className="text-sm font-medium">
+                                {Number(artist.rating).toFixed(1)}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                ({artist.total_reviews})
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <MapPin className="w-3 h-3" />
+                              <span className="text-xs truncate">
+                                {artist.profile?.location || "Location TBD"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <Button size="sm" variant="outline">
+                          View
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No artists available for {selectedCategoryData?.name} yet</p>
+                    <p className="text-sm mt-1">Artists need to add services in this category</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         )}
 
         {/* Show prompt when no category selected */}
         {!selectedCategory && (
           <div className="text-center py-8 text-muted-foreground">
-            <p>Tap a category to see available artists</p>
+            <p>Tap a category to browse services and artists</p>
           </div>
         )}
       </div>
