@@ -131,12 +131,7 @@ const ArtistServices = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-muted">
-            <ArrowLeft className="w-5 h-5 text-foreground" />
-          </button>
-          <h1 className="text-xl font-bold text-foreground">Services</h1>
-        </div>
+        <h1 className="text-xl font-bold text-foreground">Services</h1>
       </header>
 
       <div className="px-5 py-4 space-y-4">
