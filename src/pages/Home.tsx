@@ -13,6 +13,7 @@ import categoryBridal from "@/assets/category-bridal.jpg";
 import categoryParty from "@/assets/category-party.jpg";
 import categoryPhotoshoot from "@/assets/category-photoshoot.jpg";
 import categoryNatural from "@/assets/category-natural.jpg";
+import logoImage from "@/assets/logo.png";
 
 import artist1 from "@/assets/artist-1.jpg";
 
@@ -52,12 +53,7 @@ const Home = () => {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="px-5 py-4">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Welcome back</p>
-              <h1 className="text-xl font-bold text-foreground">
-                Find Your Artist ✨
-              </h1>
-            </div>
+            <img src={logoImage} alt="Glam" className="h-10 w-auto" />
             <button className="relative p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors">
               <Bell className="w-5 h-5 text-foreground" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />

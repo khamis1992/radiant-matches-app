@@ -9,6 +9,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useCurrentArtist, useArtistBookings, useUpdateBookingStatus } from "@/hooks/useArtistDashboard";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import logoImage from "@/assets/logo.png";
 
 const ArtistBookings = () => {
   const navigate = useNavigate();
@@ -83,7 +84,7 @@ const ArtistBookings = () => {
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">Bookings</h1>
+          <img src={logoImage} alt="Glam" className="h-8 w-auto" />
           <Link to="/artist-profile">
             <Avatar className="h-9 w-9 border-2 border-primary/20">
               <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || "Profile"} />
