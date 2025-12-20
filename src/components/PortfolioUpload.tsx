@@ -175,6 +175,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     croppedPreview?: string;
     category: PortfolioCategory;
     title: string;
+    isFeatured: boolean;
   }
 
   const [uploading, setUploading] = useState(false);
@@ -271,6 +272,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           preview: URL.createObjectURL(compressedFile),
           category: "General",
           title: "",
+          isFeatured: false,
         });
       } catch (error) {
         console.error("Compression error:", error);
@@ -282,6 +284,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           preview: URL.createObjectURL(file),
           category: "General",
           title: "",
+          isFeatured: false,
         });
       }
     }
@@ -422,6 +425,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           category: item.category,
           title: item.title || null,
           display_order: maxOrder + i + 1,
+          is_featured: item.isFeatured,
         });
 
         successCount++;
@@ -713,13 +717,21 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
             )}
             
             {pendingUploads.map((item, index) => (
-              <div key={index} className="flex gap-3 p-3 border border-border rounded-lg">
+              <div key={index} className={`flex gap-3 p-3 border rounded-lg ${item.isFeatured ? 'border-primary bg-primary/5' : 'border-border'}`}>
                 <div className="relative w-20 h-20 flex-shrink-0">
                   <img
                     src={item.croppedPreview || item.preview}
                     alt={`Preview ${index + 1}`}
                     className="w-full h-full object-cover rounded-md"
                   />
+                  {item.isFeatured && (
+                    <div className="absolute top-0 left-0 right-0 flex justify-center">
+                      <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 gap-1 -mt-2">
+                        <Star className="w-3 h-3 fill-current" />
+                        Featured
+                      </Badge>
+                    </div>
+                  )}
                   <button
                     onClick={() => handleRemoveFromBatch(index)}
                     className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full"
@@ -737,6 +749,21 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                       className="text-sm"
                       disabled={uploading}
                     />
+                    <Button
+                      variant={item.isFeatured ? "default" : "outline"}
+                      size="icon"
+                      onClick={() => {
+                        // Toggle featured: only one can be featured at a time
+                        setPendingUploads(prev => prev.map((p, idx) => ({
+                          ...p,
+                          isFeatured: idx === index ? !p.isFeatured : false
+                        })));
+                      }}
+                      disabled={uploading}
+                      title={item.isFeatured ? "Remove featured" : "Set as featured"}
+                    >
+                      <Star className={`w-4 h-4 ${item.isFeatured ? 'fill-current' : ''}`} />
+                    </Button>
                     <Button
                       variant="outline"
                       size="icon"
