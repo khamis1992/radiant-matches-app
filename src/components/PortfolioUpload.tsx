@@ -951,6 +951,13 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                             </Badge>
                           </div>
                         )}
+                        {item.historyIndex > 0 && (
+                          <div className="absolute bottom-1 left-1">
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+                              Edited
+                            </Badge>
+                          </div>
+                        )}
                         <button
                           onClick={() => handleRemoveFromBatch(index)}
                           className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full"
