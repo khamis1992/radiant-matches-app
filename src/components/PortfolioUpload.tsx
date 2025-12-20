@@ -583,6 +583,30 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
+            {/* Apply category to all */}
+            {pendingUploads.length > 1 && (
+              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                <Label className="text-sm whitespace-nowrap">Apply category to all:</Label>
+                <Select 
+                  onValueChange={(v) => {
+                    setPendingUploads(prev => prev.map(item => ({ ...item, category: v as PortfolioCategory })));
+                  }}
+                  disabled={uploading}
+                >
+                  <SelectTrigger className="text-sm flex-1">
+                    <SelectValue placeholder="Select category..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PORTFOLIO_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
             {pendingUploads.map((item, index) => (
               <div key={index} className="flex gap-3 p-3 border border-border rounded-lg">
                 <div className="relative w-20 h-20 flex-shrink-0">
