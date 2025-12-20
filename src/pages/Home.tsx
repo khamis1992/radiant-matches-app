@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell } from "lucide-react";
+import { Bell, Sparkles, Scissors, Hand, Eye, Palette, Heart, Camera } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
 import ArtistCard from "@/components/ArtistCard";
@@ -9,19 +9,17 @@ import { useArtists } from "@/hooks/useArtists";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import categoryBridal from "@/assets/category-bridal.jpg";
-import categoryParty from "@/assets/category-party.jpg";
-import categoryPhotoshoot from "@/assets/category-photoshoot.jpg";
-import categoryNatural from "@/assets/category-natural.jpg";
 import logoImage from "@/assets/logo.png";
-
 import artist1 from "@/assets/artist-1.jpg";
 
 const categories = [
-  { name: "Bridal", image: categoryBridal },
-  { name: "Party", image: categoryParty },
-  { name: "Photoshoot", image: categoryPhotoshoot },
-  { name: "Natural", image: categoryNatural },
+  { name: "Makeup", icon: Sparkles, color: "hsl(350, 70%, 65%)" },
+  { name: "Hair Styling", icon: Scissors, color: "hsl(280, 60%, 55%)" },
+  { name: "Henna", icon: Hand, color: "hsl(25, 70%, 50%)" },
+  { name: "Lashes & Brows", icon: Eye, color: "hsl(200, 60%, 50%)" },
+  { name: "Nails", icon: Palette, color: "hsl(330, 65%, 55%)" },
+  { name: "Bridal", icon: Heart, color: "hsl(350, 60%, 60%)" },
+  { name: "Photoshoot", icon: Camera, color: "hsl(45, 70%, 50%)" },
 ];
 
 const Home = () => {
@@ -68,12 +66,13 @@ const Home = () => {
         <h2 className="text-lg font-semibold text-foreground mb-4">
           Browse by Category
         </h2>
-        <div className="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
           {categories.map((category) => (
             <CategoryCard
               key={category.name}
               name={category.name}
-              image={category.image}
+              icon={category.icon}
+              color={category.color}
             />
           ))}
         </div>
