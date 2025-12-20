@@ -14,16 +14,276 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      artists: {
+        Row: {
+          bio: string | null
+          created_at: string
+          experience_years: number | null
+          id: string
+          is_available: boolean | null
+          portfolio_images: string[] | null
+          rating: number | null
+          studio_address: string | null
+          total_reviews: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          is_available?: boolean | null
+          portfolio_images?: string[] | null
+          rating?: number | null
+          studio_address?: string | null
+          total_reviews?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          is_available?: boolean | null
+          portfolio_images?: string[] | null
+          rating?: number | null
+          studio_address?: string | null
+          total_reviews?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          artist_id: string
+          booking_date: string
+          booking_time: string
+          created_at: string
+          customer_id: string
+          id: string
+          location_address: string | null
+          location_type: string
+          notes: string | null
+          service_id: string | null
+          status: Database["public"]["Enums"]["booking_status"]
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          booking_date: string
+          booking_time: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          location_address?: string | null
+          location_type: string
+          notes?: string | null
+          service_id?: string | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          total_price: number
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          booking_date?: string
+          booking_time?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          location_address?: string | null
+          location_type?: string
+          notes?: string | null
+          service_id?: string | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          location: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          location?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          location?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          artist_id: string
+          booking_id: string
+          comment: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          photos: string[] | null
+          rating: number
+        }
+        Insert: {
+          artist_id: string
+          booking_id: string
+          comment?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          photos?: string[] | null
+          rating: number
+        }
+        Update: {
+          artist_id?: string
+          booking_id?: string
+          comment?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          photos?: string[] | null
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          artist_id: string
+          category: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "customer" | "artist"
+      booking_status: "pending" | "confirmed" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +410,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "customer", "artist"],
+      booking_status: ["pending", "confirmed", "completed", "cancelled"],
+    },
   },
 } as const
