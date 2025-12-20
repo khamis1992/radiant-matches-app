@@ -1351,6 +1351,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           url: item.croppedPreview || item.preview,
           title: item.title || null,
           category: item.category,
+          isFeatured: item.isFeatured,
         }))}
         initialIndex={pendingLightboxIndex}
         open={pendingLightboxOpen}
@@ -1361,6 +1362,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           handleUpdatePendingItem(index, {
             ...(updates.title !== undefined && { title: updates.title }),
             ...(updates.category !== undefined && { category: updates.category as PortfolioCategory }),
+            ...(updates.isFeatured !== undefined && { isFeatured: updates.isFeatured }),
           });
         }}
       />
