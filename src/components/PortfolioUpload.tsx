@@ -213,6 +213,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const [pendingLightboxOpen, setPendingLightboxOpen] = useState(false);
   const [pendingLightboxIndex, setPendingLightboxIndex] = useState(0);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
@@ -815,8 +816,11 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
       {/* Batch Upload Dialog */}
       <Dialog open={batchDialogOpen} onOpenChange={(open) => {
         if (!open && !uploading) {
-          setBatchDialogOpen(false);
-          setPendingUploads([]);
+          if (pendingUploads.length > 0) {
+            setCloseConfirmOpen(true);
+          } else {
+            setBatchDialogOpen(false);
+          }
         }
       }}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -1213,6 +1217,31 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         open={pendingLightboxOpen}
         onOpenChange={setPendingLightboxOpen}
       />
+
+      {/* Close Confirmation Dialog */}
+      <AlertDialog open={closeConfirmOpen} onOpenChange={setCloseConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard pending uploads?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have {pendingUploads.length} image{pendingUploads.length > 1 ? "s" : ""} ready to upload. If you close now, all pending uploads and edits will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continue Editing</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setPendingUploads([]);
+                setBatchDialogOpen(false);
+                setCloseConfirmOpen(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Discard
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
