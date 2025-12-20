@@ -807,6 +807,23 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
               </div>
             ))}
             
+            {/* Compression Savings Summary */}
+            {pendingUploads.length > 0 && (() => {
+              const totalOriginal = pendingUploads.reduce((sum, item) => sum + item.originalSize, 0);
+              const totalCompressed = pendingUploads.reduce((sum, item) => sum + item.compressedSize, 0);
+              const savings = totalOriginal - totalCompressed;
+              const savingsPercent = totalOriginal > 0 ? Math.round((savings / totalOriginal) * 100) : 0;
+              
+              return savings > 0 ? (
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg text-sm">
+                  <span className="text-muted-foreground">Total compression savings:</span>
+                  <span className="font-medium text-primary">
+                    {formatFileSize(savings)} saved ({savingsPercent}%)
+                  </span>
+                </div>
+              ) : null;
+            })()}
+            
             {uploading && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
