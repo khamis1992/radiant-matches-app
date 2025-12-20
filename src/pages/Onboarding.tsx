@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-makeup.jpg";
+import logoImage from "@/assets/logo.png";
 
 const slides = [
   {
@@ -58,15 +59,11 @@ const Onboarding = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-[hsl(350,45%,95%)] to-background">
         <div className="animate-scale-in text-center">
-          <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-primary/10 flex items-center justify-center">
-            <span className="text-5xl">💄</span>
-          </div>
-          <h1 className="text-4xl font-bold text-foreground tracking-tight">
-            Glam<span className="text-primary">Book</span>
-          </h1>
-          <p className="mt-2 text-muted-foreground text-sm">
-            Book Trusted Makeup Artists Near You
-          </p>
+          <img 
+            src={logoImage} 
+            alt="Glam Beauty Marketplace" 
+            className="w-48 h-auto mx-auto"
+          />
         </div>
       </div>
     );
