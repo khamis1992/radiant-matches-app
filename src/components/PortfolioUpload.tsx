@@ -815,39 +815,55 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
-            {/* Apply category to all & Clear all */}
+            {/* Bulk actions */}
             {pendingUploads.length > 1 && (
-              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                <Label className="text-sm whitespace-nowrap">Apply category to all:</Label>
-                <Select 
-                  onValueChange={(v) => {
-                    setPendingUploads(prev => prev.map(item => ({ ...item, category: v as PortfolioCategory })));
-                  }}
-                  disabled={uploading}
-                >
-                  <SelectTrigger className="text-sm flex-1">
-                    <SelectValue placeholder="Select category..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PORTFOLIO_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setPendingUploads([]);
-                    setBatchDialogOpen(false);
-                  }}
-                  disabled={uploading}
-                  className="text-destructive hover:text-destructive"
-                >
-                  Clear All
-                </Button>
+              <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm whitespace-nowrap">Apply to all:</Label>
+                  <Select 
+                    onValueChange={(v) => {
+                      setPendingUploads(prev => prev.map(item => ({ ...item, category: v as PortfolioCategory })));
+                      toast.success(`Category set to "${v}" for all images`);
+                    }}
+                    disabled={uploading}
+                  >
+                    <SelectTrigger className="text-sm flex-1">
+                      <SelectValue placeholder="Set category..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PORTFOLIO_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const hasAnyFeatured = pendingUploads.some(p => p.isFeatured);
+                      setPendingUploads(prev => prev.map(item => ({ ...item, isFeatured: !hasAnyFeatured })));
+                      toast.success(hasAnyFeatured ? "Cleared featured from all" : "Note: Only one image can be featured after upload");
+                    }}
+                    disabled={uploading}
+                  >
+                    <Star className={`w-4 h-4 mr-1 ${pendingUploads.some(p => p.isFeatured) ? 'fill-current' : ''}`} />
+                    {pendingUploads.some(p => p.isFeatured) ? "Clear Featured" : "Set Featured"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setPendingUploads([]);
+                      setBatchDialogOpen(false);
+                    }}
+                    disabled={uploading}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    Clear All
+                  </Button>
+                </div>
               </div>
             )}
             
