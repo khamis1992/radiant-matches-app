@@ -22,6 +22,7 @@ import {
 import { useArtistsByCategory } from "@/hooks/useArtists";
 import { useServicesByCategory, ServiceWithArtist } from "@/hooks/useServices";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 import categoryMakeup from "@/assets/category-makeup.jpg";
 import categoryHairstyling from "@/assets/category-hairstyling.jpg";
@@ -372,9 +373,12 @@ const Categories = () => {
                               )}
                             </div>
                           </div>
-                          <Button size="sm" className="shrink-0">
-                            Book
-                          </Button>
+                          <div className="flex flex-col items-end gap-2">
+                            <FavoriteButton itemType="service" itemId={service.id} size="sm" />
+                            <Button size="sm" className="shrink-0">
+                              Book
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
