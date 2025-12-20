@@ -11,6 +11,7 @@ import ArtistEarnings from "./pages/artist/ArtistEarnings";
 import ArtistBookings from "./pages/artist/ArtistBookings";
 import ArtistServices from "./pages/artist/ArtistServices";
 import ArtistProfilePage from "./pages/artist/ArtistProfilePage";
+import ArtistGallery from "./pages/artist/ArtistGallery";
 import Booking from "./pages/Booking";
 import Bookings from "./pages/Bookings";
 import Messages from "./pages/Messages";
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/artist-bookings" element={<ArtistBookings />} />
           <Route path="/artist-services" element={<ArtistServices />} />
           <Route path="/artist-profile" element={<ArtistProfilePage />} />
+          <Route path="/artist-gallery" element={<ArtistGallery />} />
           <Route path="/booking/:id" element={<Booking />} />
           <Route path="/bookings" element={<Bookings />} />
           <Route path="/messages" element={<Messages />} />
