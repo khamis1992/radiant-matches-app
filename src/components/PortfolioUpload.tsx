@@ -168,6 +168,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const reorderItems = useReorderPortfolio();
 
   interface PendingUpload {
+    id: string;
     file: File;
     originalSize: number;
     compressedSize: number;
@@ -268,6 +269,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         const compressedFile = await compressImage(file);
         
         pendingItems.push({
+          id: `pending-${Date.now()}-${Math.random().toString(36).substring(7)}`,
           file: compressedFile,
           originalSize,
           compressedSize: compressedFile.size,
@@ -280,6 +282,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         console.error("Compression error:", error);
         // Fall back to original file if compression fails
         pendingItems.push({
+          id: `pending-${Date.now()}-${Math.random().toString(36).substring(7)}`,
           file,
           originalSize: file.size,
           compressedSize: file.size,
@@ -390,6 +393,19 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     setPendingUploads(prev => prev.map((item, idx) => 
       idx === index ? { ...item, ...updates } : item
     ));
+  };
+
+  const handlePendingDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = pendingUploads.findIndex(item => item.id === active.id);
+    const newIndex = pendingUploads.findIndex(item => item.id === over.id);
+    
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    setPendingUploads(prev => arrayMove(prev, oldIndex, newIndex));
   };
 
   const handleBatchUpload = async () => {
@@ -730,100 +746,134 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
               </div>
             )}
             
-            {pendingUploads.map((item, index) => (
-              <div key={index} className={`flex gap-3 p-3 border rounded-lg ${item.isFeatured ? 'border-primary bg-primary/5' : 'border-border'}`}>
-                <div className="relative w-20 h-20 flex-shrink-0">
-                  <img
-                    src={item.croppedPreview || item.preview}
-                    alt={`Preview ${index + 1}`}
-                    className="w-full h-full object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => {
-                      setPendingLightboxIndex(index);
-                      setPendingLightboxOpen(true);
-                    }}
-                  />
-                  {item.isFeatured && (
-                    <div className="absolute top-0 left-0 right-0 flex justify-center">
-                      <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 gap-1 -mt-2">
-                        <Star className="w-3 h-3 fill-current" />
-                        Featured
-                      </Badge>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handlePendingDragEnd}
+            >
+              <SortableContext
+                items={pendingUploads.map(item => item.id)}
+                strategy={rectSortingStrategy}
+              >
+                {pendingUploads.map((item, index) => {
+                  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+                  const style = {
+                    transform: CSS.Transform.toString(transform),
+                    transition,
+                    opacity: isDragging ? 0.5 : 1,
+                    zIndex: isDragging ? 10 : 1,
+                  };
+                  
+                  return (
+                    <div 
+                      key={item.id}
+                      ref={setNodeRef}
+                      style={style}
+                      className={`flex gap-3 p-3 border rounded-lg ${item.isFeatured ? 'border-primary bg-primary/5' : 'border-border'}`}
+                    >
+                      {/* Drag Handle */}
+                      <button
+                        {...attributes}
+                        {...listeners}
+                        className="flex items-center justify-center p-1 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
+                        disabled={uploading}
+                      >
+                        <GripVertical className="w-5 h-5" />
+                      </button>
+                      <div className="relative w-20 h-20 flex-shrink-0">
+                        <img
+                          src={item.croppedPreview || item.preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-full object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => {
+                            setPendingLightboxIndex(index);
+                            setPendingLightboxOpen(true);
+                          }}
+                        />
+                        {item.isFeatured && (
+                          <div className="absolute top-0 left-0 right-0 flex justify-center">
+                            <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 gap-1 -mt-2">
+                              <Star className="w-3 h-3 fill-current" />
+                              Featured
+                            </Badge>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => handleRemoveFromBatch(index)}
+                          className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full"
+                          disabled={uploading}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <div className="flex gap-2">
+                          <Input
+                            value={item.title}
+                            onChange={(e) => handleUpdatePendingItem(index, { title: e.target.value })}
+                            placeholder="Title (optional)"
+                            className="text-sm"
+                            disabled={uploading}
+                          />
+                          <Button
+                            variant={item.isFeatured ? "default" : "outline"}
+                            size="icon"
+                            onClick={() => {
+                              setPendingUploads(prev => prev.map((p, idx) => ({
+                                ...p,
+                                isFeatured: idx === index ? !p.isFeatured : false
+                              })));
+                            }}
+                            disabled={uploading}
+                            title={item.isFeatured ? "Remove featured" : "Set as featured"}
+                          >
+                            <Star className={`w-4 h-4 ${item.isFeatured ? 'fill-current' : ''}`} />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleCropImage(index)}
+                            disabled={uploading}
+                            title="Crop image"
+                          >
+                            <Crop className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="flex gap-2 items-center">
+                          <Select 
+                            value={item.category} 
+                            onValueChange={(v) => handleUpdatePendingItem(index, { category: v as PortfolioCategory })}
+                            disabled={uploading}
+                          >
+                            <SelectTrigger className="text-sm flex-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {PORTFOLIO_CATEGORIES.map((cat) => (
+                                <SelectItem key={cat} value={cat}>
+                                  {cat}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {item.originalSize !== item.compressedSize ? (
+                              <>
+                                <span className="line-through">{formatFileSize(item.originalSize)}</span>
+                                {" → "}
+                                <span className="text-primary font-medium">{formatFileSize(item.compressedSize)}</span>
+                              </>
+                            ) : (
+                              formatFileSize(item.compressedSize)
+                            )}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <button
-                    onClick={() => handleRemoveFromBatch(index)}
-                    className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full"
-                    disabled={uploading}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      value={item.title}
-                      onChange={(e) => handleUpdatePendingItem(index, { title: e.target.value })}
-                      placeholder="Title (optional)"
-                      className="text-sm"
-                      disabled={uploading}
-                    />
-                    <Button
-                      variant={item.isFeatured ? "default" : "outline"}
-                      size="icon"
-                      onClick={() => {
-                        // Toggle featured: only one can be featured at a time
-                        setPendingUploads(prev => prev.map((p, idx) => ({
-                          ...p,
-                          isFeatured: idx === index ? !p.isFeatured : false
-                        })));
-                      }}
-                      disabled={uploading}
-                      title={item.isFeatured ? "Remove featured" : "Set as featured"}
-                    >
-                      <Star className={`w-4 h-4 ${item.isFeatured ? 'fill-current' : ''}`} />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleCropImage(index)}
-                      disabled={uploading}
-                      title="Crop image"
-                    >
-                      <Crop className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    <Select 
-                      value={item.category} 
-                      onValueChange={(v) => handleUpdatePendingItem(index, { category: v as PortfolioCategory })}
-                      disabled={uploading}
-                    >
-                      <SelectTrigger className="text-sm flex-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PORTFOLIO_CATEGORIES.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {item.originalSize !== item.compressedSize ? (
-                        <>
-                          <span className="line-through">{formatFileSize(item.originalSize)}</span>
-                          {" → "}
-                          <span className="text-primary font-medium">{formatFileSize(item.compressedSize)}</span>
-                        </>
-                      ) : (
-                        formatFileSize(item.compressedSize)
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+                  );
+                })}
+              </SortableContext>
+            </DndContext>
             
             {/* Compression Savings Summary */}
             {pendingUploads.length > 0 && (() => {
