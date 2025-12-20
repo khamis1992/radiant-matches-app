@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw, Undo2, Redo2, RotateCcw, LayoutGrid, List, Maximize } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw, Undo2, Redo2, RotateCcw, LayoutGrid, List, Maximize, CheckSquare, Square } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import ImageLightbox from "@/components/ImageLightbox";
 import ImageCropper from "@/components/ImageCropper";
@@ -215,6 +215,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
@@ -870,16 +871,71 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
             {pendingUploads.length >= 1 && (() => {
               const editedCount = pendingUploads.filter(p => p.historyIndex > 0).length;
               const totalCount = pendingUploads.length;
+              const selectedCount = selectedIds.size;
+              const allSelected = selectedCount === totalCount && totalCount > 0;
+              const someSelected = selectedCount > 0;
+              const targetItems = someSelected 
+                ? pendingUploads.filter(p => selectedIds.has(p.id))
+                : pendingUploads;
+              const targetLabel = someSelected ? `${selectedCount} selected` : "all";
+              
+              const toggleSelectAll = () => {
+                if (allSelected) {
+                  setSelectedIds(new Set());
+                } else {
+                  setSelectedIds(new Set(pendingUploads.map(p => p.id)));
+                }
+              };
+
+              const toggleSelect = (id: string) => {
+                setSelectedIds(prev => {
+                  const next = new Set(prev);
+                  if (next.has(id)) {
+                    next.delete(id);
+                  } else {
+                    next.add(id);
+                  }
+                  return next;
+                });
+              };
               
               return (
                 <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
+                  {/* Selection controls */}
+                  <div className="flex items-center gap-2 pb-2 border-b border-border">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={toggleSelectAll}
+                      className="gap-1"
+                    >
+                      {allSelected ? (
+                        <CheckSquare className="w-4 h-4" />
+                      ) : (
+                        <Square className="w-4 h-4" />
+                      )}
+                      {allSelected ? "Deselect All" : "Select All"}
+                    </Button>
+                    {someSelected && (
+                      <Badge variant="default" className="text-xs">
+                        {selectedCount} selected
+                      </Badge>
+                    )}
+                  </div>
+                  
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 flex-wrap flex-1">
-                      <Label className="text-sm whitespace-nowrap">Apply to all:</Label>
+                      <Label className="text-sm whitespace-nowrap">
+                        Apply to {targetLabel}:
+                      </Label>
                       <Select 
                         onValueChange={(v) => {
-                          setPendingUploads(prev => prev.map(item => ({ ...item, category: v as PortfolioCategory })));
-                          toast.success(`Category set to "${v}" for all images`);
+                          setPendingUploads(prev => prev.map(item => 
+                            (!someSelected || selectedIds.has(item.id)) 
+                              ? { ...item, category: v as PortfolioCategory }
+                              : item
+                          ));
+                          toast.success(`Category set to "${v}" for ${targetLabel}`);
                         }}
                         disabled={uploading}
                       >
@@ -898,20 +954,25 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          const hasAnyFeatured = pendingUploads.some(p => p.isFeatured);
-                          setPendingUploads(prev => prev.map(item => ({ ...item, isFeatured: !hasAnyFeatured })));
-                          toast.success(hasAnyFeatured ? "Cleared featured from all" : "Note: Only one image can be featured after upload");
+                          const hasAnyFeatured = targetItems.some(p => p.isFeatured);
+                          setPendingUploads(prev => prev.map(item => 
+                            (!someSelected || selectedIds.has(item.id))
+                              ? { ...item, isFeatured: !hasAnyFeatured }
+                              : item
+                          ));
+                          toast.success(hasAnyFeatured ? `Cleared featured from ${targetLabel}` : `Set featured on ${targetLabel}`);
                         }}
                         disabled={uploading}
                       >
-                        <Star className={`w-4 h-4 mr-1 ${pendingUploads.some(p => p.isFeatured) ? 'fill-current' : ''}`} />
-                        {pendingUploads.some(p => p.isFeatured) ? "Clear Featured" : "Set Featured"}
+                        <Star className={`w-4 h-4 mr-1 ${targetItems.some(p => p.isFeatured) ? 'fill-current' : ''}`} />
+                        {targetItems.some(p => p.isFeatured) ? "Clear Featured" : "Set Featured"}
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
                           setPendingUploads(prev => prev.map(item => {
+                            if (!(!someSelected || selectedIds.has(item.id))) return item;
                             if (item.historyIndex === 0) return item;
                             const state = item.editHistory[0];
                             return {
@@ -922,12 +983,12 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                               historyIndex: 0,
                             };
                           }));
-                          toast.success("All images reset to original");
+                          toast.success(`Reset ${targetLabel} to original`);
                         }}
-                        disabled={uploading || editedCount === 0}
+                        disabled={uploading || targetItems.filter(p => p.historyIndex > 0).length === 0}
                       >
                         <RotateCcw className="w-4 h-4 mr-1" />
-                        Reset All
+                        Reset {someSelected ? "Selected" : "All"}
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -937,26 +998,37 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                             disabled={uploading}
                             className="text-destructive hover:text-destructive"
                           >
-                            Clear All
+                            {someSelected ? `Remove ${selectedCount}` : "Clear All"}
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Clear all uploads?</AlertDialogTitle>
+                            <AlertDialogTitle>
+                              {someSelected ? `Remove ${selectedCount} selected images?` : "Clear all uploads?"}
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
-                              This will remove all {pendingUploads.length} pending images and any edits you have made. This action cannot be undone.
+                              {someSelected 
+                                ? `This will remove ${selectedCount} selected image${selectedCount > 1 ? "s" : ""} and any edits made to them.`
+                                : `This will remove all ${pendingUploads.length} pending images and any edits you have made.`
+                              } This action cannot be undone.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => {
-                                setPendingUploads([]);
-                                setBatchDialogOpen(false);
+                                if (someSelected) {
+                                  setPendingUploads(prev => prev.filter(p => !selectedIds.has(p.id)));
+                                  setSelectedIds(new Set());
+                                  toast.success(`Removed ${selectedCount} images`);
+                                } else {
+                                  setPendingUploads([]);
+                                  setBatchDialogOpen(false);
+                                }
                               }}
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
-                              Clear All
+                              {someSelected ? `Remove ${selectedCount}` : "Clear All"}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -991,13 +1063,33 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                         zIndex: isDragging ? 10 : 1,
                       };
                       
+                      const isSelected = selectedIds.has(item.id);
+                      
                       return (
                         <div
                           key={item.id}
                           ref={setNodeRef}
                           style={style}
-                          className={`relative aspect-square group rounded-lg overflow-hidden ${item.isFeatured ? 'ring-2 ring-primary' : ''}`}
+                          className={`relative aspect-square group rounded-lg overflow-hidden ${item.isFeatured ? 'ring-2 ring-primary' : ''} ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
                         >
+                          {/* Selection Checkbox */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedIds(prev => {
+                                const next = new Set(prev);
+                                if (next.has(item.id)) {
+                                  next.delete(item.id);
+                                } else {
+                                  next.add(item.id);
+                                }
+                                return next;
+                              });
+                            }}
+                            className={`absolute top-1 left-8 z-10 p-1 rounded-md transition-all ${isSelected ? 'bg-blue-500 text-white' : 'bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100'}`}
+                          >
+                            {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-foreground" />}
+                          </button>
                           <img
                             src={item.croppedPreview || item.preview}
                             alt={`Preview ${index + 1}`}
@@ -1089,14 +1181,32 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                       opacity: isDragging ? 0.5 : 1,
                       zIndex: isDragging ? 10 : 1,
                     };
+                    const isSelected = selectedIds.has(item.id);
                     
                     return (
                       <div 
                         key={item.id}
                         ref={setNodeRef}
                         style={style}
-                        className={`flex gap-3 p-3 border rounded-lg ${item.isFeatured ? 'border-primary bg-primary/5' : 'border-border'}`}
+                        className={`flex gap-3 p-3 border rounded-lg ${item.isFeatured ? 'border-primary bg-primary/5' : 'border-border'} ${isSelected ? 'ring-2 ring-blue-500 bg-blue-500/5' : ''}`}
                       >
+                        {/* Selection Checkbox */}
+                        <button
+                          onClick={() => {
+                            setSelectedIds(prev => {
+                              const next = new Set(prev);
+                              if (next.has(item.id)) {
+                                next.delete(item.id);
+                              } else {
+                                next.add(item.id);
+                              }
+                              return next;
+                            });
+                          }}
+                          className={`flex items-center justify-center p-1 rounded transition-colors ${isSelected ? 'text-blue-500' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                          {isSelected ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+                        </button>
                         {/* Drag Handle */}
                         <button
                           {...attributes}
