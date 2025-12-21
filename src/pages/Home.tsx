@@ -7,7 +7,9 @@ import ArtistCard from "@/components/ArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
 import { useArtists } from "@/hooks/useArtists";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useProfile } from "@/hooks/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import logoImage from "@/assets/logo.png";
 import artist1 from "@/assets/artist-1.jpg";
@@ -33,6 +35,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { isArtist, loading: roleLoading } = useUserRole();
   const { data: artists, isLoading } = useArtists();
+  const { data: profile } = useProfile();
 
   useEffect(() => {
     if (!roleLoading && isArtist) {
@@ -59,10 +62,26 @@ const Home = () => {
         <div className="px-5 py-4">
           <div className="flex items-center justify-between mb-4">
             <img src={logoImage} alt="Glam" className="h-10 w-auto" />
-            <button className="relative p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors">
-              <Bell className="w-5 h-5 text-foreground" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
-            </button>
+            <div className="flex items-center gap-3">
+              <button className="relative p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors">
+                <Bell className="w-5 h-5 text-foreground" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
+              </button>
+              <button 
+                onClick={() => navigate("/profile")}
+                className="rounded-full border-2 border-primary/20 hover:border-primary transition-colors"
+              >
+                <Avatar className="w-9 h-9">
+                  <AvatarImage 
+                    src={profile?.avatar_url || undefined} 
+                    alt={profile?.full_name || "Profile"} 
+                  />
+                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                    {profile?.full_name?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            </div>
           </div>
           <SearchBar />
         </div>
