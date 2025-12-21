@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Star, MapPin, Search, X } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
@@ -42,12 +42,30 @@ const categoryImages: Record<ServiceCategory, string> = {
 
 const MakeupArtists = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [sortBy, setSortBy] = useState<SortOption>("rating");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
+  
+  // Get category from URL params
+  const categoryParam = searchParams.get("category");
+  const initialCategory = categoryParam && SERVICE_CATEGORIES.includes(categoryParam as ServiceCategory) 
+    ? categoryParam as ServiceCategory 
+    : null;
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(initialCategory);
+  
   const { data: artists, isLoading } = useArtists();
 
   useSwipeBack();
+
+  // Update URL when category changes
+  const handleCategoryChange = (category: ServiceCategory | null) => {
+    setSelectedCategory(category);
+    if (category) {
+      setSearchParams({ category });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   const filteredAndSortedArtists = useMemo(() => {
     if (!artists) return [];
@@ -127,7 +145,7 @@ const MakeupArtists = () => {
             {SERVICE_CATEGORIES.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
+                onClick={() => handleCategoryChange(selectedCategory === category ? null : category)}
                 className="flex flex-col items-center gap-1.5 group"
               >
                 <div className={`w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden transition-all ${
