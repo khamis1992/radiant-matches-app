@@ -12,31 +12,62 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useArtists } from "@/hooks/useArtists";
+import { useArtists, SERVICE_CATEGORIES, ServiceCategory } from "@/hooks/useArtists";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import artist1 from "@/assets/artist-1.jpg";
 
+// Category images
+import categoryMakeup from "@/assets/category-makeup.jpg";
+import categoryHairstyling from "@/assets/category-hairstyling.jpg";
+import categoryHenna from "@/assets/category-henna.jpg";
+import categoryLashes from "@/assets/category-lashes.jpg";
+import categoryNails from "@/assets/category-nails.jpg";
+import categoryBridal from "@/assets/category-bridal.jpg";
+import categoryPhotoshoot from "@/assets/category-photoshoot.jpg";
+
 type SortOption = "rating" | "reviews" | "experience" | "name";
+
+const categoryImages: Record<ServiceCategory, string> = {
+  "Makeup": categoryMakeup,
+  "Hair Styling": categoryHairstyling,
+  "Henna": categoryHenna,
+  "Lashes & Brows": categoryLashes,
+  "Nails": categoryNails,
+  "Bridal": categoryBridal,
+  "Photoshoot": categoryPhotoshoot,
+};
 
 const MakeupArtists = () => {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<SortOption>("rating");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const { data: artists, isLoading } = useArtists();
 
   const filteredAndSortedArtists = useMemo(() => {
     if (!artists) return [];
     
-    // Filter by search query
+    // Filter by search query and category
     const filtered = artists.filter(artist => {
-      if (!searchQuery.trim()) return true;
-      const query = searchQuery.toLowerCase();
-      return (
-        artist.profile?.full_name?.toLowerCase().includes(query) ||
-        artist.profile?.location?.toLowerCase().includes(query) ||
-        artist.bio?.toLowerCase().includes(query)
-      );
+      // Search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = (
+          artist.profile?.full_name?.toLowerCase().includes(query) ||
+          artist.profile?.location?.toLowerCase().includes(query) ||
+          artist.bio?.toLowerCase().includes(query)
+        );
+        if (!matchesSearch) return false;
+      }
+      
+      // Category filter
+      if (selectedCategory) {
+        const hasCategory = artist.categories?.includes(selectedCategory);
+        if (!hasCategory) return false;
+      }
+      
+      return true;
     });
     
     // Sort
@@ -54,7 +85,7 @@ const MakeupArtists = () => {
           return 0;
       }
     });
-  }, [artists, sortBy, searchQuery]);
+  }, [artists, sortBy, searchQuery, selectedCategory]);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -91,10 +122,41 @@ const MakeupArtists = () => {
           )}
         </div>
 
+        {/* Category Filter */}
+        <div className="overflow-x-auto scrollbar-hide -mx-5 px-5 mb-4">
+          <div className="flex gap-4 min-w-max">
+            {SERVICE_CATEGORIES.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
+                className="flex flex-col items-center gap-1.5 group"
+              >
+                <div className={`w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden transition-all ${
+                  selectedCategory === category 
+                    ? "ring-2 ring-primary ring-offset-2 ring-offset-background" 
+                    : "ring-1 ring-border group-hover:ring-primary/50"
+                }`}>
+                  <img
+                    src={categoryImages[category]}
+                    alt={category}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className={`text-xs md:text-sm max-w-16 md:max-w-20 lg:max-w-24 truncate text-center ${
+                  selectedCategory === category ? "text-primary font-medium" : "text-muted-foreground"
+                }`}>
+                  {category}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Sort and Count */}
         <div className="flex items-center justify-between mb-4">
           <span className="text-sm text-muted-foreground">
             {filteredAndSortedArtists.length} artist{filteredAndSortedArtists.length !== 1 ? 's' : ''} found
+            {selectedCategory && ` for ${selectedCategory}`}
           </span>
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
             <SelectTrigger className="w-[160px] h-9">
