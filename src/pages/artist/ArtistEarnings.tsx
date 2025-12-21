@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { DollarSign, TrendingUp, TrendingDown, Briefcase, User } from "lucide-react";
+import { TrendingUp, TrendingDown, Briefcase, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useCurrentArtist, useArtistBookings, useArtistEarnings } from "@/hooks/useArtistDashboard";
@@ -10,6 +10,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { Star } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import logoImage from "@/assets/logo.png";
+import { formatQAR } from "@/lib/locale";
 
 const ArtistEarnings = () => {
   const navigate = useNavigate();
@@ -106,7 +107,7 @@ const ArtistEarnings = () => {
               <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
                 <p className="text-sm text-muted-foreground">Total Earnings</p>
                 <p className="text-2xl font-bold text-foreground mt-1">
-                  ${earnings?.totalEarnings.toFixed(2) || "0.00"}
+                  {formatQAR(earnings?.totalEarnings || 0)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {earnings?.completedBookings || 0} completed bookings
@@ -115,7 +116,7 @@ const ArtistEarnings = () => {
               <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
                 <p className="text-sm text-muted-foreground">Pending</p>
                 <p className="text-2xl font-bold text-primary mt-1">
-                  ${earnings?.pendingEarnings.toFixed(2) || "0.00"}
+                  {formatQAR(earnings?.pendingEarnings || 0)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Confirmed bookings
@@ -129,7 +130,7 @@ const ArtistEarnings = () => {
               <div className="flex items-end justify-between">
                 <div>
                   <p className="text-3xl font-bold text-foreground">
-                    ${earnings?.thisMonthEarnings.toFixed(2) || "0.00"}
+                    {formatQAR(earnings?.thisMonthEarnings || 0)}
                   </p>
                   {earnings && earnings.lastMonthEarnings > 0 && (
                     <div className="flex items-center gap-1 mt-1">
@@ -155,7 +156,7 @@ const ArtistEarnings = () => {
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground">Last month</p>
                   <p className="text-lg font-medium text-muted-foreground">
-                    ${earnings?.lastMonthEarnings.toFixed(2) || "0.00"}
+                    {formatQAR(earnings?.lastMonthEarnings || 0)}
                   </p>
                 </div>
               </div>
@@ -184,7 +185,7 @@ const ArtistEarnings = () => {
                         axisLine={false} 
                         tickLine={false}
                         tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                        tickFormatter={(value) => `$${value}`}
+                        tickFormatter={(value) => `QAR ${value}`}
                       />
                       <Tooltip
                         contentStyle={{
@@ -192,7 +193,7 @@ const ArtistEarnings = () => {
                           border: "1px solid hsl(var(--border))",
                           borderRadius: "8px",
                         }}
-                        formatter={(value: number) => [`$${value.toFixed(2)}`, "Earnings"]}
+                        formatter={(value: number) => [formatQAR(value), "Earnings"]}
                       />
                       <Area
                         type="monotone"
@@ -218,7 +219,7 @@ const ArtistEarnings = () => {
                         <p className="font-medium text-foreground">{service.name}</p>
                         <p className="text-sm text-muted-foreground">{service.count} bookings</p>
                       </div>
-                      <p className="font-semibold text-foreground">${service.earnings.toFixed(2)}</p>
+                      <p className="font-semibold text-foreground">{formatQAR(service.earnings)}</p>
                     </div>
                   ))}
                 </div>
@@ -228,7 +229,7 @@ const ArtistEarnings = () => {
             {/* Empty State */}
             {earnings && earnings.completedBookings === 0 && (
               <div className="text-center py-12 text-muted-foreground">
-                <DollarSign className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <Briefcase className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p>No earnings yet</p>
                 <p className="text-sm mt-1">Complete your first booking to see earnings</p>
               </div>
