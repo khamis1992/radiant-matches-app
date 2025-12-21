@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Star, MapPin, Search, X } from "lucide-react";
+import { Star, MapPin, Search, X } from "lucide-react";
+import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -92,13 +93,7 @@ const MakeupArtists = () => {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => navigate(-1)}
-            className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="w-5 h-5 text-foreground" />
-          </button>
+          <BackButton />
           <h1 className="text-xl font-bold text-foreground">Makeup Artists</h1>
         </div>
       </header>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Star, MapPin, Heart, Share2, Clock, Award, MessageCircle } from "lucide-react";
+import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle } from "lucide-react";
+import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -76,13 +77,7 @@ const ArtistProfile = () => {
         
         {/* Navigation */}
         <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-10">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-full bg-card/80 backdrop-blur-sm shadow-md hover:bg-card transition-colors"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="w-5 h-5 text-foreground" />
-          </button>
+          <BackButton variant="overlay" />
           <div className="flex gap-2">
             <button
               onClick={() => setIsFavorite(!isFavorite)}
