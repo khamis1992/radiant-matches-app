@@ -242,6 +242,8 @@ export const ar: TranslationKeys = {
     by: "بواسطة",
     min: "دقيقة",
     unknownArtist: "فنانة غير معروفة",
+    addToFavorites: "إضافة إلى المفضلة",
+    removeFromFavorites: "إزالة من المفضلة",
   },
   
   // User menu

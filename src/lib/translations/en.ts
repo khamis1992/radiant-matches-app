@@ -240,6 +240,8 @@ export const en = {
     by: "by",
     min: "min",
     unknownArtist: "Unknown Artist",
+    addToFavorites: "Add to favorites",
+    removeFromFavorites: "Remove from favorites",
   },
   
   // User menu
