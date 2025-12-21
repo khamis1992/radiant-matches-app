@@ -61,6 +61,7 @@ import {
   PortfolioItem,
   PortfolioCategory,
 } from "@/hooks/usePortfolio";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PortfolioUploadProps {
   artistId: string;
@@ -172,6 +173,7 @@ const SortableImage = ({ item, index, onEdit, onDelete, onView, onSetFeatured, i
 };
 
 const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
+  const { t, isRTL } = useLanguage();
   const { data: portfolioItems = [], isLoading } = useArtistPortfolio(artistId);
   const addItem = useAddPortfolioItem();
   const updateItem = useUpdatePortfolioItem();
@@ -250,9 +252,9 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
 
     try {
       await reorderItems.mutateAsync({ artistId, items: updates });
-      toast.success("Order updated");
+      toast.success(t.portfolio.orderUpdated);
     } catch (error) {
-      toast.error("Failed to reorder");
+      toast.error(t.portfolio.failedToReorder);
     }
   };
 
@@ -440,10 +442,10 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           historyIndex: newHistory.length - 1,
         };
       }));
-      toast.success("Image rotated");
+      toast.success(t.portfolio.imageRotated);
     } catch (error) {
       console.error("Rotation error:", error);
-      toast.error("Failed to rotate image");
+      toast.error(t.errors.somethingWrong);
     }
   };
 
@@ -495,7 +497,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         historyIndex: 0,
       };
     }));
-    toast.success("Image reset to original");
+    toast.success(t.portfolio.imageReset);
   };
 
   const handleRemoveFromBatch = (index: number) => {
@@ -572,11 +574,11 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     }
 
     if (successCount === pendingUploads.length) {
-      toast.success(`${successCount} image${successCount > 1 ? 's' : ''} uploaded successfully`);
+      toast.success(`${successCount} ${t.portfolio.uploadSuccess}`);
     } else if (successCount > 0) {
-      toast.warning(`${successCount} of ${pendingUploads.length} images uploaded`);
+      toast.warning(`${successCount} / ${pendingUploads.length} ${t.portfolio.uploadPartial}`);
     } else {
-      toast.error("Failed to upload images");
+      toast.error(t.portfolio.uploadFailed);
     }
 
     setBatchDialogOpen(false);
@@ -593,10 +595,10 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         artistId: item.artist_id,
         imageUrl: item.image_url,
       });
-      toast.success("Image removed");
+      toast.success(t.portfolio.imageRemoved);
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Failed to remove image");
+      toast.error(t.portfolio.failedToRemove);
     } finally {
       setDeletingId(null);
     }
@@ -612,10 +614,10 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         category: selectedCategory,
         title: title || undefined,
       });
-      toast.success("Updated successfully");
+      toast.success(t.portfolio.updatedSuccessfully);
       setEditingItem(null);
     } catch (error) {
-      toast.error("Failed to update");
+      toast.error(t.portfolio.failedToUpdate);
     }
   };
 
@@ -626,9 +628,9 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         artistId: item.artist_id,
         is_featured: true,
       });
-      toast.success("Set as featured image");
+      toast.success(t.portfolio.setAsFeatured);
     } catch (error) {
-      toast.error("Failed to set featured");
+      toast.error(t.portfolio.failedToSetFeatured);
     }
   };
 
@@ -651,7 +653,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">Portfolio</h3>
+          <h3 className="font-semibold text-foreground">{t.portfolio.title}</h3>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {[1, 2, 3].map((i) => (
@@ -664,11 +666,11 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-foreground">Portfolio</h3>
+      <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
+        <div className={isRTL ? "text-right" : ""}>
+          <h3 className="font-semibold text-foreground">{t.portfolio.title}</h3>
           {portfolioItems.length > 1 && (
-            <p className="text-xs text-muted-foreground">Drag to reorder</p>
+            <p className="text-xs text-muted-foreground">{t.portfolio.dragToReorder}</p>
           )}
         </div>
         <Button
@@ -676,8 +678,8 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           size="sm"
           onClick={() => fileInputRef.current?.click()}
         >
-          <Plus className="w-4 h-4 mr-1" />
-          Add Photo
+          <Plus className={`w-4 h-4 ${isRTL ? "ml-1" : "mr-1"}`} />
+          {t.portfolio.addPhoto}
         </Button>
         <input
           ref={fileInputRef}
@@ -728,7 +730,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         {isDragOver && (
           <div className="absolute inset-0 bg-primary/10 backdrop-blur-sm rounded-xl z-10 flex flex-col items-center justify-center border-2 border-dashed border-primary">
             <Upload className="w-10 h-10 text-primary mb-2" />
-            <p className="text-sm font-medium text-primary">Drop images here</p>
+            <p className="text-sm font-medium text-primary">{t.portfolio.dropImagesHere}</p>
           </div>
         )}
 
@@ -768,8 +770,8 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
             onClick={() => fileInputRef.current?.click()}
           >
             <ImageIcon className="w-10 h-10 mb-2 opacity-50" />
-            <p className="text-sm">No portfolio images yet</p>
-            <p className="text-xs mt-1">Click or drag photos to upload</p>
+            <p className="text-sm">{t.portfolio.noImages}</p>
+            <p className="text-xs mt-1">{t.portfolio.clickOrDrag}</p>
           </div>
         )}
       </div>
@@ -800,7 +802,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Crop className="w-5 h-5" />
-              Crop Image {pendingUploads.length > 1 && currentCropIndex !== null ? `(${currentCropIndex + 1}/${pendingUploads.length})` : ''}
+              {t.portfolio.cropImage} {pendingUploads.length > 1 && currentCropIndex !== null ? `(${currentCropIndex + 1}/${pendingUploads.length})` : ''}
             </DialogTitle>
           </DialogHeader>
           <div className="pt-4">
@@ -827,11 +829,11 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
       }}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <div className="flex items-center justify-between">
+            <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
               <DialogTitle>
-                Upload {pendingUploads.length} Image{pendingUploads.length > 1 ? 's' : ''}
+                {t.portfolio.uploadImages} ({pendingUploads.length})
               </DialogTitle>
-              <div className="flex gap-1">
+              <div className={`flex gap-1 ${isRTL ? "flex-row-reverse" : ""}`}>
                 <Button
                   variant="outline"
                   size="icon"
@@ -840,7 +842,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                     setPendingLightboxIndex(0);
                     setPendingLightboxOpen(true);
                   }}
-                  title="Fullscreen preview"
+                  title={t.portfolio.fullscreenPreview}
                   disabled={pendingUploads.length === 0}
                 >
                   <Maximize className="w-4 h-4" />
@@ -850,7 +852,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                   size="icon"
                   className="h-8 w-8"
                   onClick={() => setViewMode("list")}
-                  title="List view"
+                  title={t.portfolio.listView}
                 >
                   <List className="w-4 h-4" />
                 </Button>
@@ -859,7 +861,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                   size="icon"
                   className="h-8 w-8"
                   onClick={() => setViewMode("grid")}
-                  title="Grid view"
+                  title={t.portfolio.gridView}
                 >
                   <LayoutGrid className="w-4 h-4" />
                 </Button>
@@ -914,11 +916,11 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                       ) : (
                         <Square className="w-4 h-4" />
                       )}
-                      {allSelected ? "Deselect All" : "Select All"}
+                      {allSelected ? t.portfolio.deselectAll : t.portfolio.selectAll}
                     </Button>
                     {someSelected && (
                       <Badge variant="default" className="text-xs">
-                        {selectedCount} selected
+                        {selectedCount} {t.portfolio.selected}
                       </Badge>
                     )}
                   </div>
@@ -940,7 +942,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                         disabled={uploading}
                       >
                         <SelectTrigger className="text-sm w-[140px]">
-                          <SelectValue placeholder="Set category..." />
+                          <SelectValue placeholder={t.portfolio.setCategory} />
                         </SelectTrigger>
                         <SelectContent>
                           {PORTFOLIO_CATEGORIES.map((cat) => (
@@ -964,8 +966,8 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                         }}
                         disabled={uploading}
                       >
-                        <Star className={`w-4 h-4 mr-1 ${targetItems.some(p => p.isFeatured) ? 'fill-current' : ''}`} />
-                        {targetItems.some(p => p.isFeatured) ? "Clear Featured" : "Set Featured"}
+                        <Star className={`w-4 h-4 ${isRTL ? "ml-1" : "mr-1"} ${targetItems.some(p => p.isFeatured) ? 'fill-current' : ''}`} />
+                        {targetItems.some(p => p.isFeatured) ? t.portfolio.clearFeatured : t.portfolio.setFeatured}
                       </Button>
                       <Button
                         variant="outline"
