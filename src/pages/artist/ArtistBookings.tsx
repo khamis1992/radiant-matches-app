@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useCurrentArtist, useArtistBookings, useUpdateBookingStatus } from "@/hooks/useArtistDashboard";
+import { formatBookingTime } from "@/lib/locale";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import logoImage from "@/assets/logo.png";
@@ -62,10 +63,7 @@ const ArtistBookings = () => {
   };
 
   const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(":");
-    const date = new Date();
-    date.setHours(parseInt(hours), parseInt(minutes));
-    return format(date, "h:mm a");
+    return formatBookingTime(time);
   };
 
   const getStatusBadge = (status: string) => {

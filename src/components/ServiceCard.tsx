@@ -1,5 +1,6 @@
 import { Clock } from "lucide-react";
 import { Button } from "./ui/button";
+import { formatQAR } from "@/lib/locale";
 
 interface ServiceCardProps {
   name: string;
@@ -30,7 +31,7 @@ const ServiceCard = ({
           </div>
         </div>
         <div className="text-right ml-4">
-          <p className="text-xl font-bold text-foreground">${price}</p>
+          <p className="text-xl font-bold text-foreground">{formatQAR(price)}</p>
           <Button size="sm" className="mt-2" onClick={onBook}>
             Select
           </Button>
