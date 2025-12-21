@@ -193,7 +193,7 @@ const Bookings = () => {
                   </div>
                   <div className="flex gap-2 mt-4 pt-4 border-t border-border">
                     <Button variant="outline" size="sm" className="flex-1">
-                      {language === "ar" ? "ترك تقييم" : "Leave Review"}
+                      {t.bookings.leaveReview}
                     </Button>
                     <Link to={`/artist/${booking.artist?.id}`} className="flex-1">
                       <Button variant="soft" size="sm" className="w-full">

@@ -134,6 +134,7 @@ export const en = {
     viewDetails: "View Details",
     cancelBooking: "Cancel Booking",
     reschedule: "Reschedule",
+    leaveReview: "Leave Review",
     at: "at",
     location: "Location",
     notes: "Notes",
