@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ArrowLeft, Bell, Lock, User, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { Bell, Lock, User, ChevronRight, Eye, EyeOff } from "lucide-react";
+import BackButton from "@/components/BackButton";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Switch } from "@/components/ui/switch";
@@ -91,13 +92,7 @@ const Settings = () => {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="px-5 py-4">
           <div className="flex items-center gap-3">
-            <button 
-              onClick={() => navigate(-1)}
-              className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
-              aria-label="Go back"
-            >
-              <ArrowLeft className="w-5 h-5 text-foreground" />
-            </button>
+            <BackButton />
             <h1 className="text-xl font-bold text-foreground">Settings</h1>
           </div>
         </div>
