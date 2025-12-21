@@ -61,7 +61,7 @@ const ArtistProfile = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground mb-4">{language === "ar" ? "الفنانة غير موجودة" : "Artist not found"}</p>
+          <p className="text-muted-foreground mb-4">{t.artist.notFound}</p>
           <Button onClick={() => navigate("/home")}>{t.nav.home}</Button>
         </div>
       </div>
@@ -135,7 +135,7 @@ const ArtistProfile = () => {
           </div>
 
           <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
-            {artist.bio || (language === "ar" ? "لا يوجد وصف" : "No bio available")}
+            {artist.bio || t.artist.noBio}
           </p>
 
           <div className="flex gap-3 mt-5">
@@ -197,7 +197,7 @@ const ArtistProfile = () => {
               ))
             ) : (
               <p className="text-center text-muted-foreground py-4">
-                {language === "ar" ? "لا توجد خدمات متاحة" : "No services available"}
+                {t.artist.noServices}
               </p>
             )}
           </TabsContent>
@@ -218,7 +218,7 @@ const ArtistProfile = () => {
                     className="cursor-pointer"
                     onClick={() => setPortfolioFilter("all")}
                   >
-                    {language === "ar" ? "الكل" : "All"} ({portfolioItems.length})
+                    {t.artist.all} ({portfolioItems.length})
                   </Badge>
                   {Object.entries(
                     portfolioItems.reduce((acc, item) => {
@@ -268,7 +268,7 @@ const ArtistProfile = () => {
                           <div className="absolute top-2 end-2">
                             <Badge className="bg-primary text-primary-foreground text-xs gap-1">
                               <Star className="w-3 h-3 fill-current" />
-                              {language === "ar" ? "مميز" : "Featured"}
+                              {t.artist.featured}
                             </Badge>
                           </div>
                         )}
@@ -311,7 +311,7 @@ const ArtistProfile = () => {
               </>
             ) : (
               <p className="text-center text-muted-foreground py-8">
-                {language === "ar" ? "لا توجد صور في المعرض" : "No portfolio images yet"}
+                {t.artist.noPortfolio}
               </p>
             )}
           </TabsContent>
@@ -327,7 +327,7 @@ const ArtistProfile = () => {
               reviews.map((review) => (
                 <ReviewCard
                   key={review.id}
-                  name={review.customer_profile?.full_name || (language === "ar" ? "مجهول" : "Anonymous")}
+                  name={review.customer_profile?.full_name || t.artist.anonymous}
                   avatar={review.customer_profile?.avatar_url || artist1}
                   rating={review.rating}
                   date={formatDistanceToNow(new Date(review.created_at), { addSuffix: true, locale: dateLocale })}
@@ -336,7 +336,7 @@ const ArtistProfile = () => {
               ))
             ) : (
               <p className="text-center text-muted-foreground py-4">
-                {language === "ar" ? "لا توجد تقييمات بعد" : "No reviews yet"}
+                {t.artist.noReviews}
               </p>
             )}
           </TabsContent>

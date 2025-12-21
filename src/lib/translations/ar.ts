@@ -146,7 +146,7 @@ export const ar: TranslationKeys = {
   // Artist
   artist: {
     makeupArtist: "فنانة مكياج",
-    reviews: "تقييمات",
+    reviews: "التقييمات",
     about: "نبذة",
     portfolio: "معرض الأعمال",
     servicesOffered: "الخدمات",
@@ -156,6 +156,14 @@ export const ar: TranslationKeys = {
     bookAppointment: "حجز موعد",
     contactArtist: "تواصلي مع الفنانة",
     viewProfile: "عرض الملف",
+    notFound: "الفنانة غير موجودة",
+    noBio: "لا يوجد وصف",
+    noServices: "لا توجد خدمات متاحة",
+    noPortfolio: "لا توجد صور في المعرض",
+    noReviews: "لا توجد تقييمات بعد",
+    all: "الكل",
+    featured: "مميز",
+    anonymous: "مجهول",
   },
   
   // Favorites
