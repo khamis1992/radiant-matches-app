@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, CheckCircle } from "lucide-react";
 import { z } from "zod";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
-type AuthMode = "login" | "signup" | "forgot-password";
+type AuthMode = "login" | "signup" | "forgot-password" | "verify-email";
 
 const checkIfArtist = async (userId: string): Promise<boolean> => {
   const { data } = await supabase
@@ -32,6 +32,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
+  const [signupEmail, setSignupEmail] = useState("");
 
   useEffect(() => {
     const redirectUser = async (userId: string) => {
@@ -135,11 +136,11 @@ const Auth = () => {
         
         toast.success("Welcome back!");
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/home`,
             data: {
               full_name: fullName.trim(),
             },
@@ -155,7 +156,17 @@ const Auth = () => {
           return;
         }
         
-        toast.success("Account created successfully!");
+        // Check if email confirmation is required
+        if (data.user && !data.session) {
+          // User created but no session means email confirmation is required
+          setSignupEmail(email.trim());
+          setMode("verify-email");
+          setEmail("");
+          setPassword("");
+          setFullName("");
+        } else {
+          toast.success("Account created successfully!");
+        }
       }
     } catch (error: any) {
       toast.error("An unexpected error occurred");
@@ -174,6 +185,7 @@ const Auth = () => {
       case "login": return "Welcome back";
       case "signup": return "Create account";
       case "forgot-password": return "Reset password";
+      case "verify-email": return "Check your email";
     }
   };
 
@@ -182,6 +194,32 @@ const Auth = () => {
       case "login": return "Sign in to continue booking your favorite artists";
       case "signup": return "Join us to discover amazing makeup artists";
       case "forgot-password": return "Enter your email and we'll send you a reset link";
+      case "verify-email": return `We've sent a verification link to ${signupEmail}`;
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!signupEmail) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: signupEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/home`,
+        },
+      });
+      
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Verification email resent!");
+      }
+    } catch (error) {
+      toast.error("Failed to resend verification email");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -206,7 +244,41 @@ const Auth = () => {
           </p>
         </div>
 
-        {mode === "forgot-password" ? (
+        {mode === "verify-email" ? (
+          <div className="text-center space-y-6">
+            <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+              <CheckCircle className="w-10 h-10 text-primary" />
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-foreground">
+                Click the link in your email to verify your account.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Check your spam folder if you don't see it.
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleResendVerification}
+                disabled={loading}
+              >
+                {loading ? "Sending..." : "Resend Verification Email"}
+              </Button>
+              
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => switchMode("login")}
+              >
+                Back to Sign In
+              </Button>
+            </div>
+          </div>
+        ) : mode === "forgot-password" ? (
           <form onSubmit={handleForgotPassword} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -316,19 +388,20 @@ const Auth = () => {
           </form>
         )}
 
-        <div className="mt-6 text-center">
-          {mode === "forgot-password" ? (
-            <p className="text-muted-foreground">
-              Remember your password?{" "}
-              <button
-                type="button"
-                onClick={() => switchMode("login")}
-                className="text-primary font-semibold hover:underline"
-              >
-                Sign In
-              </button>
-            </p>
-          ) : (
+        {mode !== "verify-email" && (
+          <div className="mt-6 text-center">
+            {mode === "forgot-password" ? (
+              <p className="text-muted-foreground">
+                Remember your password?{" "}
+                <button
+                  type="button"
+                  onClick={() => switchMode("login")}
+                  className="text-primary font-semibold hover:underline"
+                >
+                  Sign In
+                </button>
+              </p>
+            ) : (
             <p className="text-muted-foreground">
               {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
               <button
@@ -339,8 +412,9 @@ const Auth = () => {
                 {mode === "login" ? "Sign Up" : "Sign In"}
               </button>
             </p>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
