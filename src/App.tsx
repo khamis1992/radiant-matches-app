@@ -7,7 +7,7 @@ import { NotificationPrompt } from "@/components/NotificationPrompt";
 import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
-import Categories from "./pages/Categories";
+import MakeupArtists from "./pages/MakeupArtists";
 import ArtistProfile from "./pages/ArtistProfile";
 import ArtistEarnings from "./pages/artist/ArtistEarnings";
 import ArtistBookings from "./pages/artist/ArtistBookings";
@@ -34,7 +34,7 @@ const App = () => (
           <Route path="/" element={<Onboarding />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/categories" element={<Categories />} />
+          <Route path="/makeup-artists" element={<MakeupArtists />} />
           <Route path="/artist/:id" element={<ArtistProfile />} />
           <Route path="/artist-dashboard" element={<ArtistEarnings />} />
           <Route path="/artist-bookings" element={<ArtistBookings />} />

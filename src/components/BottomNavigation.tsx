@@ -1,4 +1,4 @@
-import { Home, Calendar, MessageCircle, User, LayoutDashboard, Palette, Image, LucideIcon, Grid3X3, Heart } from "lucide-react";
+import { Home, Calendar, MessageCircle, User, LayoutDashboard, Palette, Image, LucideIcon, Users, Heart } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePendingBookingsCount } from "@/hooks/usePendingBookings";
@@ -12,7 +12,7 @@ interface NavItem {
 
 const customerNavItems: NavItem[] = [
   { icon: Home, label: "Home", path: "/home" },
-  { icon: Grid3X3, label: "Categories", path: "/categories" },
+  { icon: Users, label: "Artists", path: "/makeup-artists" },
   { icon: Heart, label: "Favorites", path: "/favorites" },
   { icon: Calendar, label: "Bookings", path: "/bookings", showBadge: true },
   { icon: User, label: "Profile", path: "/profile" },
