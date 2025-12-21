@@ -5,6 +5,7 @@ import { Calendar, Clock, MapPin, CreditCard, Check } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { formatQAR, QATAR_LOCALE } from "@/lib/locale";
 
 import artist1 from "@/assets/artist-1.jpg";
 
@@ -14,7 +15,7 @@ const timeSlots = [
 ];
 
 const locations = [
-  { id: "client", label: "At My Location", description: "Artist comes to you (+$25)" },
+  { id: "client", label: "At My Location", description: "Artist comes to you (+QAR 90)" },
   { id: "studio", label: "Artist's Studio", description: "Visit the artist's workspace" },
 ];
 
@@ -99,7 +100,7 @@ const Booking = () => {
             <p className="text-sm text-primary">{serviceName}</p>
           </div>
           <div className="ml-auto text-right">
-            <p className="font-bold text-foreground">$350</p>
+            <p className="font-bold text-foreground">{formatQAR(1275)}</p>
             <p className="text-xs text-muted-foreground">3 hours</p>
           </div>
         </div>
@@ -127,13 +128,13 @@ const Booking = () => {
                     }`}
                   >
                     <p className="text-xs text-muted-foreground">
-                      {date.toLocaleDateString("en-US", { weekday: "short" })}
+                      {date.toLocaleDateString(QATAR_LOCALE, { weekday: "short" })}
                     </p>
                     <p className={`text-lg font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>
                       {date.getDate()}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {date.toLocaleDateString("en-US", { month: "short" })}
+                      {date.toLocaleDateString(QATAR_LOCALE, { month: "short" })}
                     </p>
                   </button>
                 );
@@ -221,7 +222,7 @@ const Booking = () => {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Date</span>
                 <span className="font-medium text-foreground">
-                  {selectedDate?.toLocaleDateString("en-US", {
+                  {selectedDate?.toLocaleDateString(QATAR_LOCALE, {
                     weekday: "short",
                     month: "short",
                     day: "numeric",
@@ -241,18 +242,18 @@ const Booking = () => {
               <div className="border-t border-border pt-4">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Service Fee</span>
-                  <span className="font-medium text-foreground">$350</span>
+                  <span className="font-medium text-foreground">{formatQAR(1275)}</span>
                 </div>
                 {selectedLocation === "client" && (
                   <div className="flex justify-between mt-2">
                     <span className="text-muted-foreground">Travel Fee</span>
-                    <span className="font-medium text-foreground">$25</span>
+                    <span className="font-medium text-foreground">{formatQAR(90)}</span>
                   </div>
                 )}
                 <div className="flex justify-between mt-4 text-lg">
                   <span className="font-semibold text-foreground">Total</span>
                   <span className="font-bold text-primary">
-                    ${selectedLocation === "client" ? 375 : 350}
+                    {formatQAR(selectedLocation === "client" ? 1365 : 1275)}
                   </span>
                 </div>
               </div>
@@ -308,7 +309,7 @@ const Booking = () => {
             className="w-full"
             onClick={handleConfirmBooking}
           >
-            Pay ${selectedLocation === "client" ? 375 : 350}
+            Pay {formatQAR(selectedLocation === "client" ? 1365 : 1275)}
           </Button>
         )}
       </div>

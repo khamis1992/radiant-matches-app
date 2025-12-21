@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserBookings } from "@/hooks/useBookings";
 import { useAuth } from "@/hooks/useAuth";
+import { formatBookingTime } from "@/lib/locale";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
@@ -51,10 +52,7 @@ const Bookings = () => {
   const { upcoming = [], past = [] } = bookings || {};
 
   const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(":");
-    const date = new Date();
-    date.setHours(parseInt(hours), parseInt(minutes));
-    return format(date, "h:mm a");
+    return formatBookingTime(time);
   };
 
   const getStatusBadge = (status: string) => {

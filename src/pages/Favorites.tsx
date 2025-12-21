@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useNavigate } from "react-router-dom";
-import { Star, MapPin, Clock, DollarSign, Heart } from "lucide-react";
+import { Star, MapPin, Clock, Heart } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { formatQAR } from "@/lib/locale";
 import artist1 from "@/assets/artist-1.jpg";
 
 const Favorites = () => {
@@ -155,8 +156,7 @@ const Favorites = () => {
                         )}
                         <div className="flex items-center gap-4 mt-2">
                           <div className="flex items-center gap-1 text-sm">
-                            <DollarSign className="w-3.5 h-3.5 text-primary" />
-                            <span className="font-semibold text-foreground">${service.price}</span>
+                            <span className="font-semibold text-foreground">{formatQAR(service.price)}</span>
                           </div>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Clock className="w-3.5 h-3.5" />
