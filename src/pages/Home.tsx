@@ -143,8 +143,33 @@ const Home = () => {
         <h2 className="text-lg font-semibold text-foreground mb-4">
           {t.home.browseCategory}
         </h2>
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
-        {categories.map((category) => (
+        {/* Mobile Carousel */}
+        <div className="md:hidden -mx-5">
+          <Carousel
+            opts={{
+              align: "start",
+              loop: false,
+              dragFree: true,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="px-5 -ml-3">
+              {categories.map((category) => (
+                <CarouselItem key={category.key} className="basis-auto pl-3">
+                  <CategoryCard
+                    name={category.name}
+                    image={category.image}
+                    onClick={() => navigate(`/makeup-artists?category=${encodeURIComponent(category.key)}`)}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        </div>
+        
+        {/* Desktop Scroll */}
+        <div className="hidden md:flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          {categories.map((category) => (
             <CategoryCard
               key={category.key}
               name={category.name}
