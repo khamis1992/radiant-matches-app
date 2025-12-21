@@ -14,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, DollarSign, Clock, Briefcase, User } from "lucide-react";
+import { Plus, Pencil, Trash2, Clock, Briefcase, User } from "lucide-react";
+import { formatQAR } from "@/lib/locale";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -191,7 +192,7 @@ const ArtistServices = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="price">Price ($)</Label>
+                    <Label htmlFor="price">Price (QAR)</Label>
                     <Input
                       id="price"
                       type="number"
@@ -267,8 +268,7 @@ const ArtistServices = () => {
                     )}
                     <div className="flex items-center gap-4 mt-2">
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <DollarSign className="w-3.5 h-3.5" />
-                        <span className="font-medium text-foreground">${service.price}</span>
+                        <span className="font-medium text-foreground">{formatQAR(service.price)}</span>
                       </div>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Clock className="w-3.5 h-3.5" />
