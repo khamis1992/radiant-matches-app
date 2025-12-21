@@ -6,10 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, CheckCircle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { z } from "zod";
-
-const emailSchema = z.string().email("Please enter a valid email address");
-const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
 type AuthMode = "login" | "signup" | "forgot-password" | "verify-email";
 
@@ -25,6 +23,7 @@ const checkIfArtist = async (userId: string): Promise<boolean> => {
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +32,9 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
   const [signupEmail, setSignupEmail] = useState("");
+
+  const emailSchema = z.string().email(language === "ar" ? "يرجى إدخال بريد إلكتروني صحيح" : "Please enter a valid email address");
+  const passwordSchema = z.string().min(6, t.settings.passwordMinLength);
 
   useEffect(() => {
     const redirectUser = async (userId: string) => {
@@ -73,7 +75,7 @@ const Auth = () => {
     }
     
     if (mode === "signup" && !fullName.trim()) {
-      newErrors.fullName = "Full name is required";
+      newErrors.fullName = language === "ar" ? "الاسم الكامل مطلوب" : "Full name is required";
     }
     
     setErrors(newErrors);
@@ -101,11 +103,11 @@ const Auth = () => {
         return;
       }
       
-      toast.success("Password reset email sent! Check your inbox.");
+      toast.success(language === "ar" ? "تم إرسال رابط إعادة التعيين! تحقق من بريدك." : "Password reset email sent! Check your inbox.");
       setMode("login");
       setEmail("");
     } catch (error: any) {
-      toast.error("An unexpected error occurred");
+      toast.error(t.errors.somethingWrong);
     } finally {
       setLoading(false);
     }
@@ -127,14 +129,14 @@ const Auth = () => {
         
         if (error) {
           if (error.message.includes("Invalid login credentials")) {
-            toast.error("Invalid email or password");
+            toast.error(language === "ar" ? "بريد إلكتروني أو كلمة مرور غير صحيحة" : "Invalid email or password");
           } else {
             toast.error(error.message);
           }
           return;
         }
         
-        toast.success("Welcome back!");
+        toast.success(language === "ar" ? "مرحباً بعودتك!" : "Welcome back!");
       } else {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -149,7 +151,7 @@ const Auth = () => {
         
         if (error) {
           if (error.message.includes("User already registered")) {
-            toast.error("An account with this email already exists. Please sign in.");
+            toast.error(language === "ar" ? "يوجد حساب بهذا البريد بالفعل. يرجى تسجيل الدخول." : "An account with this email already exists. Please sign in.");
           } else {
             toast.error(error.message);
           }
@@ -165,11 +167,11 @@ const Auth = () => {
           setPassword("");
           setFullName("");
         } else {
-          toast.success("Account created successfully!");
+          toast.success(language === "ar" ? "تم إنشاء الحساب بنجاح!" : "Account created successfully!");
         }
       }
     } catch (error: any) {
-      toast.error("An unexpected error occurred");
+      toast.error(t.errors.somethingWrong);
     } finally {
       setLoading(false);
     }
@@ -182,19 +184,19 @@ const Auth = () => {
 
   const getTitle = () => {
     switch (mode) {
-      case "login": return "Welcome back";
-      case "signup": return "Create account";
-      case "forgot-password": return "Reset password";
-      case "verify-email": return "Check your email";
+      case "login": return language === "ar" ? "مرحباً بعودتك" : "Welcome back";
+      case "signup": return language === "ar" ? "إنشاء حساب" : "Create account";
+      case "forgot-password": return language === "ar" ? "إعادة تعيين كلمة المرور" : "Reset password";
+      case "verify-email": return t.auth.verifyEmail;
     }
   };
 
   const getSubtitle = () => {
     switch (mode) {
-      case "login": return "Sign in to continue booking your favorite artists";
-      case "signup": return "Join us to discover amazing makeup artists";
-      case "forgot-password": return "Enter your email and we'll send you a reset link";
-      case "verify-email": return `We've sent a verification link to ${signupEmail}`;
+      case "login": return language === "ar" ? "سجلي دخولك لمتابعة حجز فنانتك المفضلة" : "Sign in to continue booking your favorite artists";
+      case "signup": return language === "ar" ? "انضمي إلينا لاكتشاف فنانات مكياج مميزات" : "Join us to discover amazing makeup artists";
+      case "forgot-password": return language === "ar" ? "أدخلي بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين" : "Enter your email and we'll send you a reset link";
+      case "verify-email": return `${t.auth.checkEmail}`;
     }
   };
 
@@ -214,10 +216,10 @@ const Auth = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Verification email resent!");
+        toast.success(t.auth.emailSent);
       }
     } catch (error) {
-      toast.error("Failed to resend verification email");
+      toast.error(language === "ar" ? "فشل في إعادة إرسال بريد التحقق" : "Failed to resend verification email");
     } finally {
       setLoading(false);
     }
@@ -252,10 +254,10 @@ const Auth = () => {
             
             <div className="space-y-2">
               <p className="text-foreground">
-                Click the link in your email to verify your account.
+                {language === "ar" ? "انقري على الرابط في بريدك الإلكتروني للتحقق من حسابك." : "Click the link in your email to verify your account."}
               </p>
               <p className="text-sm text-muted-foreground">
-                Check your spam folder if you don't see it.
+                {language === "ar" ? "تحققي من مجلد الرسائل غير المرغوب فيها إذا لم تجديه." : "Check your spam folder if you don't see it."}
               </p>
             </div>
             
@@ -266,7 +268,7 @@ const Auth = () => {
                 onClick={handleResendVerification}
                 disabled={loading}
               >
-                {loading ? "Sending..." : "Resend Verification Email"}
+                {loading ? (language === "ar" ? "جاري الإرسال..." : "Sending...") : t.auth.resendEmail}
               </Button>
               
               <Button
@@ -274,23 +276,23 @@ const Auth = () => {
                 className="w-full"
                 onClick={() => switchMode("login")}
               >
-                Back to Sign In
+                {language === "ar" ? "العودة لتسجيل الدخول" : "Back to Sign In"}
               </Button>
             </div>
           </div>
         ) : mode === "forgot-password" ? (
           <form onSubmit={handleForgotPassword} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t.auth.email}</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={language === "ar" ? "أدخلي بريدك الإلكتروني" : "Enter your email"}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
+                  className="ps-10"
                 />
               </div>
               {errors.email && (
@@ -299,23 +301,23 @@ const Auth = () => {
             </div>
 
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? "Please wait..." : "Send Reset Link"}
+              {loading ? (language === "ar" ? "يرجى الانتظار..." : "Please wait...") : (language === "ar" ? "إرسال رابط إعادة التعيين" : "Send Reset Link")}
             </Button>
           </form>
         ) : (
           <form onSubmit={handleAuth} className="space-y-5">
             {mode === "signup" && (
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName">{t.auth.fullName}</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <User className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="fullName"
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder={language === "ar" ? "أدخلي اسمك الكامل" : "Enter your full name"}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-10"
+                    className="ps-10"
                   />
                 </div>
                 {errors.fullName && (
@@ -325,16 +327,16 @@ const Auth = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t.auth.email}</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={language === "ar" ? "أدخلي بريدك الإلكتروني" : "Enter your email"}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
+                  className="ps-10"
                 />
               </div>
               {errors.email && (
@@ -344,31 +346,31 @@ const Auth = () => {
 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t.auth.password}</Label>
                 {mode === "login" && (
                   <button
                     type="button"
                     onClick={() => switchMode("forgot-password")}
                     className="text-sm text-primary hover:underline"
                   >
-                    Forgot password?
+                    {t.auth.forgotPassword}
                   </button>
                 )}
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder={language === "ar" ? "أدخلي كلمة المرور" : "Enter your password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10"
+                  className="ps-10 pe-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -383,7 +385,7 @@ const Auth = () => {
             </div>
 
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? "Please wait..." : mode === "login" ? "Sign In" : "Create Account"}
+              {loading ? (language === "ar" ? "يرجى الانتظار..." : "Please wait...") : mode === "login" ? t.auth.login : t.auth.signup}
             </Button>
           </form>
         )}
@@ -392,24 +394,24 @@ const Auth = () => {
           <div className="mt-6 text-center">
             {mode === "forgot-password" ? (
               <p className="text-muted-foreground">
-                Remember your password?{" "}
+                {language === "ar" ? "تتذكرين كلمة المرور؟" : "Remember your password?"}{" "}
                 <button
                   type="button"
                   onClick={() => switchMode("login")}
                   className="text-primary font-semibold hover:underline"
                 >
-                  Sign In
+                  {t.auth.login}
                 </button>
               </p>
             ) : (
             <p className="text-muted-foreground">
-              {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
+              {mode === "login" ? t.auth.noAccount : t.auth.hasAccount}{" "}
               <button
                 type="button"
                 onClick={() => switchMode(mode === "login" ? "signup" : "login")}
                 className="text-primary font-semibold hover:underline"
               >
-                {mode === "login" ? "Sign Up" : "Sign In"}
+                {mode === "login" ? t.auth.signup : t.auth.login}
               </button>
             </p>
             )}
