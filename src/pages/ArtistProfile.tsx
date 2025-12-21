@@ -75,10 +75,11 @@ const ArtistProfile = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/20" />
         
         {/* Navigation */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
+        <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-10">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 rounded-full bg-card/80 backdrop-blur-sm shadow-md"
+            className="p-2 rounded-full bg-card/80 backdrop-blur-sm shadow-md hover:bg-card transition-colors"
+            aria-label="Go back"
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>

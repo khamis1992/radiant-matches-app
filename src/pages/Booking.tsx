@@ -68,6 +68,7 @@ const Booking = () => {
           <button
             onClick={() => (step > 1 ? setStep(step - 1) : navigate(-1))}
             className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
+            aria-label="Go back"
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
