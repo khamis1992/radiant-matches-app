@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { FavoriteButton } from "./FavoriteButton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ArtistCardProps {
   id: string;
@@ -31,6 +32,21 @@ const ArtistCard = ({
   categories = [],
 }: ArtistCardProps) => {
   const coverImage = featuredImage || image;
+  const { t, isRTL } = useLanguage();
+
+  // Category translation map
+  const getCategoryLabel = (category: string) => {
+    const categoryMap: Record<string, string> = {
+      "Makeup": t.categories.makeup,
+      "Hair Styling": t.categories.hairStyling,
+      "Henna": t.categories.henna,
+      "Lashes & Brows": t.categories.lashesBrows,
+      "Nails": t.categories.nails,
+      "Bridal": t.categories.bridal,
+      "Photoshoot": t.categories.photoshoot,
+    };
+    return categoryMap[category] || category;
+  };
 
   return (
     <Link to={`/artist/${id}`} className="block">
@@ -43,7 +59,7 @@ const ArtistCard = ({
             className="w-full h-full object-cover"
           />
           {/* Favorite Button */}
-          <div className="absolute top-3 right-3">
+          <div className={`absolute top-3 ${isRTL ? "left-3" : "right-3"}`}>
             <FavoriteButton
               itemType="artist"
               itemId={id}
@@ -75,7 +91,7 @@ const ArtistCard = ({
                   key={category}
                   className="px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full"
                 >
-                  {category}
+                  {getCategoryLabel(category)}
                 </span>
               ))}
               {categories.length > 3 && (
@@ -103,7 +119,7 @@ const ArtistCard = ({
                 }`}
               />
             ))}
-            <span className="text-sm font-medium text-foreground ml-1">
+            <span className="text-sm font-medium text-foreground ms-1">
               {rating.toFixed(1)}
             </span>
             <span className="text-sm text-muted-foreground">({reviews})</span>
@@ -120,7 +136,7 @@ const ArtistCard = ({
             className="w-full mt-4 bg-[hsl(350,70%,65%)] hover:bg-[hsl(350,70%,55%)] text-white shadow-md"
             size="lg"
           >
-            Book now
+            {t.bookings.bookNow}
           </Button>
         </div>
       </div>
