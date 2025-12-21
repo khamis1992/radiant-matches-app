@@ -144,6 +144,9 @@ export const en = {
     passwordMinLength: "Password must be at least 6 characters",
     passwordsNoMatch: "Passwords don't match",
     enterNewPassword: "Enter your new password below. Make sure it's at least 6 characters.",
+    enterNewPasswordPlaceholder: "Enter new password",
+    confirmNewPasswordPlaceholder: "Confirm new password",
+    unexpectedError: "An unexpected error occurred",
   },
   
   // Bookings

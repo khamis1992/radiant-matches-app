@@ -91,7 +91,7 @@ const Settings = () => {
         form.reset();
       }
     } catch (error) {
-      toast.error("An unexpected error occurred");
+      toast.error(t.settings.unexpectedError);
     } finally {
       setIsSubmitting(false);
     }
@@ -359,7 +359,7 @@ const Settings = () => {
                       <div className="relative">
                         <Input
                           type={showNewPassword ? "text" : "password"}
-                          placeholder="Enter new password"
+                          placeholder={t.settings.enterNewPasswordPlaceholder}
                           {...field}
                         />
                         <button
@@ -390,7 +390,7 @@ const Settings = () => {
                       <div className="relative">
                         <Input
                           type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Confirm new password"
+                          placeholder={t.settings.confirmNewPasswordPlaceholder}
                           {...field}
                         />
                         <button
