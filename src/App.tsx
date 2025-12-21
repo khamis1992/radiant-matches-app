@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { NotificationPrompt } from "@/components/NotificationPrompt";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
@@ -26,33 +27,35 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <NotificationPrompt />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Onboarding />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/makeup-artists" element={<MakeupArtists />} />
-          <Route path="/artist/:id" element={<ArtistProfile />} />
-          <Route path="/artist-dashboard" element={<ArtistEarnings />} />
-          <Route path="/artist-bookings" element={<ArtistBookings />} />
-          <Route path="/artist-services" element={<ArtistServices />} />
-          <Route path="/artist-profile" element={<ArtistProfilePage />} />
-          <Route path="/artist-gallery" element={<ArtistGallery />} />
-          <Route path="/booking/:id" element={<Booking />} />
-          <Route path="/bookings" element={<Bookings />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/settings" element={<Settings />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <LanguageProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <NotificationPrompt />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Onboarding />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/makeup-artists" element={<MakeupArtists />} />
+            <Route path="/artist/:id" element={<ArtistProfile />} />
+            <Route path="/artist-dashboard" element={<ArtistEarnings />} />
+            <Route path="/artist-bookings" element={<ArtistBookings />} />
+            <Route path="/artist-services" element={<ArtistServices />} />
+            <Route path="/artist-profile" element={<ArtistProfilePage />} />
+            <Route path="/artist-gallery" element={<ArtistGallery />} />
+            <Route path="/booking/:id" element={<Booking />} />
+            <Route path="/bookings" element={<Bookings />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/settings" element={<Settings />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 

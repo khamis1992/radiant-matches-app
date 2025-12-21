@@ -5,9 +5,11 @@ import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
 import ArtistCard from "@/components/ArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useArtists } from "@/hooks/useArtists";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useProfile } from "@/hooks/useProfile";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -30,14 +32,14 @@ import categoryNails from "@/assets/category-nails.jpg";
 import categoryBridal from "@/assets/category-bridal.jpg";
 import categoryPhotoshoot from "@/assets/category-photoshoot.jpg";
 
-const categories = [
-  { name: "Makeup", image: categoryMakeup },
-  { name: "Hair Styling", image: categoryHairstyling },
-  { name: "Henna", image: categoryHenna },
-  { name: "Lashes & Brows", image: categoryLashes },
-  { name: "Nails", image: categoryNails },
-  { name: "Bridal", image: categoryBridal },
-  { name: "Photoshoot", image: categoryPhotoshoot },
+const getCategoryTranslations = (t: ReturnType<typeof useLanguage>["t"]) => [
+  { name: t.categories.makeup, image: categoryMakeup, key: "Makeup" },
+  { name: t.categories.hairStyling, image: categoryHairstyling, key: "Hair Styling" },
+  { name: t.categories.henna, image: categoryHenna, key: "Henna" },
+  { name: t.categories.lashesBrows, image: categoryLashes, key: "Lashes & Brows" },
+  { name: t.categories.nails, image: categoryNails, key: "Nails" },
+  { name: t.categories.bridal, image: categoryBridal, key: "Bridal" },
+  { name: t.categories.photoshoot, image: categoryPhotoshoot, key: "Photoshoot" },
 ];
 
 const Home = () => {
@@ -45,6 +47,9 @@ const Home = () => {
   const { isArtist, loading: roleLoading } = useUserRole();
   const { data: artists, isLoading } = useArtists();
   const { data: profile } = useProfile();
+  const { t } = useLanguage();
+  
+  const categories = getCategoryTranslations(t);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -82,6 +87,7 @@ const Home = () => {
           <div className="flex items-center justify-between mb-4">
             <img src={logoImage} alt="Glam" className="h-10 w-auto" />
             <div className="flex items-center gap-2">
+              <LanguageSwitcher />
               <button 
                 onClick={() => navigate("/messages")}
                 className="relative p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors"
@@ -107,17 +113,17 @@ const Home = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 bg-card border border-border">
                   <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    My Profile
+                    <User className="me-2 h-4 w-4" />
+                    {t.userMenu.myProfile}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                    <Settings className="me-2 h-4 w-4" />
+                    {t.userMenu.settings}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
+                    <LogOut className="me-2 h-4 w-4" />
+                    {t.userMenu.logout}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -130,15 +136,15 @@ const Home = () => {
       {/* Categories */}
       <section className="px-5 py-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">
-          Browse by Category
+          {t.home.browseCategory}
         </h2>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
         {categories.map((category) => (
             <CategoryCard
-              key={category.name}
+              key={category.key}
               name={category.name}
               image={category.image}
-              onClick={() => navigate(`/makeup-artists?category=${encodeURIComponent(category.name)}`)}
+              onClick={() => navigate(`/makeup-artists?category=${encodeURIComponent(category.key)}`)}
             />
           ))}
         </div>
@@ -148,13 +154,13 @@ const Home = () => {
       <section className="px-5 pb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-foreground">
-            Top Rated Artists
+            {t.home.topRatedArtists}
           </h2>
           <button 
             onClick={() => navigate("/makeup-artists")}
             className="text-sm text-primary font-medium hover:underline"
           >
-            See All
+            {t.common.seeAll}
           </button>
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -199,7 +205,7 @@ const Home = () => {
             ))
           ) : (
             <div className="col-span-2 text-center py-8 text-muted-foreground">
-              <p>No artists available yet</p>
+              <p>{t.home.noArtistsYet}</p>
             </div>
           )}
         </div>
