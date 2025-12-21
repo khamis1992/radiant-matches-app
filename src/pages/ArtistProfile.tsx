@@ -14,7 +14,9 @@ import { useArtist } from "@/hooks/useArtists";
 import { useArtistServices } from "@/hooks/useServices";
 import { useArtistReviews } from "@/hooks/useReviews";
 import { useArtistPortfolio } from "@/hooks/usePortfolio";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDistanceToNow } from "date-fns";
+import { ar, enUS } from "date-fns/locale";
 
 import artist1 from "@/assets/artist-1.jpg";
 
@@ -30,6 +32,9 @@ const ArtistProfile = () => {
   const { data: services, isLoading: servicesLoading } = useArtistServices(id);
   const { data: reviews, isLoading: reviewsLoading } = useArtistReviews(id);
   const { data: portfolioItems = [], isLoading: portfolioLoading } = useArtistPortfolio(id);
+  const { t, language } = useLanguage();
+  
+  const dateLocale = language === "ar" ? ar : enUS;
 
   useSwipeBack();
 
@@ -56,8 +61,8 @@ const ArtistProfile = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground mb-4">Artist not found</p>
-          <Button onClick={() => navigate("/home")}>Go Home</Button>
+          <p className="text-muted-foreground mb-4">{language === "ar" ? "الفنانة غير موجودة" : "Artist not found"}</p>
+          <Button onClick={() => navigate("/home")}>{t.nav.home}</Button>
         </div>
       </div>
     );
@@ -106,7 +111,7 @@ const ArtistProfile = () => {
             <div>
               <h1 className="text-2xl font-bold text-foreground">{displayName}</h1>
               <p className="text-primary font-medium mt-1">
-                {artist.bio?.split(".")[0] || "Makeup Artist"}
+                {artist.bio?.split(".")[0] || t.artist.makeupArtist}
               </p>
             </div>
             <div className="flex items-center gap-1 bg-accent px-3 py-1.5 rounded-full">
@@ -125,12 +130,12 @@ const ArtistProfile = () => {
             </div>
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Award className="w-4 h-4" />
-              <span className="text-sm">{artist.experience_years || 0} years</span>
+              <span className="text-sm">{artist.experience_years || 0} {t.artist.yearsExperience}</span>
             </div>
           </div>
 
           <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
-            {artist.bio || "No bio available"}
+            {artist.bio || (language === "ar" ? "لا يوجد وصف" : "No bio available")}
           </p>
 
           <div className="flex gap-3 mt-5">
@@ -139,7 +144,7 @@ const ArtistProfile = () => {
               onClick={() => services?.[0] && handleBookService(services[0].name)}
               disabled={!services?.length}
             >
-              Book Now
+              {t.bookings.bookNow}
             </Button>
             <Button variant="outline" size="icon">
               <MessageCircle className="w-5 h-5" />
@@ -156,19 +161,19 @@ const ArtistProfile = () => {
               value="services"
               className="flex-1 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm"
             >
-              Services
+              {t.artist.servicesOffered}
             </TabsTrigger>
             <TabsTrigger
               value="portfolio"
               className="flex-1 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm"
             >
-              Portfolio
+              {t.artist.portfolio}
             </TabsTrigger>
             <TabsTrigger
               value="reviews"
               className="flex-1 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm"
             >
-              Reviews
+              {t.artist.reviews}
             </TabsTrigger>
           </TabsList>
 
@@ -192,7 +197,7 @@ const ArtistProfile = () => {
               ))
             ) : (
               <p className="text-center text-muted-foreground py-4">
-                No services available
+                {language === "ar" ? "لا توجد خدمات متاحة" : "No services available"}
               </p>
             )}
           </TabsContent>
@@ -213,7 +218,7 @@ const ArtistProfile = () => {
                     className="cursor-pointer"
                     onClick={() => setPortfolioFilter("all")}
                   >
-                    All ({portfolioItems.length})
+                    {language === "ar" ? "الكل" : "All"} ({portfolioItems.length})
                   </Badge>
                   {Object.entries(
                     portfolioItems.reduce((acc, item) => {
@@ -260,14 +265,14 @@ const ArtistProfile = () => {
                         />
                         {/* Featured indicator */}
                         {item.is_featured && (
-                          <div className="absolute top-2 right-2">
+                          <div className="absolute top-2 end-2">
                             <Badge className="bg-primary text-primary-foreground text-xs gap-1">
                               <Star className="w-3 h-3 fill-current" />
-                              Featured
+                              {language === "ar" ? "مميز" : "Featured"}
                             </Badge>
                           </div>
                         )}
-                        <div className="absolute bottom-2 left-2">
+                        <div className="absolute bottom-2 start-2">
                           <Badge variant="secondary" className="text-xs">
                             {item.category}
                           </Badge>
@@ -306,7 +311,7 @@ const ArtistProfile = () => {
               </>
             ) : (
               <p className="text-center text-muted-foreground py-8">
-                No portfolio images yet
+                {language === "ar" ? "لا توجد صور في المعرض" : "No portfolio images yet"}
               </p>
             )}
           </TabsContent>
@@ -322,16 +327,16 @@ const ArtistProfile = () => {
               reviews.map((review) => (
                 <ReviewCard
                   key={review.id}
-                  name={review.customer_profile?.full_name || "Anonymous"}
+                  name={review.customer_profile?.full_name || (language === "ar" ? "مجهول" : "Anonymous")}
                   avatar={review.customer_profile?.avatar_url || artist1}
                   rating={review.rating}
-                  date={formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}
+                  date={formatDistanceToNow(new Date(review.created_at), { addSuffix: true, locale: dateLocale })}
                   comment={review.comment || ""}
                 />
               ))
             ) : (
               <p className="text-center text-muted-foreground py-4">
-                No reviews yet
+                {language === "ar" ? "لا توجد تقييمات بعد" : "No reviews yet"}
               </p>
             )}
           </TabsContent>
