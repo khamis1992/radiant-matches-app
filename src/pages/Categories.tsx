@@ -185,7 +185,7 @@ const Categories = () => {
                 className="flex flex-col items-center gap-2 flex-shrink-0"
               >
                 <div 
-                  className={`w-20 h-20 rounded-2xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg ${
+                  className={`w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-2xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg ${
                     selectedCategory === category.id 
                       ? "ring-2 ring-primary ring-offset-2" 
                       : ""
@@ -197,7 +197,7 @@ const Categories = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className={`text-xs font-medium text-center max-w-20 truncate ${
+                <span className={`text-xs md:text-sm font-medium text-center max-w-20 md:max-w-28 lg:max-w-32 truncate ${
                   selectedCategory === category.id 
                     ? "text-primary" 
                     : "text-foreground"
