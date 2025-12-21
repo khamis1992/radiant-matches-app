@@ -317,4 +317,13 @@ export const ar: TranslationKeys = {
     discard: "تجاهل",
     keepEditing: "متابعة التعديل",
   },
+
+  // Image Cropper
+  cropper: {
+    free: "حر",
+    reset: "إعادة تعيين",
+    skipCrop: "تخطي القص",
+    applyCrop: "تطبيق القص",
+    cropPreview: "معاينة القص",
+  },
 };

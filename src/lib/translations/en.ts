@@ -315,6 +315,15 @@ export const en = {
     discard: "Discard",
     keepEditing: "Keep Editing",
   },
+
+  // Image Cropper
+  cropper: {
+    free: "Free",
+    reset: "Reset",
+    skipCrop: "Skip Crop",
+    applyCrop: "Apply Crop",
+    cropPreview: "Crop preview",
+  },
 };
 
 export type TranslationKeys = typeof en;
