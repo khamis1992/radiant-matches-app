@@ -141,12 +141,12 @@ const Home = () => {
           </button>
         </div>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
-          {categories.map((category) => (
+        {categories.map((category) => (
             <CategoryCard
               key={category.name}
               name={category.name}
               image={category.image}
-              onClick={() => navigate("/categories")}
+              onClick={() => navigate(`/makeup-artists?category=${encodeURIComponent(category.name)}`)}
             />
           ))}
         </div>
