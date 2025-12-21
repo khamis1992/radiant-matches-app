@@ -5,7 +5,8 @@ import { Calendar, Clock, MapPin, CreditCard, Check } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { formatQAR, QATAR_LOCALE } from "@/lib/locale";
+import { formatQAR } from "@/lib/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import artist1 from "@/assets/artist-1.jpg";
 
@@ -14,15 +15,11 @@ const timeSlots = [
   "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
 ];
 
-const locations = [
-  { id: "client", label: "At My Location", description: "Artist comes to you (+QAR 90)" },
-  { id: "studio", label: "Artist's Studio", description: "Visit the artist's workspace" },
-];
-
 const Booking = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
   const serviceName = searchParams.get("service") || "Bridal Makeup";
   
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -30,6 +27,13 @@ const Booking = () => {
   const [selectedLocation, setSelectedLocation] = useState<string>("studio");
   const [step, setStep] = useState(1);
   const [isConfirmed, setIsConfirmed] = useState(false);
+
+  const dateLocale = language === "ar" ? "ar-QA" : "en-QA";
+
+  const locations = [
+    { id: "client", label: t.bookings.atMyLocation, description: `${t.bookings.artistComesToYou} (+QAR 90)` },
+    { id: "studio", label: t.bookings.artistStudio, description: t.bookings.visitArtistWorkspace },
+  ];
 
   useSwipeBack({
     onSwipeBack: () => (step > 1 ? setStep(step - 1) : navigate(-1)),
@@ -44,7 +48,7 @@ const Booking = () => {
 
   const handleConfirmBooking = () => {
     setIsConfirmed(true);
-    toast.success("Booking confirmed! Check your email for details.");
+    toast.success(t.bookings.bookingConfirmedToast);
     setTimeout(() => navigate("/bookings"), 2000);
   };
 
@@ -55,12 +59,12 @@ const Booking = () => {
           <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-6">
             <Check className="w-10 h-10 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Booking Confirmed!</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t.bookings.bookingConfirmed}</h1>
           <p className="text-muted-foreground mt-2">
-            Your appointment has been scheduled successfully.
+            {t.bookings.appointmentScheduled}
           </p>
           <p className="text-sm text-muted-foreground mt-4">
-            Redirecting to your bookings...
+            {t.bookings.redirectingToBookings}
           </p>
         </div>
       </div>
@@ -74,8 +78,10 @@ const Booking = () => {
         <div className="flex items-center gap-3 px-5 py-4">
           <BackButton onClick={() => (step > 1 ? setStep(step - 1) : navigate(-1))} />
           <div>
-            <h1 className="font-semibold text-foreground">Book Appointment</h1>
-            <p className="text-sm text-muted-foreground">Step {step} of 3</p>
+            <h1 className="font-semibold text-foreground">{t.bookings.bookAppointment}</h1>
+            <p className="text-sm text-muted-foreground">
+              {t.bookings.stepOf.replace("{step}", String(step)).replace("{total}", "3")}
+            </p>
           </div>
         </div>
         {/* Progress bar */}
@@ -99,9 +105,9 @@ const Booking = () => {
             <h3 className="font-medium text-foreground">Sofia Chen</h3>
             <p className="text-sm text-primary">{serviceName}</p>
           </div>
-          <div className="ml-auto text-right">
+          <div className="ms-auto text-end">
             <p className="font-bold text-foreground">{formatQAR(1275)}</p>
-            <p className="text-xs text-muted-foreground">3 hours</p>
+            <p className="text-xs text-muted-foreground">3 {t.bookings.hours}</p>
           </div>
         </div>
       </div>
@@ -112,7 +118,7 @@ const Booking = () => {
           <div className="animate-fade-in">
             <div className="flex items-center gap-2 mb-4">
               <Calendar className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Select Date</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t.bookings.selectDate}</h2>
             </div>
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
               {dates.map((date) => {
@@ -128,13 +134,13 @@ const Booking = () => {
                     }`}
                   >
                     <p className="text-xs text-muted-foreground">
-                      {date.toLocaleDateString(QATAR_LOCALE, { weekday: "short" })}
+                      {date.toLocaleDateString(dateLocale, { weekday: "short" })}
                     </p>
                     <p className={`text-lg font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>
                       {date.getDate()}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {date.toLocaleDateString(QATAR_LOCALE, { month: "short" })}
+                      {date.toLocaleDateString(dateLocale, { month: "short" })}
                     </p>
                   </button>
                 );
@@ -143,7 +149,7 @@ const Booking = () => {
 
             <div className="flex items-center gap-2 mt-8 mb-4">
               <Clock className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Select Time</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t.bookings.selectTime}</h2>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {timeSlots.map((time) => {
@@ -171,7 +177,7 @@ const Booking = () => {
           <div className="animate-fade-in">
             <div className="flex items-center gap-2 mb-4">
               <MapPin className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Select Location</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t.bookings.selectLocation}</h2>
             </div>
             <div className="space-y-3">
               {locations.map((location) => {
@@ -180,7 +186,7 @@ const Booking = () => {
                   <button
                     key={location.id}
                     onClick={() => setSelectedLocation(location.id)}
-                    className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-200 ${
+                    className={`w-full p-4 rounded-xl border-2 text-start transition-all duration-200 ${
                       isSelected
                         ? "border-primary bg-primary/10"
                         : "border-border bg-card hover:border-primary/50"
@@ -199,10 +205,10 @@ const Booking = () => {
 
             <div className="mt-6">
               <label className="text-sm font-medium text-foreground">
-                Additional Notes (optional)
+                {t.bookings.additionalNotes}
               </label>
               <textarea
-                placeholder="Any special requests or preferences..."
+                placeholder={t.bookings.notesPlaceholder}
                 className="w-full mt-2 p-4 bg-card border border-border rounded-xl resize-none h-24 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
             </div>
@@ -212,17 +218,17 @@ const Booking = () => {
         {/* Step 3: Confirm & Pay */}
         {step === 3 && (
           <div className="animate-fade-in">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Booking Summary</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">{t.bookings.bookingSummary}</h2>
             
             <div className="bg-card rounded-xl border border-border p-4 space-y-4">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Service</span>
+                <span className="text-muted-foreground">{t.bookings.service}</span>
                 <span className="font-medium text-foreground">{serviceName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Date</span>
+                <span className="text-muted-foreground">{t.bookings.date}</span>
                 <span className="font-medium text-foreground">
-                  {selectedDate?.toLocaleDateString(QATAR_LOCALE, {
+                  {selectedDate?.toLocaleDateString(dateLocale, {
                     weekday: "short",
                     month: "short",
                     day: "numeric",
@@ -230,28 +236,28 @@ const Booking = () => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Time</span>
+                <span className="text-muted-foreground">{t.bookings.time}</span>
                 <span className="font-medium text-foreground">{selectedTime}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Location</span>
+                <span className="text-muted-foreground">{t.bookings.location}</span>
                 <span className="font-medium text-foreground">
-                  {selectedLocation === "client" ? "Your Location" : "Artist's Studio"}
+                  {selectedLocation === "client" ? t.bookings.yourLocation : t.bookings.artistStudio}
                 </span>
               </div>
               <div className="border-t border-border pt-4">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Service Fee</span>
+                  <span className="text-muted-foreground">{t.bookings.serviceFee}</span>
                   <span className="font-medium text-foreground">{formatQAR(1275)}</span>
                 </div>
                 {selectedLocation === "client" && (
                   <div className="flex justify-between mt-2">
-                    <span className="text-muted-foreground">Travel Fee</span>
+                    <span className="text-muted-foreground">{t.bookings.travelFee}</span>
                     <span className="font-medium text-foreground">{formatQAR(90)}</span>
                   </div>
                 )}
                 <div className="flex justify-between mt-4 text-lg">
-                  <span className="font-semibold text-foreground">Total</span>
+                  <span className="font-semibold text-foreground">{t.bookings.total}</span>
                   <span className="font-bold text-primary">
                     {formatQAR(selectedLocation === "client" ? 1365 : 1275)}
                   </span>
@@ -262,7 +268,7 @@ const Booking = () => {
             <div className="mt-6">
               <div className="flex items-center gap-2 mb-4">
                 <CreditCard className="w-5 h-5 text-primary" />
-                <h3 className="font-semibold text-foreground">Payment Method</h3>
+                <h3 className="font-semibold text-foreground">{t.bookings.paymentMethod}</h3>
               </div>
               <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
                 <div className="w-12 h-8 bg-gradient-to-r from-[hsl(220,60%,50%)] to-[hsl(220,60%,40%)] rounded flex items-center justify-center">
@@ -270,7 +276,7 @@ const Booking = () => {
                 </div>
                 <div>
                   <p className="font-medium text-foreground">•••• •••• •••• 4242</p>
-                  <p className="text-xs text-muted-foreground">Expires 12/25</p>
+                  <p className="text-xs text-muted-foreground">{t.bookings.expires} 12/25</p>
                 </div>
               </div>
             </div>
@@ -283,7 +289,7 @@ const Booking = () => {
                   defaultChecked
                 />
                 <span className="text-sm text-muted-foreground">
-                  I agree to the cancellation policy and terms of service
+                  {t.bookings.agreeToTerms}
                 </span>
               </label>
             </div>
@@ -300,7 +306,7 @@ const Booking = () => {
             disabled={step === 1 && (!selectedDate || !selectedTime)}
             onClick={() => setStep(step + 1)}
           >
-            Continue
+            {t.bookings.continue}
           </Button>
         ) : (
           <Button
@@ -309,7 +315,7 @@ const Booking = () => {
             className="w-full"
             onClick={handleConfirmBooking}
           >
-            Pay {formatQAR(selectedLocation === "client" ? 1365 : 1275)}
+            {t.bookings.pay} {formatQAR(selectedLocation === "client" ? 1365 : 1275)}
           </Button>
         )}
       </div>
