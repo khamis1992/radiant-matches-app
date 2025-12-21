@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell } from "lucide-react";
+import { Bell, MessageSquare } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
 import ArtistCard from "@/components/ArtistCard";
@@ -62,7 +62,13 @@ const Home = () => {
         <div className="px-5 py-4">
           <div className="flex items-center justify-between mb-4">
             <img src={logoImage} alt="Glam" className="h-10 w-auto" />
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => navigate("/messages")}
+                className="relative p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors"
+              >
+                <MessageSquare className="w-5 h-5 text-foreground" />
+              </button>
               <button className="relative p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors">
                 <Bell className="w-5 h-5 text-foreground" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
