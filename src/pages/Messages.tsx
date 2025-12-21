@@ -1,5 +1,6 @@
 import BottomNavigation from "@/components/BottomNavigation";
 import { Search } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import artist1 from "@/assets/artist-1.jpg";
 import artist2 from "@/assets/artist-2.jpg";
@@ -24,16 +25,18 @@ const conversations = [
 ];
 
 const Messages = () => {
+  const { t, isRTL } = useLanguage();
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-        <h1 className="text-xl font-bold text-foreground mb-4">Messages</h1>
+        <h1 className="text-xl font-bold text-foreground mb-4">{t.messages.title}</h1>
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
           <input
             type="text"
-            placeholder="Search messages..."
-            className="w-full h-10 pl-10 pr-4 bg-card border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            placeholder={t.messages.searchPlaceholder}
+            className={`w-full h-10 ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} bg-card border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50`}
           />
         </div>
       </header>
@@ -53,12 +56,12 @@ const Messages = () => {
                     className="w-14 h-14 rounded-full object-cover"
                   />
                   {convo.unread > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs font-bold rounded-full flex items-center justify-center">
+                    <span className={`absolute -top-1 ${isRTL ? "-left-1" : "-right-1"} w-5 h-5 bg-primary text-primary-foreground text-xs font-bold rounded-full flex items-center justify-center`}>
                       {convo.unread}
                     </span>
                   )}
                 </div>
-                <div className="flex-1 text-left">
+                <div className={`flex-1 ${isRTL ? "text-right" : "text-left"}`}>
                   <div className="flex items-center justify-between">
                     <h3 className={`font-semibold ${convo.unread > 0 ? "text-foreground" : "text-muted-foreground"}`}>
                       {convo.name}
@@ -74,7 +77,7 @@ const Messages = () => {
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
-            <p>No messages yet</p>
+            <p>{t.messages.noMessages}</p>
           </div>
         )}
       </div>

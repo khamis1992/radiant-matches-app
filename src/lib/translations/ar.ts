@@ -30,6 +30,13 @@ export const ar: TranslationKeys = {
     settings: "الإعدادات",
   },
   
+  // Messages
+  messages: {
+    title: "الرسائل",
+    searchPlaceholder: "البحث في الرسائل...",
+    noMessages: "لا توجد رسائل",
+  },
+  
   // Home page
   home: {
     browseCategory: "تصفح حسب الفئة",

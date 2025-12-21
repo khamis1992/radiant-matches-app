@@ -28,6 +28,13 @@ export const en = {
     settings: "Settings",
   },
   
+  // Messages
+  messages: {
+    title: "Messages",
+    searchPlaceholder: "Search messages...",
+    noMessages: "No messages yet",
+  },
+  
   // Home page
   home: {
     browseCategory: "Browse by Category",
