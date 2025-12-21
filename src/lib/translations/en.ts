@@ -16,6 +16,8 @@ export const en = {
     select: "Select",
     close: "Close",
     titleOptional: "Title (optional)",
+    changeLanguage: "Change language",
+    languageSelected: "Language selected",
   },
   
   // Navigation
