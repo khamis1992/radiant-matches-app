@@ -9,10 +9,13 @@ export const en = {
     confirm: "Confirm",
     back: "Back",
     next: "Next",
+    previous: "Previous",
     seeAll: "See All",
     search: "Search",
     noResults: "No results found",
     select: "Select",
+    close: "Close",
+    titleOptional: "Title (optional)",
   },
   
   // Navigation

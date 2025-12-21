@@ -11,10 +11,13 @@ export const ar: TranslationKeys = {
     confirm: "تأكيد",
     back: "رجوع",
     next: "التالي",
+    previous: "السابق",
     seeAll: "عرض الكل",
     search: "بحث",
     noResults: "لا توجد نتائج",
     select: "اختيار",
+    close: "إغلاق",
+    titleOptional: "العنوان (اختياري)",
   },
   
   // Navigation

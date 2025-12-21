@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ImageLightboxProps {
   images: { url: string; title?: string | null; category?: string; isFeatured?: boolean }[];
@@ -31,6 +32,7 @@ const ImageLightbox = ({
   categories = [],
   onUpdateImage,
 }: ImageLightboxProps) => {
+  const { t, isRTL } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [scale, setScale] = useState(1);
   const [isEditing, setIsEditing] = useState(false);
@@ -185,7 +187,8 @@ const ImageLightbox = ({
         {/* Close Button */}
         <button
           onClick={() => onOpenChange(false)}
-          className="absolute top-4 right-4 z-50 p-2 rounded-full bg-background/80 hover:bg-background transition-colors"
+          className={`absolute top-4 ${isRTL ? "left-4" : "right-4"} z-50 p-2 rounded-full bg-background/80 hover:bg-background transition-colors`}
+          aria-label={t.common.close}
         >
           <X className="w-5 h-5 text-foreground" />
         </button>
@@ -195,12 +198,13 @@ const ImageLightbox = ({
           <button
             onClick={() => onUpdateImage(currentIndex, { isFeatured: !currentImage.isFeatured })}
             className={cn(
-              "absolute top-4 right-16 z-50 p-2 rounded-full transition-colors",
+              `absolute top-4 ${isRTL ? "left-16" : "right-16"} z-50 p-2 rounded-full transition-colors`,
               currentImage.isFeatured 
                 ? "bg-yellow-500 text-white hover:bg-yellow-600" 
                 : "bg-background/80 hover:bg-background"
             )}
-            title={currentImage.isFeatured ? "Remove from featured (F)" : "Mark as featured (F)"}
+            title={currentImage.isFeatured ? t.artist.featured : t.artist.featured}
+            aria-label={t.artist.featured}
           >
             <Star className={cn("w-5 h-5", currentImage.isFeatured ? "fill-current" : "text-foreground")} />
           </button>
@@ -210,8 +214,9 @@ const ImageLightbox = ({
         {editable && onUpdateImage && !isEditing && (
           <button
             onClick={handleStartEdit}
-            className="absolute top-4 right-28 z-50 p-2 rounded-full bg-background/80 hover:bg-background transition-colors"
-            title="Edit (E)"
+            className={`absolute top-4 ${isRTL ? "left-28" : "right-28"} z-50 p-2 rounded-full bg-background/80 hover:bg-background transition-colors`}
+            title={t.common.edit}
+            aria-label={t.common.edit}
           >
             <Pencil className="w-5 h-5 text-foreground" />
           </button>
@@ -221,14 +226,16 @@ const ImageLightbox = ({
         {images.length > 1 && (
           <>
             <button
-              onClick={goToPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-background/80 hover:bg-background transition-colors"
+              onClick={isRTL ? goToNext : goToPrevious}
+              className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-background/80 hover:bg-background transition-colors`}
+              aria-label={t.common.previous}
             >
               <ChevronLeft className="w-6 h-6 text-foreground" />
             </button>
             <button
-              onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-background/80 hover:bg-background transition-colors"
+              onClick={isRTL ? goToPrevious : goToNext}
+              className={`absolute ${isRTL ? "left-4" : "right-4"} top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-background/80 hover:bg-background transition-colors`}
+              aria-label={t.common.next}
             >
               <ChevronRight className="w-6 h-6 text-foreground" />
             </button>
@@ -256,13 +263,14 @@ const ImageLightbox = ({
         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-background to-transparent p-6">
           {/* Editing Form */}
           {isEditing ? (
-            <div className="flex items-center justify-center gap-2 mb-4 max-w-md mx-auto">
+            <div className={`flex items-center justify-center gap-2 mb-4 max-w-md mx-auto ${isRTL ? "flex-row-reverse" : ""}`}>
               <Input
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                placeholder="Title (optional)"
+                placeholder={t.common.titleOptional}
                 className="flex-1 bg-background/80"
                 autoFocus
+                dir={isRTL ? "rtl" : "ltr"}
               />
               {categories.length > 0 && (
                 <Select value={editCategory} onValueChange={setEditCategory}>
@@ -278,7 +286,7 @@ const ImageLightbox = ({
                   </SelectContent>
                 </Select>
               )}
-              <Button size="icon" onClick={handleSaveEdit} title="Save">
+              <Button size="icon" onClick={handleSaveEdit} title={t.common.save} aria-label={t.common.save}>
                 <Check className="w-4 h-4" />
               </Button>
             </div>
