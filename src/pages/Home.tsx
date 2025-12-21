@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell } from "lucide-react";
+import { Bell, User, Settings, LogOut } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
 import ArtistCard from "@/components/ArtistCard";
@@ -10,6 +10,15 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useProfile } from "@/hooks/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 import logoImage from "@/assets/logo.png";
 import artist1 from "@/assets/artist-1.jpg";
@@ -36,6 +45,16 @@ const Home = () => {
   const { isArtist, loading: roleLoading } = useUserRole();
   const { data: artists, isLoading } = useArtists();
   const { data: profile } = useProfile();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Failed to log out");
+    } else {
+      toast.success("Logged out successfully");
+      navigate("/auth");
+    }
+  };
 
   useEffect(() => {
     if (!roleLoading && isArtist) {
@@ -72,20 +91,36 @@ const Home = () => {
                   3
                 </span>
               </button>
-              <button 
-                onClick={() => navigate("/profile")}
-                className="rounded-full border-2 border-primary/20 hover:border-primary transition-colors"
-              >
-                <Avatar className="w-9 h-9">
-                  <AvatarImage 
-                    src={profile?.avatar_url || undefined} 
-                    alt={profile?.full_name || "Profile"} 
-                  />
-                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-                    {profile?.full_name?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="rounded-full border-2 border-primary/20 hover:border-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                    <Avatar className="w-9 h-9">
+                      <AvatarImage 
+                        src={profile?.avatar_url || undefined} 
+                        alt={profile?.full_name || "Profile"} 
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                        {profile?.full_name?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 bg-card border border-border">
+                  <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    My Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           <SearchBar />
