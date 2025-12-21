@@ -2,7 +2,8 @@ import { useState, useRef, useCallback } from "react";
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Check, Crop as CropIcon } from "lucide-react";
+import { RotateCcw, Check } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ImageCropperProps {
   imageSrc: string;
@@ -31,6 +32,7 @@ function centerAspectCrop(
 }
 
 const ImageCropper = ({ imageSrc, onCropComplete, onCancel }: ImageCropperProps) => {
+  const { t, isRTL } = useLanguage();
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [aspect, setAspect] = useState<number | undefined>(undefined);
@@ -92,7 +94,7 @@ const ImageCropper = ({ imageSrc, onCropComplete, onCancel }: ImageCropperProps)
   };
 
   const aspectRatios = [
-    { label: "Free", value: undefined },
+    { label: t.cropper.free, value: undefined },
     { label: "1:1", value: 1 },
     { label: "4:5", value: 4 / 5 },
     { label: "16:9", value: 16 / 9 },
@@ -100,7 +102,7 @@ const ImageCropper = ({ imageSrc, onCropComplete, onCancel }: ImageCropperProps)
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 flex-wrap">
+      <div className={`flex gap-2 flex-wrap ${isRTL ? "flex-row-reverse" : ""}`}>
         {aspectRatios.map((ratio) => (
           <Button
             key={ratio.label}
@@ -130,24 +132,24 @@ const ImageCropper = ({ imageSrc, onCropComplete, onCancel }: ImageCropperProps)
           <img
             ref={imgRef}
             src={imageSrc}
-            alt="Crop preview"
+            alt={t.cropper.cropPreview}
             onLoad={onImageLoad}
             className="max-w-full max-h-[50vh] object-contain"
           />
         </ReactCrop>
       </div>
 
-      <div className="flex gap-2">
+      <div className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
         <Button variant="outline" onClick={handleReset} className="flex-1">
-          <RotateCcw className="w-4 h-4 mr-2" />
-          Reset
+          <RotateCcw className={`w-4 h-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+          {t.cropper.reset}
         </Button>
         <Button variant="outline" onClick={onCancel} className="flex-1">
-          Skip Crop
+          {t.cropper.skipCrop}
         </Button>
         <Button onClick={handleApplyCrop} className="flex-1" disabled={!completedCrop}>
-          <Check className="w-4 h-4 mr-2" />
-          Apply Crop
+          <Check className={`w-4 h-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+          {t.cropper.applyCrop}
         </Button>
       </div>
     </div>
