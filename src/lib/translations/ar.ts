@@ -146,6 +146,9 @@ export const ar: TranslationKeys = {
     passwordMinLength: "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
     passwordsNoMatch: "كلمتا المرور غير متطابقتين",
     enterNewPassword: "أدخل كلمة المرور الجديدة. تأكد أنها 6 أحرف على الأقل.",
+    enterNewPasswordPlaceholder: "أدخل كلمة المرور الجديدة",
+    confirmNewPasswordPlaceholder: "تأكيد كلمة المرور الجديدة",
+    unexpectedError: "حدث خطأ غير متوقع",
   },
   
   // Bookings
