@@ -1,31 +1,53 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 import heroImage from "@/assets/hero-makeup.jpg";
 import logoImage from "@/assets/logo.png";
 
-const slides = [
-  {
-    title: "Discover Talented Artists",
-    description: "Find the perfect makeup artist for any occasion near you",
-  },
-  {
-    title: "Book Instantly",
-    description: "Schedule appointments in seconds with real-time availability",
-  },
-  {
-    title: "Pay Securely",
-    description: "Secure payments and honest reviews from verified customers",
-  },
-];
+const getSlides = (language: "en" | "ar") => {
+  if (language === "ar") {
+    return [
+      {
+        title: "اكتشفي فنانات موهوبات",
+        description: "جدي فنانة المكياج المثالية لأي مناسبة بالقرب منك",
+      },
+      {
+        title: "احجزي فوراً",
+        description: "جدولي مواعيدك في ثوانٍ مع التوفر في الوقت الفعلي",
+      },
+      {
+        title: "ادفعي بأمان",
+        description: "مدفوعات آمنة وتقييمات صادقة من عملاء موثوقين",
+      },
+    ];
+  }
+  return [
+    {
+      title: "Discover Talented Artists",
+      description: "Find the perfect makeup artist for any occasion near you",
+    },
+    {
+      title: "Book Instantly",
+      description: "Schedule appointments in seconds with real-time availability",
+    },
+    {
+      title: "Pay Securely",
+      description: "Secure payments and honest reviews from verified customers",
+    },
+  ];
+};
 
 const Onboarding = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
+  const { language, isRTL } = useLanguage();
+  
+  const slides = getSlides(language);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -116,8 +138,12 @@ const Onboarding = () => {
                 className="w-full"
                 onClick={() => navigate("/auth")}
               >
-                Create Account
-                <ChevronRight className="w-5 h-5 ml-1" />
+                {language === "ar" ? "إنشاء حساب" : "Create Account"}
+                {isRTL ? (
+                  <ChevronLeft className="w-5 h-5 ms-1" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 ms-1" />
+                )}
               </Button>
               <Button
                 variant="outline"
@@ -125,7 +151,7 @@ const Onboarding = () => {
                 className="w-full"
                 onClick={() => navigate("/auth")}
               >
-                Sign In
+                {language === "ar" ? "تسجيل الدخول" : "Sign In"}
               </Button>
               <Button
                 variant="ghost"
@@ -133,7 +159,7 @@ const Onboarding = () => {
                 className="w-full text-muted-foreground"
                 onClick={() => navigate("/home")}
               >
-                Continue as Guest
+                {language === "ar" ? "المتابعة كضيف" : "Continue as Guest"}
               </Button>
             </>
           ) : (
@@ -143,8 +169,12 @@ const Onboarding = () => {
                 className="w-full"
                 onClick={handleNext}
               >
-                Next
-                <ChevronRight className="w-5 h-5 ml-1" />
+                {language === "ar" ? "التالي" : "Next"}
+                {isRTL ? (
+                  <ChevronLeft className="w-5 h-5 ms-1" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 ms-1" />
+                )}
               </Button>
               <Button
                 variant="ghost"
@@ -152,7 +182,7 @@ const Onboarding = () => {
                 className="w-full text-muted-foreground"
                 onClick={handleSkip}
               >
-                Skip
+                {language === "ar" ? "تخطي" : "Skip"}
               </Button>
             </>
           )}
