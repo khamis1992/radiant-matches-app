@@ -73,6 +73,17 @@ export const ar: TranslationKeys = {
     location: "الموقع",
     phone: "الهاتف",
     memberSince: "عضو منذ",
+    signInToView: "سجلي الدخول لعرض الملف",
+    signInDesc: "أنشئي حساباً أو سجلي الدخول لإدارة ملفك الشخصي",
+    bookings: "الحجوزات",
+    reviews: "التقييمات",
+    artistDashboard: "لوحة تحكم الفنانة",
+    favorites: "المفضلة",
+    paymentMethods: "طرق الدفع",
+    notifications: "الإشعارات",
+    helpSupport: "المساعدة والدعم",
+    logOut: "تسجيل الخروج",
+    signedOut: "تم تسجيل الخروج بنجاح",
   },
   
   // Settings
