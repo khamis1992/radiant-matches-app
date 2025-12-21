@@ -2,6 +2,7 @@ import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFavorites, FavoriteItemType } from "@/hooks/useFavorites";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface FavoriteButtonProps {
   itemType: FavoriteItemType;
@@ -19,6 +20,7 @@ export const FavoriteButton = ({
   className,
 }: FavoriteButtonProps) => {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { t } = useLanguage();
   const isFav = isFavorite(itemType, itemId);
 
   const handleClick = (e: React.MouseEvent) => {
@@ -37,7 +39,7 @@ export const FavoriteButton = ({
         isFav && "text-destructive hover:text-destructive/80",
         className
       )}
-      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+      aria-label={isFav ? t.favorites.removeFromFavorites : t.favorites.addToFavorites}
     >
       <Heart
         className={cn(
