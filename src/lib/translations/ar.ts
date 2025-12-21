@@ -136,6 +136,7 @@ export const ar: TranslationKeys = {
     viewDetails: "عرض التفاصيل",
     cancelBooking: "إلغاء الحجز",
     reschedule: "إعادة جدولة",
+    leaveReview: "ترك تقييم",
     at: "في",
     location: "الموقع",
     notes: "ملاحظات",
