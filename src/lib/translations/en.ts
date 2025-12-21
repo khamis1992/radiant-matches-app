@@ -71,6 +71,17 @@ export const en = {
     location: "Location",
     phone: "Phone",
     memberSince: "Member since",
+    signInToView: "Sign in to view profile",
+    signInDesc: "Create an account or sign in to manage your profile",
+    bookings: "Bookings",
+    reviews: "Reviews",
+    artistDashboard: "Artist Dashboard",
+    favorites: "Favorites",
+    paymentMethods: "Payment Methods",
+    notifications: "Notifications",
+    helpSupport: "Help & Support",
+    logOut: "Log Out",
+    signedOut: "Signed out successfully",
   },
   
   // Settings
