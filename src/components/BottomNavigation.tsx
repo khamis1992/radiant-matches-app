@@ -2,32 +2,34 @@ import { Home, Calendar, MessageCircle, User, LayoutDashboard, Palette, Image, L
 import { Link, useLocation } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePendingBookingsCount } from "@/hooks/usePendingBookings";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NavItem {
   icon: LucideIcon;
-  label: string;
+  labelKey: keyof typeof import("@/lib/translations/en").en.nav;
   path: string;
   showBadge?: boolean;
 }
 
 const customerNavItems: NavItem[] = [
-  { icon: Home, label: "Home", path: "/home" },
-  { icon: Users, label: "Artists", path: "/makeup-artists" },
-  { icon: Heart, label: "Favorites", path: "/favorites" },
-  { icon: Calendar, label: "Bookings", path: "/bookings", showBadge: true },
+  { icon: Home, labelKey: "home", path: "/home" },
+  { icon: Users, labelKey: "artists", path: "/makeup-artists" },
+  { icon: Heart, labelKey: "favorites", path: "/favorites" },
+  { icon: Calendar, labelKey: "bookings", path: "/bookings", showBadge: true },
 ];
 
 const artistNavItems: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/artist-dashboard" },
-  { icon: Calendar, label: "Bookings", path: "/artist-bookings", showBadge: true },
-  { icon: Image, label: "Gallery", path: "/artist-gallery" },
-  { icon: Palette, label: "Services", path: "/artist-services" },
+  { icon: LayoutDashboard, labelKey: "dashboard", path: "/artist-dashboard" },
+  { icon: Calendar, labelKey: "bookings", path: "/artist-bookings", showBadge: true },
+  { icon: Image, labelKey: "gallery", path: "/artist-gallery" },
+  { icon: Palette, labelKey: "services", path: "/artist-services" },
 ];
 
 const BottomNavigation = () => {
   const location = useLocation();
   const { isArtist } = useUserRole();
   const { data: pendingCount = 0 } = usePendingBookingsCount();
+  const { t } = useLanguage();
   
   const navItems = isArtist ? artistNavItems : customerNavItems;
 
@@ -60,7 +62,7 @@ const BottomNavigation = () => {
                   </span>
                 )}
               </div>
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className="text-xs font-medium">{t.nav[item.labelKey]}</span>
             </Link>
           );
         })}

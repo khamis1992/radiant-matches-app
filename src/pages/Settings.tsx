@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useUserSettings } from "@/hooks/useUserSettings";
-import { Bell, Lock, User, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Bell, Lock, User, ChevronRight, Eye, EyeOff, Globe } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -18,6 +19,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -31,16 +39,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Language } from "@/lib/translations";
 
-const passwordSchema = z.object({
-  newPassword: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-
-type PasswordFormValues = z.infer<typeof passwordSchema>;
+type PasswordFormValues = {
+  newPassword: string;
+  confirmPassword: string;
+};
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -50,8 +54,19 @@ const Settings = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { settings, isLoading, updateSettings } = useUserSettings();
+  const { t, language, setLanguage, languageNames } = useLanguage();
 
   useSwipeBack();
+
+  const passwordSchema = z.object({
+    newPassword: z.string().min(6, t.settings.passwordMinLength),
+    confirmPassword: z.string().min(6, t.settings.passwordMinLength),
+  }).refine((data) => data.newPassword === data.confirmPassword, {
+    message: t.settings.passwordsNoMatch,
+    path: ["confirmPassword"],
+  });
+
+  type PasswordFormValues = z.infer<typeof passwordSchema>;
 
   const form = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
@@ -71,7 +86,7 @@ const Settings = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Password updated successfully");
+        toast.success(t.settings.passwordUpdated);
         setPasswordDialogOpen(false);
         form.reset();
       }
@@ -89,7 +104,7 @@ const Settings = () => {
         <div className="px-5 py-4">
           <div className="flex items-center gap-3">
             <BackButton />
-            <h1 className="text-xl font-bold text-foreground">Settings</h1>
+            <h1 className="text-xl font-bold text-foreground">{t.settings.title}</h1>
           </div>
         </div>
       </header>
@@ -101,7 +116,7 @@ const Settings = () => {
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <Bell className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="text-lg font-semibold text-foreground">Notifications</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t.settings.notifications}</h2>
           </div>
           
           {isLoading ? (
@@ -121,10 +136,10 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="push-notifications" className="text-foreground font-medium">
-                    Push Notifications
+                    {t.settings.pushNotifications}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Receive push notifications on your device
+                    {t.settings.pushNotificationsDesc}
                   </p>
                 </div>
                 <Switch
@@ -139,10 +154,10 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="email-notifications" className="text-foreground font-medium">
-                    Email Notifications
+                    {t.settings.emailNotifications}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Receive updates via email
+                    {t.settings.emailNotificationsDesc}
                   </p>
                 </div>
                 <Switch
@@ -157,10 +172,10 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="booking-reminders" className="text-foreground font-medium">
-                    Booking Reminders
+                    {t.settings.bookingReminders}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Get reminded about upcoming bookings
+                    {t.settings.bookingRemindersDesc}
                   </p>
                 </div>
                 <Switch
@@ -175,10 +190,10 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="promotional-emails" className="text-foreground font-medium">
-                    Promotional Emails
+                    {t.settings.promotionalEmails}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Receive offers and promotions
+                    {t.settings.promotionalEmailsDesc}
                   </p>
                 </div>
                 <Switch
@@ -197,7 +212,7 @@ const Settings = () => {
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <Lock className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="text-lg font-semibold text-foreground">Privacy</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t.settings.privacy}</h2>
           </div>
           
           {isLoading ? (
@@ -217,10 +232,10 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="profile-visibility" className="text-foreground font-medium">
-                    Public Profile
+                    {t.settings.publicProfile}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Make your profile visible to others
+                    {t.settings.publicProfileDesc}
                   </p>
                 </div>
                 <Switch
@@ -235,10 +250,10 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="booking-history" className="text-foreground font-medium">
-                    Show Booking History
+                    {t.settings.showBookingHistory}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Allow artists to see your past bookings
+                    {t.settings.showBookingHistoryDesc}
                   </p>
                 </div>
                 <Switch
@@ -253,10 +268,10 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="data-analytics" className="text-foreground font-medium">
-                    Share Analytics Data
+                    {t.settings.shareAnalytics}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Help improve our services
+                    {t.settings.shareAnalyticsDesc}
                   </p>
                 </div>
                 <Switch
@@ -275,7 +290,7 @@ const Settings = () => {
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <User className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="text-lg font-semibold text-foreground">Account</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t.settings.account}</h2>
           </div>
           
           <div className="px-5 pb-5 space-y-1">
@@ -283,31 +298,39 @@ const Settings = () => {
               onClick={() => setPasswordDialogOpen(true)}
               className="w-full flex items-center justify-between py-3 hover:bg-muted/50 transition-colors rounded-lg px-2 -mx-2"
             >
-              <span className="text-foreground font-medium">Change Password</span>
+              <span className="text-foreground font-medium">{t.settings.changePassword}</span>
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
             
             <Separator />
             
             <button className="w-full flex items-center justify-between py-3 hover:bg-muted/50 transition-colors rounded-lg px-2 -mx-2">
-              <span className="text-foreground font-medium">Linked Accounts</span>
+              <span className="text-foreground font-medium">{t.settings.linkedAccounts}</span>
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
             
             <Separator />
             
-            <button className="w-full flex items-center justify-between py-3 hover:bg-muted/50 transition-colors rounded-lg px-2 -mx-2">
-              <span className="text-foreground font-medium">Language</span>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">English</span>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            <div className="flex items-center justify-between py-3 px-2 -mx-2">
+              <div className="flex items-center gap-3">
+                <Globe className="w-5 h-5 text-muted-foreground" />
+                <span className="text-foreground font-medium">{t.settings.language}</span>
               </div>
-            </button>
+              <Select value={language} onValueChange={(value) => setLanguage(value as Language)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">{languageNames.en}</SelectItem>
+                  <SelectItem value="ar">{languageNames.ar}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             
             <Separator />
             
             <button className="w-full flex items-center justify-between py-3 hover:bg-destructive/10 transition-colors rounded-lg px-2 -mx-2">
-              <span className="text-destructive font-medium">Delete Account</span>
+              <span className="text-destructive font-medium">{t.settings.deleteAccount}</span>
               <ChevronRight className="w-5 h-5 text-destructive" />
             </button>
           </div>
@@ -318,9 +341,9 @@ const Settings = () => {
       <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Change Password</DialogTitle>
+            <DialogTitle>{t.settings.changePassword}</DialogTitle>
             <DialogDescription>
-              Enter your new password below. Make sure it's at least 6 characters.
+              {t.settings.enterNewPassword}
             </DialogDescription>
           </DialogHeader>
           
@@ -331,7 +354,7 @@ const Settings = () => {
                 name="newPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>New Password</FormLabel>
+                    <FormLabel>{t.settings.newPassword}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
@@ -362,7 +385,7 @@ const Settings = () => {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>{t.settings.confirmPassword}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
@@ -398,10 +421,10 @@ const Settings = () => {
                     form.reset();
                   }}
                 >
-                  Cancel
+                  {t.common.cancel}
                 </Button>
                 <Button type="submit" className="flex-1" disabled={isSubmitting}>
-                  {isSubmitting ? "Updating..." : "Update Password"}
+                  {isSubmitting ? t.settings.updating : t.settings.updatePassword}
                 </Button>
               </div>
             </form>
