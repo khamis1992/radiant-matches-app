@@ -43,6 +43,25 @@ export const en = {
     searchPlaceholder: "Search for makeup artists...",
   },
   
+  // Artists listing
+  artistsListing: {
+    title: "Makeup Artists",
+    searchPlaceholder: "Search artists by name or location...",
+    artistsFound: "artist found",
+    artistsFoundPlural: "artists found",
+    forCategory: "for",
+    sortBy: "Sort by",
+    highestRated: "Highest Rated",
+    mostReviews: "Most Reviews",
+    mostExperience: "Most Experience",
+    nameAZ: "Name (A-Z)",
+    yearsExp: "yrs exp",
+    yearExp: "yr exp",
+    noArtistsFound: "No makeup artists found",
+    adjustSearch: "Try adjusting your search",
+    view: "View",
+  },
+  
   // Categories
   categories: {
     makeup: "Makeup",

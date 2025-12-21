@@ -45,6 +45,25 @@ export const ar: TranslationKeys = {
     searchPlaceholder: "ابحثي عن فنانات المكياج...",
   },
   
+  // Artists listing
+  artistsListing: {
+    title: "فنانات المكياج",
+    searchPlaceholder: "ابحثي بالاسم أو الموقع...",
+    artistsFound: "فنانة",
+    artistsFoundPlural: "فنانات",
+    forCategory: "في",
+    sortBy: "ترتيب حسب",
+    highestRated: "الأعلى تقييماً",
+    mostReviews: "الأكثر تقييمات",
+    mostExperience: "الأكثر خبرة",
+    nameAZ: "الاسم (أ-ي)",
+    yearsExp: "سنوات خبرة",
+    yearExp: "سنة خبرة",
+    noArtistsFound: "لم يتم العثور على فنانات",
+    adjustSearch: "حاولي تعديل البحث",
+    view: "عرض",
+  },
+  
   // Categories
   categories: {
     makeup: "مكياج",
