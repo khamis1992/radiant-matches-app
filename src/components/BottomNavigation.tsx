@@ -15,7 +15,6 @@ const customerNavItems: NavItem[] = [
   { icon: Users, label: "Artists", path: "/makeup-artists" },
   { icon: Heart, label: "Favorites", path: "/favorites" },
   { icon: Calendar, label: "Bookings", path: "/bookings", showBadge: true },
-  { icon: User, label: "Profile", path: "/profile" },
 ];
 
 const artistNavItems: NavItem[] = [
