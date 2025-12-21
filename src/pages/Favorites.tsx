@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatQAR } from "@/lib/locale";
@@ -21,6 +22,7 @@ const Favorites = () => {
   const { user } = useAuth();
   const { favorites, isLoading: favoritesLoading } = useFavorites();
   const [activeTab, setActiveTab] = useState<"services" | "artists">("services");
+  const { t, language } = useLanguage();
 
   useSwipeBack();
 
@@ -77,17 +79,17 @@ const Favorites = () => {
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
           <div className="flex items-center gap-3">
             <BackButton />
-            <h1 className="text-xl font-bold text-foreground">Favorites</h1>
+            <h1 className="text-xl font-bold text-foreground">{t.favorites.title}</h1>
           </div>
         </header>
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <Heart className="w-16 h-16 text-muted-foreground/50 mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">Sign in to save favorites</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t.auth.login}</h2>
           <p className="text-muted-foreground mb-6">
-            Create an account to save your favorite services and artists
+            {t.favorites.noFavoritesDesc}
           </p>
           <Button onClick={() => navigate("/auth")}>
-            Sign In
+            {t.auth.login}
           </Button>
         </div>
         <BottomNavigation />
@@ -103,7 +105,7 @@ const Favorites = () => {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
         <div className="flex items-center gap-3">
           <BackButton />
-          <h1 className="text-xl font-bold text-foreground">Favorites</h1>
+          <h1 className="text-xl font-bold text-foreground">{t.favorites.title}</h1>
         </div>
       </header>
 
@@ -111,10 +113,10 @@ const Favorites = () => {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "services" | "artists")}>
           <TabsList className="w-full mb-4">
             <TabsTrigger value="services" className="flex-1">
-              Services ({serviceFavorites.length})
+              {t.artist.servicesOffered} ({serviceFavorites.length})
             </TabsTrigger>
             <TabsTrigger value="artists" className="flex-1">
-              Artists ({artistFavorites.length})
+              {t.nav.artists} ({artistFavorites.length})
             </TabsTrigger>
           </TabsList>
 
@@ -147,7 +149,7 @@ const Favorites = () => {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-foreground">{service.name}</h3>
                         <p className="text-sm text-muted-foreground truncate">
-                          by {service.artist?.profile?.full_name || "Unknown Artist"}
+                          {language === "ar" ? "بواسطة" : "by"} {service.artist?.profile?.full_name || (language === "ar" ? "فنانة غير معروفة" : "Unknown Artist")}
                         </p>
                         {service.description && (
                           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
@@ -160,7 +162,7 @@ const Favorites = () => {
                           </div>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Clock className="w-3.5 h-3.5" />
-                            <span>{service.duration_minutes} min</span>
+                            <span>{service.duration_minutes} {language === "ar" ? "دقيقة" : "min"}</span>
                           </div>
                           {service.artist?.rating && (
                             <div className="flex items-center gap-1 text-sm">
@@ -173,7 +175,7 @@ const Favorites = () => {
                       <div className="flex flex-col items-end gap-2">
                         <FavoriteButton itemType="service" itemId={service.id} size="sm" />
                         <Button size="sm" className="shrink-0">
-                          Book
+                          {t.bookings.bookNow}
                         </Button>
                       </div>
                     </div>
@@ -183,16 +185,16 @@ const Favorites = () => {
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Heart className="w-12 h-12 text-muted-foreground/50 mb-3" />
-                <p className="text-muted-foreground">No favorite services yet</p>
+                <p className="text-muted-foreground">{t.favorites.noFavorites}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Browse categories and tap the heart to save services
+                  {t.favorites.noFavoritesDesc}
                 </p>
                 <Button 
                   variant="outline" 
                   className="mt-4"
-                  onClick={() => navigate("/categories")}
+                  onClick={() => navigate("/makeup-artists")}
                 >
-                  Browse Services
+                  {t.favorites.discoverArtists}
                 </Button>
               </div>
             )}
@@ -225,10 +227,10 @@ const Favorites = () => {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-foreground truncate">
-                        {artist.profile?.full_name || "Unknown Artist"}
+                        {artist.profile?.full_name || (language === "ar" ? "فنانة غير معروفة" : "Unknown Artist")}
                       </h3>
                       <p className="text-sm text-muted-foreground truncate">
-                        {artist.experience_years || 0} years experience
+                        {artist.experience_years || 0} {t.artist.yearsExperience}
                       </p>
                       <div className="flex items-center gap-3 mt-1">
                         <div className="flex items-center gap-1">
@@ -253,7 +255,7 @@ const Favorites = () => {
                     <div className="flex flex-col items-end gap-2">
                       <FavoriteButton itemType="artist" itemId={artist.id} size="sm" />
                       <Button size="sm" variant="outline">
-                        View
+                        {t.artist.viewProfile}
                       </Button>
                     </div>
                   </div>
@@ -262,16 +264,16 @@ const Favorites = () => {
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Heart className="w-12 h-12 text-muted-foreground/50 mb-3" />
-                <p className="text-muted-foreground">No favorite artists yet</p>
+                <p className="text-muted-foreground">{t.favorites.noFavorites}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Browse artists and tap the heart to save them
+                  {t.favorites.noFavoritesDesc}
                 </p>
                 <Button 
                   variant="outline" 
                   className="mt-4"
                   onClick={() => navigate("/home")}
                 >
-                  Browse Artists
+                  {t.favorites.discoverArtists}
                 </Button>
               </div>
             )}
