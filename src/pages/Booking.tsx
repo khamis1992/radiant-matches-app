@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Calendar, Clock, MapPin, CreditCard, Check } from "lucide-react";
 import BackButton from "@/components/BackButton";
@@ -28,6 +29,10 @@ const Booking = () => {
   const [selectedLocation, setSelectedLocation] = useState<string>("studio");
   const [step, setStep] = useState(1);
   const [isConfirmed, setIsConfirmed] = useState(false);
+
+  useSwipeBack({
+    onSwipeBack: () => (step > 1 ? setStep(step - 1) : navigate(-1)),
+  });
 
   // Generate dates for next 14 days
   const dates = Array.from({ length: 14 }, (_, i) => {

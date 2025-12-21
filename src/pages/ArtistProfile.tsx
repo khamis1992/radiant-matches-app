@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate } from "react-router-dom";
 import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle } from "lucide-react";
 import BackButton from "@/components/BackButton";
@@ -29,6 +30,8 @@ const ArtistProfile = () => {
   const { data: services, isLoading: servicesLoading } = useArtistServices(id);
   const { data: reviews, isLoading: reviewsLoading } = useArtistReviews(id);
   const { data: portfolioItems = [], isLoading: portfolioLoading } = useArtistPortfolio(id);
+
+  useSwipeBack();
 
   const handleBookService = (serviceName: string) => {
     navigate(`/booking/${id}?service=${encodeURIComponent(serviceName)}`);
