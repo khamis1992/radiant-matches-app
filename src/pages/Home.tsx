@@ -158,7 +158,10 @@ const Home = () => {
           <h2 className="text-lg font-semibold text-foreground">
             Top Rated Artists
           </h2>
-          <button className="text-sm text-primary font-medium hover:underline">
+          <button 
+            onClick={() => navigate("/makeup-artists")}
+            className="text-sm text-primary font-medium hover:underline"
+          >
             See All
           </button>
         </div>
