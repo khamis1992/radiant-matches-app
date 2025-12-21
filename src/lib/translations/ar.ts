@@ -233,6 +233,9 @@ export const ar: TranslationKeys = {
     noFavorites: "لا توجد مفضلات",
     noFavoritesDesc: "ابدأي باستكشاف الفنانات وأضيفي المفضلات هنا",
     discoverArtists: "اكتشفي الفنانات",
+    by: "بواسطة",
+    min: "دقيقة",
+    unknownArtist: "فنانة غير معروفة",
   },
   
   // User menu

@@ -149,7 +149,7 @@ const Favorites = () => {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-foreground">{service.name}</h3>
                         <p className="text-sm text-muted-foreground truncate">
-                          {language === "ar" ? "بواسطة" : "by"} {service.artist?.profile?.full_name || (language === "ar" ? "فنانة غير معروفة" : "Unknown Artist")}
+                          {t.favorites.by} {service.artist?.profile?.full_name || t.favorites.unknownArtist}
                         </p>
                         {service.description && (
                           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
@@ -162,7 +162,7 @@ const Favorites = () => {
                           </div>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Clock className="w-3.5 h-3.5" />
-                            <span>{service.duration_minutes} {language === "ar" ? "دقيقة" : "min"}</span>
+                            <span>{service.duration_minutes} {t.favorites.min}</span>
                           </div>
                           {service.artist?.rating && (
                             <div className="flex items-center gap-1 text-sm">
@@ -227,7 +227,7 @@ const Favorites = () => {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-foreground truncate">
-                        {artist.profile?.full_name || (language === "ar" ? "فنانة غير معروفة" : "Unknown Artist")}
+                        {artist.profile?.full_name || t.favorites.unknownArtist}
                       </h3>
                       <p className="text-sm text-muted-foreground truncate">
                         {artist.experience_years || 0} {t.artist.yearsExperience}

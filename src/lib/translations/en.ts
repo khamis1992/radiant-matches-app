@@ -231,6 +231,9 @@ export const en = {
     noFavorites: "No favorites yet",
     noFavoritesDesc: "Start exploring artists and save your favorites here",
     discoverArtists: "Discover Artists",
+    by: "by",
+    min: "min",
+    unknownArtist: "Unknown Artist",
   },
   
   // User menu
