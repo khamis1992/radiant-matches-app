@@ -1,6 +1,7 @@
 import { Clock } from "lucide-react";
 import { Button } from "./ui/button";
 import { formatQAR } from "@/lib/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ServiceCardProps {
   name: string;
@@ -17,6 +18,8 @@ const ServiceCard = ({
   price,
   onBook,
 }: ServiceCardProps) => {
+  const { t, isRTL } = useLanguage();
+
   return (
     <div className="bg-card p-4 rounded-xl border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-md">
       <div className="flex justify-between items-start">
@@ -30,10 +33,10 @@ const ServiceCard = ({
             <span className="text-xs">{duration}</span>
           </div>
         </div>
-        <div className="text-right ml-4">
+        <div className={`${isRTL ? "text-left me-4" : "text-right ms-4"}`}>
           <p className="text-xl font-bold text-foreground">{formatQAR(price)}</p>
           <Button size="sm" className="mt-2" onClick={onBook}>
-            Select
+            {t.common.select}
           </Button>
         </div>
       </div>
