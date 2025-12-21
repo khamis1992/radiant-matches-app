@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { Bell, Lock, User, ChevronRight, Eye, EyeOff } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { useNavigate } from "react-router-dom";
@@ -56,6 +57,8 @@ const Settings = () => {
   const [profileVisibility, setProfileVisibility] = useState(true);
   const [showBookingHistory, setShowBookingHistory] = useState(false);
   const [shareDataAnalytics, setShareDataAnalytics] = useState(true);
+
+  useSwipeBack();
 
   const form = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),

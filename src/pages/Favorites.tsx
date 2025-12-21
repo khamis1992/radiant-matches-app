@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useNavigate } from "react-router-dom";
 import { Star, MapPin, Clock, DollarSign, Heart } from "lucide-react";
 import BackButton from "@/components/BackButton";
@@ -19,6 +20,8 @@ const Favorites = () => {
   const { user } = useAuth();
   const { favorites, isLoading: favoritesLoading } = useFavorites();
   const [activeTab, setActiveTab] = useState<"services" | "artists">("services");
+
+  useSwipeBack();
 
   const serviceFavorites = favorites.filter((f) => f.item_type === "service");
   const artistFavorites = favorites.filter((f) => f.item_type === "artist");

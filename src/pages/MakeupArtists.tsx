@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useNavigate } from "react-router-dom";
 import { Star, MapPin, Search, X } from "lucide-react";
 import BackButton from "@/components/BackButton";
@@ -45,6 +46,8 @@ const MakeupArtists = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const { data: artists, isLoading } = useArtists();
+
+  useSwipeBack();
 
   const filteredAndSortedArtists = useMemo(() => {
     if (!artists) return [];
