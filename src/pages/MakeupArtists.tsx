@@ -17,6 +17,7 @@ import {
 import { useArtists, SERVICE_CATEGORIES, ServiceCategory } from "@/hooks/useArtists";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { useLanguage } from "@/contexts/LanguageContext";
 import artist1 from "@/assets/artist-1.jpg";
 
 // Category images
@@ -45,6 +46,7 @@ const MakeupArtists = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortBy, setSortBy] = useState<SortOption>("rating");
   const [searchQuery, setSearchQuery] = useState("");
+  const { t, isRTL } = useLanguage();
   
   // Get category from URL params
   const categoryParam = searchParams.get("category");
@@ -56,6 +58,20 @@ const MakeupArtists = () => {
   const { data: artists, isLoading } = useArtists();
 
   useSwipeBack();
+
+  // Category translation map
+  const getCategoryLabel = (category: ServiceCategory) => {
+    const categoryMap: Record<ServiceCategory, string> = {
+      "Makeup": t.categories.makeup,
+      "Hair Styling": t.categories.hairStyling,
+      "Henna": t.categories.henna,
+      "Lashes & Brows": t.categories.lashesBrows,
+      "Nails": t.categories.nails,
+      "Bridal": t.categories.bridal,
+      "Photoshoot": t.categories.photoshoot,
+    };
+    return categoryMap[category];
+  };
 
   // Update URL when category changes
   const handleCategoryChange = (category: ServiceCategory | null) => {
@@ -115,24 +131,24 @@ const MakeupArtists = () => {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
         <div className="flex items-center gap-3">
           <BackButton />
-          <h1 className="text-xl font-bold text-foreground">Makeup Artists</h1>
+          <h1 className="text-xl font-bold text-foreground">{t.artistsListing.title}</h1>
         </div>
       </header>
 
       <div className="px-5 py-6">
         {/* Search Bar */}
         <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
           <Input
-            placeholder="Search artists by name or location..."
+            placeholder={t.artistsListing.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
+            className={`${isRTL ? "pr-10 pl-10" : "pl-10 pr-10"}`}
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full"
+              className={`absolute ${isRTL ? "left-3" : "right-3"} top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full`}
             >
               <X className="w-4 h-4 text-muted-foreground" />
             </button>
@@ -155,14 +171,14 @@ const MakeupArtists = () => {
                 }`}>
                   <img
                     src={categoryImages[category]}
-                    alt={category}
+                    alt={getCategoryLabel(category)}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <span className={`text-xs md:text-sm max-w-16 md:max-w-20 lg:max-w-24 truncate text-center ${
                   selectedCategory === category ? "text-primary font-medium" : "text-muted-foreground"
                 }`}>
-                  {category}
+                  {getCategoryLabel(category)}
                 </span>
               </button>
             ))}
@@ -172,18 +188,18 @@ const MakeupArtists = () => {
         {/* Sort and Count */}
         <div className="flex items-center justify-between mb-4">
           <span className="text-sm text-muted-foreground">
-            {filteredAndSortedArtists.length} artist{filteredAndSortedArtists.length !== 1 ? 's' : ''} found
-            {selectedCategory && ` for ${selectedCategory}`}
+            {filteredAndSortedArtists.length} {filteredAndSortedArtists.length === 1 ? t.artistsListing.artistsFound : t.artistsListing.artistsFoundPlural}
+            {selectedCategory && ` ${t.artistsListing.forCategory} ${getCategoryLabel(selectedCategory)}`}
           </span>
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
             <SelectTrigger className="w-[160px] h-9">
-              <SelectValue placeholder="Sort by" />
+              <SelectValue placeholder={t.artistsListing.sortBy} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="rating">Highest Rated</SelectItem>
-              <SelectItem value="reviews">Most Reviews</SelectItem>
-              <SelectItem value="experience">Most Experience</SelectItem>
-              <SelectItem value="name">Name (A-Z)</SelectItem>
+              <SelectItem value="rating">{t.artistsListing.highestRated}</SelectItem>
+              <SelectItem value="reviews">{t.artistsListing.mostReviews}</SelectItem>
+              <SelectItem value="experience">{t.artistsListing.mostExperience}</SelectItem>
+              <SelectItem value="name">{t.artistsListing.nameAZ}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -237,7 +253,7 @@ const MakeupArtists = () => {
                       )}
                       {artist.experience_years !== null && artist.experience_years > 0 && (
                         <span className="text-sm text-muted-foreground">
-                          {artist.experience_years} yr{artist.experience_years !== 1 ? 's' : ''} exp
+                          {artist.experience_years} {artist.experience_years === 1 ? t.artistsListing.yearExp : t.artistsListing.yearsExp}
                         </span>
                       )}
                     </div>
@@ -245,7 +261,7 @@ const MakeupArtists = () => {
                   <div className="flex flex-col items-end gap-2">
                     <FavoriteButton itemType="artist" itemId={artist.id} size="sm" />
                     <Button size="sm" className="shrink-0">
-                      View
+                      {t.artistsListing.view}
                     </Button>
                   </div>
                 </div>
@@ -254,9 +270,9 @@ const MakeupArtists = () => {
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
-            <p>No makeup artists found</p>
+            <p>{t.artistsListing.noArtistsFound}</p>
             {searchQuery && (
-              <p className="text-sm mt-1">Try adjusting your search</p>
+              <p className="text-sm mt-1">{t.artistsListing.adjustSearch}</p>
             )}
           </div>
         )}
