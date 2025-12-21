@@ -144,7 +144,7 @@ export const en = {
   // Artist
   artist: {
     makeupArtist: "Makeup Artist",
-    reviews: "reviews",
+    reviews: "Reviews",
     about: "About",
     portfolio: "Portfolio",
     servicesOffered: "Services",
@@ -154,6 +154,14 @@ export const en = {
     bookAppointment: "Book Appointment",
     contactArtist: "Contact Artist",
     viewProfile: "View Profile",
+    notFound: "Artist not found",
+    noBio: "No bio available",
+    noServices: "No services available",
+    noPortfolio: "No portfolio images yet",
+    noReviews: "No reviews yet",
+    all: "All",
+    featured: "Featured",
+    anonymous: "Anonymous",
   },
   
   // Favorites
