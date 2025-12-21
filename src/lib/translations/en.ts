@@ -69,6 +69,8 @@ export const en = {
     checkEmail: "Please check your email for a verification link.",
     resendEmail: "Resend Verification Email",
     emailSent: "Verification email sent!",
+    logoutSuccess: "Logged out successfully",
+    logoutFailed: "Failed to log out",
   },
   
   // Profile
