@@ -13,6 +13,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -163,7 +168,67 @@ const Home = () => {
             {t.common.seeAll}
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        {/* Mobile Carousel */}
+        <div className="md:hidden -mx-5">
+          {isLoading ? (
+            <div className="flex gap-3 px-5">
+              {[1, 2].map((i) => (
+                <div key={i} className="min-w-[160px] bg-card rounded-2xl overflow-hidden shadow-md">
+                  <Skeleton className="h-24 w-full" />
+                  <div className="flex justify-center -mt-8">
+                    <Skeleton className="w-16 h-16 rounded-full" />
+                  </div>
+                  <div className="p-3 pt-2 space-y-2 flex flex-col items-center">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-8 w-full mt-1" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : artists && artists.length > 0 ? (
+            <Carousel
+              opts={{
+                align: "start",
+                loop: false,
+                dragFree: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="px-5 -ml-3">
+                {artists.map((artist, index) => (
+                  <CarouselItem key={artist.id} className="basis-[48%] pl-3">
+                    <div
+                      className="animate-fade-in"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      <ArtistCard
+                        id={artist.id}
+                        name={artist.profile?.full_name || "Unknown Artist"}
+                        image={artist.profile?.avatar_url || artist1}
+                        featuredImage={artist.featured_image}
+                        rating={Number(artist.rating) || 0}
+                        reviews={artist.total_reviews || 0}
+                        specialty="Make-Up Artist"
+                        price={0}
+                        location={artist.profile?.location || artist.studio_address || "Location TBD"}
+                        tagline={artist.bio?.split(".")[0] || undefined}
+                        categories={artist.categories}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground px-5">
+              <p>{t.home.noArtistsYet}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Grid */}
+        <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {isLoading ? (
             <>
               {[1, 2, 3, 4].map((i) => (
@@ -204,7 +269,7 @@ const Home = () => {
               </div>
             ))
           ) : (
-            <div className="col-span-2 text-center py-8 text-muted-foreground">
+            <div className="col-span-full text-center py-8 text-muted-foreground">
               <p>{t.home.noArtistsYet}</p>
             </div>
           )}
