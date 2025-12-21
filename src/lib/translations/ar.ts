@@ -18,6 +18,8 @@ export const ar: TranslationKeys = {
     select: "اختيار",
     close: "إغلاق",
     titleOptional: "العنوان (اختياري)",
+    changeLanguage: "تغيير اللغة",
+    languageSelected: "تم اختيار اللغة",
   },
   
   // Navigation
