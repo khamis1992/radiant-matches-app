@@ -333,6 +333,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          booking_reminders: boolean
+          created_at: string
+          email_notifications: boolean
+          id: string
+          profile_visibility: boolean
+          promotional_emails: boolean
+          push_notifications: boolean
+          share_data_analytics: boolean
+          show_booking_history: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          booking_reminders?: boolean
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          profile_visibility?: boolean
+          promotional_emails?: boolean
+          push_notifications?: boolean
+          share_data_analytics?: boolean
+          show_booking_history?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          booking_reminders?: boolean
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          profile_visibility?: boolean
+          promotional_emails?: boolean
+          push_notifications?: boolean
+          share_data_analytics?: boolean
+          show_booking_history?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

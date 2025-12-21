@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
+import { useUserSettings } from "@/hooks/useUserSettings";
 import { Bell, Lock, User, ChevronRight, Eye, EyeOff } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -47,16 +49,7 @@ const Settings = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Notification settings
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [bookingReminders, setBookingReminders] = useState(true);
-  const [promotionalEmails, setPromotionalEmails] = useState(false);
-  
-  // Privacy settings
-  const [profileVisibility, setProfileVisibility] = useState(true);
-  const [showBookingHistory, setShowBookingHistory] = useState(false);
-  const [shareDataAnalytics, setShareDataAnalytics] = useState(true);
+  const { settings, isLoading, updateSettings } = useUserSettings();
 
   useSwipeBack();
 
@@ -111,77 +104,91 @@ const Settings = () => {
             <h2 className="text-lg font-semibold text-foreground">Notifications</h2>
           </div>
           
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="push-notifications" className="text-foreground font-medium">
-                  Push Notifications
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive push notifications on your device
-                </p>
-              </div>
-              <Switch
-                id="push-notifications"
-                checked={pushNotifications}
-                onCheckedChange={setPushNotifications}
-              />
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-48" />
+                  </div>
+                  <Skeleton className="h-6 w-11 rounded-full" />
+                </div>
+              ))}
             </div>
-            
-            <Separator />
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="email-notifications" className="text-foreground font-medium">
-                  Email Notifications
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive updates via email
-                </p>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="push-notifications" className="text-foreground font-medium">
+                    Push Notifications
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Receive push notifications on your device
+                  </p>
+                </div>
+                <Switch
+                  id="push-notifications"
+                  checked={settings.push_notifications}
+                  onCheckedChange={(checked) => updateSettings({ push_notifications: checked })}
+                />
               </div>
-              <Switch
-                id="email-notifications"
-                checked={emailNotifications}
-                onCheckedChange={setEmailNotifications}
-              />
-            </div>
-            
-            <Separator />
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="booking-reminders" className="text-foreground font-medium">
-                  Booking Reminders
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Get reminded about upcoming bookings
-                </p>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="email-notifications" className="text-foreground font-medium">
+                    Email Notifications
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Receive updates via email
+                  </p>
+                </div>
+                <Switch
+                  id="email-notifications"
+                  checked={settings.email_notifications}
+                  onCheckedChange={(checked) => updateSettings({ email_notifications: checked })}
+                />
               </div>
-              <Switch
-                id="booking-reminders"
-                checked={bookingReminders}
-                onCheckedChange={setBookingReminders}
-              />
-            </div>
-            
-            <Separator />
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="promotional-emails" className="text-foreground font-medium">
-                  Promotional Emails
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive offers and promotions
-                </p>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="booking-reminders" className="text-foreground font-medium">
+                    Booking Reminders
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Get reminded about upcoming bookings
+                  </p>
+                </div>
+                <Switch
+                  id="booking-reminders"
+                  checked={settings.booking_reminders}
+                  onCheckedChange={(checked) => updateSettings({ booking_reminders: checked })}
+                />
               </div>
-              <Switch
-                id="promotional-emails"
-                checked={promotionalEmails}
-                onCheckedChange={setPromotionalEmails}
-              />
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="promotional-emails" className="text-foreground font-medium">
+                    Promotional Emails
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Receive offers and promotions
+                  </p>
+                </div>
+                <Switch
+                  id="promotional-emails"
+                  checked={settings.promotional_emails}
+                  onCheckedChange={(checked) => updateSettings({ promotional_emails: checked })}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </section>
 
         {/* Privacy Section */}
@@ -193,59 +200,73 @@ const Settings = () => {
             <h2 className="text-lg font-semibold text-foreground">Privacy</h2>
           </div>
           
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="profile-visibility" className="text-foreground font-medium">
-                  Public Profile
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Make your profile visible to others
-                </p>
-              </div>
-              <Switch
-                id="profile-visibility"
-                checked={profileVisibility}
-                onCheckedChange={setProfileVisibility}
-              />
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-48" />
+                  </div>
+                  <Skeleton className="h-6 w-11 rounded-full" />
+                </div>
+              ))}
             </div>
-            
-            <Separator />
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="booking-history" className="text-foreground font-medium">
-                  Show Booking History
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Allow artists to see your past bookings
-                </p>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="profile-visibility" className="text-foreground font-medium">
+                    Public Profile
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Make your profile visible to others
+                  </p>
+                </div>
+                <Switch
+                  id="profile-visibility"
+                  checked={settings.profile_visibility}
+                  onCheckedChange={(checked) => updateSettings({ profile_visibility: checked })}
+                />
               </div>
-              <Switch
-                id="booking-history"
-                checked={showBookingHistory}
-                onCheckedChange={setShowBookingHistory}
-              />
-            </div>
-            
-            <Separator />
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="data-analytics" className="text-foreground font-medium">
-                  Share Analytics Data
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Help improve our services
-                </p>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="booking-history" className="text-foreground font-medium">
+                    Show Booking History
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow artists to see your past bookings
+                  </p>
+                </div>
+                <Switch
+                  id="booking-history"
+                  checked={settings.show_booking_history}
+                  onCheckedChange={(checked) => updateSettings({ show_booking_history: checked })}
+                />
               </div>
-              <Switch
-                id="data-analytics"
-                checked={shareDataAnalytics}
-                onCheckedChange={setShareDataAnalytics}
-              />
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="data-analytics" className="text-foreground font-medium">
+                    Share Analytics Data
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Help improve our services
+                  </p>
+                </div>
+                <Switch
+                  id="data-analytics"
+                  checked={settings.share_data_analytics}
+                  onCheckedChange={(checked) => updateSettings({ share_data_analytics: checked })}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </section>
 
         {/* Account Section */}
