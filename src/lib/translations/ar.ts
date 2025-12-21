@@ -71,6 +71,8 @@ export const ar: TranslationKeys = {
     checkEmail: "يرجى التحقق من بريدك الإلكتروني للحصول على رابط التأكيد.",
     resendEmail: "إعادة إرسال رابط التأكيد",
     emailSent: "تم إرسال رابط التأكيد!",
+    logoutSuccess: "تم تسجيل الخروج بنجاح",
+    logoutFailed: "فشل تسجيل الخروج",
   },
   
   // Profile

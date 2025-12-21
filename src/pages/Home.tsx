@@ -54,9 +54,9 @@ const Home = () => {
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast.error("Failed to log out");
+      toast.error(t.auth.logoutFailed);
     } else {
-      toast.success("Logged out successfully");
+      toast.success(t.auth.logoutSuccess);
       navigate("/auth");
     }
   };
