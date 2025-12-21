@@ -14,6 +14,7 @@ export const ar: TranslationKeys = {
     seeAll: "عرض الكل",
     search: "بحث",
     noResults: "لا توجد نتائج",
+    select: "اختيار",
   },
   
   // Navigation

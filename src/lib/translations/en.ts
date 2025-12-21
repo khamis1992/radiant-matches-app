@@ -12,6 +12,7 @@ export const en = {
     seeAll: "See All",
     search: "Search",
     noResults: "No results found",
+    select: "Select",
   },
   
   // Navigation
