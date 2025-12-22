@@ -126,7 +126,28 @@ const ArtistProfile = () => {
                 }`}
               />
             </button>
-            <button className="p-2 rounded-full bg-card/80 backdrop-blur-sm shadow-md">
+            <button 
+              onClick={async () => {
+                const shareData = {
+                  title: displayName,
+                  text: artist.bio || t.artist.makeupArtist,
+                  url: window.location.href,
+                };
+                
+                if (navigator.share && navigator.canShare(shareData)) {
+                  try {
+                    await navigator.share(shareData);
+                  } catch (err) {
+                    // User cancelled or share failed silently
+                  }
+                } else {
+                  // Fallback: copy URL to clipboard
+                  await navigator.clipboard.writeText(window.location.href);
+                  // You could show a toast here
+                }
+              }}
+              className="p-2 rounded-full bg-card/80 backdrop-blur-sm shadow-md"
+            >
               <Share2 className="w-5 h-5 text-foreground" />
             </button>
           </div>
