@@ -254,6 +254,7 @@ export const ar: TranslationKeys = {
     noReviews: "لا توجد تقييمات بعد",
     all: "الكل",
     featured: "مميز",
+    noWorkingHours: "لم يتم تحديد ساعات العمل",
     anonymous: "مجهول",
   },
   

@@ -14,6 +14,7 @@ import { useArtist } from "@/hooks/useArtists";
 import { useArtistServices } from "@/hooks/useServices";
 import { useArtistReviews } from "@/hooks/useReviews";
 import { useArtistPortfolio } from "@/hooks/usePortfolio";
+import { useWorkingHours } from "@/hooks/useWorkingHours";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDistanceToNow } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
@@ -32,9 +33,29 @@ const ArtistProfile = () => {
   const { data: services, isLoading: servicesLoading } = useArtistServices(id);
   const { data: reviews, isLoading: reviewsLoading } = useArtistReviews(id);
   const { data: portfolioItems = [], isLoading: portfolioLoading } = useArtistPortfolio(id);
+  const { data: workingHours = [], isLoading: workingHoursLoading } = useWorkingHours(artist?.id);
   const { t, language } = useLanguage();
   
   const dateLocale = language === "ar" ? ar : enUS;
+  
+  const dayNames = [
+    t.settings.sunday,
+    t.settings.monday,
+    t.settings.tuesday,
+    t.settings.wednesday,
+    t.settings.thursday,
+    t.settings.friday,
+    t.settings.saturday,
+  ];
+
+  const formatTime = (time: string | null) => {
+    if (!time) return "";
+    const [hours, minutes] = time.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
 
   useSwipeBack();
 
@@ -150,6 +171,44 @@ const ArtistProfile = () => {
               <MessageCircle className="w-5 h-5" />
             </Button>
           </div>
+        </div>
+
+        {/* Working Hours */}
+        <div className="bg-card rounded-2xl p-5 shadow-lg border border-border mt-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">{t.settings.workingHours}</h2>
+          </div>
+          
+          {workingHoursLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-6 w-full" />
+              ))}
+            </div>
+          ) : workingHours.length > 0 ? (
+            <div className="space-y-2">
+              {workingHours.map((hour) => (
+                <div
+                  key={hour.id}
+                  className="flex items-center justify-between py-2 border-b border-border last:border-0"
+                >
+                  <span className="text-sm font-medium text-foreground">
+                    {dayNames[hour.day_of_week]}
+                  </span>
+                  {hour.is_working ? (
+                    <span className="text-sm text-muted-foreground">
+                      {formatTime(hour.start_time)} - {formatTime(hour.end_time)}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">{t.settings.closed}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t.artist.noWorkingHours}</p>
+          )}
         </div>
       </div>
 

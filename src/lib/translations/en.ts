@@ -252,6 +252,7 @@ export const en = {
     noReviews: "No reviews yet",
     all: "All",
     featured: "Featured",
+    noWorkingHours: "Working hours not set",
     anonymous: "Anonymous",
   },
   
