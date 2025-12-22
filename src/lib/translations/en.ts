@@ -5,6 +5,20 @@ export const en = {
     open: "Open",
     closed: "Closed",
   },
+  blockedDates: {
+    title: "Blocked Dates",
+    description: "Block specific dates when you're unavailable",
+    addDate: "Add Blocked Date",
+    selectDate: "Select a date to block",
+    reason: "Reason (optional)",
+    reasonPlaceholder: "e.g., Holiday, Personal day off",
+    noBlockedDates: "No blocked dates",
+    dateBlocked: "Date blocked successfully",
+    dateUnblocked: "Date unblocked",
+    dateBlockFailed: "Failed to block date",
+    dateUnblockFailed: "Failed to unblock date",
+    blockedLabel: "Blocked",
+  },
   // Common
   common: {
     loading: "Loading...",
