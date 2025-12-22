@@ -73,9 +73,11 @@ export const en = {
     topRatedArtists: "Top Rated Artists",
     noArtistsYet: "No artists available yet",
     searchPlaceholder: "Search for makeup artists...",
-    promoTitle: "Get 50% discount",
-    promoSubtitle: "with your first booking",
-    promoButton: "50% discount",
+    promos: [
+      { title: "Get 50% discount", subtitle: "with your first booking", button: "50% discount" },
+      { title: "Bridal Package", subtitle: "Book now and get free trial", button: "Book Now" },
+      { title: "Nail Art Special", subtitle: "20% off on all nail services", button: "Get Offer" },
+    ],
   },
   
   // Artists listing
