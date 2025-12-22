@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { formatQAR } from "@/lib/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useWorkingHours } from "@/hooks/useWorkingHours";
+import { useBlockedDates } from "@/hooks/useBlockedDates";
 
 import artist1 from "@/assets/artist-1.jpg";
 
@@ -48,6 +49,7 @@ const Booking = () => {
   const [isConfirmed, setIsConfirmed] = useState(false);
 
   const { data: workingHours = [] } = useWorkingHours(artistId || undefined);
+  const { data: blockedDates = [] } = useBlockedDates(artistId || undefined);
 
   const dateLocale = language === "ar" ? "ar-QA" : "en-QA";
 
@@ -68,8 +70,17 @@ const Booking = () => {
     );
   }, [selectedDayWorkingHours]);
 
-  // Check if a date is a working day
+  // Check if a date is blocked
+  const isBlockedDate = (date: Date): boolean => {
+    const dateString = date.toISOString().split("T")[0];
+    return blockedDates.some((bd) => bd.blocked_date === dateString);
+  };
+
+  // Check if a date is a working day (and not blocked)
   const isWorkingDay = (date: Date): boolean => {
+    // Check if date is blocked
+    if (isBlockedDate(date)) return false;
+    
     if (workingHours.length === 0) return true; // If no hours set, assume all days available
     const dayOfWeek = date.getDay();
     const dayHours = workingHours.find((wh) => wh.day_of_week === dayOfWeek);

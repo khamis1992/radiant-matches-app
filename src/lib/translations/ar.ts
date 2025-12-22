@@ -8,6 +8,20 @@ export const ar: TranslationKeys = {
     open: "مفتوح",
     closed: "مغلق",
   },
+  blockedDates: {
+    title: "التواريخ المحظورة",
+    description: "حظر تواريخ محددة عندما تكون غير متاح",
+    addDate: "إضافة تاريخ محظور",
+    selectDate: "اختر تاريخًا لحظره",
+    reason: "السبب (اختياري)",
+    reasonPlaceholder: "مثال: عطلة، يوم إجازة شخصية",
+    noBlockedDates: "لا توجد تواريخ محظورة",
+    dateBlocked: "تم حظر التاريخ بنجاح",
+    dateUnblocked: "تم إلغاء حظر التاريخ",
+    dateBlockFailed: "فشل في حظر التاريخ",
+    dateUnblockFailed: "فشل في إلغاء حظر التاريخ",
+    blockedLabel: "محظور",
+  },
 
   // Common
   common: {

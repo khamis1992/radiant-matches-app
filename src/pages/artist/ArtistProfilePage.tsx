@@ -26,18 +26,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Briefcase, LogOut, Star, MessageSquare, Phone, MapPin, Clock } from "lucide-react";
+import { Pencil, Briefcase, LogOut, Star, MessageSquare, Phone, MapPin, Clock, CalendarOff, X, Plus } from "lucide-react";
 import PortfolioUpload from "@/components/PortfolioUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useCurrentArtist, useUpdateArtistProfile } from "@/hooks/useArtistDashboard";
 import { useArtistReviews } from "@/hooks/useReviews";
 import { useWorkingHours, useUpdateWorkingHours, WorkingHourUpdate } from "@/hooks/useWorkingHours";
+import { useBlockedDates, useAddBlockedDate, useRemoveBlockedDate } from "@/hooks/useBlockedDates";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { validateQatarPhone, formatQatarPhone, normalizeQatarPhone } from "@/lib/phoneValidation";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const ArtistProfilePage = () => {
   const navigate = useNavigate();
@@ -48,6 +52,9 @@ const ArtistProfilePage = () => {
   const { data: reviews = [], isLoading: reviewsLoading } = useArtistReviews(artist?.id);
   const { data: workingHoursData = [] } = useWorkingHours(artist?.id);
   const updateWorkingHours = useUpdateWorkingHours();
+  const { data: blockedDates = [] } = useBlockedDates(artist?.id);
+  const addBlockedDate = useAddBlockedDate();
+  const removeBlockedDate = useRemoveBlockedDate();
   const { t } = useLanguage();
 
   const [editingProfile, setEditingProfile] = useState(false);
@@ -87,6 +94,11 @@ const ArtistProfilePage = () => {
 
   const [workingHours, setWorkingHours] = useState<WorkingHourUpdate[]>(defaultWorkingHours);
   const [isUpdatingHours, setIsUpdatingHours] = useState(false);
+
+  // Blocked dates state
+  const [blockedDatePopoverOpen, setBlockedDatePopoverOpen] = useState(false);
+  const [newBlockedDate, setNewBlockedDate] = useState<Date | undefined>(undefined);
+  const [blockReason, setBlockReason] = useState("");
 
   // Qatar cities
   const qatarCities = [
@@ -285,6 +297,40 @@ const ArtistProfilePage = () => {
       toast.error(t.settings.workingHoursUpdateFailed);
     } finally {
       setIsUpdatingHours(false);
+    }
+  };
+
+  const handleAddBlockedDate = async () => {
+    if (!artist?.id || !newBlockedDate) return;
+    
+    try {
+      await addBlockedDate.mutateAsync({
+        artistId: artist.id,
+        date: newBlockedDate,
+        reason: blockReason || undefined,
+      });
+      toast.success(t.blockedDates.dateBlocked);
+      setNewBlockedDate(undefined);
+      setBlockReason("");
+      setBlockedDatePopoverOpen(false);
+    } catch (error) {
+      console.error("Error blocking date:", error);
+      toast.error(t.blockedDates.dateBlockFailed);
+    }
+  };
+
+  const handleRemoveBlockedDate = async (blockedDateId: string) => {
+    if (!artist?.id) return;
+    
+    try {
+      await removeBlockedDate.mutateAsync({
+        blockedDateId,
+        artistId: artist.id,
+      });
+      toast.success(t.blockedDates.dateUnblocked);
+    } catch (error) {
+      console.error("Error unblocking date:", error);
+      toast.error(t.blockedDates.dateUnblockFailed);
     }
   };
 
@@ -581,6 +627,95 @@ const ArtistProfilePage = () => {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Blocked Dates */}
+        <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <CalendarOff className="w-5 h-5" />
+                {t.blockedDates.title}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">{t.blockedDates.description}</p>
+            </div>
+            <Popover open={blockedDatePopoverOpen} onOpenChange={setBlockedDatePopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <Plus className="w-4 h-4 mr-1" />
+                  {t.blockedDates.addDate}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4" align="end">
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium">{t.blockedDates.selectDate}</Label>
+                    <Calendar
+                      mode="single"
+                      selected={newBlockedDate}
+                      onSelect={setNewBlockedDate}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return date < today;
+                      }}
+                      className={cn("p-3 pointer-events-auto mt-2")}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">{t.blockedDates.reason}</Label>
+                    <Input
+                      value={blockReason}
+                      onChange={(e) => setBlockReason(e.target.value)}
+                      placeholder={t.blockedDates.reasonPlaceholder}
+                      className="mt-1"
+                    />
+                  </div>
+                  <Button 
+                    onClick={handleAddBlockedDate} 
+                    disabled={!newBlockedDate || addBlockedDate.isPending}
+                    className="w-full"
+                  >
+                    {addBlockedDate.isPending ? t.common.loading : t.blockedDates.addDate}
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          {blockedDates.length === 0 ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <CalendarOff className="w-10 h-10 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">{t.blockedDates.noBlockedDates}</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {blockedDates.map((blockedDate) => (
+                <div
+                  key={blockedDate.id}
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                >
+                  <div>
+                    <p className="font-medium text-foreground">
+                      {format(new Date(blockedDate.blocked_date), "EEEE, MMMM d, yyyy")}
+                    </p>
+                    {blockedDate.reason && (
+                      <p className="text-xs text-muted-foreground mt-0.5">{blockedDate.reason}</p>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveBlockedDate(blockedDate.id)}
+                    disabled={removeBlockedDate.isPending}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Logout Button */}

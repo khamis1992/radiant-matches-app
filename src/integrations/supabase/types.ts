@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      artist_blocked_dates: {
+        Row: {
+          artist_id: string
+          blocked_date: string
+          created_at: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          artist_id: string
+          blocked_date: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          artist_id?: string
+          blocked_date?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_blocked_dates_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       artist_working_hours: {
         Row: {
           artist_id: string
