@@ -232,6 +232,7 @@ export const ar: TranslationKeys = {
     bookingConfirmedToast: "تم تأكيد الحجز! تحققي من بريدك الإلكتروني للتفاصيل.",
     yourLocation: "موقعك",
     hours: "ساعات",
+    noAvailableSlots: "لا توجد أوقات متاحة لهذا اليوم",
   },
   
   // Artist
