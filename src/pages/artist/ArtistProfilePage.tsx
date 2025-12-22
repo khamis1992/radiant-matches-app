@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog,
@@ -19,7 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Briefcase, LogOut, Star, MessageSquare, Phone } from "lucide-react";
+import { Pencil, Briefcase, LogOut, Star, MessageSquare, Phone, MapPin } from "lucide-react";
 import PortfolioUpload from "@/components/PortfolioUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -52,13 +59,35 @@ const ArtistProfilePage = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+  
+  // Location state
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
 
-  // Initialize phone number from profile
+  // Qatar cities
+  const qatarCities = [
+    "Doha",
+    "Al Wakrah",
+    "Al Khor",
+    "Al Rayyan",
+    "Umm Salal",
+    "Al Daayen",
+    "Al Shamal",
+    "Al Shahaniya",
+    "Lusail",
+    "Mesaieed",
+    "Dukhan",
+  ];
+
+  // Initialize phone number and location from profile
   useEffect(() => {
     if (profile?.phone) {
       setPhoneNumber(formatQatarPhone(profile.phone));
     }
-  }, [profile?.phone]);
+    if (profile?.location) {
+      setSelectedLocation(profile.location);
+    }
+  }, [profile?.phone, profile?.location]);
 
   if (authLoading || artistLoading) {
     return (
@@ -155,6 +184,27 @@ const ArtistProfilePage = () => {
       toast.error(t.settings.phoneUpdateFailed);
     } finally {
       setIsUpdatingPhone(false);
+    }
+  };
+
+  const handleLocationChange = async (city: string) => {
+    setSelectedLocation(city);
+    setIsUpdatingLocation(true);
+    
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ location: city })
+        .eq("id", user?.id);
+
+      if (error) throw error;
+      
+      toast.success(t.settings.locationUpdated);
+    } catch (error) {
+      console.error("Error updating location:", error);
+      toast.error(t.settings.locationUpdateFailed);
+    } finally {
+      setIsUpdatingLocation(false);
     }
   };
 
@@ -352,8 +402,27 @@ const ArtistProfilePage = () => {
               <p className="text-xs text-muted-foreground mt-1">{t.settings.phoneNumberDesc}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Location</p>
-              <p className="text-foreground">{profile?.location || "Not set"}</p>
+              <Label className="text-sm text-muted-foreground flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                {t.settings.location}
+              </Label>
+              <Select 
+                value={selectedLocation} 
+                onValueChange={handleLocationChange}
+                disabled={isUpdatingLocation}
+              >
+                <SelectTrigger className="mt-1 w-full">
+                  <SelectValue placeholder={t.settings.selectCity} />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  {qatarCities.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">{t.settings.locationDesc}</p>
             </div>
           </div>
         </div>
