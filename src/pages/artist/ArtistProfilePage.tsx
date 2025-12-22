@@ -26,12 +26,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Briefcase, LogOut, Star, MessageSquare, Phone, MapPin } from "lucide-react";
+import { Pencil, Briefcase, LogOut, Star, MessageSquare, Phone, MapPin, Clock } from "lucide-react";
 import PortfolioUpload from "@/components/PortfolioUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useCurrentArtist, useUpdateArtistProfile } from "@/hooks/useArtistDashboard";
 import { useArtistReviews } from "@/hooks/useReviews";
+import { useWorkingHours, useUpdateWorkingHours, WorkingHourUpdate } from "@/hooks/useWorkingHours";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -45,6 +46,8 @@ const ArtistProfilePage = () => {
   const { data: artist, isLoading: artistLoading } = useCurrentArtist();
   const updateProfile = useUpdateArtistProfile();
   const { data: reviews = [], isLoading: reviewsLoading } = useArtistReviews(artist?.id);
+  const { data: workingHoursData = [] } = useWorkingHours(artist?.id);
+  const updateWorkingHours = useUpdateWorkingHours();
   const { t } = useLanguage();
 
   const [editingProfile, setEditingProfile] = useState(false);
@@ -64,6 +67,27 @@ const ArtistProfilePage = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
 
+  // Working hours state
+  const dayNames = [
+    t.settings.sunday,
+    t.settings.monday,
+    t.settings.tuesday,
+    t.settings.wednesday,
+    t.settings.thursday,
+    t.settings.friday,
+    t.settings.saturday,
+  ];
+
+  const defaultWorkingHours: WorkingHourUpdate[] = Array.from({ length: 7 }, (_, i) => ({
+    day_of_week: i,
+    is_working: i !== 5, // Friday off by default
+    start_time: "09:00",
+    end_time: "18:00",
+  }));
+
+  const [workingHours, setWorkingHours] = useState<WorkingHourUpdate[]>(defaultWorkingHours);
+  const [isUpdatingHours, setIsUpdatingHours] = useState(false);
+
   // Qatar cities
   const qatarCities = [
     "Doha",
@@ -79,6 +103,12 @@ const ArtistProfilePage = () => {
     "Dukhan",
   ];
 
+  // Time options
+  const timeOptions = Array.from({ length: 24 }, (_, i) => {
+    const hour = i.toString().padStart(2, "0");
+    return [`${hour}:00`, `${hour}:30`];
+  }).flat();
+
   // Initialize phone number and location from profile
   useEffect(() => {
     if (profile?.phone) {
@@ -88,6 +118,26 @@ const ArtistProfilePage = () => {
       setSelectedLocation(profile.location);
     }
   }, [profile?.phone, profile?.location]);
+
+  // Initialize working hours from database
+  useEffect(() => {
+    if (workingHoursData.length > 0) {
+      const hoursMap = new Map(workingHoursData.map((h) => [h.day_of_week, h]));
+      const merged = defaultWorkingHours.map((d) => {
+        const existing = hoursMap.get(d.day_of_week);
+        if (existing) {
+          return {
+            day_of_week: existing.day_of_week,
+            is_working: existing.is_working,
+            start_time: existing.start_time?.slice(0, 5) || "09:00",
+            end_time: existing.end_time?.slice(0, 5) || "18:00",
+          };
+        }
+        return d;
+      });
+      setWorkingHours(merged);
+    }
+  }, [workingHoursData]);
 
   if (authLoading || artistLoading) {
     return (
@@ -205,6 +255,36 @@ const ArtistProfilePage = () => {
       toast.error(t.settings.locationUpdateFailed);
     } finally {
       setIsUpdatingLocation(false);
+    }
+  };
+
+  const handleWorkingHourChange = (
+    dayIndex: number,
+    field: "is_working" | "start_time" | "end_time",
+    value: boolean | string
+  ) => {
+    setWorkingHours((prev) =>
+      prev.map((h) =>
+        h.day_of_week === dayIndex ? { ...h, [field]: value } : h
+      )
+    );
+  };
+
+  const handleSaveWorkingHours = async () => {
+    if (!artist?.id) return;
+    
+    setIsUpdatingHours(true);
+    try {
+      await updateWorkingHours.mutateAsync({
+        artistId: artist.id,
+        hours: workingHours,
+      });
+      toast.success(t.settings.workingHoursUpdated);
+    } catch (error) {
+      console.error("Error updating working hours:", error);
+      toast.error(t.settings.workingHoursUpdateFailed);
+    } finally {
+      setIsUpdatingHours(false);
     }
   };
 
@@ -424,6 +504,82 @@ const ArtistProfilePage = () => {
               </Select>
               <p className="text-xs text-muted-foreground mt-1">{t.settings.locationDesc}</p>
             </div>
+          </div>
+        </div>
+
+        {/* Working Hours */}
+        <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                {t.settings.workingHours}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">{t.settings.workingHoursDesc}</p>
+            </div>
+            <Button 
+              size="sm" 
+              onClick={handleSaveWorkingHours}
+              disabled={isUpdatingHours}
+            >
+              {isUpdatingHours ? t.common.loading : t.common.save}
+            </Button>
+          </div>
+          <div className="space-y-3">
+            {workingHours.map((day, index) => (
+              <div key={day.day_of_week} className="flex items-center gap-3">
+                <div className="w-24 flex-shrink-0">
+                  <Label className="text-sm font-medium">{dayNames[index]}</Label>
+                </div>
+                <Switch
+                  checked={day.is_working}
+                  onCheckedChange={(checked) =>
+                    handleWorkingHourChange(day.day_of_week, "is_working", checked)
+                  }
+                />
+                {day.is_working ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <Select
+                      value={day.start_time}
+                      onValueChange={(value) =>
+                        handleWorkingHourChange(day.day_of_week, "start_time", value)
+                      }
+                    >
+                      <SelectTrigger className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover z-50 max-h-48">
+                        {timeOptions.map((time) => (
+                          <SelectItem key={`start-${time}`} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <span className="text-sm text-muted-foreground">{t.settings.to}</span>
+                    <Select
+                      value={day.end_time}
+                      onValueChange={(value) =>
+                        handleWorkingHourChange(day.day_of_week, "end_time", value)
+                      }
+                    >
+                      <SelectTrigger className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover z-50 max-h-48">
+                        {timeOptions.map((time) => (
+                          <SelectItem key={`end-${time}`} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted-foreground">{t.settings.closed}</span>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
