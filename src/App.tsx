@@ -18,6 +18,7 @@ import ArtistGallery from "./pages/artist/ArtistGallery";
 import Booking from "./pages/Booking";
 import Bookings from "./pages/Bookings";
 import Messages from "./pages/Messages";
+import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
 import Favorites from "./pages/Favorites";
 import Settings from "./pages/Settings";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/booking/:id" element={<Booking />} />
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/messages" element={<Messages />} />
+            <Route path="/chat/:id" element={<Chat />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/settings" element={<Settings />} />

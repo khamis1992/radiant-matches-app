@@ -17,6 +17,8 @@ import { useArtistReviews } from "@/hooks/useReviews";
 import { useArtistPortfolio } from "@/hooks/usePortfolio";
 import { useWorkingHours } from "@/hooks/useWorkingHours";
 import { useBlockedDates } from "@/hooks/useBlockedDates";
+import { useConversations } from "@/hooks/useConversations";
+import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDistanceToNow, format, isAfter, startOfToday } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
@@ -37,6 +39,8 @@ const ArtistProfile = () => {
   const { data: portfolioItems = [], isLoading: portfolioLoading } = useArtistPortfolio(id);
   const { data: workingHours = [], isLoading: workingHoursLoading } = useWorkingHours(artist?.id);
   const { data: blockedDates = [], isLoading: blockedDatesLoading } = useBlockedDates(artist?.id);
+  const { getOrCreateConversation } = useConversations();
+  const { user } = useAuth();
   const { t, language } = useLanguage();
   
   // Filter to only show upcoming blocked dates
@@ -199,7 +203,24 @@ const ArtistProfile = () => {
             >
               {t.bookings.bookNow}
             </Button>
-            <Button variant="outline" size="icon">
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={async () => {
+                if (!user) {
+                  navigate("/auth");
+                  return;
+                }
+                if (!artist?.id) return;
+                try {
+                  const conversationId = await getOrCreateConversation.mutateAsync(artist.id);
+                  navigate(`/chat/${conversationId}`);
+                } catch (error) {
+                  toast({ title: t.errors.somethingWrong, variant: "destructive" });
+                }
+              }}
+              disabled={getOrCreateConversation.isPending}
+            >
               <MessageCircle className="w-5 h-5" />
             </Button>
           </div>

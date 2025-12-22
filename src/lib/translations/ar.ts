@@ -65,6 +65,9 @@ export const ar: TranslationKeys = {
     title: "الرسائل",
     searchPlaceholder: "البحث في الرسائل...",
     noMessages: "لا توجد رسائل",
+    startConversation: "ابدأ محادثة",
+    typePlaceholder: "اكتب رسالة...",
+    yesterday: "أمس",
   },
   
   // Home page
