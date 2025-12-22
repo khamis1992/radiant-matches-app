@@ -155,6 +155,12 @@ export const ar: TranslationKeys = {
     enterNewPasswordPlaceholder: "أدخل كلمة المرور الجديدة",
     confirmNewPasswordPlaceholder: "تأكيد كلمة المرور الجديدة",
     unexpectedError: "حدث خطأ غير متوقع",
+    phoneNumber: "رقم الهاتف",
+    phoneNumberDesc: "رقم التواصل للحجوزات",
+    phonePlaceholder: "+974 XXXX XXXX",
+    invalidQatarPhone: "يرجى إدخال رقم هاتف قطري صحيح (+974 XXXX XXXX)",
+    phoneUpdated: "تم تحديث رقم الهاتف بنجاح",
+    phoneUpdateFailed: "فشل في تحديث رقم الهاتف",
   },
   
   // Bookings

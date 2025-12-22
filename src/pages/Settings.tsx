@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bell, Lock, User, ChevronRight, Eye, EyeOff, Globe } from "lucide-react";
+import { Bell, Lock, User, ChevronRight, Eye, EyeOff, Globe, Phone } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -40,6 +40,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Language } from "@/lib/translations";
+import { useProfile } from "@/hooks/useProfile";
+import { validateQatarPhone, normalizeQatarPhone, formatQatarPhone } from "@/lib/phoneValidation";
+import { useQueryClient } from "@tanstack/react-query";
 
 type PasswordFormValues = {
   newPassword: string;
@@ -48,13 +51,25 @@ type PasswordFormValues = {
 
 const Settings = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   
   const { settings, isLoading, updateSettings } = useUserSettings();
+  const { data: profile, isLoading: profileLoading } = useProfile();
   const { t, language, setLanguage, languageNames } = useLanguage();
+
+  // Initialize phone number from profile
+  useEffect(() => {
+    if (profile?.phone) {
+      setPhoneNumber(formatQatarPhone(profile.phone));
+    }
+  }, [profile]);
 
   useSwipeBack();
 
@@ -94,6 +109,58 @@ const Settings = () => {
       toast.error(t.settings.unexpectedError);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handlePhoneBlur = async () => {
+    setPhoneError("");
+    
+    const trimmedPhone = phoneNumber.trim();
+    
+    // Allow empty phone
+    if (!trimmedPhone) {
+      await updatePhoneInDatabase(null);
+      return;
+    }
+    
+    const normalizedPhone = normalizeQatarPhone(trimmedPhone);
+    
+    if (!validateQatarPhone(normalizedPhone)) {
+      setPhoneError(t.settings.invalidQatarPhone);
+      return;
+    }
+    
+    await updatePhoneInDatabase(normalizedPhone);
+  };
+
+  const updatePhoneInDatabase = async (phone: string | null) => {
+    setIsUpdatingPhone(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ phone })
+        .eq("id", user.id);
+
+      if (error) {
+        toast.error(t.settings.phoneUpdateFailed);
+        return;
+      }
+
+      // Update local display with formatted phone
+      if (phone) {
+        setPhoneNumber(formatQatarPhone(phone));
+      }
+      
+      // Invalidate profile cache
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success(t.settings.phoneUpdated);
+    } catch (error) {
+      toast.error(t.settings.phoneUpdateFailed);
+    } finally {
+      setIsUpdatingPhone(false);
     }
   };
 
@@ -280,6 +347,48 @@ const Settings = () => {
                   onCheckedChange={(checked) => updateSettings({ share_data_analytics: checked })}
                 />
               </div>
+            </div>
+          )}
+        </section>
+
+        {/* Phone Number Section */}
+        <section className="bg-card rounded-2xl border border-border p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Phone className="w-5 h-5 text-primary" />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">{t.settings.phoneNumber}</h2>
+          </div>
+          
+          {profileLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                {t.settings.phoneNumberDesc}
+              </p>
+              <Input
+                type="tel"
+                placeholder={t.settings.phonePlaceholder}
+                value={phoneNumber}
+                onChange={(e) => {
+                  setPhoneNumber(e.target.value);
+                  setPhoneError("");
+                }}
+                onBlur={handlePhoneBlur}
+                disabled={isUpdatingPhone}
+                className={phoneError ? "border-destructive" : ""}
+                dir="ltr"
+              />
+              {phoneError && (
+                <p className="text-sm text-destructive">{phoneError}</p>
+              )}
+              {isUpdatingPhone && (
+                <p className="text-sm text-muted-foreground">{t.settings.updating}</p>
+              )}
             </div>
           )}
         </section>

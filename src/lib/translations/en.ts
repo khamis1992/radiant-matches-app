@@ -153,6 +153,12 @@ export const en = {
     enterNewPasswordPlaceholder: "Enter new password",
     confirmNewPasswordPlaceholder: "Confirm new password",
     unexpectedError: "An unexpected error occurred",
+    phoneNumber: "Phone Number",
+    phoneNumberDesc: "Your contact number for bookings",
+    phonePlaceholder: "+974 XXXX XXXX",
+    invalidQatarPhone: "Please enter a valid Qatar phone number (+974 XXXX XXXX)",
+    phoneUpdated: "Phone number updated successfully",
+    phoneUpdateFailed: "Failed to update phone number",
   },
   
   // Bookings
