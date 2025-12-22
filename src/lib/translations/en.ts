@@ -159,6 +159,11 @@ export const en = {
     invalidQatarPhone: "Please enter a valid Qatar phone number (+974 XXXX XXXX)",
     phoneUpdated: "Phone number updated successfully",
     phoneUpdateFailed: "Failed to update phone number",
+    location: "Location",
+    locationDesc: "Select your city in Qatar",
+    selectCity: "Select a city",
+    locationUpdated: "Location updated successfully",
+    locationUpdateFailed: "Failed to update location",
   },
   
   // Bookings
