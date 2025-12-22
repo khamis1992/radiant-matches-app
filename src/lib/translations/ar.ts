@@ -77,9 +77,11 @@ export const ar: TranslationKeys = {
     topRatedArtists: "أفضل الفنانات تقييماً",
     noArtistsYet: "لا توجد فنانات متاحات حالياً",
     searchPlaceholder: "ابحثي عن فنانات المكياج...",
-    promoTitle: "احصلي على خصم 50%",
-    promoSubtitle: "مع حجزك الأول",
-    promoButton: "خصم 50%",
+    promos: [
+      { title: "احصلي على خصم 50%", subtitle: "مع حجزك الأول", button: "خصم 50%" },
+      { title: "باقة العروس", subtitle: "احجزي الآن واحصلي على تجربة مجانية", button: "احجزي الآن" },
+      { title: "عروض الأظافر", subtitle: "خصم 20% على جميع خدمات الأظافر", button: "احصلي على العرض" },
+    ],
   },
   
   // Artists listing
