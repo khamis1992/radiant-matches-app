@@ -18,6 +18,7 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselDots,
 } from "@/components/ui/carousel";
 import {
   DropdownMenu,
@@ -223,6 +224,7 @@ const Home = () => {
               </CarouselItem>
             ))}
           </CarouselContent>
+          <CarouselDots />
         </Carousel>
       </section>
 
