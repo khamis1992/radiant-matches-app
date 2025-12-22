@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Calendar, Clock, MapPin, CreditCard, Check } from "lucide-react";
@@ -7,10 +7,28 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { formatQAR } from "@/lib/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useWorkingHours } from "@/hooks/useWorkingHours";
 
 import artist1 from "@/assets/artist-1.jpg";
 
-const timeSlots = [
+// Generate time slots from start to end time
+const generateTimeSlots = (startTime: string | null, endTime: string | null): string[] => {
+  if (!startTime || !endTime) return [];
+  
+  const slots: string[] = [];
+  const [startHour] = startTime.split(":").map(Number);
+  const [endHour] = endTime.split(":").map(Number);
+  
+  for (let hour = startHour; hour < endHour; hour++) {
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
+    slots.push(`${displayHour}:00 ${ampm}`);
+  }
+  
+  return slots;
+};
+
+const defaultTimeSlots = [
   "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
   "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
 ];
@@ -21,6 +39,7 @@ const Booking = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const serviceName = searchParams.get("service") || "Bridal Makeup";
+  const artistId = searchParams.get("artistId");
   
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -28,7 +47,34 @@ const Booking = () => {
   const [step, setStep] = useState(1);
   const [isConfirmed, setIsConfirmed] = useState(false);
 
+  const { data: workingHours = [] } = useWorkingHours(artistId || undefined);
+
   const dateLocale = language === "ar" ? "ar-QA" : "en-QA";
+
+  // Get working hours for selected date
+  const selectedDayWorkingHours = useMemo(() => {
+    if (!selectedDate || workingHours.length === 0) return null;
+    const dayOfWeek = selectedDate.getDay();
+    return workingHours.find((wh) => wh.day_of_week === dayOfWeek);
+  }, [selectedDate, workingHours]);
+
+  // Generate available time slots based on working hours
+  const availableTimeSlots = useMemo(() => {
+    if (!selectedDayWorkingHours) return defaultTimeSlots;
+    if (!selectedDayWorkingHours.is_working) return [];
+    return generateTimeSlots(
+      selectedDayWorkingHours.start_time,
+      selectedDayWorkingHours.end_time
+    );
+  }, [selectedDayWorkingHours]);
+
+  // Check if a date is a working day
+  const isWorkingDay = (date: Date): boolean => {
+    if (workingHours.length === 0) return true; // If no hours set, assume all days available
+    const dayOfWeek = date.getDay();
+    const dayHours = workingHours.find((wh) => wh.day_of_week === dayOfWeek);
+    return dayHours?.is_working ?? true;
+  };
 
   const locations = [
     { id: "client", label: t.bookings.atMyLocation, description: `${t.bookings.artistComesToYou} (+QAR 90)` },
@@ -123,12 +169,19 @@ const Booking = () => {
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
               {dates.map((date) => {
                 const isSelected = selectedDate?.toDateString() === date.toDateString();
+                const isWorking = isWorkingDay(date);
                 return (
                   <button
                     key={date.toISOString()}
-                    onClick={() => setSelectedDate(date)}
+                    onClick={() => {
+                      setSelectedDate(date);
+                      setSelectedTime(null); // Reset time when date changes
+                    }}
+                    disabled={!isWorking}
                     className={`flex-shrink-0 w-16 py-3 rounded-xl border-2 transition-all duration-200 ${
-                      isSelected
+                      !isWorking
+                        ? "border-border bg-muted opacity-50 cursor-not-allowed"
+                        : isSelected
                         ? "border-primary bg-primary/10"
                         : "border-border bg-card hover:border-primary/50"
                     }`}
@@ -136,7 +189,7 @@ const Booking = () => {
                     <p className="text-xs text-muted-foreground">
                       {date.toLocaleDateString(dateLocale, { weekday: "short" })}
                     </p>
-                    <p className={`text-lg font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>
+                    <p className={`text-lg font-bold ${isSelected && isWorking ? "text-primary" : "text-foreground"}`}>
                       {date.getDate()}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -151,24 +204,30 @@ const Booking = () => {
               <Clock className="w-5 h-5 text-primary" />
               <h2 className="text-lg font-semibold text-foreground">{t.bookings.selectTime}</h2>
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              {timeSlots.map((time) => {
-                const isSelected = selectedTime === time;
-                return (
-                  <button
-                    key={time}
-                    onClick={() => setSelectedTime(time)}
-                    className={`py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
-                      isSelected
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-card text-foreground hover:border-primary/50"
-                    }`}
-                  >
-                    {time}
-                  </button>
-                );
-              })}
-            </div>
+            {selectedDate && availableTimeSlots.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                {t.bookings.noAvailableSlots || "No available time slots for this day"}
+              </p>
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                {availableTimeSlots.map((time) => {
+                  const isSelected = selectedTime === time;
+                  return (
+                    <button
+                      key={time}
+                      onClick={() => setSelectedTime(time)}
+                      className={`py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
+                        isSelected
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-card text-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

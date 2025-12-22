@@ -230,6 +230,7 @@ export const en = {
     bookingConfirmedToast: "Booking confirmed! Check your email for details.",
     yourLocation: "Your Location",
     hours: "hours",
+    noAvailableSlots: "No available time slots for this day",
   },
   
   // Artist
