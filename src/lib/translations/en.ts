@@ -61,6 +61,9 @@ export const en = {
     title: "Messages",
     searchPlaceholder: "Search messages...",
     noMessages: "No messages yet",
+    startConversation: "Start a conversation",
+    typePlaceholder: "Type a message...",
+    yesterday: "Yesterday",
   },
   
   // Home page
