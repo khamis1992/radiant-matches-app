@@ -1,6 +1,14 @@
 import type { TranslationKeys } from "./en";
 
 export const ar: TranslationKeys = {
+  // Availability
+  availability: {
+    availableToday: "متاح اليوم",
+    closedToday: "مغلق اليوم",
+    open: "مفتوح",
+    closed: "مغلق",
+  },
+
   // Common
   common: {
     loading: "جاري التحميل...",

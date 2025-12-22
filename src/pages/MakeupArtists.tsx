@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Star, MapPin, Search, X } from "lucide-react";
+import { Star, MapPin, Search, X, Clock } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -15,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useArtists, SERVICE_CATEGORIES, ServiceCategory } from "@/hooks/useArtists";
+import { useArtistsAvailability } from "@/hooks/useArtistAvailability";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -57,7 +59,19 @@ const MakeupArtists = () => {
   
   const { data: artists, isLoading } = useArtists();
 
+  // Get artist IDs for availability check
+  const artistIds = useMemo(() => artists?.map(a => a.id) || [], [artists]);
+  const { data: availabilityMap } = useArtistsAvailability(artistIds);
+
   useSwipeBack();
+
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
 
   // Category translation map
   const getCategoryLabel = (category: ServiceCategory) => {
@@ -213,60 +227,93 @@ const MakeupArtists = () => {
           </div>
         ) : filteredAndSortedArtists.length > 0 ? (
           <div className="space-y-3">
-            {filteredAndSortedArtists.map((artist) => (
-              <div
-                key={artist.id}
-                onClick={() => navigate(`/artist/${artist.id}`)}
-                className="bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-all cursor-pointer"
-              >
-                <div className="flex items-start gap-3">
-                  <Avatar className="w-14 h-14 border-2 border-primary/20">
-                    <AvatarImage 
-                      src={artist.profile?.avatar_url || artist1} 
-                      alt={artist.profile?.full_name || "Artist"} 
-                    />
-                    <AvatarFallback>
-                      {artist.profile?.full_name?.charAt(0) || "A"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground">
-                      {artist.profile?.full_name || "Unknown Artist"}
-                    </h3>
-                    {artist.profile?.location && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
-                        <MapPin className="w-3.5 h-3.5" />
-                        <span className="truncate">{artist.profile.location}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-4 mt-2">
-                      {artist.rating !== null && (
-                        <div className="flex items-center gap-1 text-sm">
-                          <Star className="w-3.5 h-3.5 fill-primary text-primary" />
-                          <span className="font-medium">{Number(artist.rating).toFixed(1)}</span>
-                          {artist.total_reviews !== null && artist.total_reviews > 0 && (
-                            <span className="text-muted-foreground">
-                              ({artist.total_reviews})
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      {artist.experience_years !== null && artist.experience_years > 0 && (
-                        <span className="text-sm text-muted-foreground">
-                          {artist.experience_years} {artist.experience_years === 1 ? t.artistsListing.yearExp : t.artistsListing.yearsExp}
-                        </span>
+            {filteredAndSortedArtists.map((artist) => {
+              const availability = availabilityMap?.get(artist.id);
+              return (
+                <div
+                  key={artist.id}
+                  onClick={() => navigate(`/artist/${artist.id}`)}
+                  className="bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="relative">
+                      <Avatar className="w-14 h-14 border-2 border-primary/20">
+                        <AvatarImage 
+                          src={artist.profile?.avatar_url || artist1} 
+                          alt={artist.profile?.full_name || "Artist"} 
+                        />
+                        <AvatarFallback>
+                          {artist.profile?.full_name?.charAt(0) || "A"}
+                        </AvatarFallback>
+                      </Avatar>
+                      {/* Availability indicator dot */}
+                      {availability && (
+                        <div
+                          className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-card ${
+                            availability.isAvailableToday
+                              ? "bg-green-500"
+                              : "bg-muted-foreground"
+                          }`}
+                          title={
+                            availability.isAvailableToday
+                              ? t.availability?.availableToday || "Available Today"
+                              : t.availability?.closedToday || "Closed Today"
+                          }
+                        />
                       )}
                     </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <FavoriteButton itemType="artist" itemId={artist.id} size="sm" />
-                    <Button size="sm" className="shrink-0">
-                      {t.artistsListing.view}
-                    </Button>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-foreground">
+                          {artist.profile?.full_name || "Unknown Artist"}
+                        </h3>
+                        {availability?.isAvailableToday && (
+                          <Badge
+                            variant="default"
+                            className="bg-green-500/90 hover:bg-green-500 text-white text-[10px] px-1.5 py-0"
+                          >
+                            <Clock className="w-2.5 h-2.5 mr-0.5" />
+                            {availability.todayHours
+                              ? `${formatTime(availability.todayHours.start)} - ${formatTime(availability.todayHours.end)}`
+                              : t.availability?.open || "Open"}
+                          </Badge>
+                        )}
+                      </div>
+                      {artist.profile?.location && (
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
+                          <MapPin className="w-3.5 h-3.5" />
+                          <span className="truncate">{artist.profile.location}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-4 mt-2">
+                        {artist.rating !== null && (
+                          <div className="flex items-center gap-1 text-sm">
+                            <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+                            <span className="font-medium">{Number(artist.rating).toFixed(1)}</span>
+                            {artist.total_reviews !== null && artist.total_reviews > 0 && (
+                              <span className="text-muted-foreground">
+                                ({artist.total_reviews})
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {artist.experience_years !== null && artist.experience_years > 0 && (
+                          <span className="text-sm text-muted-foreground">
+                            {artist.experience_years} {artist.experience_years === 1 ? t.artistsListing.yearExp : t.artistsListing.yearsExp}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <FavoriteButton itemType="artist" itemId={artist.id} size="sm" />
+                      <Button size="sm" className="shrink-0">
+                        {t.artistsListing.view}
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">

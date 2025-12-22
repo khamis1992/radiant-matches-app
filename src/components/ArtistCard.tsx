@@ -1,9 +1,10 @@
-import { Star, MapPin } from "lucide-react";
+import { Star, MapPin, Clock } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { FavoriteButton } from "./FavoriteButton";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Badge } from "./ui/badge";
 
 interface ArtistCardProps {
   id: string;
@@ -17,6 +18,8 @@ interface ArtistCardProps {
   location: string;
   tagline?: string;
   categories?: string[];
+  isAvailableToday?: boolean;
+  todayHours?: { start: string; end: string } | null;
 }
 
 const ArtistCard = ({
@@ -30,9 +33,19 @@ const ArtistCard = ({
   location,
   tagline,
   categories = [],
+  isAvailableToday,
+  todayHours,
 }: ArtistCardProps) => {
   const coverImage = featuredImage || image;
   const { t, isRTL } = useLanguage();
+
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
 
   // Category translation map
   const getCategoryLabel = (category: string) => {
@@ -58,6 +71,31 @@ const ArtistCard = ({
             alt={`${name}'s work`}
             className="w-full h-full object-cover"
           />
+          {/* Availability Badge */}
+          {isAvailableToday !== undefined && (
+            <div className={`absolute top-1 sm:top-3 ${isRTL ? "right-1 sm:right-3" : "left-1 sm:left-3"}`}>
+              <Badge
+                variant={isAvailableToday ? "default" : "secondary"}
+                className={`text-[8px] sm:text-xs px-1 sm:px-2 py-0 sm:py-0.5 ${
+                  isAvailableToday
+                    ? "bg-green-500/90 hover:bg-green-500 text-white"
+                    : "bg-muted/90 text-muted-foreground"
+                }`}
+              >
+                <Clock className="w-2 h-2 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
+                <span className="hidden sm:inline">
+                  {isAvailableToday
+                    ? todayHours
+                      ? `${formatTime(todayHours.start)} - ${formatTime(todayHours.end)}`
+                      : t.availability?.availableToday || "Available Today"
+                    : t.availability?.closedToday || "Closed Today"}
+                </span>
+                <span className="sm:hidden">
+                  {isAvailableToday ? t.availability?.open || "Open" : t.availability?.closed || "Closed"}
+                </span>
+              </Badge>
+            </div>
+          )}
           {/* Favorite Button */}
           <div className={`absolute top-1 sm:top-3 ${isRTL ? "left-1 sm:left-3" : "right-1 sm:right-3"}`}>
             <FavoriteButton

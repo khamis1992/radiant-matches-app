@@ -1,4 +1,10 @@
 export const en = {
+  availability: {
+    availableToday: "Available Today",
+    closedToday: "Closed Today",
+    open: "Open",
+    closed: "Closed",
+  },
   // Common
   common: {
     loading: "Loading...",
