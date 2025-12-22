@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate } from "react-router-dom";
-import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle } from "lucide-react";
+import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,8 +15,9 @@ import { useArtistServices } from "@/hooks/useServices";
 import { useArtistReviews } from "@/hooks/useReviews";
 import { useArtistPortfolio } from "@/hooks/usePortfolio";
 import { useWorkingHours } from "@/hooks/useWorkingHours";
+import { useBlockedDates } from "@/hooks/useBlockedDates";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format, isAfter, startOfToday } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 
 import artist1 from "@/assets/artist-1.jpg";
@@ -34,7 +35,14 @@ const ArtistProfile = () => {
   const { data: reviews, isLoading: reviewsLoading } = useArtistReviews(id);
   const { data: portfolioItems = [], isLoading: portfolioLoading } = useArtistPortfolio(id);
   const { data: workingHours = [], isLoading: workingHoursLoading } = useWorkingHours(artist?.id);
+  const { data: blockedDates = [], isLoading: blockedDatesLoading } = useBlockedDates(artist?.id);
   const { t, language } = useLanguage();
+  
+  // Filter to only show upcoming blocked dates
+  const upcomingBlockedDates = blockedDates.filter(bd => 
+    isAfter(new Date(bd.blocked_date), startOfToday()) || 
+    format(new Date(bd.blocked_date), 'yyyy-MM-dd') === format(startOfToday(), 'yyyy-MM-dd')
+  );
   
   const dateLocale = language === "ar" ? ar : enUS;
   
@@ -210,6 +218,33 @@ const ArtistProfile = () => {
             <p className="text-sm text-muted-foreground">{t.artist.noWorkingHours}</p>
           )}
         </div>
+
+        {/* Blocked Dates / Unavailable Days */}
+        {!blockedDatesLoading && upcomingBlockedDates.length > 0 && (
+          <div className="bg-card rounded-2xl p-5 shadow-lg border border-border mt-4">
+            <div className="flex items-center gap-2 mb-4">
+              <CalendarOff className="w-5 h-5 text-destructive" />
+              <h2 className="text-lg font-semibold text-foreground">{t.blockedDates.unavailableDates}</h2>
+            </div>
+            <div className="space-y-2">
+              {upcomingBlockedDates.map((blockedDate) => (
+                <div
+                  key={blockedDate.id}
+                  className="flex items-center justify-between py-2 border-b border-border last:border-0"
+                >
+                  <span className="text-sm font-medium text-foreground">
+                    {format(new Date(blockedDate.blocked_date), "EEEE, MMM d, yyyy", { locale: dateLocale })}
+                  </span>
+                  {blockedDate.reason && (
+                    <Badge variant="secondary" className="text-xs">
+                      {blockedDate.reason}
+                    </Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}

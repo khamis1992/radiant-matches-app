@@ -1,23 +1,24 @@
 export const en = {
+  blockedDates: {
+    title: "Blocked Dates",
+    description: "Block dates when you're unavailable for bookings",
+    addDate: "Add Blocked Date",
+    selectDate: "Select a date",
+    reason: "Reason (optional)",
+    reasonPlaceholder: "e.g., Holiday, Vacation, Personal",
+    noBlockedDates: "No blocked dates",
+    dateBlocked: "Date blocked successfully",
+    dateUnblocked: "Date unblocked successfully",
+    dateBlockFailed: "Failed to block date",
+    dateUnblockFailed: "Failed to unblock date",
+    blockedLabel: "Blocked",
+    unavailableDates: "Unavailable Dates",
+  },
   availability: {
     availableToday: "Available Today",
     closedToday: "Closed Today",
     open: "Open",
     closed: "Closed",
-  },
-  blockedDates: {
-    title: "Blocked Dates",
-    description: "Block specific dates when you're unavailable",
-    addDate: "Add Blocked Date",
-    selectDate: "Select a date to block",
-    reason: "Reason (optional)",
-    reasonPlaceholder: "e.g., Holiday, Personal day off",
-    noBlockedDates: "No blocked dates",
-    dateBlocked: "Date blocked successfully",
-    dateUnblocked: "Date unblocked",
-    dateBlockFailed: "Failed to block date",
-    dateUnblockFailed: "Failed to unblock date",
-    blockedLabel: "Blocked",
   },
   // Common
   common: {

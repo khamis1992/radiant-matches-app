@@ -21,6 +21,7 @@ export const ar: TranslationKeys = {
     dateBlockFailed: "فشل في حظر التاريخ",
     dateUnblockFailed: "فشل في إلغاء حظر التاريخ",
     blockedLabel: "محظور",
+    unavailableDates: "التواريخ غير المتاحة",
   },
 
   // Common
