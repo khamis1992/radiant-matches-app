@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, User, Settings, LogOut } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
@@ -7,6 +7,7 @@ import ArtistCard from "@/components/ArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useArtists } from "@/hooks/useArtists";
+import { useArtistsAvailability } from "@/hooks/useArtistAvailability";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useProfile } from "@/hooks/useProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -55,6 +56,10 @@ const Home = () => {
   const { t } = useLanguage();
   
   const categories = getCategoryTranslations(t);
+
+  // Get artist IDs for availability check
+  const artistIds = useMemo(() => artists?.map(a => a.id) || [], [artists]);
+  const { data: availabilityMap } = useArtistsAvailability(artistIds);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -239,6 +244,8 @@ const Home = () => {
                         location={artist.profile?.location || artist.studio_address || "Location TBD"}
                         tagline={artist.bio?.split(".")[0] || undefined}
                         categories={artist.categories}
+                        isAvailableToday={availabilityMap?.get(artist.id)?.isAvailableToday}
+                        todayHours={availabilityMap?.get(artist.id)?.todayHours}
                       />
                     </div>
                   </CarouselItem>
@@ -290,6 +297,8 @@ const Home = () => {
                   location={artist.profile?.location || artist.studio_address || "Location TBD"}
                   tagline={artist.bio?.split(".")[0] || undefined}
                   categories={artist.categories}
+                  isAvailableToday={availabilityMap?.get(artist.id)?.isAvailableToday}
+                  todayHours={availabilityMap?.get(artist.id)?.todayHours}
                 />
               </div>
             ))
