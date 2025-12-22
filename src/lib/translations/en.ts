@@ -64,6 +64,7 @@ export const en = {
     startConversation: "Start a conversation",
     typePlaceholder: "Type a message...",
     yesterday: "Yesterday",
+    typing: "typing...",
   },
   
   // Home page

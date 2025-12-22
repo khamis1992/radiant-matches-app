@@ -8,6 +8,8 @@ import { useConversation } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import TypingIndicator from "@/components/TypingIndicator";
 import { format, isToday, isYesterday } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 
@@ -23,6 +25,7 @@ const Chat = () => {
 
   const { data: conversation, isLoading: conversationLoading } = useConversation(conversationId);
   const { messages, isLoading: messagesLoading, sendMessage, markAsRead } = useMessages(conversationId);
+  const { isOtherTyping, setTyping } = useTypingIndicator(conversationId);
 
   const dateLocale = language === "ar" ? ar : enUS;
 
@@ -40,8 +43,18 @@ const Chat = () => {
 
   const handleSend = () => {
     if (!newMessage.trim()) return;
+    setTyping(false);
     sendMessage.mutate(newMessage.trim());
     setNewMessage("");
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    if (e.target.value.trim()) {
+      setTyping(true);
+    } else {
+      setTyping(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -169,6 +182,7 @@ const Chat = () => {
             <p>{t.messages.startConversation}</p>
           </div>
         )}
+        {isOtherTyping && <TypingIndicator name={otherParty.name} />}
         <div ref={messagesEndRef} />
       </div>
 
@@ -177,7 +191,7 @@ const Chat = () => {
         <div className="flex items-center gap-2">
           <Input
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             placeholder={t.messages.typePlaceholder}
             className="flex-1"

@@ -68,6 +68,7 @@ export const ar: TranslationKeys = {
     startConversation: "ابدأ محادثة",
     typePlaceholder: "اكتب رسالة...",
     yesterday: "أمس",
+    typing: "يكتب...",
   },
   
   // Home page
