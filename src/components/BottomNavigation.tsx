@@ -15,14 +15,12 @@ interface NavItem {
 const customerNavItems: NavItem[] = [
   { icon: Home, labelKey: "home", path: "/home" },
   { icon: Users, labelKey: "artists", path: "/makeup-artists" },
-  { icon: MessageCircle, labelKey: "messages", path: "/messages", badgeType: "messages" },
   { icon: Calendar, labelKey: "bookings", path: "/bookings", badgeType: "bookings" },
 ];
 
 const artistNavItems: NavItem[] = [
   { icon: LayoutDashboard, labelKey: "dashboard", path: "/artist-dashboard" },
   { icon: Calendar, labelKey: "bookings", path: "/artist-bookings", badgeType: "bookings" },
-  { icon: MessageCircle, labelKey: "messages", path: "/messages", badgeType: "messages" },
   { icon: Palette, labelKey: "services", path: "/artist-services" },
 ];
 
