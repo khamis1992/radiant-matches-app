@@ -39,6 +39,7 @@ export const en = {
     titleOptional: "Title (optional)",
     changeLanguage: "Change language",
     languageSelected: "Language selected",
+    linkCopied: "Link copied to clipboard",
   },
   
   // Navigation

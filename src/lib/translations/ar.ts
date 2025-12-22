@@ -43,6 +43,7 @@ export const ar: TranslationKeys = {
     titleOptional: "العنوان (اختياري)",
     changeLanguage: "تغيير اللغة",
     languageSelected: "تم اختيار اللغة",
+    linkCopied: "تم نسخ الرابط إلى الحافظة",
   },
   
   // Navigation
