@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +19,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Briefcase, LogOut, Star, MessageSquare } from "lucide-react";
+import { Pencil, Briefcase, LogOut, Star, MessageSquare, Phone } from "lucide-react";
 import PortfolioUpload from "@/components/PortfolioUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -28,6 +28,8 @@ import { useArtistReviews } from "@/hooks/useReviews";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { validateQatarPhone, formatQatarPhone, normalizeQatarPhone } from "@/lib/phoneValidation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const ArtistProfilePage = () => {
   const navigate = useNavigate();
@@ -36,6 +38,7 @@ const ArtistProfilePage = () => {
   const { data: artist, isLoading: artistLoading } = useCurrentArtist();
   const updateProfile = useUpdateArtistProfile();
   const { data: reviews = [], isLoading: reviewsLoading } = useArtistReviews(artist?.id);
+  const { t } = useLanguage();
 
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
@@ -44,6 +47,18 @@ const ArtistProfilePage = () => {
     studio_address: "",
     is_available: true,
   });
+  
+  // Phone number state
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+
+  // Initialize phone number from profile
+  useEffect(() => {
+    if (profile?.phone) {
+      setPhoneNumber(formatQatarPhone(profile.phone));
+    }
+  }, [profile?.phone]);
 
   if (authLoading || artistLoading) {
     return (
@@ -105,6 +120,41 @@ const ArtistProfilePage = () => {
       navigate("/");
     } catch (error) {
       toast.error("Failed to sign out");
+    }
+  };
+
+  const handlePhoneBlur = async () => {
+    const trimmedPhone = phoneNumber.trim();
+    
+    if (trimmedPhone === "" || trimmedPhone === formatQatarPhone(profile?.phone)) {
+      setPhoneError("");
+      return;
+    }
+
+    if (!validateQatarPhone(trimmedPhone)) {
+      setPhoneError(t.settings.invalidQatarPhone);
+      return;
+    }
+
+    setPhoneError("");
+    setIsUpdatingPhone(true);
+
+    try {
+      const normalizedPhone = normalizeQatarPhone(trimmedPhone);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ phone: normalizedPhone })
+        .eq("id", user?.id);
+
+      if (error) throw error;
+      
+      setPhoneNumber(formatQatarPhone(normalizedPhone));
+      toast.success(t.settings.phoneUpdated);
+    } catch (error) {
+      console.error("Error updating phone:", error);
+      toast.error(t.settings.phoneUpdateFailed);
+    } finally {
+      setIsUpdatingPhone(false);
     }
   };
 
@@ -279,6 +329,27 @@ const ArtistProfilePage = () => {
             <div>
               <p className="text-sm text-muted-foreground">Email</p>
               <p className="text-foreground">{profile?.email || user?.email}</p>
+            </div>
+            <div>
+              <Label htmlFor="phone" className="text-sm text-muted-foreground flex items-center gap-1">
+                <Phone className="w-3 h-3" />
+                {t.settings.phoneNumber}
+              </Label>
+              <Input
+                id="phone"
+                type="tel"
+                dir="ltr"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                onBlur={handlePhoneBlur}
+                placeholder={t.settings.phonePlaceholder}
+                className={`mt-1 ${phoneError ? "border-destructive" : ""}`}
+                disabled={isUpdatingPhone}
+              />
+              {phoneError && (
+                <p className="text-xs text-destructive mt-1">{phoneError}</p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">{t.settings.phoneNumberDesc}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Location</p>
