@@ -182,7 +182,7 @@ const Chat = () => {
             <p>{t.messages.startConversation}</p>
           </div>
         )}
-        {isOtherTyping && <TypingIndicator name={otherParty.name} />}
+        {isOtherTyping && <TypingIndicator typingText={t.messages.typing} />}
         <div ref={messagesEndRef} />
       </div>
 
