@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate } from "react-router-dom";
 import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -143,7 +144,9 @@ const ArtistProfile = () => {
                 } else {
                   // Fallback: copy URL to clipboard
                   await navigator.clipboard.writeText(window.location.href);
-                  // You could show a toast here
+                  toast({
+                    title: t.common.linkCopied,
+                  });
                 }
               }}
               className="p-2 rounded-full bg-card/80 backdrop-blur-sm shadow-md"
