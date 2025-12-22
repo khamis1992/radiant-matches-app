@@ -48,6 +48,7 @@ const MakeupArtists = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortBy, setSortBy] = useState<SortOption>("rating");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAvailableOnly, setShowAvailableOnly] = useState(false);
   const { t, isRTL } = useLanguage();
   
   // Get category from URL params
@@ -100,7 +101,7 @@ const MakeupArtists = () => {
   const filteredAndSortedArtists = useMemo(() => {
     if (!artists) return [];
     
-    // Filter by search query and category
+    // Filter by search query, category, and availability
     const filtered = artists.filter(artist => {
       // Search filter
       if (searchQuery.trim()) {
@@ -117,6 +118,12 @@ const MakeupArtists = () => {
       if (selectedCategory) {
         const hasCategory = artist.categories?.includes(selectedCategory);
         if (!hasCategory) return false;
+      }
+
+      // Availability filter
+      if (showAvailableOnly && availabilityMap) {
+        const availability = availabilityMap.get(artist.id);
+        if (!availability?.isAvailableToday) return false;
       }
       
       return true;
@@ -137,7 +144,7 @@ const MakeupArtists = () => {
           return 0;
       }
     });
-  }, [artists, sortBy, searchQuery, selectedCategory]);
+  }, [artists, sortBy, searchQuery, selectedCategory, showAvailableOnly, availabilityMap]);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -199,23 +206,36 @@ const MakeupArtists = () => {
           </div>
         </div>
 
-        {/* Sort and Count */}
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm text-muted-foreground">
-            {filteredAndSortedArtists.length} {filteredAndSortedArtists.length === 1 ? t.artistsListing.artistsFound : t.artistsListing.artistsFoundPlural}
-            {selectedCategory && ` ${t.artistsListing.forCategory} ${getCategoryLabel(selectedCategory)}`}
-          </span>
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-            <SelectTrigger className="w-[160px] h-9">
-              <SelectValue placeholder={t.artistsListing.sortBy} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="rating">{t.artistsListing.highestRated}</SelectItem>
-              <SelectItem value="reviews">{t.artistsListing.mostReviews}</SelectItem>
-              <SelectItem value="experience">{t.artistsListing.mostExperience}</SelectItem>
-              <SelectItem value="name">{t.artistsListing.nameAZ}</SelectItem>
-            </SelectContent>
-          </Select>
+        {/* Filters Row */}
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground">
+              {filteredAndSortedArtists.length} {filteredAndSortedArtists.length === 1 ? t.artistsListing.artistsFound : t.artistsListing.artistsFoundPlural}
+              {selectedCategory && ` ${t.artistsListing.forCategory} ${getCategoryLabel(selectedCategory)}`}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={showAvailableOnly ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowAvailableOnly(!showAvailableOnly)}
+              className={`text-xs h-8 ${showAvailableOnly ? "bg-green-500 hover:bg-green-600" : ""}`}
+            >
+              <Clock className="w-3.5 h-3.5 mr-1" />
+              {t.availability?.availableToday || "Available Today"}
+            </Button>
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+              <SelectTrigger className="w-[140px] h-8 text-xs">
+                <SelectValue placeholder={t.artistsListing.sortBy} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="rating">{t.artistsListing.highestRated}</SelectItem>
+                <SelectItem value="reviews">{t.artistsListing.mostReviews}</SelectItem>
+                <SelectItem value="experience">{t.artistsListing.mostExperience}</SelectItem>
+                <SelectItem value="name">{t.artistsListing.nameAZ}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Artists List */}
