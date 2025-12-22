@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bell, Lock, User, ChevronRight, Eye, EyeOff, Globe, Phone } from "lucide-react";
+import { Bell, Lock, User, ChevronRight, Eye, EyeOff, Globe, Phone, MapPin } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -59,15 +59,35 @@ const Settings = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
+
+  // Qatar cities
+  const qatarCities = [
+    "Doha",
+    "Al Wakrah",
+    "Al Khor",
+    "Al Rayyan",
+    "Umm Salal",
+    "Al Daayen",
+    "Al Shamal",
+    "Al Shahaniya",
+    "Lusail",
+    "Mesaieed",
+    "Dukhan",
+  ];
   
   const { settings, isLoading, updateSettings } = useUserSettings();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { t, language, setLanguage, languageNames } = useLanguage();
 
-  // Initialize phone number from profile
+  // Initialize phone number and location from profile
   useEffect(() => {
     if (profile?.phone) {
       setPhoneNumber(formatQatarPhone(profile.phone));
+    }
+    if (profile?.location) {
+      setSelectedLocation(profile.location);
     }
   }, [profile]);
 
@@ -161,6 +181,33 @@ const Settings = () => {
       toast.error(t.settings.phoneUpdateFailed);
     } finally {
       setIsUpdatingPhone(false);
+    }
+  };
+
+  const handleLocationChange = async (city: string) => {
+    setSelectedLocation(city);
+    setIsUpdatingLocation(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ location: city })
+        .eq("id", user.id);
+
+      if (error) {
+        toast.error(t.settings.locationUpdateFailed);
+        return;
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success(t.settings.locationUpdated);
+    } catch (error) {
+      toast.error(t.settings.locationUpdateFailed);
+    } finally {
+      setIsUpdatingLocation(false);
     }
   };
 
@@ -387,6 +434,48 @@ const Settings = () => {
                 <p className="text-sm text-destructive">{phoneError}</p>
               )}
               {isUpdatingPhone && (
+                <p className="text-sm text-muted-foreground">{t.settings.updating}</p>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* Location Section */}
+        <section className="bg-card rounded-2xl border border-border p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <MapPin className="w-5 h-5 text-primary" />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">{t.settings.location}</h2>
+          </div>
+          
+          {profileLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                {t.settings.locationDesc}
+              </p>
+              <Select 
+                value={selectedLocation} 
+                onValueChange={handleLocationChange}
+                disabled={isUpdatingLocation}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t.settings.selectCity} />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  {qatarCities.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {isUpdatingLocation && (
                 <p className="text-sm text-muted-foreground">{t.settings.updating}</p>
               )}
             </div>

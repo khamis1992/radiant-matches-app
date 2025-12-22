@@ -161,6 +161,11 @@ export const ar: TranslationKeys = {
     invalidQatarPhone: "يرجى إدخال رقم هاتف قطري صحيح (+974 XXXX XXXX)",
     phoneUpdated: "تم تحديث رقم الهاتف بنجاح",
     phoneUpdateFailed: "فشل في تحديث رقم الهاتف",
+    location: "الموقع",
+    locationDesc: "اختر مدينتك في قطر",
+    selectCity: "اختر مدينة",
+    locationUpdated: "تم تحديث الموقع بنجاح",
+    locationUpdateFailed: "فشل في تحديث الموقع",
   },
   
   // Bookings
