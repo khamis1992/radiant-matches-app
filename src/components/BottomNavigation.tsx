@@ -2,26 +2,27 @@ import { Home, Calendar, MessageCircle, User, LayoutDashboard, Palette, Image, L
 import { Link, useLocation } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePendingBookingsCount } from "@/hooks/usePendingBookings";
+import { useUnreadMessagesCount } from "@/hooks/useUnreadMessages";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NavItem {
   icon: LucideIcon;
   labelKey: keyof typeof import("@/lib/translations/en").en.nav;
   path: string;
-  showBadge?: boolean;
+  badgeType?: "bookings" | "messages";
 }
 
 const customerNavItems: NavItem[] = [
   { icon: Home, labelKey: "home", path: "/home" },
   { icon: Users, labelKey: "artists", path: "/makeup-artists" },
-  { icon: Heart, labelKey: "favorites", path: "/favorites" },
-  { icon: Calendar, labelKey: "bookings", path: "/bookings", showBadge: true },
+  { icon: MessageCircle, labelKey: "messages", path: "/messages", badgeType: "messages" },
+  { icon: Calendar, labelKey: "bookings", path: "/bookings", badgeType: "bookings" },
 ];
 
 const artistNavItems: NavItem[] = [
   { icon: LayoutDashboard, labelKey: "dashboard", path: "/artist-dashboard" },
-  { icon: Calendar, labelKey: "bookings", path: "/artist-bookings", showBadge: true },
-  { icon: Image, labelKey: "gallery", path: "/artist-gallery" },
+  { icon: Calendar, labelKey: "bookings", path: "/artist-bookings", badgeType: "bookings" },
+  { icon: MessageCircle, labelKey: "messages", path: "/messages", badgeType: "messages" },
   { icon: Palette, labelKey: "services", path: "/artist-services" },
 ];
 
@@ -29,16 +30,24 @@ const BottomNavigation = () => {
   const location = useLocation();
   const { isArtist } = useUserRole();
   const { data: pendingCount = 0 } = usePendingBookingsCount();
+  const { data: unreadCount = 0 } = useUnreadMessagesCount();
   const { t } = useLanguage();
   
   const navItems = isArtist ? artistNavItems : customerNavItems;
+
+  const getBadgeCount = (badgeType?: "bookings" | "messages") => {
+    if (badgeType === "bookings") return pendingCount;
+    if (badgeType === "messages") return unreadCount;
+    return 0;
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg animate-slide-in-bottom">
       <div className="flex items-center justify-around h-16 max-w-md mx-auto px-4">
         {navItems.map((item, index) => {
           const isActive = location.pathname === item.path;
-          const showBadge = item.showBadge && pendingCount > 0;
+          const badgeCount = getBadgeCount(item.badgeType);
+          const showBadge = badgeCount > 0;
           
           return (
             <Link
@@ -58,7 +67,7 @@ const BottomNavigation = () => {
                 />
                 {showBadge && (
                   <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-primary-foreground bg-primary rounded-full px-1">
-                    {pendingCount > 99 ? "99+" : pendingCount}
+                    {badgeCount > 99 ? "99+" : badgeCount}
                   </span>
                 )}
               </div>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, User, Settings, LogOut } from "lucide-react";
+import { Bell, User, Settings, LogOut, MessageSquare } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
 import ArtistCard from "@/components/ArtistCard";
@@ -10,6 +10,7 @@ import { useArtists } from "@/hooks/useArtists";
 import { useArtistsAvailability } from "@/hooks/useArtistAvailability";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useProfile } from "@/hooks/useProfile";
+import { useUnreadMessagesCount } from "@/hooks/useUnreadMessages";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,6 +54,7 @@ const Home = () => {
   const { isArtist, loading: roleLoading } = useUserRole();
   const { data: artists, isLoading } = useArtists();
   const { data: profile } = useProfile();
+  const { data: unreadCount = 0 } = useUnreadMessagesCount();
   const { t } = useLanguage();
   
   const categories = getCategoryTranslations(t);
@@ -102,10 +104,12 @@ const Home = () => {
                 onClick={() => navigate("/messages")}
                 className="relative p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors"
               >
-                <Bell className="w-5 h-5 text-foreground" />
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-primary rounded-full flex items-center justify-center text-[10px] font-semibold text-primary-foreground">
-                  3
-                </span>
+                <MessageSquare className="w-5 h-5 text-foreground" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-primary rounded-full flex items-center justify-center text-[10px] font-semibold text-primary-foreground">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
