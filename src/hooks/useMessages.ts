@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { playNotificationSound } from "@/lib/notificationSound";
 
 interface Message {
   id: string;
@@ -15,6 +16,7 @@ interface Message {
 export const useMessages = (conversationId: string | undefined) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const isInitialLoad = useRef(true);
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ["messages", conversationId],
@@ -33,7 +35,18 @@ export const useMessages = (conversationId: string | undefined) => {
     enabled: !!conversationId && !!user,
   });
 
-  // Subscribe to realtime updates
+  // Reset initial load flag when conversation changes
+  useEffect(() => {
+    isInitialLoad.current = true;
+  }, [conversationId]);
+
+  // Mark as loaded after first data fetch
+  useEffect(() => {
+    if (messages && isInitialLoad.current) {
+      isInitialLoad.current = false;
+    }
+  }, [messages]);
+
   useEffect(() => {
     if (!conversationId || !user) return;
 
@@ -48,15 +61,23 @@ export const useMessages = (conversationId: string | undefined) => {
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
+          const newMessage = payload.new as Message;
+          
+          // Play sound only for messages from others (not sent by current user)
+          // and not during initial load
+          if (newMessage.sender_id !== user.id && !isInitialLoad.current) {
+            playNotificationSound();
+          }
+
           queryClient.setQueryData(
             ["messages", conversationId],
             (old: Message[] | undefined) => {
-              if (!old) return [payload.new as Message];
+              if (!old) return [newMessage];
               // Avoid duplicates
-              if (old.some((m) => m.id === (payload.new as Message).id)) {
+              if (old.some((m) => m.id === newMessage.id)) {
                 return old;
               }
-              return [...old, payload.new as Message];
+              return [...old, newMessage];
             }
           );
         }
