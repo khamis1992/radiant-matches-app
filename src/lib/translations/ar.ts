@@ -77,6 +77,9 @@ export const ar: TranslationKeys = {
     topRatedArtists: "أفضل الفنانات تقييماً",
     noArtistsYet: "لا توجد فنانات متاحات حالياً",
     searchPlaceholder: "ابحثي عن فنانات المكياج...",
+    promoTitle: "احصلي على خصم 50%",
+    promoSubtitle: "مع حجزك الأول",
+    promoButton: "خصم 50%",
   },
   
   // Artists listing

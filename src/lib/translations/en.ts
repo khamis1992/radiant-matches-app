@@ -73,6 +73,9 @@ export const en = {
     topRatedArtists: "Top Rated Artists",
     noArtistsYet: "No artists available yet",
     searchPlaceholder: "Search for makeup artists...",
+    promoTitle: "Get 50% discount",
+    promoSubtitle: "with your first booking",
+    promoButton: "50% discount",
   },
   
   // Artists listing

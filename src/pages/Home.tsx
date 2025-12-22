@@ -31,6 +31,7 @@ import { toast } from "sonner";
 
 import logoImage from "@/assets/logo.png";
 import artist1 from "@/assets/artist-1.jpg";
+import promoBanner1 from "@/assets/promo-banner-1.jpg";
 import categoryMakeup from "@/assets/category-makeup.jpg";
 import categoryHairstyling from "@/assets/category-hairstyling.jpg";
 import categoryHenna from "@/assets/category-henna.jpg";
@@ -181,6 +182,29 @@ const Home = () => {
               onClick={() => navigate(`/makeup-artists?category=${encodeURIComponent(category.key)}`)}
             />
           ))}
+        </div>
+      </section>
+
+      {/* Promotions Banner */}
+      <section className="px-5 pb-6">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5">
+          <img 
+            src={promoBanner1} 
+            alt="Promotion" 
+            className="absolute inset-0 w-full h-full object-cover opacity-50"
+          />
+          <div className="relative z-10 p-5 flex items-center justify-between">
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-foreground">{t.home.promoTitle}</h3>
+              <p className="text-sm text-muted-foreground">{t.home.promoSubtitle}</p>
+            </div>
+            <button 
+              onClick={() => navigate("/makeup-artists")}
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-primary/90 transition-colors"
+            >
+              {t.home.promoButton}
+            </button>
+          </div>
         </div>
       </section>
 
