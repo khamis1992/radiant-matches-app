@@ -141,6 +141,8 @@ export type Database = {
           subtitle: string | null
           title: string
           updated_at: string
+          valid_from: string | null
+          valid_until: string | null
         }
         Insert: {
           button_text?: string | null
@@ -153,6 +155,8 @@ export type Database = {
           subtitle?: string | null
           title: string
           updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
         }
         Update: {
           button_text?: string | null
@@ -165,6 +169,8 @@ export type Database = {
           subtitle?: string | null
           title?: string
           updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
         }
         Relationships: []
       }

@@ -11,6 +11,8 @@ interface Banner {
   link_url: string | null;
   is_active: boolean;
   display_order: number;
+  valid_from: string | null;
+  valid_until: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +25,8 @@ interface CreateBannerData {
   link_url?: string;
   is_active?: boolean;
   display_order?: number;
+  valid_from?: string;
+  valid_until?: string | null;
 }
 
 interface UpdateBannerData extends Partial<CreateBannerData> {
