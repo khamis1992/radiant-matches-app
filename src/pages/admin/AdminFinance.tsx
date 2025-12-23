@@ -1,0 +1,337 @@
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Navigate } from "react-router-dom";
+import { useAdminFinance, useTransactions, useArtistPayouts } from "@/hooks/useAdminFinance";
+import { StatsCard } from "@/components/admin/StatsCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { 
+  DollarSign, 
+  TrendingUp, 
+  Users, 
+  Clock,
+  ArrowUpRight,
+  ArrowDownRight,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Legend,
+} from "recharts";
+
+const AdminFinance = () => {
+  const { role, loading: roleLoading } = useUserRole();
+  const { data: stats, isLoading: statsLoading } = useAdminFinance();
+  const { data: transactions, isLoading: transactionsLoading } = useTransactions(20);
+  const { data: artistPayouts, isLoading: payoutsLoading } = useArtistPayouts();
+
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-background flex">
+        <AdminSidebar />
+        <main className="flex-1 mr-64 p-8">
+          <Skeleton className="h-8 w-48 mb-8" />
+          <div className="grid grid-cols-4 gap-6 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-32" />
+            ))}
+          </div>
+          <Skeleton className="h-96 w-full" />
+        </main>
+      </div>
+    );
+  }
+
+  if (role !== "admin") {
+    return <Navigate to="/home" replace />;
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <Badge className="bg-green-500 hover:bg-green-600">مكتمل</Badge>;
+      case "pending":
+        return <Badge variant="secondary">قيد الانتظار</Badge>;
+      case "refunded":
+        return <Badge variant="destructive">مسترد</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case "booking_payment":
+        return "دفعة حجز";
+      case "platform_fee":
+        return "عمولة المنصة";
+      case "artist_payout":
+        return "دفعة للفنان";
+      case "subscription":
+        return "اشتراك";
+      default:
+        return type;
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return `${amount.toFixed(2)} ر.س`;
+  };
+
+  const monthNames: { [key: string]: string } = {
+    '01': 'يناير', '02': 'فبراير', '03': 'مارس', '04': 'أبريل',
+    '05': 'مايو', '06': 'يونيو', '07': 'يوليو', '08': 'أغسطس',
+    '09': 'سبتمبر', '10': 'أكتوبر', '11': 'نوفمبر', '12': 'ديسمبر'
+  };
+
+  const chartData = stats?.monthlyRevenue.map(item => ({
+    ...item,
+    name: monthNames[item.month.split('-')[1]] || item.month,
+  })) || [];
+
+  return (
+    <div className="min-h-screen bg-background flex">
+      <AdminSidebar />
+      
+      <main className="flex-1 mr-64 p-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-foreground">الإدارة المالية</h1>
+          <p className="text-muted-foreground mt-1">تتبع الإيرادات والعمولات والمدفوعات</p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatsCard
+            title="إجمالي الإيرادات"
+            value={statsLoading ? "..." : formatCurrency(stats?.totalRevenue || 0)}
+            icon={<DollarSign className="h-5 w-5" />}
+            trend={{ value: 12, isPositive: true }}
+          />
+          <StatsCard
+            title="عمولات المنصة"
+            value={statsLoading ? "..." : formatCurrency(stats?.totalPlatformFees || 0)}
+            icon={<TrendingUp className="h-5 w-5" />}
+            trend={{ value: 8, isPositive: true }}
+          />
+          <StatsCard
+            title="مدفوعات الفنانين"
+            value={statsLoading ? "..." : formatCurrency(stats?.totalArtistPayouts || 0)}
+            icon={<Users className="h-5 w-5" />}
+          />
+          <StatsCard
+            title="مدفوعات معلقة"
+            value={statsLoading ? "..." : formatCurrency(stats?.pendingPayouts || 0)}
+            icon={<Clock className="h-5 w-5" />}
+            className={stats?.pendingPayouts ? "border-yellow-500/50" : ""}
+          />
+        </div>
+
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Revenue Chart */}
+          <div className="bg-card rounded-xl border border-border p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">الإيرادات الشهرية</h3>
+            <div className="h-[300px]">
+              {statsLoading ? (
+                <Skeleton className="h-full w-full" />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="name" className="text-xs" />
+                    <YAxis className="text-xs" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                      formatter={(value: number) => [formatCurrency(value), 'الإيرادات']}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="revenue" 
+                      stroke="hsl(var(--primary))" 
+                      fillOpacity={1} 
+                      fill="url(#colorRevenue)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+
+          {/* Commission Chart */}
+          <div className="bg-card rounded-xl border border-border p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">الإيرادات مقابل العمولات</h3>
+            <div className="h-[300px]">
+              {statsLoading ? (
+                <Skeleton className="h-full w-full" />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="name" className="text-xs" />
+                    <YAxis className="text-xs" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                      formatter={(value: number, name: string) => [
+                        formatCurrency(value), 
+                        name === 'revenue' ? 'الإيرادات' : 'العمولات'
+                      ]}
+                    />
+                    <Legend 
+                      formatter={(value) => value === 'revenue' ? 'الإيرادات' : 'العمولات'}
+                    />
+                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="fees" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs for Transactions and Artist Payouts */}
+        <Tabs defaultValue="transactions" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="transactions">المعاملات الأخيرة</TabsTrigger>
+            <TabsTrigger value="artists">مدفوعات الفنانين</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="transactions">
+            <div className="bg-card rounded-xl border border-border">
+              {transactionsLoading ? (
+                <div className="p-8 space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : transactions && transactions.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right">التاريخ</TableHead>
+                      <TableHead className="text-right">النوع</TableHead>
+                      <TableHead className="text-right">الفنان</TableHead>
+                      <TableHead className="text-right">المبلغ</TableHead>
+                      <TableHead className="text-right">العمولة</TableHead>
+                      <TableHead className="text-right">الصافي</TableHead>
+                      <TableHead className="text-right">الحالة</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell className="text-muted-foreground">
+                          {format(new Date(transaction.created_at), "dd MMM yyyy", { locale: ar })}
+                        </TableCell>
+                        <TableCell>{getTypeLabel(transaction.type)}</TableCell>
+                        <TableCell>
+                          {transaction.artist?.profiles?.full_name || "غير معروف"}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-1">
+                            <ArrowUpRight className="h-4 w-4 text-green-500" />
+                            {formatCurrency(transaction.amount)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {formatCurrency(transaction.platform_fee)}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-1">
+                            <ArrowDownRight className="h-4 w-4 text-primary" />
+                            {formatCurrency(transaction.net_amount)}
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(transaction.status)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="p-12 text-center">
+                  <p className="text-muted-foreground">لا توجد معاملات بعد</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="artists">
+            <div className="bg-card rounded-xl border border-border">
+              {payoutsLoading ? (
+                <div className="p-8 space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : artistPayouts && artistPayouts.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right">الفنان</TableHead>
+                      <TableHead className="text-right">البريد الإلكتروني</TableHead>
+                      <TableHead className="text-right">عدد المعاملات</TableHead>
+                      <TableHead className="text-right">إجمالي العمولات</TableHead>
+                      <TableHead className="text-right">إجمالي الأرباح</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {artistPayouts.map((artist) => (
+                      <TableRow key={artist.artist_id}>
+                        <TableCell className="font-medium">{artist.full_name}</TableCell>
+                        <TableCell className="text-muted-foreground">{artist.email}</TableCell>
+                        <TableCell>{artist.transactions_count}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {formatCurrency(artist.total_fees)}
+                        </TableCell>
+                        <TableCell className="font-medium text-green-600">
+                          {formatCurrency(artist.total_earnings)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="p-12 text-center">
+                  <p className="text-muted-foreground">لا توجد مدفوعات للفنانين بعد</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+};
+
+export default AdminFinance;

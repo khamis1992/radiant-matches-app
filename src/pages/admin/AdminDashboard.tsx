@@ -101,22 +101,22 @@ const AdminDashboard = () => {
                 <StatsCard
                   title="إجمالي المستخدمين"
                   value={stats?.totalUsers || 0}
-                  icon={Users}
+                  icon={<Users className="h-6 w-6" />}
                 />
                 <StatsCard
                   title="إجمالي الفنانين"
                   value={stats?.totalArtists || 0}
-                  icon={Palette}
+                  icon={<Palette className="h-6 w-6" />}
                 />
                 <StatsCard
                   title="إجمالي الحجوزات"
                   value={stats?.totalBookings || 0}
-                  icon={Calendar}
+                  icon={<Calendar className="h-6 w-6" />}
                 />
                 <StatsCard
                   title="إيرادات المنصة"
                   value={`${stats?.platformEarnings?.toFixed(0) || 0} ر.س`}
-                  icon={DollarSign}
+                  icon={<DollarSign className="h-6 w-6" />}
                   trend={
                     revenueTrend !== 0
                       ? { value: Math.abs(revenueTrend), isPositive: revenueTrend > 0 }
@@ -140,17 +140,17 @@ const AdminDashboard = () => {
                 <StatsCard
                   title="الحجوزات المعلقة"
                   value={stats?.pendingBookings || 0}
-                  icon={Clock}
+                  icon={<Clock className="h-6 w-6" />}
                 />
                 <StatsCard
                   title="الحجوزات المكتملة"
                   value={stats?.completedBookings || 0}
-                  icon={CheckCircle}
+                  icon={<CheckCircle className="h-6 w-6" />}
                 />
                 <StatsCard
                   title="إيرادات هذا الشهر"
                   value={`${stats?.thisMonthRevenue?.toFixed(0) || 0} ر.س`}
-                  icon={TrendingUp}
+                  icon={<TrendingUp className="h-6 w-6" />}
                 />
               </>
             )}
