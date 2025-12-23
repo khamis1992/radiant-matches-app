@@ -31,7 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink, Eye } from "lucide-react";
 import { useAdminBanners } from "@/hooks/useAdminBanners";
 import {
   DndContext,
@@ -383,74 +383,112 @@ const AdminBanners = () => {
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]" dir="rtl">
+        <DialogContent className="sm:max-w-[700px]" dir="rtl">
           <DialogHeader>
             <DialogTitle>
               {editingBanner ? "تعديل البنر" : "إضافة بنر جديد"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">العنوان *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, title: e.target.value }))
-                }
-                placeholder="أدخل عنوان البنر"
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+            {/* Form Fields */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">العنوان *</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, title: e.target.value }))
+                  }
+                  placeholder="أدخل عنوان البنر"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="subtitle">النص الثانوي</Label>
+                <Input
+                  id="subtitle"
+                  value={formData.subtitle}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, subtitle: e.target.value }))
+                  }
+                  placeholder="أدخل النص الثانوي"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="button_text">نص الزر</Label>
+                <Input
+                  id="button_text"
+                  value={formData.button_text}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, button_text: e.target.value }))
+                  }
+                  placeholder="مثال: احجز الآن"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="link_url">رابط الزر</Label>
+                <Input
+                  id="link_url"
+                  value={formData.link_url}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, link_url: e.target.value }))
+                  }
+                  placeholder="/makeup-artists"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="image">صورة البنر *</Label>
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+              </div>
             </div>
+
+            {/* Live Preview */}
             <div className="space-y-2">
-              <Label htmlFor="subtitle">النص الثانوي</Label>
-              <Input
-                id="subtitle"
-                value={formData.subtitle}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, subtitle: e.target.value }))
-                }
-                placeholder="أدخل النص الثانوي"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="button_text">نص الزر</Label>
-              <Input
-                id="button_text"
-                value={formData.button_text}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, button_text: e.target.value }))
-                }
-                placeholder="مثال: احجز الآن"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="link_url">رابط الزر</Label>
-              <Input
-                id="link_url"
-                value={formData.link_url}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, link_url: e.target.value }))
-                }
-                placeholder="/makeup-artists"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="image">صورة البنر *</Label>
-              <Input
-                id="image"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-              />
-              {imagePreview && (
-                <div className="mt-2 rounded-lg overflow-hidden border">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-32 object-cover"
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Eye className="h-4 w-4" />
+                <span>معاينة البنر</span>
+              </div>
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 border">
+                {imagePreview ? (
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="absolute inset-0 w-full h-full object-cover opacity-50"
                   />
+                ) : (
+                  <div className="absolute inset-0 bg-muted flex items-center justify-center">
+                    <Image className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="relative z-10 p-5 flex items-center justify-between min-h-[120px]">
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-foreground">
+                      {formData.title || "عنوان البنر"}
+                    </h3>
+                    {(formData.subtitle || !formData.title) && (
+                      <p className="text-sm text-muted-foreground">
+                        {formData.subtitle || "النص الثانوي"}
+                      </p>
+                    )}
+                  </div>
+                  {(formData.button_text || !formData.title) && (
+                    <button 
+                      className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
+                      disabled
+                    >
+                      {formData.button_text || "الزر"}
+                    </button>
+                  )}
                 </div>
-              )}
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                هذه معاينة تقريبية لشكل البنر في الصفحة الرئيسية
+              </p>
             </div>
           </div>
           <DialogFooter>
