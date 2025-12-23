@@ -1,10 +1,11 @@
 import BottomNavigation from "@/components/BottomNavigation";
-import { Settings, Heart, CreditCard, Bell, HelpCircle, LogOut, ChevronRight, ChevronLeft, User, Briefcase } from "lucide-react";
+import { Settings, Heart, CreditCard, Bell, HelpCircle, LogOut, ChevronRight, ChevronLeft, User, Briefcase, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile, useProfileStats } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentArtist } from "@/hooks/useArtistDashboard";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -25,6 +26,7 @@ const Profile = () => {
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: stats, isLoading: statsLoading } = useProfileStats();
   const { data: artist } = useCurrentArtist();
+  const { role } = useUserRole();
   const { t, isRTL } = useLanguage();
 
   const ChevronIcon = isRTL ? ChevronLeft : ChevronRight;
@@ -131,6 +133,21 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Admin Dashboard Link */}
+      {role === "admin" && (
+        <div className="px-5 pb-2">
+          <Link to="/admin">
+            <button className="w-full flex items-center gap-3 p-4 bg-destructive/10 rounded-2xl hover:bg-destructive/20 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-destructive" />
+              </div>
+              <span className={`flex-1 ${isRTL ? "text-right" : "text-left"} font-medium text-destructive`}>{t.profile.adminDashboard}</span>
+              <ChevronIcon className="w-5 h-5 text-destructive" />
+            </button>
+          </Link>
+        </div>
+      )}
 
       {/* Artist Dashboard Link */}
       {artist && (
