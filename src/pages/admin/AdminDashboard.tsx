@@ -122,7 +122,7 @@ const AdminDashboard = () => {
                 />
                 <StatsCard
                   title="إيرادات المنصة"
-                  value={`${stats?.platformEarnings?.toFixed(0) || 0} ر.س`}
+                  value={`${stats?.platformEarnings?.toFixed(0) || 0} ر.ق`}
                   icon={<DollarSign className="h-6 w-6" />}
                   trend={
                     revenueTrend !== 0
@@ -156,7 +156,7 @@ const AdminDashboard = () => {
                 />
                 <StatsCard
                   title="إيرادات هذا الشهر"
-                  value={`${stats?.thisMonthRevenue?.toFixed(0) || 0} ر.س`}
+                  value={`${stats?.thisMonthRevenue?.toFixed(0) || 0} ر.ق`}
                   icon={<TrendingUp className="h-6 w-6" />}
                 />
               </>
@@ -190,7 +190,7 @@ const AdminDashboard = () => {
                         border: "1px solid hsl(var(--border))",
                         borderRadius: "8px",
                       }}
-                      formatter={(value: number) => [`${value} ر.س`, "الإيرادات"]}
+                      formatter={(value: number) => [`${value} ر.ق`, "الإيرادات"]}
                     />
                     <Area
                       type="monotone"
@@ -310,7 +310,7 @@ const AdminDashboard = () => {
                           {service.bookingsCount}
                         </TableCell>
                         <TableCell className="text-green-600 font-medium">
-                          {service.totalRevenue.toFixed(0)} ر.س
+                          {service.totalRevenue.toFixed(0)} ر.ق
                         </TableCell>
                       </TableRow>
                     ))}
@@ -384,7 +384,7 @@ const AdminDashboard = () => {
                           </div>
                         </TableCell>
                         <TableCell className="text-green-600 font-medium">
-                          {artist.totalRevenue.toFixed(0)} ر.س
+                          {artist.totalRevenue.toFixed(0)} ر.ق
                         </TableCell>
                       </TableRow>
                     ))}

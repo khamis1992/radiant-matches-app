@@ -153,7 +153,7 @@ export const exportBookingsToPDF = (
     service: b.service?.name || "-",
     date: b.booking_date,
     time: b.booking_time,
-    price: `${b.total_price} ر.س`,
+    price: `${b.total_price} ر.ق`,
     status: statusLabels[b.status] || b.status,
   }));
 
@@ -194,9 +194,9 @@ export const exportTransactionsToPDF = (
     date: format(new Date(t.created_at), "yyyy-MM-dd"),
     type: typeLabels[t.type] || t.type,
     artist: t.artist?.profiles?.full_name || "غير معروف",
-    amount: `${t.amount.toFixed(2)} ر.س`,
-    fee: `${t.platform_fee.toFixed(2)} ر.س`,
-    net: `${t.net_amount.toFixed(2)} ر.س`,
+    amount: `${t.amount.toFixed(2)} ر.ق`,
+    fee: `${t.platform_fee.toFixed(2)} ر.ق`,
+    net: `${t.net_amount.toFixed(2)} ر.ق`,
     status: t.status === "completed" ? "مكتمل" : t.status === "pending" ? "معلق" : t.status,
   }));
 
@@ -205,7 +205,7 @@ export const exportTransactionsToPDF = (
 
   exportToPDF({
     title: "تقرير المعاملات المالية",
-    subtitle: `إجمالي ${transactions.length} معاملة | المبلغ: ${totalAmount.toFixed(2)} ر.س | العمولات: ${totalFees.toFixed(2)} ر.س`,
+    subtitle: `إجمالي ${transactions.length} معاملة | المبلغ: ${totalAmount.toFixed(2)} ر.ق | العمولات: ${totalFees.toFixed(2)} ر.ق`,
     filename: "transactions_report",
     columns,
     data,
@@ -235,15 +235,15 @@ export const exportArtistPayoutsToPDF = (
     name: p.full_name,
     email: p.email,
     count: String(p.transactions_count),
-    fees: `${p.total_fees.toFixed(2)} ر.س`,
-    earnings: `${p.total_earnings.toFixed(2)} ر.س`,
+    fees: `${p.total_fees.toFixed(2)} ر.ق`,
+    earnings: `${p.total_earnings.toFixed(2)} ر.ق`,
   }));
 
   const totalEarnings = payouts.reduce((sum, p) => sum + p.total_earnings, 0);
 
   exportToPDF({
     title: "تقرير مدفوعات الفنانين",
-    subtitle: `إجمالي ${payouts.length} فنان | إجمالي الأرباح: ${totalEarnings.toFixed(2)} ر.س`,
+    subtitle: `إجمالي ${payouts.length} فنان | إجمالي الأرباح: ${totalEarnings.toFixed(2)} ر.ق`,
     filename: "artist_payouts_report",
     columns,
     data,

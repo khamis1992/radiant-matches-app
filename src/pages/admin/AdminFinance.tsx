@@ -99,7 +99,7 @@ const AdminFinance = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return `${amount.toFixed(2)} ر.س`;
+    return `${amount.toFixed(2)} ر.ق`;
   };
 
   const handleExportTransactions = () => {

@@ -270,7 +270,7 @@ const AdminBookings = () => {
                         </span>
                       </TableCell>
                       <TableCell className="font-medium">
-                        {booking.total_price} ر.س
+                        {booking.total_price} ر.ق
                       </TableCell>
                       <TableCell>{getStatusBadge(booking.status)}</TableCell>
                       <TableCell>
@@ -451,11 +451,11 @@ const AdminBookings = () => {
                 <div className="grid gap-2 text-sm pr-6">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">سعر الخدمة</span>
-                    <span>{selectedBooking.service?.price || 0} ر.س</span>
+                    <span>{selectedBooking.service?.price || 0} ر.ق</span>
                   </div>
                   <div className="flex justify-between font-semibold text-base">
                     <span>الإجمالي</span>
-                    <span className="text-primary">{selectedBooking.total_price} ر.س</span>
+                    <span className="text-primary">{selectedBooking.total_price} ر.ق</span>
                   </div>
                 </div>
               </div>
