@@ -32,7 +32,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Search, MoreVertical, Calendar, Clock, MapPin, Eye, User, Phone, Mail, FileText, CreditCard } from "lucide-react";
+import { Search, MoreVertical, Calendar, Clock, MapPin, Eye, User, Phone, Mail, FileText, CreditCard, Download } from "lucide-react";
+import { exportToCSV } from "@/lib/csvExport";
+import { toast } from "sonner";
 import { useAdminBookings, useUpdateBookingStatus } from "@/hooks/useAdminBookings";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -109,6 +111,34 @@ const AdminBookings = () => {
     </Badge>
   );
 
+  const handleExportBookings = () => {
+    if (!bookings?.length) {
+      toast.error("لا توجد حجوزات للتصدير");
+      return;
+    }
+    exportToCSV(
+      bookings,
+      [
+        { header: "رقم الحجز", accessor: (b) => b.id.slice(0, 8) },
+        { header: "العميل", accessor: (b) => b.customer?.full_name || "غير معروف" },
+        { header: "هاتف العميل", accessor: (b) => b.customer?.phone },
+        { header: "البريد الإلكتروني", accessor: (b) => b.customer?.email },
+        { header: "الفنانة", accessor: (b) => b.artist?.profile?.full_name || "غير معروف" },
+        { header: "الخدمة", accessor: (b) => b.service?.name },
+        { header: "التاريخ", accessor: (b) => b.booking_date },
+        { header: "الوقت", accessor: (b) => b.booking_time },
+        { header: "نوع الموقع", accessor: (b) => b.location_type === "studio" ? "الاستوديو" : "المنزل" },
+        { header: "العنوان", accessor: (b) => b.location_address },
+        { header: "السعر", accessor: (b) => b.total_price },
+        { header: "الحالة", accessor: (b) => statusLabels[b.status] },
+        { header: "الملاحظات", accessor: (b) => b.notes },
+        { header: "تاريخ الإنشاء", accessor: (b) => format(new Date(b.created_at), "yyyy-MM-dd HH:mm") },
+      ],
+      "bookings"
+    );
+    toast.success("تم تصدير الحجوزات بنجاح");
+  };
+
   return (
     <div className="flex min-h-screen bg-background" dir="rtl">
       <AdminSidebar />
@@ -147,6 +177,10 @@ const AdminBookings = () => {
                   <SelectItem value="cancelled">ملغى</SelectItem>
                 </SelectContent>
               </Select>
+              <Button variant="outline" onClick={handleExportBookings}>
+                <Download className="h-4 w-4 ml-2" />
+                تصدير CSV
+              </Button>
             </div>
           </CardContent>
         </Card>
