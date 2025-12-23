@@ -131,45 +131,57 @@ export type Database = {
       }
       bookings: {
         Row: {
+          artist_earnings: number | null
           artist_id: string
           booking_date: string
           booking_time: string
           created_at: string
           customer_id: string
+          discount_amount: number | null
           id: string
           location_address: string | null
           location_type: string
           notes: string | null
+          platform_fee: number | null
+          promo_code_id: string | null
           service_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total_price: number
           updated_at: string
         }
         Insert: {
+          artist_earnings?: number | null
           artist_id: string
           booking_date: string
           booking_time: string
           created_at?: string
           customer_id: string
+          discount_amount?: number | null
           id?: string
           location_address?: string | null
           location_type: string
           notes?: string | null
+          platform_fee?: number | null
+          promo_code_id?: string | null
           service_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_price: number
           updated_at?: string
         }
         Update: {
+          artist_earnings?: number | null
           artist_id?: string
           booking_date?: string
           booking_time?: string
           created_at?: string
           customer_id?: string
+          discount_amount?: number | null
           id?: string
           location_address?: string | null
           location_type?: string
           notes?: string | null
+          platform_fee?: number | null
+          promo_code_id?: string | null
           service_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_price?: number
@@ -181,6 +193,13 @@ export type Database = {
             columns: ["artist_id"]
             isOneToOne: false
             referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
             referencedColumns: ["id"]
           },
           {
@@ -281,6 +300,33 @@ export type Database = {
           },
         ]
       }
+      platform_settings: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       portfolio_items: {
         Row: {
           artist_id: string
@@ -352,6 +398,51 @@ export type Database = {
           location?: string | null
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          current_uses: number | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          min_order_amount: number | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
         }
         Relationships: []
       }
@@ -449,6 +540,63 @@ export type Database = {
             columns: ["artist_id"]
             isOneToOne: false
             referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          artist_id: string
+          booking_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          net_amount: number
+          platform_fee: number | null
+          status: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          artist_id: string
+          booking_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          net_amount: number
+          platform_fee?: number | null
+          status?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          artist_id?: string
+          booking_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          net_amount?: number
+          platform_fee?: number | null
+          status?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
         ]
