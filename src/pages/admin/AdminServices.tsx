@@ -215,7 +215,7 @@ const AdminServices = () => {
                           )}
                         </TableCell>
                         <TableCell className="font-medium">
-                          {service.price} ر.س
+                          {service.price} ر.ق
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1 text-muted-foreground">
@@ -264,7 +264,7 @@ const AdminServices = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label htmlFor="price">السعر (ر.س)</Label>
+            <Label htmlFor="price">السعر (ر.ق)</Label>
             <Input
               id="price"
               type="number"

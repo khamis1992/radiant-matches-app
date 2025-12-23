@@ -49,7 +49,7 @@ const AdminArtists = () => {
                       <TableCell><div className="flex items-center gap-1"><Star className="h-4 w-4 fill-yellow-400 text-yellow-400" /><span>{artist.rating?.toFixed(1) || "0.0"}</span><span className="text-muted-foreground text-sm">({artist.total_reviews || 0})</span></div></TableCell>
                       <TableCell>{artist.services_count}</TableCell>
                       <TableCell>{artist.bookings_count}</TableCell>
-                      <TableCell>{artist.total_earnings.toFixed(0)} ر.س</TableCell>
+                      <TableCell>{artist.total_earnings.toFixed(0)} ر.ق</TableCell>
                       <TableCell><div className="flex items-center gap-2"><Switch checked={artist.is_available || false} onCheckedChange={() => handleToggle(artist.id, artist.is_available || false)} /><Badge variant={artist.is_available ? "default" : "secondary"}>{artist.is_available ? "متاحة" : "غير متاحة"}</Badge></div></TableCell>
                     </TableRow>
                   ))}

@@ -206,14 +206,14 @@ const AdminPromoCodes = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="percentage">نسبة مئوية (%)</SelectItem>
-                        <SelectItem value="fixed">مبلغ ثابت (ر.س)</SelectItem>
+                        <SelectItem value="fixed">مبلغ ثابت (ر.ق)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="discount_value">
-                      قيمة الخصم {formData.discount_type === "percentage" ? "(%)" : "(ر.س)"}
+                      قيمة الخصم {formData.discount_type === "percentage" ? "(%)" : "(ر.ق)"}
                     </Label>
                     <Input
                       id="discount_value"
@@ -243,7 +243,7 @@ const AdminPromoCodes = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="min_order_amount">الحد الأدنى للطلب (ر.س)</Label>
+                    <Label htmlFor="min_order_amount">الحد الأدنى للطلب (ر.ق)</Label>
                     <Input
                       id="min_order_amount"
                       type="number"
@@ -345,7 +345,7 @@ const AdminPromoCodes = () => {
                     <TableCell>
                       {promo.discount_type === "percentage" 
                         ? `${promo.discount_value}%` 
-                        : `${promo.discount_value} ر.س`}
+                        : `${promo.discount_value} ر.ق`}
                     </TableCell>
                     <TableCell>
                       <span className="text-muted-foreground">
