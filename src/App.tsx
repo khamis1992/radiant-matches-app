@@ -30,6 +30,7 @@ import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
 import AdminFinance from "./pages/admin/AdminFinance";
 import AdminBookings from "./pages/admin/AdminBookings";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminNotifications from "./pages/admin/AdminNotifications";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => (
           <Route path="/admin/finance" element={<AdminFinance />} />
           <Route path="/admin/bookings" element={<AdminBookings />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/notifications" element={<AdminNotifications />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

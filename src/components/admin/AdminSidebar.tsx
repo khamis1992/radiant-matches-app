@@ -34,6 +34,7 @@ const navItems = [
   { to: "/admin/bookings", icon: Calendar, label: "الحجوزات" },
   { to: "/admin/promo-codes", icon: Tag, label: "أكواد الخصم" },
   { to: "/admin/finance", icon: DollarSign, label: "المالية" },
+  { to: "/admin/notifications", icon: Bell, label: "سجل الإشعارات" },
   { to: "/admin/settings", icon: Settings, label: "الإعدادات" },
 ];
 
