@@ -32,8 +32,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Search, MoreVertical, Calendar, Clock, MapPin, Eye, User, Phone, Mail, FileText, CreditCard, Download } from "lucide-react";
+import { Search, MoreVertical, Calendar, Clock, MapPin, Eye, User, Phone, Mail, FileText, CreditCard, Download, FileDown } from "lucide-react";
 import { exportToCSV } from "@/lib/csvExport";
+import { exportBookingsToPDF } from "@/lib/pdfExport";
 import { toast } from "sonner";
 import { useAdminBookings, useUpdateBookingStatus } from "@/hooks/useAdminBookings";
 import { format } from "date-fns";
@@ -139,6 +140,15 @@ const AdminBookings = () => {
     toast.success("تم تصدير الحجوزات بنجاح");
   };
 
+  const handleExportPDF = () => {
+    if (!bookings?.length) {
+      toast.error("لا توجد حجوزات للتصدير");
+      return;
+    }
+    exportBookingsToPDF(bookings, statusLabels);
+    toast.success("تم تصدير التقرير بصيغة PDF");
+  };
+
   return (
     <div className="flex min-h-screen bg-background" dir="rtl">
       <AdminSidebar />
@@ -179,7 +189,11 @@ const AdminBookings = () => {
               </Select>
               <Button variant="outline" onClick={handleExportBookings}>
                 <Download className="h-4 w-4 ml-2" />
-                تصدير CSV
+                CSV
+              </Button>
+              <Button variant="outline" onClick={handleExportPDF}>
+                <FileDown className="h-4 w-4 ml-2" />
+                PDF
               </Button>
             </div>
           </CardContent>
