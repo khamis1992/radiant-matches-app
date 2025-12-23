@@ -29,12 +29,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useActiveBanners } from "@/hooks/useAdminBanners";
 
 import logoImage from "@/assets/logo.png";
 import artist1 from "@/assets/artist-1.jpg";
 import promoBanner1 from "@/assets/promo-banner-1.jpg";
-import promoBanner2 from "@/assets/promo-banner-2.jpg";
-import promoBanner3 from "@/assets/promo-banner-3.jpg";
 import categoryMakeup from "@/assets/category-makeup.jpg";
 import categoryHairstyling from "@/assets/category-hairstyling.jpg";
 import categoryHenna from "@/assets/category-henna.jpg";
@@ -42,8 +41,6 @@ import categoryLashes from "@/assets/category-lashes.jpg";
 import categoryNails from "@/assets/category-nails.jpg";
 import categoryBridal from "@/assets/category-bridal.jpg";
 import categoryPhotoshoot from "@/assets/category-photoshoot.jpg";
-
-const promoBanners = [promoBanner1, promoBanner2, promoBanner3];
 
 const getCategoryTranslations = (t: ReturnType<typeof useLanguage>["t"]) => [
   { name: t.categories.makeup, image: categoryMakeup, key: "Makeup" },
@@ -54,6 +51,100 @@ const getCategoryTranslations = (t: ReturnType<typeof useLanguage>["t"]) => [
   { name: t.categories.bridal, image: categoryBridal, key: "Bridal" },
   { name: t.categories.photoshoot, image: categoryPhotoshoot, key: "Photoshoot" },
 ];
+
+// Dynamic Promotions Carousel Component
+const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) => {
+  const { data: banners = [], isLoading } = useActiveBanners();
+  const { t } = useLanguage();
+
+  // Fallback to static promos if no banners
+  if (isLoading) {
+    return (
+      <section className="px-5 pb-6">
+        <Skeleton className="h-[120px] w-full rounded-2xl" />
+      </section>
+    );
+  }
+
+  if (banners.length === 0) {
+    // Fallback to static promos from translations
+    return (
+      <section className="px-5 pb-6">
+        <Carousel
+          opts={{ align: "start", loop: true }}
+          className="w-full"
+        >
+          <CarouselContent>
+            {t.home.promos.map((promo, index) => (
+              <CarouselItem key={index}>
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5">
+                  <img 
+                    src={promoBanner1} 
+                    alt={promo.title} 
+                    className="absolute inset-0 w-full h-full object-cover opacity-50"
+                  />
+                  <div className="relative z-10 p-5 flex items-center justify-between min-h-[100px]">
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-bold text-foreground">{promo.title}</h3>
+                      <p className="text-sm text-muted-foreground">{promo.subtitle}</p>
+                    </div>
+                    <button 
+                      onClick={() => navigate("/makeup-artists")}
+                      className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-primary/90 transition-colors"
+                    >
+                      {promo.button}
+                    </button>
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselDots />
+        </Carousel>
+      </section>
+    );
+  }
+
+  return (
+    <section className="px-5 pb-6">
+      <Carousel
+        opts={{ align: "start", loop: true }}
+        className="w-full"
+      >
+        <CarouselContent>
+          {banners.map((banner) => (
+            <CarouselItem key={banner.id}>
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5">
+                <img 
+                  src={banner.image_url} 
+                  alt={banner.title} 
+                  className="absolute inset-0 w-full h-full object-cover opacity-50"
+                />
+                <div className="relative z-10 p-5 flex items-center justify-between min-h-[100px]">
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-foreground">{banner.title}</h3>
+                    {banner.subtitle && (
+                      <p className="text-sm text-muted-foreground">{banner.subtitle}</p>
+                    )}
+                  </div>
+                  {banner.button_text && (
+                    <button 
+                      onClick={() => navigate(banner.link_url || "/makeup-artists")}
+                      className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-primary/90 transition-colors"
+                    >
+                      {banner.button_text}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselDots />
+      </Carousel>
+    </section>
+  );
+};
 
 const Home = () => {
   const navigate = useNavigate();
@@ -191,42 +282,7 @@ const Home = () => {
       </section>
 
       {/* Promotions Carousel */}
-      <section className="px-5 pb-6">
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent>
-            {t.home.promos.map((promo, index) => (
-              <CarouselItem key={index}>
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5">
-                  <img 
-                    src={promoBanners[index]} 
-                    alt={promo.title} 
-                    className="absolute inset-0 w-full h-full object-cover opacity-50"
-                  />
-                  <div className="relative z-10 p-5 flex items-center justify-between min-h-[100px]">
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-bold text-foreground">{promo.title}</h3>
-                      <p className="text-sm text-muted-foreground">{promo.subtitle}</p>
-                    </div>
-                    <button 
-                      onClick={() => navigate("/makeup-artists")}
-                      className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-primary/90 transition-colors"
-                    >
-                      {promo.button}
-                    </button>
-                  </div>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselDots />
-        </Carousel>
-      </section>
+      <PromotionsCarousel navigate={navigate} />
 
       {/* Featured Artists */}
       <section className="px-5 pb-6">

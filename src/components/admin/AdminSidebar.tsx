@@ -15,6 +15,7 @@ import {
   Check,
   Star,
   Scissors,
+  Image,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,7 @@ const navItems = [
   { to: "/admin/services", icon: Scissors, label: "الخدمات" },
   { to: "/admin/reviews", icon: Star, label: "المراجعات" },
   { to: "/admin/promo-codes", icon: Tag, label: "أكواد الخصم" },
+  { to: "/admin/banners", icon: Image, label: "البنرات" },
   { to: "/admin/finance", icon: DollarSign, label: "المالية" },
   { to: "/admin/notifications", icon: Bell, label: "سجل الإشعارات" },
   { to: "/admin/settings", icon: Settings, label: "الإعدادات" },
