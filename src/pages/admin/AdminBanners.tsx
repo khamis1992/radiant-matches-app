@@ -5,6 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -31,8 +38,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink, Eye, CalendarIcon, Clock } from "lucide-react";
 import { useAdminBanners } from "@/hooks/useAdminBanners";
+import { format, isAfter, isBefore } from "date-fns";
+import { ar } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import {
   DndContext,
   closestCenter,
@@ -57,6 +67,8 @@ interface BannerFormData {
   button_text: string;
   link_url: string;
   image_url: string;
+  valid_from: Date | undefined;
+  valid_until: Date | undefined;
 }
 
 const initialFormData: BannerFormData = {
@@ -65,6 +77,8 @@ const initialFormData: BannerFormData = {
   button_text: "",
   link_url: "",
   image_url: "",
+  valid_from: undefined,
+  valid_until: undefined,
 };
 
 interface BannerData {
@@ -76,6 +90,8 @@ interface BannerData {
   link_url: string | null;
   is_active: boolean;
   display_order: number;
+  valid_from: string | null;
+  valid_until: string | null;
 }
 
 interface SortableRowProps {
@@ -83,9 +99,10 @@ interface SortableRowProps {
   onEdit: (banner: BannerData) => void;
   onDelete: (id: string) => void;
   onToggle: (id: string, isActive: boolean) => void;
+  getScheduleStatus: (banner: BannerData) => { label: string; variant: "default" | "secondary" | "destructive" | "outline" };
 }
 
-const SortableRow = ({ banner, onEdit, onDelete, onToggle }: SortableRowProps) => {
+const SortableRow = ({ banner, onEdit, onDelete, onToggle, getScheduleStatus }: SortableRowProps) => {
   const {
     attributes,
     listeners,
@@ -99,6 +116,12 @@ const SortableRow = ({ banner, onEdit, onDelete, onToggle }: SortableRowProps) =
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+  };
+
+  const status = getScheduleStatus(banner);
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "-";
+    return format(new Date(dateStr), "d MMM yyyy", { locale: ar });
   };
 
   return (
@@ -122,24 +145,14 @@ const SortableRow = ({ banner, onEdit, onDelete, onToggle }: SortableRowProps) =
         </div>
       </TableCell>
       <TableCell className="font-medium">{banner.title}</TableCell>
-      <TableCell className="text-muted-foreground max-w-[200px] truncate">
-        {banner.subtitle || "-"}
+      <TableCell className="text-muted-foreground">
+        <div className="flex flex-col text-xs">
+          <span>من: {formatDate(banner.valid_from)}</span>
+          <span>إلى: {formatDate(banner.valid_until)}</span>
+        </div>
       </TableCell>
-      <TableCell>{banner.button_text || "-"}</TableCell>
       <TableCell>
-        {banner.link_url ? (
-          <a
-            href={banner.link_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline flex items-center gap-1"
-          >
-            <ExternalLink className="h-3 w-3" />
-            رابط
-          </a>
-        ) : (
-          "-"
-        )}
+        <Badge variant={status.variant}>{status.label}</Badge>
       </TableCell>
       <TableCell>
         <Switch
@@ -230,6 +243,8 @@ const AdminBanners = () => {
         button_text: banner.button_text || "",
         link_url: banner.link_url || "",
         image_url: banner.image_url,
+        valid_from: banner.valid_from ? new Date(banner.valid_from) : undefined,
+        valid_until: banner.valid_until ? new Date(banner.valid_until) : undefined,
       });
       setImagePreview(banner.image_url);
     } else {
@@ -265,22 +280,24 @@ const AdminBanners = () => {
         return;
       }
 
+      const bannerPayload = {
+        title: formData.title,
+        subtitle: formData.subtitle || undefined,
+        button_text: formData.button_text || undefined,
+        link_url: formData.link_url || undefined,
+        image_url: imageUrl,
+        valid_from: formData.valid_from?.toISOString(),
+        valid_until: formData.valid_until?.toISOString() || null,
+      };
+
       if (editingBanner) {
         await updateBanner.mutateAsync({
           id: editingBanner.id,
-          title: formData.title,
-          subtitle: formData.subtitle || undefined,
-          button_text: formData.button_text || undefined,
-          link_url: formData.link_url || undefined,
-          image_url: imageUrl,
+          ...bannerPayload,
         });
       } else {
         await createBanner.mutateAsync({
-          title: formData.title,
-          subtitle: formData.subtitle || undefined,
-          button_text: formData.button_text || undefined,
-          link_url: formData.link_url || undefined,
-          image_url: imageUrl,
+          ...bannerPayload,
           display_order: banners.length,
         });
       }
@@ -289,6 +306,23 @@ const AdminBanners = () => {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const getScheduleStatus = (banner: typeof banners[0]) => {
+    const now = new Date();
+    const validFrom = banner.valid_from ? new Date(banner.valid_from) : null;
+    const validUntil = banner.valid_until ? new Date(banner.valid_until) : null;
+
+    if (validUntil && isBefore(validUntil, now)) {
+      return { label: "منتهي", variant: "destructive" as const };
+    }
+    if (validFrom && isAfter(validFrom, now)) {
+      return { label: "مجدول", variant: "secondary" as const };
+    }
+    if (banner.is_active) {
+      return { label: "نشط", variant: "default" as const };
+    }
+    return { label: "متوقف", variant: "outline" as const };
   };
 
   const handleDelete = (id: string) => {
@@ -349,10 +383,9 @@ const AdminBanners = () => {
                       <TableHead className="w-12"></TableHead>
                       <TableHead className="w-24">الصورة</TableHead>
                       <TableHead>العنوان</TableHead>
-                      <TableHead>النص الثانوي</TableHead>
-                      <TableHead>نص الزر</TableHead>
-                      <TableHead>الرابط</TableHead>
-                      <TableHead className="w-20">الحالة</TableHead>
+                      <TableHead>الجدولة</TableHead>
+                      <TableHead>الحالة</TableHead>
+                      <TableHead className="w-20">مفعّل</TableHead>
                       <TableHead className="w-24">الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -370,6 +403,7 @@ const AdminBanners = () => {
                           onToggle={(id, isActive) =>
                             toggleBannerStatus.mutate({ id, is_active: isActive })
                           }
+                          getScheduleStatus={getScheduleStatus}
                         />
                       ))}
                     </SortableContext>
@@ -444,6 +478,89 @@ const AdminBanners = () => {
                   accept="image/*"
                   onChange={handleImageChange}
                 />
+              </div>
+
+              {/* Scheduling */}
+              <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Clock className="h-4 w-4" />
+                  <span>جدولة العرض</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">تاريخ البدء</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-right font-normal h-9 text-xs",
+                            !formData.valid_from && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="ml-2 h-3 w-3" />
+                          {formData.valid_from
+                            ? format(formData.valid_from, "d MMM yyyy", { locale: ar })
+                            : "اختر تاريخ"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.valid_from}
+                          onSelect={(date) =>
+                            setFormData((prev) => ({ ...prev, valid_from: date }))
+                          }
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">تاريخ الانتهاء</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-right font-normal h-9 text-xs",
+                            !formData.valid_until && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="ml-2 h-3 w-3" />
+                          {formData.valid_until
+                            ? format(formData.valid_until, "d MMM yyyy", { locale: ar })
+                            : "غير محدد"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.valid_until}
+                          onSelect={(date) =>
+                            setFormData((prev) => ({ ...prev, valid_until: date }))
+                          }
+                          disabled={(date) =>
+                            formData.valid_from ? isBefore(date, formData.valid_from) : false
+                          }
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                {formData.valid_until && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setFormData((prev) => ({ ...prev, valid_until: undefined }))}
+                  >
+                    إزالة تاريخ الانتهاء
+                  </Button>
+                )}
               </div>
             </div>
 
