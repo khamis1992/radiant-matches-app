@@ -249,3 +249,90 @@ export const exportArtistPayoutsToPDF = (
     data,
   });
 };
+
+// Top Services PDF export
+export const exportTopServicesToPDF = (
+  services: Array<{
+    id: string;
+    name: string;
+    category?: string | null;
+    artistName?: string | null;
+    bookingsCount: number;
+    totalRevenue: number;
+  }>,
+  dateRangeLabel?: string
+) => {
+  const columns: PDFColumn[] = [
+    { header: "#", dataKey: "rank" },
+    { header: "الخدمة", dataKey: "name" },
+    { header: "الفئة", dataKey: "category" },
+    { header: "الفنانة", dataKey: "artist" },
+    { header: "الحجوزات", dataKey: "bookings" },
+    { header: "الإيرادات", dataKey: "revenue" },
+  ];
+
+  const data = services.map((s, index) => ({
+    rank: String(index + 1),
+    name: s.name,
+    category: s.category || "-",
+    artist: s.artistName || "غير معروف",
+    bookings: String(s.bookingsCount),
+    revenue: `${s.totalRevenue.toFixed(0)} ر.ق`,
+  }));
+
+  const totalRevenue = services.reduce((sum, s) => sum + s.totalRevenue, 0);
+  const totalBookings = services.reduce((sum, s) => sum + s.bookingsCount, 0);
+
+  exportToPDF({
+    title: "تقرير أكثر الخدمات طلبًا",
+    subtitle: `${dateRangeLabel ? dateRangeLabel + " | " : ""}إجمالي ${totalBookings} حجز | ${totalRevenue.toFixed(0)} ر.ق`,
+    filename: "top_services_report",
+    columns,
+    data,
+    orientation: "portrait",
+  });
+};
+
+// Top Artists PDF export
+export const exportTopArtistsToPDF = (
+  artists: Array<{
+    id: string;
+    name?: string | null;
+    totalBookings: number;
+    completedBookings: number;
+    totalRevenue: number;
+    rating?: number | null;
+    totalReviews?: number | null;
+  }>,
+  dateRangeLabel?: string
+) => {
+  const columns: PDFColumn[] = [
+    { header: "#", dataKey: "rank" },
+    { header: "الفنانة", dataKey: "name" },
+    { header: "الحجوزات", dataKey: "bookings" },
+    { header: "المكتملة", dataKey: "completed" },
+    { header: "التقييم", dataKey: "rating" },
+    { header: "الإيرادات", dataKey: "revenue" },
+  ];
+
+  const data = artists.map((a, index) => ({
+    rank: String(index + 1),
+    name: a.name || "غير معروف",
+    bookings: String(a.totalBookings),
+    completed: String(a.completedBookings),
+    rating: a.rating ? `${a.rating.toFixed(1)} (${a.totalReviews || 0})` : "-",
+    revenue: `${a.totalRevenue.toFixed(0)} ر.ق`,
+  }));
+
+  const totalRevenue = artists.reduce((sum, a) => sum + a.totalRevenue, 0);
+  const totalBookings = artists.reduce((sum, a) => sum + a.totalBookings, 0);
+
+  exportToPDF({
+    title: "تقرير أفضل الفنانات أداءً",
+    subtitle: `${dateRangeLabel ? dateRangeLabel + " | " : ""}إجمالي ${totalBookings} حجز | ${totalRevenue.toFixed(0)} ر.ق`,
+    filename: "top_artists_report",
+    columns,
+    data,
+    orientation: "portrait",
+  });
+};
