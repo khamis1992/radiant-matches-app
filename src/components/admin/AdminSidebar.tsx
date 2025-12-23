@@ -13,6 +13,8 @@ import {
   Bell,
   X,
   Check,
+  Star,
+  Scissors,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +34,8 @@ const navItems = [
   { to: "/admin/users", icon: Users, label: "المستخدمين" },
   { to: "/admin/artists", icon: Palette, label: "الفنانين" },
   { to: "/admin/bookings", icon: Calendar, label: "الحجوزات" },
+  { to: "/admin/services", icon: Scissors, label: "الخدمات" },
+  { to: "/admin/reviews", icon: Star, label: "المراجعات" },
   { to: "/admin/promo-codes", icon: Tag, label: "أكواد الخصم" },
   { to: "/admin/finance", icon: DollarSign, label: "المالية" },
   { to: "/admin/notifications", icon: Bell, label: "سجل الإشعارات" },
