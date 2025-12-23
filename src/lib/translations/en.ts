@@ -141,6 +141,7 @@ export const en = {
     bookings: "Bookings",
     reviews: "Reviews",
     artistDashboard: "Artist Dashboard",
+    adminDashboard: "Admin Dashboard",
     favorites: "Favorites",
     paymentMethods: "Payment Methods",
     notifications: "Notifications",

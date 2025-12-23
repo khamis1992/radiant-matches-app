@@ -145,6 +145,7 @@ export const ar: TranslationKeys = {
     bookings: "الحجوزات",
     reviews: "التقييمات",
     artistDashboard: "لوحة تحكم الفنانة",
+    adminDashboard: "لوحة الإدارة",
     favorites: "المفضلة",
     paymentMethods: "طرق الدفع",
     notifications: "الإشعارات",
