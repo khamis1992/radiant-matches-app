@@ -5,6 +5,7 @@ import { useAdminFinance, useTransactions, useArtistPayouts } from "@/hooks/useA
 import { StatsCard } from "@/components/admin/StatsCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -21,6 +22,7 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownRight,
+  Download,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -36,6 +38,8 @@ import {
   Bar,
   Legend,
 } from "recharts";
+import { exportToCSV } from "@/lib/csvExport";
+import { toast } from "sonner";
 
 const AdminFinance = () => {
   const { role, loading: roleLoading } = useUserRole();
@@ -94,6 +98,46 @@ const AdminFinance = () => {
 
   const formatCurrency = (amount: number) => {
     return `${amount.toFixed(2)} ر.س`;
+  };
+
+  const handleExportTransactions = () => {
+    if (!transactions?.length) {
+      toast.error("لا توجد معاملات للتصدير");
+      return;
+    }
+    exportToCSV(
+      transactions,
+      [
+        { header: "التاريخ", accessor: (t) => format(new Date(t.created_at), "yyyy-MM-dd HH:mm") },
+        { header: "النوع", accessor: (t) => getTypeLabel(t.type) },
+        { header: "الفنان", accessor: (t) => t.artist?.profiles?.full_name || "غير معروف" },
+        { header: "المبلغ", accessor: (t) => t.amount },
+        { header: "العمولة", accessor: (t) => t.platform_fee },
+        { header: "الصافي", accessor: (t) => t.net_amount },
+        { header: "الحالة", accessor: (t) => t.status },
+      ],
+      "transactions"
+    );
+    toast.success("تم تصدير المعاملات بنجاح");
+  };
+
+  const handleExportArtistPayouts = () => {
+    if (!artistPayouts?.length) {
+      toast.error("لا توجد مدفوعات للتصدير");
+      return;
+    }
+    exportToCSV(
+      artistPayouts,
+      [
+        { header: "الفنان", accessor: (a) => a.full_name },
+        { header: "البريد الإلكتروني", accessor: (a) => a.email },
+        { header: "عدد المعاملات", accessor: (a) => a.transactions_count },
+        { header: "إجمالي العمولات", accessor: (a) => a.total_fees },
+        { header: "إجمالي الأرباح", accessor: (a) => a.total_earnings },
+      ],
+      "artist_payouts"
+    );
+    toast.success("تم تصدير مدفوعات الفنانين بنجاح");
   };
 
   const monthNames: { [key: string]: string } = {
@@ -222,10 +266,22 @@ const AdminFinance = () => {
 
         {/* Tabs for Transactions and Artist Payouts */}
         <Tabs defaultValue="transactions" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="transactions">المعاملات الأخيرة</TabsTrigger>
-            <TabsTrigger value="artists">مدفوعات الفنانين</TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between">
+            <TabsList>
+              <TabsTrigger value="transactions">المعاملات الأخيرة</TabsTrigger>
+              <TabsTrigger value="artists">مدفوعات الفنانين</TabsTrigger>
+            </TabsList>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleExportTransactions}>
+                <Download className="h-4 w-4 ml-2" />
+                تصدير المعاملات
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleExportArtistPayouts}>
+                <Download className="h-4 w-4 ml-2" />
+                تصدير المدفوعات
+              </Button>
+            </div>
+          </div>
 
           <TabsContent value="transactions">
             <div className="bg-card rounded-xl border border-border">
