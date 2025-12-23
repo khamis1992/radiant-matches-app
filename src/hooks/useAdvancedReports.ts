@@ -21,16 +21,30 @@ interface TopArtist {
   totalReviews: number | null;
 }
 
-export const useTopServices = (limit = 10) => {
+export interface DateRange {
+  from: Date | undefined;
+  to: Date | undefined;
+}
+
+export const useTopServices = (limit = 10, dateRange?: DateRange) => {
   return useQuery({
-    queryKey: ["top-services", limit],
+    queryKey: ["top-services", limit, dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
     queryFn: async (): Promise<TopService[]> => {
       // Get all completed bookings with service info
-      const { data: bookings, error } = await supabase
+      let query = supabase
         .from("bookings")
-        .select("service_id, total_price, status")
+        .select("service_id, total_price, status, booking_date")
         .eq("status", "completed")
         .not("service_id", "is", null);
+
+      if (dateRange?.from) {
+        query = query.gte("booking_date", dateRange.from.toISOString().split("T")[0]);
+      }
+      if (dateRange?.to) {
+        query = query.lte("booking_date", dateRange.to.toISOString().split("T")[0]);
+      }
+
+      const { data: bookings, error } = await query;
 
       if (error) throw error;
 
@@ -97,14 +111,23 @@ export const useTopServices = (limit = 10) => {
   });
 };
 
-export const useTopArtists = (limit = 10) => {
+export const useTopArtists = (limit = 10, dateRange?: DateRange) => {
   return useQuery({
-    queryKey: ["top-artists", limit],
+    queryKey: ["top-artists", limit, dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
     queryFn: async (): Promise<TopArtist[]> => {
       // Get all bookings with artist info
-      const { data: bookings, error } = await supabase
+      let query = supabase
         .from("bookings")
-        .select("artist_id, total_price, status");
+        .select("artist_id, total_price, status, booking_date");
+
+      if (dateRange?.from) {
+        query = query.gte("booking_date", dateRange.from.toISOString().split("T")[0]);
+      }
+      if (dateRange?.to) {
+        query = query.lte("booking_date", dateRange.to.toISOString().split("T")[0]);
+      }
+
+      const { data: bookings, error } = await query;
 
       if (error) throw error;
 

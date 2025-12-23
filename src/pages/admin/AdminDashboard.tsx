@@ -1,13 +1,14 @@
+import { useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { StatsCard } from "@/components/admin/StatsCard";
 import { useAdminStats, useRecentBookings, useMonthlyRevenue } from "@/hooks/useAdminStats";
-import { useTopServices, useTopArtists } from "@/hooks/useAdvancedReports";
+import { useTopServices, useTopArtists, DateRange } from "@/hooks/useAdvancedReports";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Navigate } from "react-router-dom";
 import {
   Users,
   Palette,
-  Calendar,
+  Calendar as CalendarIcon,
   DollarSign,
   TrendingUp,
   Clock,
@@ -15,10 +16,18 @@ import {
   Star,
   Award,
   Briefcase,
+  CalendarDays,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -36,8 +45,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { format } from "date-fns";
+import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear } from "date-fns";
 import { ar } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -58,8 +68,44 @@ const AdminDashboard = () => {
   const { data: stats, isLoading: statsLoading } = useAdminStats();
   const { data: recentBookings, isLoading: bookingsLoading } = useRecentBookings(5);
   const { data: monthlyRevenue, isLoading: revenueLoading } = useMonthlyRevenue();
-  const { data: topServices, isLoading: topServicesLoading } = useTopServices(5);
-  const { data: topArtists, isLoading: topArtistsLoading } = useTopArtists(5);
+
+  // Date range state for advanced reports
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: undefined,
+    to: undefined,
+  });
+  const [activePreset, setActivePreset] = useState<string>("all");
+
+  const { data: topServices, isLoading: topServicesLoading } = useTopServices(5, dateRange);
+  const { data: topArtists, isLoading: topArtistsLoading } = useTopArtists(5, dateRange);
+
+  const handlePresetClick = (preset: string) => {
+    setActivePreset(preset);
+    const today = new Date();
+    
+    switch (preset) {
+      case "7days":
+        setDateRange({ from: subDays(today, 7), to: today });
+        break;
+      case "30days":
+        setDateRange({ from: subDays(today, 30), to: today });
+        break;
+      case "thisMonth":
+        setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
+        break;
+      case "lastMonth":
+        const lastMonth = subMonths(today, 1);
+        setDateRange({ from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) });
+        break;
+      case "thisYear":
+        setDateRange({ from: startOfYear(today), to: today });
+        break;
+      case "all":
+      default:
+        setDateRange({ from: undefined, to: undefined });
+        break;
+    }
+  };
 
   if (roleLoading) {
     return (
@@ -118,7 +164,7 @@ const AdminDashboard = () => {
                 <StatsCard
                   title="إجمالي الحجوزات"
                   value={stats?.totalBookings || 0}
-                  icon={<Calendar className="h-6 w-6" />}
+                  icon={<CalendarIcon className="h-6 w-6" />}
                 />
                 <StatsCard
                   title="إيرادات المنصة"
@@ -263,70 +309,160 @@ const AdminDashboard = () => {
           </div>
 
           {/* Advanced Reports - Top Services & Top Artists */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-            {/* Top Services */}
-            <div className="bg-card rounded-xl border border-border p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Briefcase className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold text-foreground">
-                  أكثر الخدمات طلبًا
-                </h2>
-              </div>
-              {topServicesLoading ? (
-                <div className="space-y-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Skeleton key={i} className="h-12" />
-                  ))}
+          <div className="mt-8">
+            {/* Date Range Filter */}
+            <div className="bg-card rounded-xl border border-border p-4 mb-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5 text-primary" />
+                  <span className="font-medium text-foreground">الفترة الزمنية:</span>
                 </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-right">#</TableHead>
-                      <TableHead className="text-right">الخدمة</TableHead>
-                      <TableHead className="text-right">الفنانة</TableHead>
-                      <TableHead className="text-right">الحجوزات</TableHead>
-                      <TableHead className="text-right">الإيرادات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {topServices?.map((service, index) => (
-                      <TableRow key={service.id}>
-                        <TableCell className="font-bold text-primary">
-                          {index + 1}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{service.name}</p>
-                            {service.category && (
-                              <Badge variant="secondary" className="text-xs mt-1">
-                                {service.category}
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>{service.artistName || "غير معروف"}</TableCell>
-                        <TableCell className="font-medium">
-                          {service.bookingsCount}
-                        </TableCell>
-                        <TableCell className="text-green-600 font-medium">
-                          {service.totalRevenue.toFixed(0)} ر.ق
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {(!topServices || topServices.length === 0) && (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">
-                          لا توجد بيانات
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              )}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={activePreset === "all" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePresetClick("all")}
+                  >
+                    الكل
+                  </Button>
+                  <Button
+                    variant={activePreset === "7days" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePresetClick("7days")}
+                  >
+                    آخر 7 أيام
+                  </Button>
+                  <Button
+                    variant={activePreset === "30days" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePresetClick("30days")}
+                  >
+                    آخر 30 يوم
+                  </Button>
+                  <Button
+                    variant={activePreset === "thisMonth" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePresetClick("thisMonth")}
+                  >
+                    هذا الشهر
+                  </Button>
+                  <Button
+                    variant={activePreset === "lastMonth" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePresetClick("lastMonth")}
+                  >
+                    الشهر الماضي
+                  </Button>
+                  <Button
+                    variant={activePreset === "thisYear" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePresetClick("thisYear")}
+                  >
+                    هذه السنة
+                  </Button>
+                </div>
+
+                {/* Custom Date Picker */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={activePreset === "custom" ? "default" : "outline"}
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <CalendarIcon className="h-4 w-4" />
+                      {dateRange.from && dateRange.to && activePreset === "custom"
+                        ? `${format(dateRange.from, "d MMM", { locale: ar })} - ${format(dateRange.to, "d MMM", { locale: ar })}`
+                        : "فترة مخصصة"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="range"
+                      selected={{ from: dateRange.from, to: dateRange.to }}
+                      onSelect={(range) => {
+                        setDateRange({ from: range?.from, to: range?.to });
+                        if (range?.from && range?.to) {
+                          setActivePreset("custom");
+                        }
+                      }}
+                      numberOfMonths={2}
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                {/* Show selected range */}
+                {dateRange.from && dateRange.to && (
+                  <Badge variant="secondary" className="text-sm">
+                    {format(dateRange.from, "d MMMM yyyy", { locale: ar })} - {format(dateRange.to, "d MMMM yyyy", { locale: ar })}
+                  </Badge>
+                )}
+              </div>
             </div>
 
-            {/* Top Artists */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Top Services */}
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Briefcase className="h-5 w-5 text-primary" />
+                  <h2 className="text-lg font-semibold text-foreground">
+                    أكثر الخدمات طلبًا
+                  </h2>
+                </div>
+                {topServicesLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Skeleton key={i} className="h-12" />
+                    ))}
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right">#</TableHead>
+                        <TableHead className="text-right">الخدمة</TableHead>
+                        <TableHead className="text-right">الفنانة</TableHead>
+                        <TableHead className="text-right">الحجوزات</TableHead>
+                        <TableHead className="text-right">الإيرادات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {topServices?.map((service, index) => (
+                        <TableRow key={service.id}>
+                          <TableCell className="font-bold text-primary">
+                            {index + 1}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{service.name}</p>
+                              {service.category && (
+                                <Badge variant="secondary" className="text-xs mt-1">
+                                  {service.category}
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{service.artistName || "غير معروف"}</TableCell>
+                          <TableCell className="font-medium">
+                            {service.bookingsCount}
+                          </TableCell>
+                          <TableCell className="text-green-600 font-medium">
+                            {service.totalRevenue.toFixed(0)} ر.ق
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {(!topServices || topServices.length === 0) && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-muted-foreground">
+                            لا توجد بيانات
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
             <div className="bg-card rounded-xl border border-border p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Award className="h-5 w-5 text-primary" />
@@ -400,6 +536,7 @@ const AdminDashboard = () => {
               )}
             </div>
           </div>
+        </div>
         </div>
       </main>
     </div>
