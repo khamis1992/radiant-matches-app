@@ -2,7 +2,7 @@ import { format } from "date-fns";
 
 interface ExportColumn<T> {
   header: string;
-  accessor: (item: T) => string | number | null | undefined;
+  accessor: (item: T, index?: number) => string | number | null | undefined;
 }
 
 export function exportToCSV<T>(
@@ -17,10 +17,10 @@ export function exportToCSV<T>(
   const headers = columns.map((col) => `"${col.header}"`).join(",");
   
   // Create data rows
-  const rows = data.map((item) =>
+  const rows = data.map((item, index) =>
     columns
       .map((col) => {
-        const value = col.accessor(item);
+        const value = col.accessor(item, index);
         if (value === null || value === undefined) return '""';
         // Escape quotes and wrap in quotes
         const stringValue = String(value).replace(/"/g, '""');

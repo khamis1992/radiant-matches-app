@@ -17,6 +17,8 @@ import {
   Award,
   Briefcase,
   CalendarDays,
+  Download,
+  FileText,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,6 +50,8 @@ import {
 import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear } from "date-fns";
 import { ar } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { exportToCSV } from "@/lib/csvExport";
+import { exportTopServicesToPDF, exportTopArtistsToPDF } from "@/lib/pdfExport";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -105,6 +109,54 @@ const AdminDashboard = () => {
         setDateRange({ from: undefined, to: undefined });
         break;
     }
+  };
+
+  const getDateRangeLabel = () => {
+    if (!dateRange.from || !dateRange.to) return "";
+    return `${format(dateRange.from, "d MMMM yyyy", { locale: ar })} - ${format(dateRange.to, "d MMMM yyyy", { locale: ar })}`;
+  };
+
+  const handleExportServicesCSV = () => {
+    if (!topServices?.length) return;
+    exportToCSV(
+      topServices,
+      [
+        { header: "#", accessor: (_, i) => (i !== undefined ? i + 1 : "") },
+        { header: "الخدمة", accessor: (s) => s.name },
+        { header: "الفئة", accessor: (s) => s.category || "-" },
+        { header: "الفنانة", accessor: (s) => s.artistName || "غير معروف" },
+        { header: "الحجوزات", accessor: (s) => s.bookingsCount },
+        { header: "الإيرادات (ر.ق)", accessor: (s) => s.totalRevenue.toFixed(0) },
+      ],
+      "top_services_report"
+    );
+  };
+
+  const handleExportServicesPDF = () => {
+    if (!topServices?.length) return;
+    exportTopServicesToPDF(topServices, getDateRangeLabel());
+  };
+
+  const handleExportArtistsCSV = () => {
+    if (!topArtists?.length) return;
+    exportToCSV(
+      topArtists,
+      [
+        { header: "#", accessor: (_, i) => (i !== undefined ? i + 1 : "") },
+        { header: "الفنانة", accessor: (a) => a.name || "غير معروف" },
+        { header: "الحجوزات", accessor: (a) => a.totalBookings },
+        { header: "المكتملة", accessor: (a) => a.completedBookings },
+        { header: "التقييم", accessor: (a) => a.rating?.toFixed(1) || "-" },
+        { header: "التقييمات", accessor: (a) => a.totalReviews || 0 },
+        { header: "الإيرادات (ر.ق)", accessor: (a) => a.totalRevenue.toFixed(0) },
+      ],
+      "top_artists_report"
+    );
+  };
+
+  const handleExportArtistsPDF = () => {
+    if (!topArtists?.length) return;
+    exportTopArtistsToPDF(topArtists, getDateRangeLabel());
   };
 
   if (roleLoading) {
@@ -404,11 +456,35 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Top Services */}
               <div className="bg-card rounded-xl border border-border p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Briefcase className="h-5 w-5 text-primary" />
-                  <h2 className="text-lg font-semibold text-foreground">
-                    أكثر الخدمات طلبًا
-                  </h2>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-primary" />
+                    <h2 className="text-lg font-semibold text-foreground">
+                      أكثر الخدمات طلبًا
+                    </h2>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExportServicesCSV}
+                      disabled={!topServices?.length}
+                      className="gap-1"
+                    >
+                      <Download className="h-4 w-4" />
+                      CSV
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExportServicesPDF}
+                      disabled={!topServices?.length}
+                      className="gap-1"
+                    >
+                      <FileText className="h-4 w-4" />
+                      PDF
+                    </Button>
+                  </div>
                 </div>
                 {topServicesLoading ? (
                   <div className="space-y-4">
@@ -464,11 +540,35 @@ const AdminDashboard = () => {
                 )}
               </div>
             <div className="bg-card rounded-xl border border-border p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Award className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold text-foreground">
-                  أفضل الفنانات أداءً
-                </h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-primary" />
+                  <h2 className="text-lg font-semibold text-foreground">
+                    أفضل الفنانات أداءً
+                  </h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportArtistsCSV}
+                    disabled={!topArtists?.length}
+                    className="gap-1"
+                  >
+                    <Download className="h-4 w-4" />
+                    CSV
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportArtistsPDF}
+                    disabled={!topArtists?.length}
+                    className="gap-1"
+                  >
+                    <FileText className="h-4 w-4" />
+                    PDF
+                  </Button>
+                </div>
               </div>
               {topArtistsLoading ? (
                 <div className="space-y-4">
