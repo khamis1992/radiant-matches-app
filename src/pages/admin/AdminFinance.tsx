@@ -23,6 +23,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Download,
+  FileDown,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -39,6 +40,7 @@ import {
   Legend,
 } from "recharts";
 import { exportToCSV } from "@/lib/csvExport";
+import { exportTransactionsToPDF, exportArtistPayoutsToPDF } from "@/lib/pdfExport";
 import { toast } from "sonner";
 
 const AdminFinance = () => {
@@ -138,6 +140,30 @@ const AdminFinance = () => {
       "artist_payouts"
     );
     toast.success("تم تصدير مدفوعات الفنانين بنجاح");
+  };
+
+  const handleExportTransactionsPDF = () => {
+    if (!transactions?.length) {
+      toast.error("لا توجد معاملات للتصدير");
+      return;
+    }
+    const typeLabelsMap: Record<string, string> = {
+      booking_payment: "دفعة حجز",
+      platform_fee: "عمولة المنصة",
+      artist_payout: "دفعة للفنان",
+      subscription: "اشتراك",
+    };
+    exportTransactionsToPDF(transactions, typeLabelsMap);
+    toast.success("تم تصدير التقرير بصيغة PDF");
+  };
+
+  const handleExportPayoutsPDF = () => {
+    if (!artistPayouts?.length) {
+      toast.error("لا توجد مدفوعات للتصدير");
+      return;
+    }
+    exportArtistPayoutsToPDF(artistPayouts);
+    toast.success("تم تصدير التقرير بصيغة PDF");
   };
 
   const monthNames: { [key: string]: string } = {
@@ -271,14 +297,22 @@ const AdminFinance = () => {
               <TabsTrigger value="transactions">المعاملات الأخيرة</TabsTrigger>
               <TabsTrigger value="artists">مدفوعات الفنانين</TabsTrigger>
             </TabsList>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button variant="outline" size="sm" onClick={handleExportTransactions}>
                 <Download className="h-4 w-4 ml-2" />
-                تصدير المعاملات
+                CSV معاملات
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleExportTransactionsPDF}>
+                <FileDown className="h-4 w-4 ml-2" />
+                PDF معاملات
               </Button>
               <Button variant="outline" size="sm" onClick={handleExportArtistPayouts}>
                 <Download className="h-4 w-4 ml-2" />
-                تصدير المدفوعات
+                CSV مدفوعات
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleExportPayoutsPDF}>
+                <FileDown className="h-4 w-4 ml-2" />
+                PDF مدفوعات
               </Button>
             </div>
           </div>
