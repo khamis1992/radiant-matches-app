@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "./useUserRole";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { playNotificationSound } from "@/lib/notificationSound";
 
 interface AdminNotification {
   id: string;
@@ -29,6 +30,9 @@ export const useAdminNotifications = () => {
 
     setNotifications((prev) => [newNotification, ...prev].slice(0, 50)); // Keep last 50
     setUnreadCount((prev) => prev + 1);
+
+    // Play notification sound
+    playNotificationSound();
 
     // Show toast notification
     const toastType = notification.type === "cancelled_booking" ? "warning" : "info";
