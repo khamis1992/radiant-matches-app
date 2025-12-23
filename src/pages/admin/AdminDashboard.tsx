@@ -1,6 +1,7 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { StatsCard } from "@/components/admin/StatsCard";
 import { useAdminStats, useRecentBookings, useMonthlyRevenue } from "@/hooks/useAdminStats";
+import { useTopServices, useTopArtists } from "@/hooks/useAdvancedReports";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Navigate } from "react-router-dom";
 import {
@@ -11,7 +12,11 @@ import {
   TrendingUp,
   Clock,
   CheckCircle,
+  Star,
+  Award,
+  Briefcase,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -53,6 +58,8 @@ const AdminDashboard = () => {
   const { data: stats, isLoading: statsLoading } = useAdminStats();
   const { data: recentBookings, isLoading: bookingsLoading } = useRecentBookings(5);
   const { data: monthlyRevenue, isLoading: revenueLoading } = useMonthlyRevenue();
+  const { data: topServices, isLoading: topServicesLoading } = useTopServices(5);
+  const { data: topArtists, isLoading: topArtistsLoading } = useTopArtists(5);
 
   if (roleLoading) {
     return (
@@ -246,6 +253,145 @@ const AdminDashboard = () => {
                       <TableRow>
                         <TableCell colSpan={4} className="text-center text-muted-foreground">
                           لا توجد حجوزات
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </div>
+
+          {/* Advanced Reports - Top Services & Top Artists */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            {/* Top Services */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Briefcase className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold text-foreground">
+                  أكثر الخدمات طلبًا
+                </h2>
+              </div>
+              {topServicesLoading ? (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-12" />
+                  ))}
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right">#</TableHead>
+                      <TableHead className="text-right">الخدمة</TableHead>
+                      <TableHead className="text-right">الفنانة</TableHead>
+                      <TableHead className="text-right">الحجوزات</TableHead>
+                      <TableHead className="text-right">الإيرادات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {topServices?.map((service, index) => (
+                      <TableRow key={service.id}>
+                        <TableCell className="font-bold text-primary">
+                          {index + 1}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{service.name}</p>
+                            {service.category && (
+                              <Badge variant="secondary" className="text-xs mt-1">
+                                {service.category}
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{service.artistName || "غير معروف"}</TableCell>
+                        <TableCell className="font-medium">
+                          {service.bookingsCount}
+                        </TableCell>
+                        <TableCell className="text-green-600 font-medium">
+                          {service.totalRevenue.toFixed(0)} ر.س
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {(!topServices || topServices.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">
+                          لا توجد بيانات
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+
+            {/* Top Artists */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Award className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold text-foreground">
+                  أفضل الفنانات أداءً
+                </h2>
+              </div>
+              {topArtistsLoading ? (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-12" />
+                  ))}
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right">#</TableHead>
+                      <TableHead className="text-right">الفنانة</TableHead>
+                      <TableHead className="text-right">الحجوزات</TableHead>
+                      <TableHead className="text-right">التقييم</TableHead>
+                      <TableHead className="text-right">الإيرادات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {topArtists?.map((artist, index) => (
+                      <TableRow key={artist.id}>
+                        <TableCell className="font-bold text-primary">
+                          {index + 1}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={artist.avatarUrl || ""} />
+                              <AvatarFallback>
+                                {artist.name?.charAt(0) || "؟"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{artist.name || "غير معروف"}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-medium">{artist.completedBookings}</span>
+                          <span className="text-muted-foreground text-sm"> / {artist.totalBookings}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                            <span>{artist.rating?.toFixed(1) || "—"}</span>
+                            {artist.totalReviews !== null && (
+                              <span className="text-muted-foreground text-xs">
+                                ({artist.totalReviews})
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-green-600 font-medium">
+                          {artist.totalRevenue.toFixed(0)} ر.س
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {(!topArtists || topArtists.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">
+                          لا توجد بيانات
                         </TableCell>
                       </TableRow>
                     )}
