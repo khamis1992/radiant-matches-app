@@ -6,6 +6,7 @@ import {
   Palette,
   Calendar,
   DollarSign,
+  Tag,
   Settings,
   ChevronLeft,
   LogOut,
@@ -18,6 +19,7 @@ const navItems = [
   { to: "/admin/users", icon: Users, label: "المستخدمين" },
   { to: "/admin/artists", icon: Palette, label: "الفنانين" },
   { to: "/admin/bookings", icon: Calendar, label: "الحجوزات" },
+  { to: "/admin/promo-codes", icon: Tag, label: "أكواد الخصم" },
   { to: "/admin/finance", icon: DollarSign, label: "المالية" },
   { to: "/admin/settings", icon: Settings, label: "الإعدادات" },
 ];
