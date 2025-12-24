@@ -1,19 +1,16 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
+import ArtistHeader from "@/components/artist/ArtistHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Briefcase, User } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Briefcase } from "lucide-react";
 import PortfolioUpload from "@/components/PortfolioUpload";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
 import { useCurrentArtist } from "@/hooks/useArtistDashboard";
-import logoImage from "@/assets/logo.png";
 
 const ArtistGallery = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { data: profile } = useProfile();
   const { data: artist, isLoading: artistLoading } = useCurrentArtist();
 
   if (authLoading || artistLoading) {
@@ -54,19 +51,7 @@ const ArtistGallery = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-        <div className="flex items-center justify-between">
-          <img src={logoImage} alt="Glam" className="h-8 w-auto" />
-          <Link to="/artist-profile">
-            <Avatar className="h-9 w-9 border-2 border-primary/20">
-              <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || "Profile"} />
-              <AvatarFallback className="bg-primary/10 text-primary">
-                <User className="h-4 w-4" />
-              </AvatarFallback>
-            </Avatar>
-          </Link>
-        </div>
-      </header>
+      <ArtistHeader />
 
       <div className="px-5 py-4">
         <PortfolioUpload artistId={artist.id} />
