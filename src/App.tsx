@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { NotificationPrompt } from "@/components/NotificationPrompt";
+import { RoleGate } from "@/components/auth/RoleGate";
 import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
@@ -48,20 +49,103 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Onboarding />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/makeup-artists" element={<MakeupArtists />} />
-          <Route path="/artist/:id" element={<ArtistProfile />} />
-          <Route path="/artist-dashboard" element={<ArtistEarnings />} />
-          <Route path="/artist-bookings" element={<ArtistBookings />} />
-          <Route path="/artist-services" element={<ArtistServices />} />
-          <Route path="/artist-profile" element={<ArtistProfilePage />} />
-          <Route path="/artist-gallery" element={<ArtistGallery />} />
-          <Route path="/booking/:id" element={<Booking />} />
-          <Route path="/bookings" element={<Bookings />} />
+
+          {/* Customer-only Routes */}
+          <Route
+            path="/home"
+            element={
+              <RoleGate allow={["customer"]} showLoading>
+                <Home />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/makeup-artists"
+            element={
+              <RoleGate allow={["customer"]} showLoading>
+                <MakeupArtists />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/artist/:id"
+            element={
+              <RoleGate allow={["customer"]} showLoading>
+                <ArtistProfile />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/booking/:id"
+            element={
+              <RoleGate allow={["customer"]} showLoading>
+                <Booking />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/bookings"
+            element={
+              <RoleGate allow={["customer"]} showLoading>
+                <Bookings />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <RoleGate allow={["customer"]} showLoading>
+                <Favorites />
+              </RoleGate>
+            }
+          />
+
+          {/* Artist-only Routes */}
+          <Route
+            path="/artist-dashboard"
+            element={
+              <RoleGate allow={["artist"]} showLoading>
+                <ArtistEarnings />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/artist-bookings"
+            element={
+              <RoleGate allow={["artist"]} showLoading>
+                <ArtistBookings />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/artist-services"
+            element={
+              <RoleGate allow={["artist"]} showLoading>
+                <ArtistServices />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/artist-profile"
+            element={
+              <RoleGate allow={["artist"]} showLoading>
+                <ArtistProfilePage />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/artist-gallery"
+            element={
+              <RoleGate allow={["artist"]} showLoading>
+                <ArtistGallery />
+              </RoleGate>
+            }
+          />
+
+          {/* Shared Routes (Customer + Artist) */}
           <Route path="/messages" element={<Messages />} />
           <Route path="/chat/:id" element={<Chat />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/notifications" element={<Notifications />} />
           {/* Admin Routes */}
