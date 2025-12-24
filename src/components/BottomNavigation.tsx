@@ -33,8 +33,8 @@ const BottomNavigation = () => {
   const { data: unreadCount = 0 } = useUnreadMessagesCount();
   const { t } = useLanguage();
 
-  // Prevent the dock from flashing the wrong menu while the role is loading
-  if (loading) return null;
+  // Prevent the dock from flashing the wrong menu while the role is loading / unresolved
+  if (loading || role === null) return null;
 
   const navItems =
     role === "artist" || isArtist
