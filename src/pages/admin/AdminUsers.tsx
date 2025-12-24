@@ -53,10 +53,10 @@ const AdminUsers = () => {
   if (roleLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><Skeleton className="h-8 w-32" /></div>;
   if (role !== "admin") return <Navigate to="/home" replace />;
 
-  const handleRoleChange = async (userId: string, targetRole: "admin" | "artist" | "customer", hasRole: boolean) => {
+  const handleRoleChange = async (userId: string, targetRole: "admin" | "artist" | "customer") => {
     try {
-      await updateRole.mutateAsync({ userId, role: targetRole, action: hasRole ? "remove" : "add" });
-      toast.success(hasRole ? `تم إزالة صلاحية ${roleLabels[targetRole]}` : `تم إضافة صلاحية ${roleLabels[targetRole]}`);
+      await updateRole.mutateAsync({ userId, role: targetRole });
+      toast.success(`تم تغيير الدور إلى ${roleLabels[targetRole]}`);
     } catch { toast.error("حدث خطأ"); }
   };
 
@@ -203,8 +203,9 @@ const AdminUsers = () => {
                       <TableCell>
                         <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "admin", user.roles.includes("admin"))}><Shield className="h-4 w-4 ml-2" />{user.roles.includes("admin") ? "إزالة المدير" : "جعله مدير"}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "artist", user.roles.includes("artist"))}><Palette className="h-4 w-4 ml-2" />{user.roles.includes("artist") ? "إزالة الفنانة" : "جعله فنانة"}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "admin")} disabled={user.roles.includes("admin")}><Shield className="h-4 w-4 ml-2" />جعله مدير</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "artist")} disabled={user.roles.includes("artist")}><Palette className="h-4 w-4 ml-2" />جعله فنانة</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "customer")} disabled={user.roles.includes("customer")}><Shield className="h-4 w-4 ml-2" />جعله عميل</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openPasswordDialog(user.id, user.full_name || user.email || "المستخدم")}><Key className="h-4 w-4 ml-2" />تغيير كلمة المرور</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openDeleteDialog(user.id, user.full_name || user.email || "المستخدم")} className="text-destructive focus:text-destructive"><Trash2 className="h-4 w-4 ml-2" />حذف المستخدم</DropdownMenuItem>
                           </DropdownMenuContent>
