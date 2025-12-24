@@ -24,14 +24,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create client with anon key and user's JWT token
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: { Authorization: authHeader },
-      },
-    });
+    // Create admin client with service role key
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    const { data: { user: caller }, error: userError } = await supabase.auth.getUser();
+    // Get the JWT token and verify the user
+    const jwt = authHeader.replace("Bearer ", "");
+    const { data: { user: caller }, error: userError } = await adminClient.auth.getUser(jwt);
 
     if (userError || !caller) {
       console.error("Could not get caller user:", userError?.message);
@@ -42,7 +40,6 @@ Deno.serve(async (req) => {
     }
 
     // Check if caller is admin
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const { data: roles } = await adminClient
       .from("user_roles")
       .select("role")
