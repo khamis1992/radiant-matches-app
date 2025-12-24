@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, User, Settings, LogOut } from "lucide-react";
+import { Bell, User, Settings, LogOut, LogIn } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
 import ArtistCard from "@/components/ArtistCard";
@@ -10,6 +10,7 @@ import { useArtists } from "@/hooks/useArtists";
 import { useArtistsAvailability } from "@/hooks/useArtistAvailability";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessages";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -148,6 +149,7 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { isArtist, loading: roleLoading } = useUserRole();
   const { data: artists, isLoading } = useArtists();
   const { data: profile } = useProfile();
@@ -218,19 +220,28 @@ const Home = () => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 bg-card border border-border">
-                  <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
-                    <User className="me-2 h-4 w-4" />
-                    {t.userMenu.myProfile}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
-                    <Settings className="me-2 h-4 w-4" />
-                    {t.userMenu.settings}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
-                    <LogOut className="me-2 h-4 w-4" />
-                    {t.userMenu.logout}
-                  </DropdownMenuItem>
+                  {user ? (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
+                        <User className="me-2 h-4 w-4" />
+                        {t.userMenu.myProfile}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+                        <Settings className="me-2 h-4 w-4" />
+                        {t.userMenu.settings}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                        <LogOut className="me-2 h-4 w-4" />
+                        {t.userMenu.logout}
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <DropdownMenuItem onClick={() => navigate("/auth")} className="cursor-pointer">
+                      <LogIn className="me-2 h-4 w-4" />
+                      {t.auth.login}
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
