@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import type { AppRole } from "@/hooks/useUserRole";
 import heroImage from "@/assets/hero-makeup.jpg";
 import logoImage from "@/assets/logo.png";
 
@@ -50,9 +51,35 @@ const Onboarding = () => {
   const slides = getSlides(language);
 
   useEffect(() => {
+    const redirectByRole = async (userId: string) => {
+      try {
+        const { data, error } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId);
+
+        if (error) {
+          console.error("Error fetching role:", error);
+          navigate("/home", { replace: true });
+          return;
+        }
+
+        const roles = (data || []).map((r) => r.role as AppRole);
+        if (roles.includes("admin")) {
+          navigate("/admin", { replace: true });
+        } else if (roles.includes("artist")) {
+          navigate("/artist-dashboard", { replace: true });
+        } else {
+          navigate("/home", { replace: true });
+        }
+      } catch {
+        navigate("/home", { replace: true });
+      }
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        navigate("/home", { replace: true });
+        redirectByRole(session.user.id);
       } else {
         setCheckingAuth(false);
         const timer = setTimeout(() => setShowSplash(false), 2000);
