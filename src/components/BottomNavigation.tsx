@@ -1,4 +1,4 @@
-import { Home, Calendar, User, LayoutDashboard, Palette, LucideIcon, Users, Heart } from "lucide-react";
+import { Home, Calendar, User, LayoutDashboard, Palette, LucideIcon, Users, Heart, Images } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePendingBookingsCount } from "@/hooks/usePendingBookings";
@@ -22,6 +22,7 @@ const customerNavItems: NavItem[] = [
 const artistNavItems: NavItem[] = [
   { icon: LayoutDashboard, labelKey: "dashboard", path: "/artist-dashboard" },
   { icon: Calendar, labelKey: "bookings", path: "/artist-bookings", badgeType: "bookings" },
+  { icon: Images, labelKey: "gallery", path: "/artist-gallery" },
   { icon: Palette, labelKey: "services", path: "/artist-services" },
 ];
 
