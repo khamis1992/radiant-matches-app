@@ -104,6 +104,14 @@ Deno.serve(async (req) => {
 
     // Add role if specified (other than customer which is default)
     if (role && role !== "customer" && newUser.user) {
+      // First, delete the default customer role that was added by the trigger
+      await adminClient
+        .from("user_roles")
+        .delete()
+        .eq("user_id", newUser.user.id)
+        .eq("role", "customer");
+
+      // Then add the selected role
       const { error: roleError } = await adminClient
         .from("user_roles")
         .insert({ user_id: newUser.user.id, role });
