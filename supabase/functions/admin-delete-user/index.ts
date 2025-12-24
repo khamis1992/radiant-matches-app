@@ -12,6 +12,7 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const authHeader = req.headers.get("Authorization");
 
@@ -23,12 +24,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Verify the caller is an admin
-    const anonClient = createClient(supabaseUrl, authHeader.replace("Bearer ", ""));
-    const { data: { user: caller } } = await anonClient.auth.getUser();
+    // Create client with anon key and user's JWT token
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: authHeader },
+      },
+    });
 
-    if (!caller) {
-      console.error("Could not get caller user");
+    const { data: { user: caller }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !caller) {
+      console.error("Could not get caller user:", userError?.message);
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
