@@ -3,13 +3,13 @@ import { Bell, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useProfile } from "@/hooks/useProfile";
-import { useUnreadMessagesCount } from "@/hooks/useUnreadMessages";
+import { useUnreadNotificationsCount } from "@/hooks/useArtistNotifications";
 import logoImage from "@/assets/logo.png";
 
 const ArtistHeader = () => {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
-  const { data: unreadCount = 0 } = useUnreadMessagesCount();
+  const { data: unreadCount = 0 } = useUnreadNotificationsCount();
 
   return (
     <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
@@ -18,9 +18,9 @@ const ArtistHeader = () => {
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
           <button 
-            onClick={() => navigate("/messages")}
+            onClick={() => navigate("/artist-notifications")}
             className="relative p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors"
-            aria-label="Messages"
+            aria-label="Notifications"
           >
             <Bell className="w-5 h-5 text-foreground" />
             {unreadCount > 0 && (

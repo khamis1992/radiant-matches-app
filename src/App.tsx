@@ -15,6 +15,7 @@ import ArtistBookings from "./pages/artist/ArtistBookings";
 import ArtistServices from "./pages/artist/ArtistServices";
 import ArtistProfilePage from "./pages/artist/ArtistProfilePage";
 import ArtistGallery from "./pages/artist/ArtistGallery";
+import ArtistNotifications from "./pages/artist/ArtistNotifications";
 import Booking from "./pages/Booking";
 import Bookings from "./pages/Bookings";
 import Messages from "./pages/Messages";
@@ -138,6 +139,14 @@ const App = () => (
             element={
               <RoleGate allow={["artist"]} showLoading>
                 <ArtistGallery />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/artist-notifications"
+            element={
+              <RoleGate allow={["artist"]} showLoading>
+                <ArtistNotifications />
               </RoleGate>
             }
           />
