@@ -55,6 +55,11 @@ export const useUserRole = () => {
 
       lastUserId.current = user.id;
 
+      // If we don't have cached data, mark loading immediately to avoid UI flashes
+      if (!roleCache[user.id]) {
+        setLoading(true);
+      }
+
       try {
         const { data, error } = await supabase
           .from("user_roles")
