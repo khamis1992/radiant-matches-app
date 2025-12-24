@@ -72,8 +72,8 @@ const ArtistProfile = () => {
 
   useSwipeBack();
 
-  const handleBookService = (serviceName: string) => {
-    navigate(`/booking/${id}?service=${encodeURIComponent(serviceName)}`);
+  const handleBookService = (serviceId: string, serviceName: string, price: number) => {
+    navigate(`/booking/${id}?service=${encodeURIComponent(serviceName)}&serviceId=${serviceId}&price=${price}`);
   };
 
   if (artistLoading) {
@@ -198,7 +198,7 @@ const ArtistProfile = () => {
           <div className="flex gap-3 mt-5">
             <Button 
               className="flex-1" 
-              onClick={() => services?.[0] && handleBookService(services[0].name)}
+              onClick={() => services?.[0] && handleBookService(services[0].id, services[0].name, Number(services[0].price))}
               disabled={!services?.length}
             >
               {t.bookings.bookNow}
@@ -331,7 +331,7 @@ const ArtistProfile = () => {
                   description={service.description || ""}
                   duration={`${service.duration_minutes} mins`}
                   price={Number(service.price)}
-                  onBook={() => handleBookService(service.name)}
+                  onBook={() => handleBookService(service.id, service.name, Number(service.price))}
                 />
               ))
             ) : (
