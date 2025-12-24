@@ -263,6 +263,12 @@ export const en = {
     yourLocation: "Your Location",
     hours: "hours",
     noAvailableSlots: "No available time slots for this day",
+    bookingDetails: "Booking Details",
+    editBooking: "Edit Booking",
+    bookingUpdated: "Booking updated successfully",
+    bookingCancelled: "Booking cancelled successfully",
+    confirmCancel: "Are you sure you want to cancel this booking?",
+    cannotUndo: "This action cannot be undone.",
   },
   
   // Artist

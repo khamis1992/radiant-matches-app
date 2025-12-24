@@ -267,6 +267,12 @@ export const ar: TranslationKeys = {
     yourLocation: "موقعك",
     hours: "ساعات",
     noAvailableSlots: "لا توجد أوقات متاحة لهذا اليوم",
+    bookingDetails: "تفاصيل الحجز",
+    editBooking: "تعديل الحجز",
+    bookingUpdated: "تم تحديث الحجز بنجاح",
+    bookingCancelled: "تم إلغاء الحجز بنجاح",
+    confirmCancel: "هل أنت متأكد من إلغاء هذا الحجز؟",
+    cannotUndo: "لا يمكن التراجع عن هذا الإجراء.",
   },
   
   // Artist
