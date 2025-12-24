@@ -57,7 +57,9 @@ const AdminUsers = () => {
     try {
       await updateRole.mutateAsync({ userId, role: targetRole });
       toast.success(`تم تغيير الدور إلى ${roleLabels[targetRole]}`);
-    } catch { toast.error("حدث خطأ"); }
+    } catch (error: any) {
+      toast.error(error?.message || "حدث خطأ");
+    }
   };
 
   const openPasswordDialog = (userId: string, userName: string) => {
