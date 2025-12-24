@@ -10,10 +10,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, MoreVertical, Shield, Palette, User } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Search, MoreVertical, Shield, Palette, Key, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
 
 const roleLabels: Record<string, string> = { admin: "مدير", artist: "فنانة", customer: "عميل" };
 const roleColors: Record<string, string> = { admin: "bg-purple-100 text-purple-800", artist: "bg-pink-100 text-pink-800", customer: "bg-blue-100 text-blue-800" };
@@ -23,6 +26,13 @@ const AdminUsers = () => {
   const [search, setSearch] = useState("");
   const { data: users, isLoading } = useAdminUsers(search);
   const updateRole = useUpdateUserRole();
+  
+  const [passwordDialog, setPasswordDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; name: string } | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   if (roleLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><Skeleton className="h-8 w-32" /></div>;
   if (role !== "admin") return <Navigate to="/home" replace />;
@@ -32,6 +42,48 @@ const AdminUsers = () => {
       await updateRole.mutateAsync({ userId, role: targetRole, action: hasRole ? "remove" : "add" });
       toast.success(hasRole ? `تم إزالة صلاحية ${roleLabels[targetRole]}` : `تم إضافة صلاحية ${roleLabels[targetRole]}`);
     } catch { toast.error("حدث خطأ"); }
+  };
+
+  const openPasswordDialog = (userId: string, userName: string) => {
+    setSelectedUser({ id: userId, name: userName });
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowPassword(false);
+    setPasswordDialog(true);
+  };
+
+  const handlePasswordChange = async () => {
+    if (!selectedUser) return;
+    
+    if (newPassword.length < 6) {
+      toast.error("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast.error("كلمات المرور غير متطابقة");
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke("admin-reset-password", {
+        body: { userId: selectedUser.id, newPassword },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      toast.success("تم تغيير كلمة المرور بنجاح");
+      setPasswordDialog(false);
+    } catch (error: any) {
+      toast.error(error.message || "حدث خطأ أثناء تغيير كلمة المرور");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -59,6 +111,7 @@ const AdminUsers = () => {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, "admin", user.roles.includes("admin"))}><Shield className="h-4 w-4 ml-2" />{user.roles.includes("admin") ? "إزالة المدير" : "جعله مدير"}</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, "artist", user.roles.includes("artist"))}><Palette className="h-4 w-4 ml-2" />{user.roles.includes("artist") ? "إزالة الفنانة" : "جعله فنانة"}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openPasswordDialog(user.id, user.full_name || user.email || "المستخدم")}><Key className="h-4 w-4 ml-2" />تغيير كلمة المرور</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -70,6 +123,55 @@ const AdminUsers = () => {
           </div>
         </div>
       </main>
+
+      <Dialog open={passwordDialog} onOpenChange={setPasswordDialog}>
+        <DialogContent className="sm:max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>تغيير كلمة المرور</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              تغيير كلمة المرور للمستخدم: <span className="font-medium text-foreground">{selectedUser?.name}</span>
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">كلمة المرور الجديدة</Label>
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="أدخل كلمة المرور الجديدة"
+                  className="pl-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">تأكيد كلمة المرور</Label>
+              <Input
+                id="confirm-password"
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="أعد إدخال كلمة المرور"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setPasswordDialog(false)}>إلغاء</Button>
+            <Button onClick={handlePasswordChange} disabled={isUpdating}>
+              {isUpdating ? "جاري التحديث..." : "تغيير كلمة المرور"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
