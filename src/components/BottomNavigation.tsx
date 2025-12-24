@@ -28,12 +28,22 @@ const artistNavItems: NavItem[] = [
 
 const BottomNavigation = () => {
   const location = useLocation();
-  const { isArtist } = useUserRole();
+  const { role, isArtist, loading } = useUserRole();
   const { data: pendingCount = 0 } = usePendingBookingsCount();
   const { data: unreadCount = 0 } = useUnreadMessagesCount();
   const { t } = useLanguage();
-  
-  const navItems = isArtist ? artistNavItems : customerNavItems;
+
+  // Prevent the dock from flashing the wrong menu while the role is loading
+  if (loading) return null;
+
+  const navItems =
+    role === "artist" || isArtist
+      ? artistNavItems
+      : role === "admin"
+        ? []
+        : customerNavItems;
+
+  if (navItems.length === 0) return null;
 
   const getBadgeCount = (badgeType?: "bookings" | "messages") => {
     if (badgeType === "bookings") return pendingCount;
