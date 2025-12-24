@@ -14,35 +14,51 @@ type AuthMode = "login" | "signup" | "forgot-password" | "verify-email";
 type RoleRedirectResult = {
   path: string;
   role: "admin" | "artist" | "customer";
+  userName: string | null;
 };
 
-const getRedirectPathByRole = async (userId: string): Promise<RoleRedirectResult> => {
+const getRedirectInfo = async (userId: string): Promise<RoleRedirectResult> => {
   try {
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
+    // Fetch role and profile in parallel
+    const [rolesResult, profileResult] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", userId),
+      supabase.from("profiles").select("full_name").eq("id", userId).single()
+    ]);
 
-    if (error) {
-      console.error("Error fetching roles:", error);
-      return { path: "/home", role: "customer" };
-    }
+    const roles = (rolesResult.data || []).map((r) => r.role);
+    const userName = profileResult.data?.full_name || null;
 
-    const roles = (data || []).map((r) => r.role);
-    if (roles.includes("admin")) return { path: "/admin", role: "admin" };
-    if (roles.includes("artist")) return { path: "/artist-dashboard", role: "artist" };
-    return { path: "/home", role: "customer" };
+    if (roles.includes("admin")) return { path: "/admin", role: "admin", userName };
+    if (roles.includes("artist")) return { path: "/artist-dashboard", role: "artist", userName };
+    return { path: "/home", role: "customer", userName };
   } catch {
-    return { path: "/home", role: "customer" };
+    return { path: "/home", role: "customer", userName: null };
   }
 };
 
-const getWelcomeMessage = (role: "admin" | "artist" | "customer", language: "en" | "ar") => {
+const getWelcomeMessage = (role: "admin" | "artist" | "customer", userName: string | null, language: "en" | "ar") => {
+  const name = userName?.split(" ")[0]; // First name only
+  
   if (language === "ar") {
+    if (name) {
+      switch (role) {
+        case "admin": return `مرحباً ${name} في لوحة الإدارة!`;
+        case "artist": return `مرحباً بك يا ${name}!`;
+        default: return `مرحباً بعودتك يا ${name}!`;
+      }
+    }
     switch (role) {
       case "admin": return "مرحباً بك في لوحة الإدارة!";
       case "artist": return "مرحباً بك في لوحة التحكم يا فنانة!";
       default: return "مرحباً بعودتك!";
+    }
+  }
+  
+  if (name) {
+    switch (role) {
+      case "admin": return `Welcome ${name} to the Admin Dashboard!`;
+      case "artist": return `Welcome back, ${name}!`;
+      default: return `Welcome back, ${name}!`;
     }
   }
   switch (role) {
@@ -69,9 +85,9 @@ const Auth = () => {
 
   useEffect(() => {
     const redirectUser = async (userId: string, showToast = false) => {
-      const { path, role } = await getRedirectPathByRole(userId);
+      const { path, role, userName } = await getRedirectInfo(userId);
       if (showToast) {
-        toast.success(getWelcomeMessage(role, language));
+        toast.success(getWelcomeMessage(role, userName, language));
       }
       navigate(path, { replace: true });
     };
