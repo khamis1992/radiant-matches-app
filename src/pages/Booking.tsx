@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { Calendar, Clock, MapPin, CreditCard, Check } from "lucide-react";
+import { Calendar, Clock, MapPin, CreditCard, Check, Loader2 } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -9,8 +9,10 @@ import { formatQAR } from "@/lib/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useWorkingHours } from "@/hooks/useWorkingHours";
 import { useBlockedDates } from "@/hooks/useBlockedDates";
-
-import artist1 from "@/assets/artist-1.jpg";
+import { useCreateBooking } from "@/hooks/useCreateBooking";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 // Generate time slots from start to end time
 const generateTimeSlots = (startTime: string | null, endTime: string | null): string[] => {
@@ -34,22 +36,88 @@ const defaultTimeSlots = [
   "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
 ];
 
+// Convert display time (e.g., "9:00 AM") to database format (e.g., "09:00:00")
+const convertTimeToDbFormat = (displayTime: string): string => {
+  const [time, period] = displayTime.split(" ");
+  let [hours] = time.split(":").map(Number);
+  
+  if (period === "PM" && hours !== 12) {
+    hours += 12;
+  } else if (period === "AM" && hours === 12) {
+    hours = 0;
+  }
+  
+  return `${hours.toString().padStart(2, "0")}:00:00`;
+};
+
 const Booking = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
-  const serviceName = searchParams.get("service") || "Bridal Makeup";
-  const artistId = searchParams.get("artistId");
+  const { user, loading: authLoading } = useAuth();
+  
+  const serviceName = searchParams.get("service") || "Service";
+  const serviceId = searchParams.get("serviceId");
+  const artistId = searchParams.get("artistId") || id;
+  const priceParam = searchParams.get("price");
+  const servicePrice = priceParam ? parseFloat(priceParam) : 0;
   
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<string>("studio");
+  const [notes, setNotes] = useState("");
   const [step, setStep] = useState(1);
   const [isConfirmed, setIsConfirmed] = useState(false);
 
+  const createBooking = useCreateBooking();
   const { data: workingHours = [] } = useWorkingHours(artistId || undefined);
   const { data: blockedDates = [] } = useBlockedDates(artistId || undefined);
+
+  // Fetch artist info
+  const { data: artistInfo } = useQuery({
+    queryKey: ["artist-info", artistId],
+    queryFn: async () => {
+      if (!artistId) return null;
+      const { data: artist } = await supabase
+        .from("artists")
+        .select("*")
+        .eq("id", artistId)
+        .single();
+      
+      if (!artist) return null;
+      
+      // Fetch profile separately
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url")
+        .eq("id", artist.user_id)
+        .single();
+      
+      return { ...artist, profile };
+    },
+    enabled: !!artistId,
+  });
+
+  // Fetch service info if serviceId is provided
+  const { data: serviceInfo } = useQuery({
+    queryKey: ["service-info", serviceId],
+    queryFn: async () => {
+      if (!serviceId) return null;
+      const { data: service } = await supabase
+        .from("services")
+        .select("*")
+        .eq("id", serviceId)
+        .single();
+      return service;
+    },
+    enabled: !!serviceId,
+  });
+
+  const actualServiceName = serviceInfo?.name || serviceName;
+  const actualServicePrice = serviceInfo?.price || servicePrice;
+  const travelFee = selectedLocation === "client" ? 90 : 0;
+  const totalPrice = actualServicePrice + travelFee;
 
   const dateLocale = language === "ar" ? "ar-QA" : "en-QA";
 
@@ -78,10 +146,8 @@ const Booking = () => {
 
   // Check if a date is a working day (and not blocked)
   const isWorkingDay = (date: Date): boolean => {
-    // Check if date is blocked
     if (isBlockedDate(date)) return false;
-    
-    if (workingHours.length === 0) return true; // If no hours set, assume all days available
+    if (workingHours.length === 0) return true;
     const dayOfWeek = date.getDay();
     const dayHours = workingHours.find((wh) => wh.day_of_week === dayOfWeek);
     return dayHours?.is_working ?? true;
@@ -103,11 +169,45 @@ const Booking = () => {
     return date;
   });
 
-  const handleConfirmBooking = () => {
-    setIsConfirmed(true);
-    toast.success(t.bookings.bookingConfirmedToast);
-    setTimeout(() => navigate("/bookings"), 2000);
+  const handleConfirmBooking = async () => {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول أولاً");
+      navigate("/auth");
+      return;
+    }
+
+    if (!artistId || !serviceId || !selectedDate || !selectedTime) {
+      toast.error("يرجى ملء جميع البيانات المطلوبة");
+      return;
+    }
+
+    try {
+      await createBooking.mutateAsync({
+        artist_id: artistId,
+        service_id: serviceId,
+        booking_date: selectedDate.toISOString().split("T")[0],
+        booking_time: convertTimeToDbFormat(selectedTime),
+        location_type: selectedLocation as "studio" | "client",
+        location_address: selectedLocation === "client" ? "Customer location" : artistInfo?.studio_address || undefined,
+        total_price: totalPrice,
+        notes: notes || undefined,
+      });
+
+      setIsConfirmed(true);
+      toast.success(t.bookings.bookingConfirmedToast);
+      setTimeout(() => navigate("/bookings"), 2000);
+    } catch (error) {
+      console.error("Booking error:", error);
+    }
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (isConfirmed) {
     return (
@@ -127,6 +227,9 @@ const Booking = () => {
       </div>
     );
   }
+
+  const artistName = artistInfo?.profile?.full_name || "Artist";
+  const artistAvatar = artistInfo?.profile?.avatar_url;
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -153,18 +256,30 @@ const Booking = () => {
       {/* Artist & Service Summary */}
       <div className="px-5 py-4 border-b border-border bg-card">
         <div className="flex items-center gap-3">
-          <img
-            src={artist1}
-            alt="Artist"
-            className="w-12 h-12 rounded-full object-cover"
-          />
+          {artistAvatar ? (
+            <img
+              src={artistAvatar}
+              alt={artistName}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+              <span className="text-primary font-semibold">
+                {artistName.charAt(0)}
+              </span>
+            </div>
+          )}
           <div>
-            <h3 className="font-medium text-foreground">Sofia Chen</h3>
-            <p className="text-sm text-primary">{serviceName}</p>
+            <h3 className="font-medium text-foreground">{artistName}</h3>
+            <p className="text-sm text-primary">{actualServiceName}</p>
           </div>
           <div className="ms-auto text-end">
-            <p className="font-bold text-foreground">{formatQAR(1275)}</p>
-            <p className="text-xs text-muted-foreground">3 {t.bookings.hours}</p>
+            <p className="font-bold text-foreground">{formatQAR(actualServicePrice)}</p>
+            {serviceInfo?.duration_minutes && (
+              <p className="text-xs text-muted-foreground">
+                {Math.floor(serviceInfo.duration_minutes / 60)} {t.bookings.hours}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -186,7 +301,7 @@ const Booking = () => {
                     key={date.toISOString()}
                     onClick={() => {
                       setSelectedDate(date);
-                      setSelectedTime(null); // Reset time when date changes
+                      setSelectedTime(null);
                     }}
                     disabled={!isWorking}
                     className={`flex-shrink-0 w-16 py-3 rounded-xl border-2 transition-all duration-200 ${
@@ -279,6 +394,8 @@ const Booking = () => {
               </label>
               <textarea
                 placeholder={t.bookings.notesPlaceholder}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
                 className="w-full mt-2 p-4 bg-card border border-border rounded-xl resize-none h-24 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
             </div>
@@ -293,7 +410,7 @@ const Booking = () => {
             <div className="bg-card rounded-xl border border-border p-4 space-y-4">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t.bookings.service}</span>
-                <span className="font-medium text-foreground">{serviceName}</span>
+                <span className="font-medium text-foreground">{actualServiceName}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t.bookings.date}</span>
@@ -318,18 +435,18 @@ const Booking = () => {
               <div className="border-t border-border pt-4">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t.bookings.serviceFee}</span>
-                  <span className="font-medium text-foreground">{formatQAR(1275)}</span>
+                  <span className="font-medium text-foreground">{formatQAR(actualServicePrice)}</span>
                 </div>
                 {selectedLocation === "client" && (
                   <div className="flex justify-between mt-2">
                     <span className="text-muted-foreground">{t.bookings.travelFee}</span>
-                    <span className="font-medium text-foreground">{formatQAR(90)}</span>
+                    <span className="font-medium text-foreground">{formatQAR(travelFee)}</span>
                   </div>
                 )}
                 <div className="flex justify-between mt-4 text-lg">
                   <span className="font-semibold text-foreground">{t.bookings.total}</span>
                   <span className="font-bold text-primary">
-                    {formatQAR(selectedLocation === "client" ? 1365 : 1275)}
+                    {formatQAR(totalPrice)}
                   </span>
                 </div>
               </div>
@@ -384,8 +501,13 @@ const Booking = () => {
             variant="gold"
             className="w-full"
             onClick={handleConfirmBooking}
+            disabled={createBooking.isPending}
           >
-            {t.bookings.pay} {formatQAR(selectedLocation === "client" ? 1365 : 1275)}
+            {createBooking.isPending ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              `${t.bookings.pay} ${formatQAR(totalPrice)}`
+            )}
           </Button>
         )}
       </div>

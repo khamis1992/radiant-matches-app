@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { useEffect } from "react";
 
 export interface ArtistProfile {
   id: string;
@@ -187,7 +188,34 @@ export const useArtistEarnings = () => {
 
 export const useArtistBookings = () => {
   const { data: artist } = useCurrentArtist();
+  const queryClient = useQueryClient();
   
+  // Set up real-time subscription for bookings
+  useEffect(() => {
+    if (!artist?.id) return;
+
+    const channel = supabase
+      .channel('artist-bookings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+          filter: `artist_id=eq.${artist.id}`
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["artist-bookings", artist.id] });
+          queryClient.invalidateQueries({ queryKey: ["pending-bookings-count", artist.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [artist?.id, queryClient]);
+
   return useQuery({
     queryKey: ["artist-bookings", artist?.id],
     queryFn: async () => {
@@ -304,6 +332,9 @@ export const useUpdateBookingStatus = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["artist-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-bookings-count"] });
+      queryClient.invalidateQueries({ queryKey: ["artist-notifications"] });
     },
   });
 };
