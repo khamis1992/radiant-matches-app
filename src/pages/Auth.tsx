@@ -11,7 +11,12 @@ import { z } from "zod";
 
 type AuthMode = "login" | "signup" | "forgot-password" | "verify-email";
 
-const getRedirectPathByRole = async (userId: string): Promise<string> => {
+type RoleRedirectResult = {
+  path: string;
+  role: "admin" | "artist" | "customer";
+};
+
+const getRedirectPathByRole = async (userId: string): Promise<RoleRedirectResult> => {
   try {
     const { data, error } = await supabase
       .from("user_roles")
@@ -20,15 +25,30 @@ const getRedirectPathByRole = async (userId: string): Promise<string> => {
 
     if (error) {
       console.error("Error fetching roles:", error);
-      return "/home";
+      return { path: "/home", role: "customer" };
     }
 
     const roles = (data || []).map((r) => r.role);
-    if (roles.includes("admin")) return "/admin";
-    if (roles.includes("artist")) return "/artist-dashboard";
-    return "/home";
+    if (roles.includes("admin")) return { path: "/admin", role: "admin" };
+    if (roles.includes("artist")) return { path: "/artist-dashboard", role: "artist" };
+    return { path: "/home", role: "customer" };
   } catch {
-    return "/home";
+    return { path: "/home", role: "customer" };
+  }
+};
+
+const getWelcomeMessage = (role: "admin" | "artist" | "customer", language: "en" | "ar") => {
+  if (language === "ar") {
+    switch (role) {
+      case "admin": return "مرحباً بك في لوحة الإدارة!";
+      case "artist": return "مرحباً بك في لوحة التحكم يا فنانة!";
+      default: return "مرحباً بعودتك!";
+    }
+  }
+  switch (role) {
+    case "admin": return "Welcome to the Admin Dashboard!";
+    case "artist": return "Welcome to your Artist Dashboard!";
+    default: return "Welcome back!";
   }
 };
 
@@ -48,27 +68,31 @@ const Auth = () => {
   const passwordSchema = z.string().min(6, t.settings.passwordMinLength);
 
   useEffect(() => {
-    const redirectUser = async (userId: string) => {
-      const path = await getRedirectPathByRole(userId);
+    const redirectUser = async (userId: string, showToast = false) => {
+      const { path, role } = await getRedirectPathByRole(userId);
+      if (showToast) {
+        toast.success(getWelcomeMessage(role, language));
+      }
       navigate(path, { replace: true });
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
+        const showWelcome = event === "SIGNED_IN";
         setTimeout(() => {
-          redirectUser(session.user.id);
+          redirectUser(session.user.id, showWelcome);
         }, 0);
       }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        redirectUser(session.user.id);
+        redirectUser(session.user.id, false);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, language]);
 
   const validateForm = (): boolean => {
     const newErrors: { email?: string; password?: string; fullName?: string } = {};
@@ -146,8 +170,7 @@ const Auth = () => {
           }
           return;
         }
-        
-        toast.success(language === "ar" ? "مرحباً بعودتك!" : "Welcome back!");
+        // Toast is shown via onAuthStateChange
       } else {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
