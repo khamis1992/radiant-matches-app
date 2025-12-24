@@ -64,12 +64,33 @@ export const useUpdateUserRole = () => {
       userId: string;
       role: "admin" | "artist" | "customer";
     }) => {
+      // If the current admin's session was invalidated (e.g. password reset),
+      // refresh will fail and we should force re-login.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        throw new Error("Session expired. Please sign in again.");
+      }
+
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        await supabase.auth.signOut();
+        throw new Error("Session expired. Please sign in again.");
+      }
+
       const response = await supabase.functions.invoke("admin-update-role", {
         body: { userId, role },
       });
 
       if (response.error) {
-        throw new Error(response.error.message);
+        const message = response.error.message || "Unknown error";
+        if (message.includes("401") || message.toLowerCase().includes("unauthorized")) {
+          await supabase.auth.signOut();
+          throw new Error("Session expired. Please sign in again.");
+        }
+        throw new Error(message);
       }
 
       if (response.data?.error) {
