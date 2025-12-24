@@ -60,40 +60,39 @@ export const useUpdateUserRole = () => {
     mutationFn: async ({
       userId,
       role,
-      action,
     }: {
       userId: string;
       role: "admin" | "artist" | "customer";
-      action: "add" | "remove";
     }) => {
-      if (action === "add") {
-        const { error } = await supabase
-          .from("user_roles")
-          .insert({ user_id: userId, role });
-        if (error) throw error;
+      // Delete all existing roles for this user
+      const { error: deleteError } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", userId);
+      
+      if (deleteError) throw deleteError;
 
-        // If adding artist role, create artist profile
-        if (role === "artist") {
-          const { data: existingArtist } = await supabase
-            .from("artists")
-            .select("id")
-            .eq("user_id", userId)
-            .maybeSingle();
+      // Insert the new role
+      const { error: insertError } = await supabase
+        .from("user_roles")
+        .insert({ user_id: userId, role });
+      
+      if (insertError) throw insertError;
 
-          if (!existingArtist) {
-            const { error: artistError } = await supabase
-              .from("artists")
-              .insert({ user_id: userId });
-            if (artistError) throw artistError;
-          }
-        }
-      } else {
-        const { error } = await supabase
-          .from("user_roles")
-          .delete()
+      // If adding artist role, create artist profile if not exists
+      if (role === "artist") {
+        const { data: existingArtist } = await supabase
+          .from("artists")
+          .select("id")
           .eq("user_id", userId)
-          .eq("role", role);
-        if (error) throw error;
+          .maybeSingle();
+
+        if (!existingArtist) {
+          const { error: artistError } = await supabase
+            .from("artists")
+            .insert({ user_id: userId });
+          if (artistError) throw artistError;
+        }
       }
     },
     onSuccess: () => {
