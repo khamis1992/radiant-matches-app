@@ -11,14 +11,25 @@ import { z } from "zod";
 
 type AuthMode = "login" | "signup" | "forgot-password" | "verify-email";
 
-const checkIfArtist = async (userId: string): Promise<boolean> => {
-  const { data } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", "artist")
-    .single();
-  return !!data;
+const getRedirectPathByRole = async (userId: string): Promise<string> => {
+  try {
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Error fetching roles:", error);
+      return "/home";
+    }
+
+    const roles = (data || []).map((r) => r.role);
+    if (roles.includes("admin")) return "/admin";
+    if (roles.includes("artist")) return "/artist-dashboard";
+    return "/home";
+  } catch {
+    return "/home";
+  }
 };
 
 const Auth = () => {
@@ -38,8 +49,8 @@ const Auth = () => {
 
   useEffect(() => {
     const redirectUser = async (userId: string) => {
-      const isArtist = await checkIfArtist(userId);
-      navigate(isArtist ? "/artist-dashboard" : "/home");
+      const path = await getRedirectPathByRole(userId);
+      navigate(path, { replace: true });
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
