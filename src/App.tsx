@@ -18,6 +18,7 @@ import ArtistGallery from "./pages/artist/ArtistGallery";
 import ArtistNotifications from "./pages/artist/ArtistNotifications";
 import Booking from "./pages/Booking";
 import Bookings from "./pages/Bookings";
+import BookingDetails from "./pages/BookingDetails";
 import Messages from "./pages/Messages";
 import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
@@ -89,6 +90,14 @@ const App = () => (
             element={
               <RoleGate allow={["customer"]} showLoading>
                 <Bookings />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/bookings/:id"
+            element={
+              <RoleGate allow={["customer"]} showLoading>
+                <BookingDetails />
               </RoleGate>
             }
           />
