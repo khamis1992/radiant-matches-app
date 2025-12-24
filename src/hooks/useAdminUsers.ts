@@ -64,35 +64,16 @@ export const useUpdateUserRole = () => {
       userId: string;
       role: "admin" | "artist" | "customer";
     }) => {
-      // Delete all existing roles for this user
-      const { error: deleteError } = await supabase
-        .from("user_roles")
-        .delete()
-        .eq("user_id", userId);
-      
-      if (deleteError) throw deleteError;
+      const response = await supabase.functions.invoke("admin-update-role", {
+        body: { userId, role },
+      });
 
-      // Insert the new role
-      const { error: insertError } = await supabase
-        .from("user_roles")
-        .insert({ user_id: userId, role });
-      
-      if (insertError) throw insertError;
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
 
-      // If adding artist role, create artist profile if not exists
-      if (role === "artist") {
-        const { data: existingArtist } = await supabase
-          .from("artists")
-          .select("id")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        if (!existingArtist) {
-          const { error: artistError } = await supabase
-            .from("artists")
-            .insert({ user_id: userId });
-          if (artistError) throw artistError;
-        }
+      if (response.data?.error) {
+        throw new Error(response.data.error);
       }
     },
     onSuccess: () => {
