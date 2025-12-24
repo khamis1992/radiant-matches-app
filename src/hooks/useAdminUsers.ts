@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { invalidateRoleCache } from "./useUserRole";
 
 export interface AdminUser {
   id: string;
@@ -97,9 +98,12 @@ export const useUpdateUserRole = () => {
         throw new Error(response.data.error);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Invalidate the role cache for the updated user
+      invalidateRoleCache(variables.userId);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       queryClient.invalidateQueries({ queryKey: ["admin-artists"] });
+      queryClient.invalidateQueries({ queryKey: ["user-role"] });
     },
   });
 };
