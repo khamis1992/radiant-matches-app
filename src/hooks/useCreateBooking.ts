@@ -7,7 +7,7 @@ interface CreateBookingData {
   service_id: string;
   booking_date: string;
   booking_time: string;
-  location_type: "studio" | "client";
+  location_type: "artist_studio" | "client_home";
   location_address?: string;
   total_price: number;
   notes?: string;

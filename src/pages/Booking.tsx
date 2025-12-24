@@ -65,7 +65,7 @@ const Booking = () => {
   
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<string>("studio");
+  const [selectedLocation, setSelectedLocation] = useState<string>("artist_studio");
   const [notes, setNotes] = useState("");
   const [step, setStep] = useState(1);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -116,7 +116,7 @@ const Booking = () => {
 
   const actualServiceName = serviceInfo?.name || serviceName;
   const actualServicePrice = serviceInfo?.price || servicePrice;
-  const travelFee = selectedLocation === "client" ? 90 : 0;
+  const travelFee = selectedLocation === "client_home" ? 90 : 0;
   const totalPrice = actualServicePrice + travelFee;
 
   const dateLocale = language === "ar" ? "ar-QA" : "en-QA";
@@ -154,8 +154,8 @@ const Booking = () => {
   };
 
   const locations = [
-    { id: "client", label: t.bookings.atMyLocation, description: `${t.bookings.artistComesToYou} (+QAR 90)` },
-    { id: "studio", label: t.bookings.artistStudio, description: t.bookings.visitArtistWorkspace },
+    { id: "client_home", label: t.bookings.atMyLocation, description: `${t.bookings.artistComesToYou} (+QAR 90)` },
+    { id: "artist_studio", label: t.bookings.artistStudio, description: t.bookings.visitArtistWorkspace },
   ];
 
   useSwipeBack({
@@ -187,8 +187,8 @@ const Booking = () => {
         service_id: serviceId,
         booking_date: selectedDate.toISOString().split("T")[0],
         booking_time: convertTimeToDbFormat(selectedTime),
-        location_type: selectedLocation as "studio" | "client",
-        location_address: selectedLocation === "client" ? "Customer location" : artistInfo?.studio_address || undefined,
+        location_type: selectedLocation as "artist_studio" | "client_home",
+        location_address: selectedLocation === "client_home" ? "Customer location" : artistInfo?.studio_address || undefined,
         total_price: totalPrice,
         notes: notes || undefined,
       });
@@ -429,7 +429,7 @@ const Booking = () => {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t.bookings.location}</span>
                 <span className="font-medium text-foreground">
-                  {selectedLocation === "client" ? t.bookings.yourLocation : t.bookings.artistStudio}
+                  {selectedLocation === "client_home" ? t.bookings.yourLocation : t.bookings.artistStudio}
                 </span>
               </div>
               <div className="border-t border-border pt-4">
@@ -437,7 +437,7 @@ const Booking = () => {
                   <span className="text-muted-foreground">{t.bookings.serviceFee}</span>
                   <span className="font-medium text-foreground">{formatQAR(actualServicePrice)}</span>
                 </div>
-                {selectedLocation === "client" && (
+                {selectedLocation === "client_home" && (
                   <div className="flex justify-between mt-2">
                     <span className="text-muted-foreground">{t.bookings.travelFee}</span>
                     <span className="font-medium text-foreground">{formatQAR(travelFee)}</span>
