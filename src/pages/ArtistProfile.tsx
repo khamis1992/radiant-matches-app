@@ -197,15 +197,8 @@ const ArtistProfile = () => {
 
           <div className="flex gap-3 mt-5">
             <Button 
-              className="flex-1" 
-              onClick={() => services?.[0] && handleBookService(services[0].id, services[0].name, Number(services[0].price))}
-              disabled={!services?.length}
-            >
-              {t.bookings.bookNow}
-            </Button>
-            <Button 
               variant="outline" 
-              size="icon"
+              className="flex-1"
               onClick={async () => {
                 if (!user) {
                   navigate("/auth");
@@ -221,7 +214,8 @@ const ArtistProfile = () => {
               }}
               disabled={getOrCreateConversation.isPending}
             >
-              <MessageCircle className="w-5 h-5" />
+              <MessageCircle className="w-5 h-5 me-2" />
+              {t.artist.contactArtist}
             </Button>
           </div>
         </div>
