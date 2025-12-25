@@ -10,6 +10,7 @@ interface Conversation {
   last_message: string | null;
   last_message_at: string | null;
   created_at: string;
+  unread_count: number;
   artist_profile?: {
     full_name: string | null;
     avatar_url: string | null;
@@ -82,8 +83,17 @@ export const useConversations = () => {
             .eq("id", convo.customer_id)
             .single();
 
+          // Get unread count for this conversation
+          const { count: unreadCount } = await supabase
+            .from("messages")
+            .select("*", { count: "exact", head: true })
+            .eq("conversation_id", convo.id)
+            .neq("sender_id", user.id)
+            .eq("is_read", false);
+
           return {
             ...convo,
+            unread_count: unreadCount || 0,
             artist_profile: artistUserProfile,
             customer_profile: customerProfile,
           };

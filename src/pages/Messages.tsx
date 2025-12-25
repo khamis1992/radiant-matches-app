@@ -98,9 +98,16 @@ const Messages = () => {
                       <h3 className="font-semibold text-foreground">
                         {otherParty.name}
                       </h3>
-                      <span className="text-xs text-muted-foreground">{timeAgo}</span>
+                      <div className="flex items-center gap-2">
+                        {convo.unread_count > 0 && (
+                          <span className="min-w-5 h-5 px-1.5 flex items-center justify-center bg-primary text-primary-foreground text-xs font-medium rounded-full">
+                            {convo.unread_count > 99 ? "99+" : convo.unread_count}
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground">{timeAgo}</span>
+                      </div>
                     </div>
-                    <p className="text-sm mt-0.5 truncate text-muted-foreground">
+                    <p className={`text-sm mt-0.5 truncate ${convo.unread_count > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
                       {convo.last_message || t.messages.startConversation}
                     </p>
                   </div>
