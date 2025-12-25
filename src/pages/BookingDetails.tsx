@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, Clock, MapPin, User, Phone, MessageCircle, Edit2, X, Check, Loader2, AlertCircle } from "lucide-react";
+import { useConversations } from "@/hooks/useConversations";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -84,6 +85,7 @@ const BookingDetails = () => {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const dateLocale = language === "ar" ? ar : enUS;
+  const { getOrCreateConversation } = useConversations();
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -360,7 +362,16 @@ const BookingDetails = () => {
               variant="outline"
               size="sm"
               className="flex-1"
-              onClick={() => navigate(`/chat/${booking.artist?.id}`)}
+              onClick={async () => {
+                if (booking.artist?.id) {
+                  try {
+                    const conversationId = await getOrCreateConversation.mutateAsync(booking.artist.id);
+                    navigate(`/chat/${conversationId}`);
+                  } catch (error) {
+                    toast.error(t.errors.somethingWrong);
+                  }
+                }
+              }}
             >
               <MessageCircle className="w-4 h-4 me-1" />
               {t.nav.messages}
