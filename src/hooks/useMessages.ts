@@ -128,7 +128,17 @@ export const useMessages = (conversationId: string | undefined) => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (newRow) => {
+      // Immediately reflect the sent message in UI (realtime may not be enabled)
+      if (conversationId) {
+        queryClient.setQueryData(["messages", conversationId], (old: Message[] | undefined) => {
+          const next = old ? [...old] : [];
+          const msg = newRow as Message;
+          if (!next.some((m) => m.id === msg.id)) next.push(msg);
+          return next;
+        });
+      }
+
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
   });
