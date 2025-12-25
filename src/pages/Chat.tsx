@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, ArrowRight, Image as ImageIcon, X, Loader2 } from "lucide-react";
+import { Send, ArrowLeft, ArrowRight, Image as ImageIcon, X, Loader2, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +12,7 @@ import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import TypingIndicator from "@/components/TypingIndicator";
 import { format, isToday, isYesterday } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
+import { formatBookingTime } from "@/lib/locale";
 import { toast } from "sonner";
 
 import artist1 from "@/assets/artist-1.jpg";
@@ -180,6 +181,27 @@ const Chat = () => {
           </div>
         </div>
       </header>
+
+      {/* Booking Info Banner */}
+      {conversation?.booking && (
+        <div className="bg-primary/10 border-b border-primary/20 px-4 py-3">
+          <div className="flex items-center gap-3 text-sm">
+            <div className="flex items-center gap-1.5 text-primary">
+              <Calendar className="w-4 h-4" />
+              <span>{format(new Date(conversation.booking.booking_date), "MMM d, yyyy", { locale: dateLocale })}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-primary">
+              <Clock className="w-4 h-4" />
+              <span>{formatBookingTime(conversation.booking.booking_time)}</span>
+            </div>
+          </div>
+          {conversation.booking.service?.name && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {conversation.booking.service.name}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">

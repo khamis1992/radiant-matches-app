@@ -6,6 +6,7 @@ interface Conversation {
   id: string;
   customer_id: string;
   artist_id: string;
+  booking_id: string | null;
   last_message: string | null;
   last_message_at: string | null;
   created_at: string;
@@ -16,6 +17,14 @@ interface Conversation {
   customer_profile?: {
     full_name: string | null;
     avatar_url: string | null;
+  } | null;
+  booking?: {
+    id: string;
+    booking_date: string;
+    booking_time: string;
+    service?: {
+      name: string;
+    } | null;
   } | null;
 }
 
@@ -90,12 +99,13 @@ export const useConversations = () => {
     mutationFn: async (artistId: string) => {
       if (!user) throw new Error("Must be logged in");
 
-      // Check if conversation already exists
+      // Check if conversation already exists (general conversation without booking)
       const { data: existing } = await supabase
         .from("conversations")
         .select("id")
         .eq("customer_id", user.id)
         .eq("artist_id", artistId)
+        .is("booking_id", null)
         .maybeSingle();
 
       if (existing) return existing.id;
@@ -118,10 +128,43 @@ export const useConversations = () => {
     },
   });
 
+  const getOrCreateBookingConversation = useMutation({
+    mutationFn: async ({ artistId, bookingId }: { artistId: string; bookingId: string }) => {
+      if (!user) throw new Error("Must be logged in");
+
+      // Check if conversation already exists for this booking
+      const { data: existing } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("booking_id", bookingId)
+        .maybeSingle();
+
+      if (existing) return existing.id;
+
+      // Create new conversation linked to booking
+      const { data, error } = await supabase
+        .from("conversations")
+        .insert({
+          customer_id: user.id,
+          artist_id: artistId,
+          booking_id: bookingId,
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+      return data.id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    },
+  });
+
   return {
     conversations,
     isLoading,
     getOrCreateConversation,
+    getOrCreateBookingConversation,
   };
 };
 
@@ -165,11 +208,35 @@ export const useConversation = (conversationId: string | undefined) => {
         .eq("id", convo.customer_id)
         .single();
 
+      // Get booking info if linked
+      let bookingInfo = null;
+      if (convo.booking_id) {
+        const { data: booking } = await supabase
+          .from("bookings")
+          .select("id, booking_date, booking_time, service_id")
+          .eq("id", convo.booking_id)
+          .single();
+
+        if (booking) {
+          const { data: service } = await supabase
+            .from("services")
+            .select("name")
+            .eq("id", booking.service_id)
+            .single();
+
+          bookingInfo = {
+            ...booking,
+            service: service,
+          };
+        }
+      }
+
       return {
         ...convo,
         artist_user_id: artistData?.user_id,
         artist_profile: artistProfile,
         customer_profile: customerProfile,
+        booking: bookingInfo,
       };
     },
     enabled: !!conversationId && !!user,

@@ -292,6 +292,7 @@ export type Database = {
       conversations: {
         Row: {
           artist_id: string
+          booking_id: string | null
           created_at: string
           customer_id: string
           id: string
@@ -301,6 +302,7 @@ export type Database = {
         }
         Insert: {
           artist_id: string
+          booking_id?: string | null
           created_at?: string
           customer_id: string
           id?: string
@@ -310,6 +312,7 @@ export type Database = {
         }
         Update: {
           artist_id?: string
+          booking_id?: string | null
           created_at?: string
           customer_id?: string
           id?: string
@@ -317,7 +320,15 @@ export type Database = {
           last_message_at?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "conversations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       favorites: {
         Row: {
