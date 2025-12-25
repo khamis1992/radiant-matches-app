@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, ArrowRight, Image as ImageIcon, X, Loader2, Calendar, Clock } from "lucide-react";
+import { Send, ArrowLeft, ArrowRight, Image as ImageIcon, X, Loader2, Calendar, Clock, Check, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -235,13 +235,20 @@ const Chat = () => {
                     />
                   )}
                   {message.content && <p className="text-sm">{message.content}</p>}
-                  <p
-                    className={`text-[10px] mt-1 ${
+                  <div
+                    className={`flex items-center gap-1 text-[10px] mt-1 ${
                       isMine ? "text-primary-foreground/70" : "text-muted-foreground"
                     }`}
                   >
-                    {formatMessageTime(message.created_at)}
-                  </p>
+                    <span>{formatMessageTime(message.created_at)}</span>
+                    {isMine && (
+                      message.is_read ? (
+                        <CheckCheck className="w-3.5 h-3.5" />
+                      ) : (
+                        <Check className="w-3.5 h-3.5" />
+                      )
+                    )}
+                  </div>
                 </div>
               </div>
             );

@@ -83,6 +83,28 @@ export const useMessages = (conversationId: string | undefined) => {
           );
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const updatedMessage = payload.new as Message;
+          
+          queryClient.setQueryData(
+            ["messages", conversationId],
+            (old: Message[] | undefined) => {
+              if (!old) return [updatedMessage];
+              return old.map((m) => 
+                m.id === updatedMessage.id ? updatedMessage : m
+              );
+            }
+          );
+        }
+      )
       .subscribe();
 
     return () => {
