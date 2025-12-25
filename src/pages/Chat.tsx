@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, ArrowRight } from "lucide-react";
+import { Send, ArrowLeft, ArrowRight, Image as ImageIcon, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +12,7 @@ import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import TypingIndicator from "@/components/TypingIndicator";
 import { format, isToday, isYesterday } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
+import { toast } from "sonner";
 
 import artist1 from "@/assets/artist-1.jpg";
 
@@ -21,7 +22,10 @@ const Chat = () => {
   const { user } = useAuth();
   const { t, language, isRTL } = useLanguage();
   const [newMessage, setNewMessage] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: conversation, isLoading: conversationLoading } = useConversation(conversationId);
   const { messages, isLoading: messagesLoading, sendMessage, markAsRead } = useMessages(conversationId);
@@ -42,10 +46,45 @@ const Chat = () => {
   }, [conversationId, user]);
 
   const handleSend = () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() && !selectedImage) return;
     setTyping(false);
-    sendMessage.mutate(newMessage.trim());
-    setNewMessage("");
+    sendMessage.mutate(
+      { content: newMessage.trim(), imageFile: selectedImage || undefined },
+      {
+        onSuccess: () => {
+          setNewMessage("");
+          setSelectedImage(null);
+          setImagePreview(null);
+        },
+        onError: () => {
+          toast.error(t.errors.somethingWrong);
+        }
+      }
+    );
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(language === "ar" ? "حجم الصورة كبير جداً (الحد الأقصى 5MB)" : "Image too large (max 5MB)");
+        return;
+      }
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeSelectedImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,7 +204,15 @@ const Chat = () => {
                       : "bg-muted text-foreground rounded-bl-md"
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  {message.image_url && (
+                    <img 
+                      src={message.image_url} 
+                      alt="Shared image" 
+                      className="rounded-lg max-w-full mb-2 cursor-pointer"
+                      onClick={() => window.open(message.image_url!, '_blank')}
+                    />
+                  )}
+                  {message.content && <p className="text-sm">{message.content}</p>}
                   <p
                     className={`text-[10px] mt-1 ${
                       isMine ? "text-primary-foreground/70" : "text-muted-foreground"
@@ -188,7 +235,38 @@ const Chat = () => {
 
       {/* Input */}
       <div className="sticky bottom-0 bg-background border-t border-border p-4">
+        {/* Image Preview */}
+        {imagePreview && (
+          <div className="relative inline-block mb-3">
+            <img 
+              src={imagePreview} 
+              alt="Preview" 
+              className="h-20 rounded-lg object-cover"
+            />
+            <button
+              onClick={removeSelectedImage}
+              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        )}
         <div className="flex items-center gap-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageSelect}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={sendMessage.isPending}
+          >
+            <ImageIcon className="w-5 h-5" />
+          </Button>
           <Input
             value={newMessage}
             onChange={handleInputChange}
@@ -198,10 +276,14 @@ const Chat = () => {
           />
           <Button
             onClick={handleSend}
-            disabled={!newMessage.trim() || sendMessage.isPending}
+            disabled={(!newMessage.trim() && !selectedImage) || sendMessage.isPending}
             size="icon"
           >
-            <Send className="w-4 h-4" />
+            {sendMessage.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
           </Button>
         </div>
       </div>
