@@ -9,6 +9,7 @@ interface Message {
   conversation_id: string;
   sender_id: string;
   content: string;
+  image_url: string | null;
   is_read: boolean;
   created_at: string;
 }
@@ -90,15 +91,36 @@ export const useMessages = (conversationId: string | undefined) => {
   }, [conversationId, user, queryClient]);
 
   const sendMessage = useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async ({ content, imageFile }: { content: string; imageFile?: File }) => {
       if (!user || !conversationId) throw new Error("Missing data");
+
+      let imageUrl: string | null = null;
+
+      // Upload image if provided
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('chat-attachments')
+          .upload(fileName, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('chat-attachments')
+          .getPublicUrl(fileName);
+
+        imageUrl = publicUrl;
+      }
 
       const { data, error } = await supabase
         .from("messages")
         .insert({
           conversation_id: conversationId,
           sender_id: user.id,
-          content,
+          content: content || (imageUrl ? '' : ''),
+          image_url: imageUrl,
         })
         .select()
         .single();
