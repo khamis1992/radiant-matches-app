@@ -85,7 +85,7 @@ const BookingDetails = () => {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const dateLocale = language === "ar" ? ar : enUS;
-  const { getOrCreateConversation } = useConversations();
+  const { getOrCreateBookingConversation } = useConversations();
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -363,9 +363,12 @@ const BookingDetails = () => {
               size="sm"
               className="flex-1"
               onClick={async () => {
-                if (booking.artist?.id) {
+                if (booking.artist?.id && booking.id) {
                   try {
-                    const conversationId = await getOrCreateConversation.mutateAsync(booking.artist.id);
+                    const conversationId = await getOrCreateBookingConversation.mutateAsync({
+                      artistId: booking.artist.id,
+                      bookingId: booking.id,
+                    });
                     navigate(`/chat/${conversationId}`);
                   } catch (error) {
                     toast.error(t.errors.somethingWrong);

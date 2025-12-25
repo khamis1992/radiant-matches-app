@@ -5,10 +5,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUserBookings } from "@/hooks/useBookings";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useConversations } from "@/hooks/useConversations";
 import { formatBookingTime } from "@/lib/locale";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import artist1 from "@/assets/artist-1.jpg";
 
@@ -16,8 +18,24 @@ const Bookings = () => {
   const { user, loading: authLoading } = useAuth();
   const { data: bookings, isLoading } = useUserBookings();
   const { t, language } = useLanguage();
+  const { getOrCreateBookingConversation } = useConversations();
+  const navigate = useNavigate();
   
   const dateLocale = language === "ar" ? ar : enUS;
+
+  const handleOpenChat = async (e: React.MouseEvent, booking: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const conversationId = await getOrCreateBookingConversation.mutateAsync({
+        artistId: booking.artist_id,
+        bookingId: booking.id,
+      });
+      navigate(`/chat/${conversationId}`);
+    } catch (error) {
+      toast.error(t.errors.somethingWrong);
+    }
+  };
 
   if (authLoading || isLoading) {
     return (
@@ -130,7 +148,13 @@ const Bookings = () => {
                       </div>
                     </div>
                     <div className="flex gap-2 mt-4 pt-4 border-t border-border">
-                      <Button variant="outline" size="sm" className="flex-1" onClick={(e) => e.preventDefault()}>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1" 
+                        onClick={(e) => handleOpenChat(e, booking)}
+                        disabled={getOrCreateBookingConversation.isPending}
+                      >
                         <MessageCircle className="w-4 h-4 me-1" />
                         {t.nav.messages}
                       </Button>
