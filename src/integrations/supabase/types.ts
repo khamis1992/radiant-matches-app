@@ -79,6 +79,39 @@ export type Database = {
           },
         ]
       }
+      artist_invitations: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          full_name: string | null
+          id: string
+          token: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          token: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       artist_working_hours: {
         Row: {
           artist_id: string

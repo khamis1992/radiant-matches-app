@@ -41,6 +41,9 @@ export const en = {
     changeLanguage: "Change language",
     languageSelected: "Language selected",
     linkCopied: "Link copied to clipboard",
+    new: "New",
+    saving: "Saving...",
+    processing: "Processing...",
   },
   
   // Navigation
@@ -345,6 +348,12 @@ export const en = {
     bookingCancelled: "Booking cancelled successfully",
     confirmCancel: "Are you sure you want to cancel this booking?",
     cannotUndo: "This action cannot be undone.",
+    selectDateError: "Please select a date",
+    selectTimeError: "Please select a time",
+    formValidationError: "Please fix the errors in the form",
+    bookingFailed: "Failed to create booking",
+    payment: "Payment",
+    confirmBooking: "Confirm Booking",
   },
   
   // Artist
