@@ -230,16 +230,38 @@ const Booking = () => {
         const form = document.createElement("form");
         form.method = "POST";
         form.action = paymentData.payment_url;
+        form.name = "gosadad";
         
-        Object.entries(paymentData).forEach(([key, value]) => {
-          if (key !== "payment_url" && key !== "transaction_id") {
+        // Add standard fields
+        const standardFields = [
+          "merchant_id", "ORDER_ID", "WEBSITE", "TXN_AMOUNT", "CUST_ID",
+          "EMAIL", "MOBILE_NO", "SADAD_WEBCHECKOUT_PAGE_LANGUAGE",
+          "CALLBACK_URL", "txnDate", "VERSION", "checksumhash"
+        ];
+        
+        standardFields.forEach((fieldName) => {
+          if (paymentData[fieldName] !== undefined) {
             const input = document.createElement("input");
             input.type = "hidden";
-            input.name = key;
-            input.value = String(value);
+            input.name = fieldName;
+            input.id = fieldName;
+            input.value = String(paymentData[fieldName]);
             form.appendChild(input);
           }
         });
+        
+        // Add productdetail array fields
+        if (paymentData.productdetail && Array.isArray(paymentData.productdetail)) {
+          paymentData.productdetail.forEach((product: Record<string, string>, index: number) => {
+            Object.entries(product).forEach(([key, value]) => {
+              const input = document.createElement("input");
+              input.type = "hidden";
+              input.name = `productdetail[${index}][${key}]`;
+              input.value = String(value);
+              form.appendChild(input);
+            });
+          });
+        }
         
         document.body.appendChild(form);
         form.submit();
