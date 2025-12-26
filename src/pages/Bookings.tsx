@@ -15,7 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useConversations } from "@/hooks/useConversations";
 import { formatBookingTime, formatQAR } from "@/lib/locale";
 import { format, formatDistanceToNow, isToday, isTomorrow, differenceInDays } from "date-fns";
-import { ar, enUS } from "date-fns/locale";
+import { ar, enUS, type Locale } from "date-fns/locale";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 

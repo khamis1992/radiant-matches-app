@@ -1036,7 +1036,7 @@ const Booking = () => {
           {createBooking.isPending || isProcessingPayment ? (
             <span className="flex items-center gap-2">
               <Loader2 className="w-5 h-5 animate-spin" />
-              {paymentMethod === "sadad" ? "Processing..." : t.bookings.processing || "Processing..."}
+              {paymentMethod === "sadad" ? (t.payment?.processingPleaseWait || "Processing...") : (t.common.processing || "Processing...")}
             </span>
           ) : step === 3 ? (
             <span className="flex items-center gap-2">

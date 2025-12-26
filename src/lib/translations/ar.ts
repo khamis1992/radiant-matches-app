@@ -45,6 +45,9 @@ export const ar: TranslationKeys = {
     changeLanguage: "تغيير اللغة",
     languageSelected: "تم اختيار اللغة",
     linkCopied: "تم نسخ الرابط إلى الحافظة",
+    new: "جديد",
+    saving: "جاري الحفظ...",
+    processing: "جاري المعالجة...",
   },
   
   // Navigation
@@ -349,6 +352,12 @@ export const ar: TranslationKeys = {
     bookingCancelled: "تم إلغاء الحجز بنجاح",
     confirmCancel: "هل أنت متأكد من إلغاء هذا الحجز؟",
     cannotUndo: "لا يمكن التراجع عن هذا الإجراء.",
+    selectDateError: "يرجى اختيار التاريخ",
+    selectTimeError: "يرجى اختيار الوقت",
+    formValidationError: "يرجى تصحيح الأخطاء في النموذج",
+    bookingFailed: "فشل إنشاء الحجز",
+    payment: "الدفع",
+    confirmBooking: "تأكيد الحجز",
   },
   
   // Artist
