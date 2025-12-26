@@ -138,32 +138,28 @@ const ArtistSignup = () => {
         return;
       }
 
-      // تحديث الدعوة كمستخدمة
-      await supabase
-        .from("artist_invitations")
-        .update({ 
-          used_at: new Date().toISOString(),
-          used_by: authData.user.id 
-        })
-        .eq("id", invitation.id);
+      // استدعاء edge function لإكمال التسجيل كفنانة
+      const { data: completeData, error: completeError } = await supabase.functions.invoke(
+        "complete-artist-signup",
+        {
+          body: {
+            invitationId: invitation.id,
+            userId: authData.user.id,
+          },
+        }
+      );
 
-      // إضافة صلاحية الفنانة
-      // حذف صلاحية customer الافتراضية
-      await supabase
-        .from("user_roles")
-        .delete()
-        .eq("user_id", authData.user.id)
-        .eq("role", "customer");
+      if (completeError) {
+        console.error("Error completing artist signup:", completeError);
+        toast.error("حدث خطأ أثناء إكمال التسجيل");
+        return;
+      }
 
-      // إضافة صلاحية artist
-      await supabase
-        .from("user_roles")
-        .insert({ user_id: authData.user.id, role: "artist" });
-
-      // إنشاء ملف الفنانة
-      await supabase
-        .from("artists")
-        .insert({ user_id: authData.user.id });
+      if (!completeData?.success) {
+        console.error("Artist signup failed:", completeData?.error);
+        toast.error(completeData?.error || "حدث خطأ أثناء إكمال التسجيل");
+        return;
+      }
 
       toast.success("تم إنشاء حسابك بنجاح! يرجى التحقق من بريدك الإلكتروني.");
       navigate("/auth", { replace: true });
