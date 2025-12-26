@@ -354,6 +354,50 @@ export type Database = {
         }
         Relationships: []
       }
+      instagram_connections: {
+        Row: {
+          access_token: string
+          account_type: string | null
+          artist_id: string
+          created_at: string
+          id: string
+          instagram_user_id: string
+          instagram_username: string
+          token_expires_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          account_type?: string | null
+          artist_id: string
+          created_at?: string
+          id?: string
+          instagram_user_id: string
+          instagram_username: string
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          account_type?: string | null
+          artist_id?: string
+          created_at?: string
+          id?: string
+          instagram_user_id?: string
+          instagram_username?: string
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instagram_connections_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: true
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -460,6 +504,8 @@ export type Database = {
           display_order: number
           id: string
           image_url: string
+          instagram_media_id: string | null
+          instagram_permalink: string | null
           is_featured: boolean
           title: string | null
         }
@@ -470,6 +516,8 @@ export type Database = {
           display_order?: number
           id?: string
           image_url: string
+          instagram_media_id?: string | null
+          instagram_permalink?: string | null
           is_featured?: boolean
           title?: string | null
         }
@@ -480,6 +528,8 @@ export type Database = {
           display_order?: number
           id?: string
           image_url?: string
+          instagram_media_id?: string | null
+          instagram_permalink?: string | null
           is_featured?: boolean
           title?: string | null
         }
