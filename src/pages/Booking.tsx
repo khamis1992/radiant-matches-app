@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { Calendar, Clock, MapPin, CreditCard, Check, Loader2 } from "lucide-react";
+import { Calendar, Clock, MapPin, CreditCard, Check, Loader2, Lock } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -205,6 +205,40 @@ const Booking = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Show login required screen if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+        <div className="text-center max-w-sm">
+          <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-6">
+            <Lock className="w-10 h-10 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-3">
+            {t.auth?.loginRequired || "يجب تسجيل الدخول"}
+          </h1>
+          <p className="text-muted-foreground mb-8">
+            {t.auth?.loginToBookMessage || "يجب عليك تسجيل الدخول أولاً لحجز هذه الخدمة"}
+          </p>
+          <div className="space-y-3">
+            <Button 
+              className="w-full" 
+              onClick={() => navigate("/auth", { state: { from: window.location.pathname + window.location.search } })}
+            >
+              {t.auth?.login || "تسجيل الدخول"}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => navigate(-1)}
+            >
+              {t.common?.back || "العودة"}
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }

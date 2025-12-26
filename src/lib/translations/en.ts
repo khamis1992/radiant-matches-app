@@ -127,6 +127,8 @@ export const en = {
     emailSent: "Verification email sent!",
     logoutSuccess: "Logged out successfully",
     logoutFailed: "Failed to log out",
+    loginRequired: "Login Required",
+    loginToBookMessage: "You must login first to book this service",
   },
   
   // Profile

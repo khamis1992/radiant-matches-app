@@ -73,6 +73,14 @@ const ArtistProfile = () => {
   useSwipeBack();
 
   const handleBookService = (serviceId: string, serviceName: string, price: number) => {
+    if (!user) {
+      toast({
+        title: t.auth?.loginRequired || "يرجى تسجيل الدخول أولاً للحجز",
+        variant: "destructive",
+      });
+      navigate("/auth", { state: { from: `/booking/${id}?service=${encodeURIComponent(serviceName)}&serviceId=${serviceId}&price=${price}` } });
+      return;
+    }
     navigate(`/booking/${id}?service=${encodeURIComponent(serviceName)}&serviceId=${serviceId}&price=${price}`);
   };
 
