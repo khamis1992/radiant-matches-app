@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import * as React from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Camera, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
