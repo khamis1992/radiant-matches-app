@@ -1,3 +1,4 @@
+import React from "react";
 import { Star, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";

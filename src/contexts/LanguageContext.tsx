@@ -15,10 +15,21 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const LANGUAGE_STORAGE_KEY = "glam-app-language";
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    return (stored === "ar" || stored === "en") ? stored : "en";
-  });
+  const [language, setLanguageState] = useState<Language>("en");
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Load language from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+      if (stored === "ar" || stored === "en") {
+        setLanguageState(stored);
+      }
+    } catch (e) {
+      // localStorage not available
+    }
+    setIsInitialized(true);
+  }, []);
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
