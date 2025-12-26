@@ -36,7 +36,7 @@ export const useProfileStats = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return { bookings: 0, reviews: 0, favorites: 0 };
       
-      const [bookingsResult, reviewsResult] = await Promise.all([
+      const [bookingsResult, reviewsResult, favoritesResult] = await Promise.all([
         supabase
           .from("bookings")
           .select("id", { count: "exact", head: true })
@@ -45,12 +45,16 @@ export const useProfileStats = () => {
           .from("reviews")
           .select("id", { count: "exact", head: true })
           .eq("customer_id", user.id),
+        supabase
+          .from("favorites")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
       ]);
       
       return {
         bookings: bookingsResult.count || 0,
         reviews: reviewsResult.count || 0,
-        favorites: 0, // TODO: implement favorites table
+        favorites: favoritesResult.count || 0,
       };
     },
   });

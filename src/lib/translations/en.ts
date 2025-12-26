@@ -162,6 +162,44 @@ export const en = {
     logOut: "Log Out",
     signedOut: "Signed out successfully",
   },
+
+  // Edit Profile
+  editProfile: {
+    avatarUpdated: "Photo updated",
+    profileUpdated: "Profile updated successfully",
+    tapToChange: "Tap to change photo",
+  },
+
+  // Help & Support
+  help: {
+    contactUs: "Contact Us",
+    whatsapp: "WhatsApp",
+    whatsappDesc: "Chat with us on WhatsApp",
+    email: "Email",
+    emailDesc: "Send us an email",
+    phone: "Phone",
+    phoneDesc: "Call our support line",
+    faqTitle: "Frequently Asked Questions",
+    faq1Question: "How do I book an appointment?",
+    faq1Answer: "Browse artists, select one you like, choose a service, pick a date and time, then confirm your booking.",
+    faq2Question: "How can I cancel my booking?",
+    faq2Answer: "Go to My Bookings, find the booking you want to cancel, and tap the Cancel button. Please note cancellation policies may apply.",
+    faq3Question: "How do I contact an artist?",
+    faq3Answer: "You can message an artist directly through the app. Go to their profile and tap the message icon.",
+    faq4Question: "What payment methods are accepted?",
+    faq4Answer: "We currently support cash payment. More payment options will be available soon.",
+    faq5Question: "How do I leave a review?",
+    faq5Answer: "After your appointment is completed, go to My Bookings, find the completed booking, and tap Leave Review.",
+    appVersion: "App Version",
+    allRights: "All rights reserved.",
+  },
+
+  // Payment Methods
+  paymentMethods: {
+    comingSoon: "Coming Soon",
+    comingSoonDesc: "We're working on adding secure payment methods. For now, you can pay in cash at your appointment.",
+    cashOnly: "Cash payment available",
+  },
   
   // Settings
   settings: {
