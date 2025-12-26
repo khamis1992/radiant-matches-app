@@ -175,26 +175,28 @@ export const AdminSidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === "/admin"}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )
-            }
-          >
-            <item.icon className="h-5 w-5" />
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
-      </nav>
+      <ScrollArea className="flex-1">
+        <nav className="p-4 space-y-2">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === "/admin"}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )
+              }
+            >
+              <item.icon className="h-5 w-5" />
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+      </ScrollArea>
 
       {/* Footer */}
       <div className="p-4 border-t border-border">
