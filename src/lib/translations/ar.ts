@@ -131,6 +131,8 @@ export const ar: TranslationKeys = {
     emailSent: "تم إرسال رابط التأكيد!",
     logoutSuccess: "تم تسجيل الخروج بنجاح",
     logoutFailed: "فشل تسجيل الخروج",
+    loginRequired: "يجب تسجيل الدخول",
+    loginToBookMessage: "يجب عليك تسجيل الدخول أولاً لحجز هذه الخدمة",
   },
   
   // Profile
