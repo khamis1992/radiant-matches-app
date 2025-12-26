@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,7 +77,11 @@ const FloatingShape = ({ className, delay = 0 }: { className?: string; delay?: n
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, language } = useLanguage();
+  
+  // Get redirect path from location state (saved when user tried to access protected page)
+  const redirectPath = (location.state as { from?: string })?.from;
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -92,6 +96,16 @@ const Auth = () => {
 
   useEffect(() => {
     const redirectUser = async (userId: string, showToast = false) => {
+      // If there's a saved redirect path, use it
+      if (redirectPath) {
+        if (showToast) {
+          toast.success(language === "ar" ? "تم تسجيل الدخول بنجاح!" : "Logged in successfully!");
+        }
+        navigate(redirectPath, { replace: true });
+        return;
+      }
+      
+      // Otherwise, redirect based on role
       const { path, role, userName } = await getRedirectInfo(userId);
       if (showToast) {
         toast.success(getWelcomeMessage(role, userName, language));
@@ -115,7 +129,7 @@ const Auth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, language]);
+  }, [navigate, language, redirectPath]);
 
   const validateForm = (): boolean => {
     const newErrors: { email?: string; password?: string; fullName?: string } = {};
