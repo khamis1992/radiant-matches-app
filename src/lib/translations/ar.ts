@@ -162,6 +162,7 @@ export const ar: TranslationKeys = {
     favorites: "المفضلة",
     paymentMethods: "طرق الدفع",
     messages: "الرسائل",
+    settings: "الإعدادات",
     helpSupport: "المساعدة والدعم",
     logOut: "تسجيل الخروج",
     signedOut: "تم تسجيل الخروج بنجاح",
