@@ -157,7 +157,7 @@ export const en = {
     adminDashboard: "Admin Dashboard",
     favorites: "Favorites",
     paymentMethods: "Payment Methods",
-    notifications: "Notifications",
+    messages: "Messages",
     helpSupport: "Help & Support",
     logOut: "Log Out",
     signedOut: "Signed out successfully",
