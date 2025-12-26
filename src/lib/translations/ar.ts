@@ -161,7 +161,7 @@ export const ar: TranslationKeys = {
     adminDashboard: "لوحة الإدارة",
     favorites: "المفضلة",
     paymentMethods: "طرق الدفع",
-    notifications: "الإشعارات",
+    messages: "الرسائل",
     helpSupport: "المساعدة والدعم",
     logOut: "تسجيل الخروج",
     signedOut: "تم تسجيل الخروج بنجاح",
