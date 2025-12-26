@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Generate random salt
+// Generate random salt (matching PHP's implementation)
 function generateSalt(length: number): string {
   const chars = "AbcDE123IJKLMN67QRSTUVWXYZaBCdefghijklmn123opq45rs67tuv89wxyz0FGH45OP89";
   let result = "";
@@ -16,44 +16,66 @@ function generateSalt(length: number): string {
   return result;
 }
 
-// AES-128-CBC encryption for checksum
+// PKCS7 padding
+function pkcs7Pad(data: Uint8Array, blockSize: number): Uint8Array {
+  const padding = blockSize - (data.length % blockSize);
+  const padded = new Uint8Array(data.length + padding);
+  padded.set(data);
+  for (let i = data.length; i < padded.length; i++) {
+    padded[i] = padding;
+  }
+  return padded;
+}
+
+// Convert Uint8Array to base64 string
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+// AES-128-CBC encryption (matching PHP openssl_encrypt)
 async function encryptAES(input: string, key: string): Promise<string> {
   const iv = new TextEncoder().encode("@@@@&&&&####$$$$");
-  const keyBytes = new TextEncoder().encode(key.substring(0, 16).padEnd(16, '\0'));
-  const inputBytes = new TextEncoder().encode(input);
   
-  // Pad input to 16-byte blocks (PKCS7)
-  const blockSize = 16;
-  const padLength = blockSize - (inputBytes.length % blockSize);
-  const paddedInput = new Uint8Array(inputBytes.length + padLength);
-  paddedInput.set(inputBytes);
-  for (let i = inputBytes.length; i < paddedInput.length; i++) {
-    paddedInput[i] = padLength;
-  }
+  // PHP uses first 16 bytes of key for AES-128
+  const keyStr = key.substring(0, 16);
+  const keyBytes = new TextEncoder().encode(keyStr);
+  
+  // Ensure key is exactly 16 bytes
+  const keyPadded = new Uint8Array(16);
+  keyPadded.set(keyBytes.slice(0, 16));
+  
+  const inputBytes = new TextEncoder().encode(input);
+  const paddedInput = pkcs7Pad(inputBytes, 16);
   
   const cryptoKey = await crypto.subtle.importKey(
     "raw",
-    keyBytes,
+    keyPadded,
     { name: "AES-CBC" },
     false,
     ["encrypt"]
   );
   
+  // Create a new ArrayBuffer copy to avoid SharedArrayBuffer issues
+  const dataBuffer = new ArrayBuffer(paddedInput.length);
+  new Uint8Array(dataBuffer).set(paddedInput);
+  
   const encrypted = await crypto.subtle.encrypt(
     { name: "AES-CBC", iv },
     cryptoKey,
-    paddedInput
+    dataBuffer
   );
   
-  // Convert to base64
-  const base64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-  return base64;
+  return uint8ArrayToBase64(new Uint8Array(encrypted));
 }
 
-// Generate checksumhash for SADAD (matching PHP implementation)
-async function generateChecksumFromString(str: string, key: string): Promise<string> {
+// Generate checksumhash for SADAD (matching PHP implementation exactly)
+async function generateChecksumFromString(jsonStr: string, key: string): Promise<string> {
   const salt = generateSalt(4);
-  const finalString = str + "|" + salt;
+  const finalString = jsonStr + "|" + salt;
   
   // SHA-256 hash
   const hashBuffer = await crypto.subtle.digest(
@@ -69,8 +91,12 @@ async function generateChecksumFromString(str: string, key: string): Promise<str
   return checksum;
 }
 
+// PHP-style JSON encoding (no spaces after colons/commas)
+function phpJsonEncode(obj: unknown): string {
+  return JSON.stringify(obj);
+}
+
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -90,7 +116,6 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
     const { booking_id, customer_email, customer_phone, customer_name, return_url } = await req.json();
 
     if (!booking_id) {
@@ -102,7 +127,7 @@ serve(async (req) => {
 
     console.log("Initiating payment for booking:", booking_id);
 
-    // Fetch booking details
+    // Fetch booking details with service info
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
       .select("*, services(name)")
@@ -118,11 +143,13 @@ serve(async (req) => {
     }
 
     // Generate unique order ID
-    const orderId = `ORD${Date.now()}`;
+    const orderId = String(Date.now());
     const amount = booking.total_price.toFixed(2);
     const txnDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const callbackUrl = `${supabaseUrl}/functions/v1/sadad-payment-callback`;
     const serviceName = booking.services?.name || "Booking Service";
+    const mobileNo = (customer_phone?.replace(/\D/g, '') || "00000000");
+    const email = customer_email || "";
 
     // Create payment transaction record
     const { data: transaction, error: txError } = await supabase
@@ -156,15 +183,15 @@ serve(async (req) => {
       })
       .eq("id", booking_id);
 
-    // Build the checksum data object (matching PHP structure)
+    // Build checksum array matching PHP structure exactly
     const checksumArray: Record<string, unknown> = {
       merchant_id: merchantId,
       ORDER_ID: orderId,
       WEBSITE: "lovable.dev",
       TXN_AMOUNT: amount,
-      CUST_ID: customer_email || "",
-      EMAIL: customer_email || "",
-      MOBILE_NO: customer_phone?.replace(/\D/g, '') || "00000000",
+      CUST_ID: email,
+      EMAIL: email,
+      MOBILE_NO: mobileNo,
       SADAD_WEBCHECKOUT_PAGE_LANGUAGE: "ENG",
       CALLBACK_URL: callbackUrl,
       txnDate: txnDate,
@@ -179,18 +206,19 @@ serve(async (req) => {
       ]
     };
 
-    // Create checksum data structure
+    // Create the data structure for checksum (matching PHP)
     const checksumData = {
       postData: checksumArray,
       secretKey: secretKey
     };
 
-    // Generate checksumhash
+    // Generate checksumhash with key = secretKey + merchantId
     const checksumKey = secretKey + merchantId;
-    const checksumhash = await generateChecksumFromString(
-      JSON.stringify(checksumData),
-      checksumKey
-    );
+    const jsonForChecksum = phpJsonEncode(checksumData);
+    
+    console.log("Checksum JSON:", jsonForChecksum);
+    
+    const checksumhash = await generateChecksumFromString(jsonForChecksum, checksumKey);
 
     console.log("Payment initiated successfully, order:", orderId);
 
@@ -200,9 +228,9 @@ serve(async (req) => {
       ORDER_ID: orderId,
       WEBSITE: "lovable.dev",
       TXN_AMOUNT: amount,
-      CUST_ID: customer_email || "",
-      EMAIL: customer_email || "",
-      MOBILE_NO: customer_phone?.replace(/\D/g, '') || "00000000",
+      CUST_ID: email,
+      EMAIL: email,
+      MOBILE_NO: mobileNo,
       SADAD_WEBCHECKOUT_PAGE_LANGUAGE: "ENG",
       CALLBACK_URL: callbackUrl,
       txnDate: txnDate,
