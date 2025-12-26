@@ -6,24 +6,67 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Generate checksum hash for SADAD
-async function generateChecksumHash(data: string, secretKey: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(secretKey);
-  const messageData = encoder.encode(data);
+// Generate random salt
+function generateSalt(length: number): string {
+  const chars = "AbcDE123IJKLMN67QRSTUVWXYZaBCdefghijklmn123opq45rs67tuv89wxyz0FGH45OP89";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+// AES-128-CBC encryption for checksum
+async function encryptAES(input: string, key: string): Promise<string> {
+  const iv = new TextEncoder().encode("@@@@&&&&####$$$$");
+  const keyBytes = new TextEncoder().encode(key.substring(0, 16).padEnd(16, '\0'));
+  const inputBytes = new TextEncoder().encode(input);
   
-  const key = await crypto.subtle.importKey(
+  // Pad input to 16-byte blocks (PKCS7)
+  const blockSize = 16;
+  const padLength = blockSize - (inputBytes.length % blockSize);
+  const paddedInput = new Uint8Array(inputBytes.length + padLength);
+  paddedInput.set(inputBytes);
+  for (let i = inputBytes.length; i < paddedInput.length; i++) {
+    paddedInput[i] = padLength;
+  }
+  
+  const cryptoKey = await crypto.subtle.importKey(
     "raw",
-    keyData,
-    { name: "HMAC", hash: "SHA-256" },
+    keyBytes,
+    { name: "AES-CBC" },
     false,
-    ["sign"]
+    ["encrypt"]
   );
   
-  const signature = await crypto.subtle.sign("HMAC", key, messageData);
-  return Array.from(new Uint8Array(signature))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
+  const encrypted = await crypto.subtle.encrypt(
+    { name: "AES-CBC", iv },
+    cryptoKey,
+    paddedInput
+  );
+  
+  // Convert to base64
+  const base64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+  return base64;
+}
+
+// Generate checksumhash for SADAD (matching PHP implementation)
+async function generateChecksumFromString(str: string, key: string): Promise<string> {
+  const salt = generateSalt(4);
+  const finalString = str + "|" + salt;
+  
+  // SHA-256 hash
+  const hashBuffer = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(finalString)
+  );
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  
+  const hashString = hashHex + salt;
+  const checksum = await encryptAES(hashString, key);
+  
+  return checksum;
 }
 
 serve(async (req) => {
@@ -62,7 +105,7 @@ serve(async (req) => {
     // Fetch booking details
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
-      .select("*")
+      .select("*, services(name)")
       .eq("id", booking_id)
       .single();
 
@@ -75,15 +118,18 @@ serve(async (req) => {
     }
 
     // Generate unique order ID
-    const orderId = `ORD-${booking_id.substring(0, 8)}-${Date.now()}`;
-    const amount = booking.total_price;
+    const orderId = `ORD${Date.now()}`;
+    const amount = booking.total_price.toFixed(2);
+    const txnDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const callbackUrl = `${supabaseUrl}/functions/v1/sadad-payment-callback`;
+    const serviceName = booking.services?.name || "Booking Service";
 
     // Create payment transaction record
     const { data: transaction, error: txError } = await supabase
       .from("payment_transactions")
       .insert({
         booking_id: booking_id,
-        amount: amount,
+        amount: booking.total_price,
         currency: "QAR",
         status: "pending",
         payment_method: "sadad",
@@ -110,30 +156,69 @@ serve(async (req) => {
       })
       .eq("id", booking_id);
 
-    // Prepare SADAD payment data
-    const callbackUrl = `${supabaseUrl}/functions/v1/sadad-payment-callback`;
-    
-    // Build checksum string (as per SADAD documentation)
-    const checksumData = `${merchantId}|${orderId}|${amount.toFixed(2)}|QAR|${customer_email || ""}|${customer_phone || ""}`;
-    const checksumHash = await generateChecksumHash(checksumData, secretKey);
+    // Build the checksum data object (matching PHP structure)
+    const checksumArray: Record<string, unknown> = {
+      merchant_id: merchantId,
+      ORDER_ID: orderId,
+      WEBSITE: "lovable.dev",
+      TXN_AMOUNT: amount,
+      CUST_ID: customer_email || "",
+      EMAIL: customer_email || "",
+      MOBILE_NO: customer_phone?.replace(/\D/g, '') || "00000000",
+      SADAD_WEBCHECKOUT_PAGE_LANGUAGE: "ENG",
+      CALLBACK_URL: callbackUrl,
+      txnDate: txnDate,
+      productdetail: [
+        {
+          order_id: orderId,
+          itemname: serviceName,
+          amount: amount,
+          quantity: "1",
+          type: "line_item"
+        }
+      ]
+    };
+
+    // Create checksum data structure
+    const checksumData = {
+      postData: checksumArray,
+      secretKey: secretKey
+    };
+
+    // Generate checksumhash
+    const checksumKey = secretKey + merchantId;
+    const checksumhash = await generateChecksumFromString(
+      JSON.stringify(checksumData),
+      checksumKey
+    );
 
     console.log("Payment initiated successfully, order:", orderId);
 
     // Return form data for SADAD redirect
     const paymentData = {
       merchant_id: merchantId,
-      order_id: orderId,
-      amount: amount.toFixed(2),
-      currency: "QAR",
-      customer_email: customer_email || "",
-      customer_phone: customer_phone || "",
-      customer_name: customer_name || "",
-      description: `Booking payment for order ${orderId}`,
-      callback_url: callbackUrl,
+      ORDER_ID: orderId,
+      WEBSITE: "lovable.dev",
+      TXN_AMOUNT: amount,
+      CUST_ID: customer_email || "",
+      EMAIL: customer_email || "",
+      MOBILE_NO: customer_phone?.replace(/\D/g, '') || "00000000",
+      SADAD_WEBCHECKOUT_PAGE_LANGUAGE: "ENG",
+      CALLBACK_URL: callbackUrl,
+      txnDate: txnDate,
+      VERSION: "1.1",
+      productdetail: [
+        {
+          order_id: orderId,
+          itemname: serviceName,
+          amount: amount,
+          quantity: "1",
+          type: "line_item"
+        }
+      ],
+      checksumhash: checksumhash,
       return_url: return_url || "",
-      checksum: checksumHash,
       transaction_id: transaction.id,
-      // SADAD sandbox URL for testing, change to production URL in production
       payment_url: "https://sadadqa.com/webpurchase",
     };
 
