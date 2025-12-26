@@ -158,6 +158,7 @@ export const en = {
     favorites: "Favorites",
     paymentMethods: "Payment Methods",
     messages: "Messages",
+    settings: "Settings",
     helpSupport: "Help & Support",
     logOut: "Log Out",
     signedOut: "Signed out successfully",
