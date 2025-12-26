@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { Calendar, Clock, MapPin, CreditCard, Check, Loader2 } from "lucide-react";
+import { Calendar, Clock, MapPin, CreditCard, Check, Loader2, Banknote } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useProfile } from "@/hooks/useProfile";
 
 // Generate time slots from start to end time
 const generateTimeSlots = (startTime: string | null, endTime: string | null): string[] => {
@@ -70,6 +71,10 @@ const Booking = () => {
   const [notes, setNotes] = useState("");
   const [step, setStep] = useState(1);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "sadad">("cash");
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  const { data: userProfile } = useProfile();
 
   const createBooking = useCreateBooking();
   const { data: workingHours = [] } = useWorkingHours(artistId || undefined);
@@ -183,7 +188,8 @@ const Booking = () => {
     }
 
     try {
-      await createBooking.mutateAsync({
+      // Create booking first
+      const booking = await createBooking.mutateAsync({
         artist_id: artistId,
         service_id: serviceId,
         booking_date: selectedDate.toISOString().split("T")[0],
@@ -194,11 +200,58 @@ const Booking = () => {
         notes: notes || undefined,
       });
 
-      setIsConfirmed(true);
-      toast.success(t.bookings.bookingConfirmedToast);
-      setTimeout(() => navigate("/bookings"), 2000);
+      if (paymentMethod === "sadad") {
+        // Initiate SADAD payment
+        setIsProcessingPayment(true);
+        
+        const returnUrl = `${window.location.origin}/payment-result`;
+        
+        const { data, error } = await supabase.functions.invoke("sadad-initiate-payment", {
+          body: {
+            booking_id: booking.id,
+            customer_email: userProfile?.email || user.email,
+            customer_phone: userProfile?.phone || "",
+            customer_name: userProfile?.full_name || "",
+            return_url: returnUrl,
+          },
+        });
+
+        if (error || !data?.success) {
+          console.error("Payment initiation failed:", error || data?.error);
+          toast.error("فشل في بدء عملية الدفع");
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        // Redirect to SADAD payment page
+        const paymentData = data.data;
+        
+        // Create a form and submit it to SADAD
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = paymentData.payment_url;
+        
+        Object.entries(paymentData).forEach(([key, value]) => {
+          if (key !== "payment_url" && key !== "transaction_id") {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = key;
+            input.value = String(value);
+            form.appendChild(input);
+          }
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+      } else {
+        // Cash payment - just confirm
+        setIsConfirmed(true);
+        toast.success(t.bookings.bookingConfirmedToast);
+        setTimeout(() => navigate("/bookings"), 2000);
+      }
     } catch (error) {
       console.error("Booking error:", error);
+      setIsProcessingPayment(false);
     }
   };
 
@@ -460,16 +513,45 @@ const Booking = () => {
             <div className="mt-6">
               <div className="flex items-center gap-2 mb-4">
                 <CreditCard className="w-5 h-5 text-primary" />
-                <h3 className="font-semibold text-foreground">{t.bookings.paymentMethod}</h3>
+                <h3 className="font-semibold text-foreground">{t.payment?.choosePaymentMethod || t.bookings.paymentMethod}</h3>
               </div>
-              <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
-                <div className="w-12 h-8 bg-gradient-to-r from-[hsl(220,60%,50%)] to-[hsl(220,60%,40%)] rounded flex items-center justify-center">
-                  <span className="text-xs font-bold text-primary-foreground">VISA</span>
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">•••• •••• •••• 4242</p>
-                  <p className="text-xs text-muted-foreground">{t.bookings.expires} 12/25</p>
-                </div>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setPaymentMethod("sadad")}
+                  className={`w-full p-4 rounded-xl border-2 text-start transition-all duration-200 flex items-center gap-3 ${
+                    paymentMethod === "sadad"
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-card hover:border-primary/50"
+                  }`}
+                >
+                  <div className="w-12 h-8 bg-gradient-to-r from-[hsl(220,60%,50%)] to-[hsl(220,60%,40%)] rounded flex items-center justify-center">
+                    <span className="text-xs font-bold text-primary-foreground">SADAD</span>
+                  </div>
+                  <div>
+                    <p className={`font-medium ${paymentMethod === "sadad" ? "text-primary" : "text-foreground"}`}>
+                      {t.payment?.sadadPayment || "SADAD Payment"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{t.payment?.sadadPaymentDesc || "Pay online securely"}</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setPaymentMethod("cash")}
+                  className={`w-full p-4 rounded-xl border-2 text-start transition-all duration-200 flex items-center gap-3 ${
+                    paymentMethod === "cash"
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-card hover:border-primary/50"
+                  }`}
+                >
+                  <div className="w-12 h-8 bg-muted rounded flex items-center justify-center">
+                    <Banknote className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className={`font-medium ${paymentMethod === "cash" ? "text-primary" : "text-foreground"}`}>
+                      {t.payment?.cashPayment || "Cash Payment"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{t.payment?.cashPaymentDesc || "Pay at appointment"}</p>
+                  </div>
+                </button>
               </div>
             </div>
 
@@ -506,10 +588,12 @@ const Booking = () => {
             variant="gold"
             className="w-full"
             onClick={handleConfirmBooking}
-            disabled={createBooking.isPending}
+            disabled={createBooking.isPending || isProcessingPayment}
           >
-            {createBooking.isPending ? (
+            {createBooking.isPending || isProcessingPayment ? (
               <Loader2 className="w-5 h-5 animate-spin" />
+            ) : paymentMethod === "sadad" ? (
+              `${t.payment?.payWithSadad || "Pay with SADAD"} ${formatQAR(totalPrice)}`
             ) : (
               `${t.bookings.pay} ${formatQAR(totalPrice)}`
             )}

@@ -14,3 +14,9 @@ verify_jwt = true
 
 [functions.analyze-portfolio-image]
 verify_jwt = false
+
+[functions.sadad-initiate-payment]
+verify_jwt = true
+
+[functions.sadad-payment-callback]
+verify_jwt = false
