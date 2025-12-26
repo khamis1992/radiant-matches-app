@@ -533,23 +533,6 @@ const Auth = () => {
           )}
         </div>
 
-        {/* Trust badges */}
-        <div className="flex items-center justify-center gap-6 mt-8 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Lock className="w-3.5 h-3.5" />
-            <span>{language === "ar" ? "تشفير آمن" : "Secure"}</span>
-          </div>
-          <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <CheckCircle className="w-3.5 h-3.5" />
-            <span>{language === "ar" ? "موثوق" : "Trusted"}</span>
-          </div>
-          <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Heart className="w-3.5 h-3.5" />
-            <span>{language === "ar" ? "+1000 فنانة" : "1000+ Artists"}</span>
-          </div>
-        </div>
       </div>
     </div>
   );
