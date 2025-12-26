@@ -101,6 +101,17 @@ export const ar: TranslationKeys = {
     noArtistsFound: "لم يتم العثور على فنانات",
     adjustSearch: "حاولي تعديل البحث",
     view: "عرض",
+    startingFrom: "يبدأ من",
+    filters: "الفلاتر",
+    advancedFilters: "فلاتر متقدمة",
+    filterDescription: "فلترة الفنانات حسب السعر والتقييم والخبرة",
+    priceRange: "نطاق السعر",
+    minimumRating: "الحد الأدنى للتقييم",
+    minimumExperience: "الحد الأدنى للخبرة",
+    resetFilters: "إعادة تعيين",
+    applyFilters: "تطبيق الفلاتر",
+    recentSearches: "عمليات البحث الأخيرة",
+    clearHistory: "مسح",
   },
   
   // Categories

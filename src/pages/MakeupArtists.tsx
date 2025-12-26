@@ -1,13 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Star, MapPin, Search, X, Clock } from "lucide-react";
+import { Search, X, Clock, History, Sparkles } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
 import BottomNavigation from "@/components/BottomNavigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -15,12 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useArtists, SERVICE_CATEGORIES, ServiceCategory } from "@/hooks/useArtists";
+import { SERVICE_CATEGORIES, ServiceCategory } from "@/hooks/useArtists";
+import { useArtistsWithPricing } from "@/hooks/useArtistsWithPricing";
 import { useArtistsAvailability } from "@/hooks/useArtistAvailability";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FavoriteButton } from "@/components/FavoriteButton";
 import { useLanguage } from "@/contexts/LanguageContext";
-import artist1 from "@/assets/artist-1.jpg";
+import { useDebounce } from "@/hooks/useDebounce";
+import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
+import { ViewModeToggle, ViewMode } from "@/components/artists/ViewModeToggle";
+import { ArtistFiltersSheet, FilterState } from "@/components/artists/ArtistFiltersSheet";
 
 // Category images
 import categoryMakeup from "@/assets/category-makeup.jpg";
@@ -31,7 +32,7 @@ import categoryNails from "@/assets/category-nails.jpg";
 import categoryBridal from "@/assets/category-bridal.jpg";
 import categoryPhotoshoot from "@/assets/category-photoshoot.jpg";
 
-type SortOption = "rating" | "reviews" | "experience" | "name";
+type SortOption = "rating" | "reviews" | "experience" | "name" | "price";
 
 const categoryImages: Record<ServiceCategory, string> = {
   "Makeup": categoryMakeup,
@@ -43,13 +44,34 @@ const categoryImages: Record<ServiceCategory, string> = {
   "Photoshoot": categoryPhotoshoot,
 };
 
+const SEARCH_HISTORY_KEY = "artist-search-history";
+const VIEW_MODE_KEY = "artist-view-mode";
+const MAX_SEARCH_HISTORY = 5;
+
 const MakeupArtists = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortBy, setSortBy] = useState<SortOption>("rating");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
+  const [showSearchHistory, setShowSearchHistory] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const { t, isRTL } = useLanguage();
+  
+  // View mode with localStorage persistence
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem(VIEW_MODE_KEY) as ViewMode) || "grid";
+    }
+    return "grid";
+  });
+
+  // Filters
+  const [filters, setFilters] = useState<FilterState>({
+    priceRange: [0, 2000],
+    minRating: 0,
+    minExperience: 0,
+  });
   
   // Get category from URL params
   const categoryParam = searchParams.get("category");
@@ -58,21 +80,41 @@ const MakeupArtists = () => {
     : null;
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(initialCategory);
   
-  const { data: artists, isLoading } = useArtists();
+  const { data: artists, isLoading } = useArtistsWithPricing();
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Get artist IDs for availability check
   const artistIds = useMemo(() => artists?.map(a => a.id) || [], [artists]);
   const { data: availabilityMap } = useArtistsAvailability(artistIds);
 
+  // Load search history from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(SEARCH_HISTORY_KEY);
+    if (saved) {
+      setSearchHistory(JSON.parse(saved));
+    }
+  }, []);
+
+  // Save view mode preference
+  useEffect(() => {
+    localStorage.setItem(VIEW_MODE_KEY, viewMode);
+  }, [viewMode]);
+
   useSwipeBack();
 
-  const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(":");
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
-  };
+  // Calculate max price for filter
+  const maxPrice = useMemo(() => {
+    if (!artists) return 2000;
+    const prices = artists.map(a => a.min_price || 0).filter(p => p > 0);
+    return Math.max(...prices, 2000);
+  }, [artists]);
+
+  // Update filters max price when data loads
+  useEffect(() => {
+    if (maxPrice > 0 && filters.priceRange[1] === 2000) {
+      setFilters(prev => ({ ...prev, priceRange: [0, maxPrice] }));
+    }
+  }, [maxPrice]);
 
   // Category translation map
   const getCategoryLabel = (category: ServiceCategory) => {
@@ -98,14 +140,34 @@ const MakeupArtists = () => {
     }
   };
 
+  // Save search to history
+  const saveToSearchHistory = (query: string) => {
+    if (!query.trim()) return;
+    const updated = [query, ...searchHistory.filter(s => s !== query)].slice(0, MAX_SEARCH_HISTORY);
+    setSearchHistory(updated);
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+  };
+
+  const clearSearchHistory = () => {
+    setSearchHistory([]);
+    localStorage.removeItem(SEARCH_HISTORY_KEY);
+  };
+
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim()) {
+      saveToSearchHistory(searchQuery.trim());
+      setShowSearchHistory(false);
+    }
+  };
+
   const filteredAndSortedArtists = useMemo(() => {
     if (!artists) return [];
     
-    // Filter by search query, category, and availability
+    // Filter by search query, category, availability, and advanced filters
     const filtered = artists.filter(artist => {
       // Search filter
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
+      if (debouncedSearchQuery.trim()) {
+        const query = debouncedSearchQuery.toLowerCase();
         const matchesSearch = (
           artist.profile?.full_name?.toLowerCase().includes(query) ||
           artist.profile?.location?.toLowerCase().includes(query) ||
@@ -125,6 +187,23 @@ const MakeupArtists = () => {
         const availability = availabilityMap.get(artist.id);
         if (!availability?.isAvailableToday) return false;
       }
+
+      // Price filter
+      if (artist.min_price !== null && artist.min_price !== undefined) {
+        if (artist.min_price < filters.priceRange[0] || artist.min_price > filters.priceRange[1]) {
+          return false;
+        }
+      }
+
+      // Rating filter
+      if (filters.minRating > 0) {
+        if (!artist.rating || artist.rating < filters.minRating) return false;
+      }
+
+      // Experience filter
+      if (filters.minExperience > 0) {
+        if (!artist.experience_years || artist.experience_years < filters.minExperience) return false;
+      }
       
       return true;
     });
@@ -140,11 +219,13 @@ const MakeupArtists = () => {
           return (b.experience_years || 0) - (a.experience_years || 0);
         case "name":
           return (a.profile?.full_name || "").localeCompare(b.profile?.full_name || "");
+        case "price":
+          return (a.min_price || 0) - (b.min_price || 0);
         default:
           return 0;
       }
     });
-  }, [artists, sortBy, searchQuery, selectedCategory, showAvailableOnly, availabilityMap]);
+  }, [artists, sortBy, debouncedSearchQuery, selectedCategory, showAvailableOnly, availabilityMap, filters]);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -157,13 +238,16 @@ const MakeupArtists = () => {
       </header>
 
       <div className="px-5 py-6">
-        {/* Search Bar */}
+        {/* Search Bar with History */}
         <div className="relative mb-4">
           <Search className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
           <Input
             placeholder={t.artistsListing.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setShowSearchHistory(true)}
+            onBlur={() => setTimeout(() => setShowSearchHistory(false), 200)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
             className={`${isRTL ? "pr-10 pl-10" : "pl-10 pr-10"}`}
           />
           {searchQuery && (
@@ -173,6 +257,37 @@ const MakeupArtists = () => {
             >
               <X className="w-4 h-4 text-muted-foreground" />
             </button>
+          )}
+
+          {/* Search History Dropdown */}
+          {showSearchHistory && searchHistory.length > 0 && !searchQuery && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden animate-fade-in">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <History className="w-3 h-3" />
+                  {t.artistsListing.recentSearches}
+                </span>
+                <button 
+                  onClick={clearSearchHistory}
+                  className="text-xs text-primary hover:underline"
+                >
+                  {t.artistsListing.clearHistory}
+                </button>
+              </div>
+              {searchHistory.map((query, idx) => (
+                <button
+                  key={idx}
+                  onMouseDown={() => {
+                    setSearchQuery(query);
+                    setShowSearchHistory(false);
+                  }}
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors flex items-center gap-2"
+                >
+                  <Search className="w-3.5 h-3.5 text-muted-foreground" />
+                  {query}
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
@@ -207,14 +322,14 @@ const MakeupArtists = () => {
         </div>
 
         {/* Filters Row */}
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
               {filteredAndSortedArtists.length} {filteredAndSortedArtists.length === 1 ? t.artistsListing.artistsFound : t.artistsListing.artistsFoundPlural}
               {selectedCategory && ` ${t.artistsListing.forCategory} ${getCategoryLabel(selectedCategory)}`}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant={showAvailableOnly ? "default" : "outline"}
               size="sm"
@@ -224,6 +339,15 @@ const MakeupArtists = () => {
               <Clock className="w-3.5 h-3.5 mr-1" />
               {t.availability?.availableToday || "Available Today"}
             </Button>
+            
+            <ArtistFiltersSheet 
+              filters={filters} 
+              onFiltersChange={setFilters}
+              maxPrice={maxPrice}
+            />
+
+            <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
               <SelectTrigger className="w-[140px] h-8 text-xs">
                 <SelectValue placeholder={t.artistsListing.sortBy} />
@@ -232,6 +356,7 @@ const MakeupArtists = () => {
                 <SelectItem value="rating">{t.artistsListing.highestRated}</SelectItem>
                 <SelectItem value="reviews">{t.artistsListing.mostReviews}</SelectItem>
                 <SelectItem value="experience">{t.artistsListing.mostExperience}</SelectItem>
+                <SelectItem value="price">{t.artistsListing.startingFrom}</SelectItem>
                 <SelectItem value="name">{t.artistsListing.nameAZ}</SelectItem>
               </SelectContent>
             </Select>
@@ -240,107 +365,60 @@ const MakeupArtists = () => {
 
         {/* Artists List */}
         {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-xl" />
+          <div className={viewMode === "grid" 
+            ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+            : "space-y-3"
+          }>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton 
+                key={i} 
+                className={viewMode === "grid" ? "h-72 w-full rounded-2xl" : "h-32 w-full rounded-xl"} 
+              />
             ))}
           </div>
         ) : filteredAndSortedArtists.length > 0 ? (
-          <div className="space-y-3">
-            {filteredAndSortedArtists.map((artist) => {
+          <div className={viewMode === "grid" 
+            ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+            : "space-y-3"
+          }>
+            {filteredAndSortedArtists.map((artist, index) => {
               const availability = availabilityMap?.get(artist.id);
               return (
-                <div
+                <div 
                   key={artist.id}
-                  onClick={() => navigate(`/artist/${artist.id}`)}
-                  className="bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                  className="animate-fade-in"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="relative">
-                      <Avatar className="w-14 h-14 border-2 border-primary/20">
-                        <AvatarImage 
-                          src={artist.profile?.avatar_url || artist1} 
-                          alt={artist.profile?.full_name || "Artist"} 
-                        />
-                        <AvatarFallback>
-                          {artist.profile?.full_name?.charAt(0) || "A"}
-                        </AvatarFallback>
-                      </Avatar>
-                      {/* Availability indicator dot */}
-                      {availability && (
-                        <div
-                          className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-card ${
-                            availability.isAvailableToday
-                              ? "bg-green-500"
-                              : "bg-muted-foreground"
-                          }`}
-                          title={
-                            availability.isAvailableToday
-                              ? t.availability?.availableToday || "Available Today"
-                              : t.availability?.closedToday || "Closed Today"
-                          }
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-foreground">
-                          {artist.profile?.full_name || "Unknown Artist"}
-                        </h3>
-                        {availability?.isAvailableToday && (
-                          <Badge
-                            variant="default"
-                            className="bg-green-500/90 hover:bg-green-500 text-white text-[10px] px-1.5 py-0"
-                          >
-                            <Clock className="w-2.5 h-2.5 mr-0.5" />
-                            {availability.todayHours
-                              ? `${formatTime(availability.todayHours.start)} - ${formatTime(availability.todayHours.end)}`
-                              : t.availability?.open || "Open"}
-                          </Badge>
-                        )}
-                      </div>
-                      {artist.profile?.location && (
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
-                          <MapPin className="w-3.5 h-3.5" />
-                          <span className="truncate">{artist.profile.location}</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-4 mt-2">
-                        {artist.rating !== null && (
-                          <div className="flex items-center gap-1 text-sm">
-                            <Star className="w-3.5 h-3.5 fill-primary text-primary" />
-                            <span className="font-medium">{Number(artist.rating).toFixed(1)}</span>
-                            {artist.total_reviews !== null && artist.total_reviews > 0 && (
-                              <span className="text-muted-foreground">
-                                ({artist.total_reviews})
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        {artist.experience_years !== null && artist.experience_years > 0 && (
-                          <span className="text-sm text-muted-foreground">
-                            {artist.experience_years} {artist.experience_years === 1 ? t.artistsListing.yearExp : t.artistsListing.yearsExp}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <FavoriteButton itemType="artist" itemId={artist.id} size="sm" />
-                      <Button size="sm" className="shrink-0">
-                        {t.artistsListing.view}
-                      </Button>
-                    </div>
-                  </div>
+                  <EnhancedArtistCard
+                    artist={artist}
+                    availability={availability}
+                    viewMode={viewMode}
+                  />
                 </div>
               );
             })}
           </div>
         ) : (
-          <div className="text-center py-12 text-muted-foreground">
-            <p>{t.artistsListing.noArtistsFound}</p>
+          <div className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <p className="text-lg font-medium text-foreground mb-2">{t.artistsListing.noArtistsFound}</p>
             {searchQuery && (
-              <p className="text-sm mt-1">{t.artistsListing.adjustSearch}</p>
+              <p className="text-sm text-muted-foreground">{t.artistsListing.adjustSearch}</p>
             )}
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedCategory(null);
+                setShowAvailableOnly(false);
+                setFilters({ priceRange: [0, maxPrice], minRating: 0, minExperience: 0 });
+              }}
+            >
+              {t.artistsListing.resetFilters}
+            </Button>
           </div>
         )}
       </div>

@@ -97,6 +97,17 @@ export const en = {
     noArtistsFound: "No makeup artists found",
     adjustSearch: "Try adjusting your search",
     view: "View",
+    startingFrom: "From",
+    filters: "Filters",
+    advancedFilters: "Advanced Filters",
+    filterDescription: "Filter artists by price, rating, and experience",
+    priceRange: "Price Range",
+    minimumRating: "Minimum Rating",
+    minimumExperience: "Minimum Experience",
+    resetFilters: "Reset",
+    applyFilters: "Apply Filters",
+    recentSearches: "Recent Searches",
+    clearHistory: "Clear",
   },
   
   // Categories
