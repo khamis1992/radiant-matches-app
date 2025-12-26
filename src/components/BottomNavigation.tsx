@@ -1,4 +1,4 @@
-import { Home, Calendar, LayoutDashboard, Palette, LucideIcon, Users, Heart, Images, MessageCircle } from "lucide-react";
+import { Home, Calendar, User, LayoutDashboard, Palette, LucideIcon, Users, Heart, Images } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePendingBookingsCount } from "@/hooks/usePendingBookings";
@@ -15,14 +15,14 @@ interface NavItem {
 const customerNavItems: NavItem[] = [
   { icon: Home, labelKey: "home", path: "/home" },
   { icon: Users, labelKey: "artists", path: "/makeup-artists" },
-  { icon: MessageCircle, labelKey: "messages", path: "/messages", badgeType: "messages" },
+  { icon: Heart, labelKey: "favorites", path: "/favorites" },
   { icon: Calendar, labelKey: "bookings", path: "/bookings", badgeType: "bookings" },
 ];
 
 const artistNavItems: NavItem[] = [
   { icon: LayoutDashboard, labelKey: "dashboard", path: "/artist-dashboard" },
   { icon: Calendar, labelKey: "bookings", path: "/artist-bookings", badgeType: "bookings" },
-  { icon: MessageCircle, labelKey: "messages", path: "/messages", badgeType: "messages" },
+  { icon: Images, labelKey: "gallery", path: "/artist-gallery" },
   { icon: Palette, labelKey: "services", path: "/artist-services" },
 ];
 
