@@ -22,9 +22,12 @@ import BookingDetails from "./pages/BookingDetails";
 import Messages from "./pages/Messages";
 import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 import Favorites from "./pages/Favorites";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
+import HelpSupport from "./pages/HelpSupport";
+import PaymentMethods from "./pages/PaymentMethods";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -164,8 +167,11 @@ const App = () => (
           <Route path="/messages" element={<Messages />} />
           <Route path="/chat/:id" element={<Chat />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/help" element={<HelpSupport />} />
+          <Route path="/payment-methods" element={<PaymentMethods />} />
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />

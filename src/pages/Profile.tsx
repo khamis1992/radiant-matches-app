@@ -13,11 +13,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import artist3 from "@/assets/artist-3.jpg";
 
 const menuItems = [
-  { icon: Heart, labelKey: "favorites" as const },
-  { icon: CreditCard, labelKey: "paymentMethods" as const },
-  { icon: Bell, labelKey: "notifications" as const },
-  { icon: Settings, labelKey: "settings" as const },
-  { icon: HelpCircle, labelKey: "helpSupport" as const },
+  { icon: Heart, labelKey: "favorites" as const, path: "/favorites" },
+  { icon: CreditCard, labelKey: "paymentMethods" as const, path: "/payment-methods" },
+  { icon: Bell, labelKey: "notifications" as const, path: "/notifications" },
+  { icon: Settings, labelKey: "settings" as const, path: "/settings" },
+  { icon: HelpCircle, labelKey: "helpSupport" as const, path: "/help" },
 ];
 
 const Profile = () => {
@@ -79,7 +79,10 @@ const Profile = () => {
       <header className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-12 px-5">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-bold text-foreground">{t.nav.profile}</h1>
-          <button className="p-2 rounded-full hover:bg-card transition-colors">
+          <button 
+            onClick={() => navigate("/settings")}
+            className="p-2 rounded-full hover:bg-card transition-colors"
+          >
             <Settings className="w-5 h-5 text-foreground" />
           </button>
         </div>
@@ -95,7 +98,12 @@ const Profile = () => {
               {profile?.full_name || "User"}
             </h2>
             <p className="text-muted-foreground">{profile?.email || user.email}</p>
-            <Button variant="outline" size="sm" className="mt-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={() => navigate("/edit-profile")}
+            >
               {t.profile.editProfile}
             </Button>
           </div>
@@ -170,6 +178,7 @@ const Profile = () => {
           {menuItems.map((item, index) => (
             <button
               key={item.labelKey}
+              onClick={() => navigate(item.path)}
               className={`w-full flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors ${
                 index !== menuItems.length - 1 ? "border-b border-border" : ""
               }`}
