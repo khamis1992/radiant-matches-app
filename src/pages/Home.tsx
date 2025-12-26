@@ -1,12 +1,12 @@
-import { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, User, Settings, LogOut, LogIn } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
-import ArtistCard from "@/components/ArtistCard";
+import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { useArtists } from "@/hooks/useArtists";
+import { useArtistsWithPricing } from "@/hooks/useArtistsWithPricing";
 import { useArtistsAvailability } from "@/hooks/useArtistAvailability";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useProfile } from "@/hooks/useProfile";
@@ -151,7 +151,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isArtist, loading: roleLoading } = useUserRole();
-  const { data: artists, isLoading } = useArtists();
+  const { data: artists, isLoading } = useArtistsWithPricing();
   const { data: profile } = useProfile();
   const { data: unreadCount = 0 } = useUnreadMessagesCount();
   const { t } = useLanguage();
@@ -337,25 +337,15 @@ const Home = () => {
             >
               <CarouselContent className="px-5 -ml-3">
                 {artists.map((artist, index) => (
-                  <CarouselItem key={artist.id} className="basis-[48%] pl-3">
+                  <CarouselItem key={artist.id} className="basis-[48%] sm:basis-[45%] pl-3">
                     <div
                       className="animate-fade-in"
-                      style={{ animationDelay: `${index * 100}ms` }}
+                      style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      <ArtistCard
-                        id={artist.id}
-                        name={artist.profile?.full_name || "Unknown Artist"}
-                        image={artist.profile?.avatar_url || artist1}
-                        featuredImage={artist.featured_image}
-                        rating={Number(artist.rating) || 0}
-                        reviews={artist.total_reviews || 0}
-                        specialty="Make-Up Artist"
-                        price={0}
-                        location={artist.profile?.location || artist.studio_address || "Location TBD"}
-                        tagline={artist.bio?.split(".")[0] || undefined}
-                        categories={artist.categories}
-                        isAvailableToday={availabilityMap?.get(artist.id)?.isAvailableToday}
-                        todayHours={availabilityMap?.get(artist.id)?.todayHours}
+                      <EnhancedArtistCard
+                        artist={artist}
+                        availability={availabilityMap?.get(artist.id)}
+                        viewMode="grid"
                       />
                     </div>
                   </CarouselItem>
@@ -393,22 +383,12 @@ const Home = () => {
               <div
                 key={artist.id}
                 className="animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                <ArtistCard
-                  id={artist.id}
-                  name={artist.profile?.full_name || "Unknown Artist"}
-                  image={artist.profile?.avatar_url || artist1}
-                  featuredImage={artist.featured_image}
-                  rating={Number(artist.rating) || 0}
-                  reviews={artist.total_reviews || 0}
-                  specialty="Make-Up Artist"
-                  price={0}
-                  location={artist.profile?.location || artist.studio_address || "Location TBD"}
-                  tagline={artist.bio?.split(".")[0] || undefined}
-                  categories={artist.categories}
-                  isAvailableToday={availabilityMap?.get(artist.id)?.isAvailableToday}
-                  todayHours={availabilityMap?.get(artist.id)?.todayHours}
+                <EnhancedArtistCard
+                  artist={artist}
+                  availability={availabilityMap?.get(artist.id)}
+                  viewMode="grid"
                 />
               </div>
             ))
