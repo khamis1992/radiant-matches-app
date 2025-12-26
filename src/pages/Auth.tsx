@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, CheckCircle, Sparkles, Heart } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, CheckCircle, Sparkles } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { z } from "zod";
 
@@ -281,12 +282,8 @@ const Auth = () => {
       <div className="flex-1 flex flex-col justify-center px-6 pb-12 relative z-10">
         {/* Logo/Brand area */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/60 shadow-xl mb-6 animate-scale-in">
-            {mode === "signup" ? (
-              <Sparkles className="w-10 h-10 text-primary-foreground" />
-            ) : (
-              <Heart className="w-10 h-10 text-primary-foreground" />
-            )}
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-card shadow-xl mb-6 animate-scale-in overflow-hidden border-2 border-primary/20">
+            <img src={logo} alt="Logo" className="w-20 h-20 object-contain" />
           </div>
           
           <h1 className="text-3xl font-bold text-foreground mb-3 animate-fade-in">
