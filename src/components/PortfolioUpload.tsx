@@ -646,6 +646,38 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     }
   };
 
+  const analyzeAllImages = useCallback(async (items: PendingUpload[]) => {
+    // Analyze each image in the background
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      setAnalyzingIndex(i);
+      
+      try {
+        const result = await analyzeImage(item.file);
+        if (result) {
+          setSuggestions(prev => ({ ...prev, [item.id]: result }));
+          // Auto-apply suggestions
+          setPendingUploads(prev => prev.map(p => {
+            if (p.id !== item.id) return p;
+            return {
+              ...p,
+              category: result.category as PortfolioCategory,
+              title: result.title,
+              isFeatured: result.isFeatured,
+            };
+          }));
+        }
+      } catch (error) {
+        console.error("Analysis error for image:", item.id, error);
+      }
+    }
+    
+    setAnalyzingIndex(null);
+    if (items.length > 0) {
+      toast.success(`✨ تم تحليل ${items.length} صورة تلقائياً`);
+    }
+  }, [analyzeImage]);
+
   const processFiles = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
 
@@ -732,7 +764,11 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     } else {
       setBatchDialogOpen(true);
     }
-  }, []);
+
+    // Start AI analysis in background
+    toast.info("✨ جاري تحليل الصور بالذكاء الاصطناعي...");
+    analyzeAllImages(pendingItems);
+  }, [analyzeAllImages]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
