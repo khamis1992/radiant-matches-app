@@ -1,5 +1,5 @@
 import BottomNavigation from "@/components/BottomNavigation";
-import { Settings, Heart, CreditCard, MessageCircle, HelpCircle, LogOut, ChevronRight, ChevronLeft, User, Briefcase, Shield } from "lucide-react";
+import { Settings, Heart, MessageCircle, HelpCircle, LogOut, ChevronRight, ChevronLeft, User, Briefcase, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile, useProfileStats } from "@/hooks/useProfile";
@@ -14,7 +14,6 @@ import artist3 from "@/assets/artist-3.jpg";
 
 const menuItems = [
   { icon: Heart, labelKey: "favorites" as const, path: "/favorites" },
-  { icon: CreditCard, labelKey: "paymentMethods" as const, path: "/payment-methods" },
   { icon: MessageCircle, labelKey: "messages" as const, path: "/messages" },
   { icon: Settings, labelKey: "settings" as const, path: "/settings" },
   { icon: HelpCircle, labelKey: "helpSupport" as const, path: "/help" },

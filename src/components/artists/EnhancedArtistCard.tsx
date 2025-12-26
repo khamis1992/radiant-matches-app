@@ -165,10 +165,10 @@ export const EnhancedArtistCard = ({
   return (
     <div
       onClick={() => navigate(`/artist/${artist.id}`)}
-      className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer animate-fade-in border border-border/50 group"
+      className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer animate-fade-in border border-border/50 group h-full flex flex-col"
     >
       {/* Cover Image */}
-      <div className="relative h-32 sm:h-40 overflow-hidden">
+      <div className="relative h-28 sm:h-32 overflow-hidden flex-shrink-0">
         {coverImage ? (
           <img
             src={coverImage}
@@ -232,67 +232,64 @@ export const EnhancedArtistCard = ({
       </div>
 
       {/* Content */}
-      <div className="px-4 pt-2 pb-4 text-center">
-        <h3 className="font-semibold text-foreground text-base line-clamp-1">
+      <div className="px-3 pt-2 pb-3 text-center flex flex-col flex-grow">
+        <h3 className="font-semibold text-foreground text-sm line-clamp-1">
           {artist.profile?.full_name || "Unknown Artist"}
         </h3>
         
-        {/* Categories */}
-        {artist.categories && artist.categories.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-1 mt-2">
-            {artist.categories.slice(0, 2).map((category) => (
-              <span
-                key={category}
-                className="px-2 py-0.5 text-[10px] font-medium bg-primary/10 text-primary rounded-full"
-              >
-                {getCategoryLabel(category)}
-              </span>
-            ))}
-            {artist.categories.length > 2 && (
-              <span className="px-2 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground rounded-full">
-                +{artist.categories.length - 2}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Rating & Experience */}
-        <div className="flex items-center justify-center gap-3 mt-3">
-          {artist.rating !== null && (
-            <div className="flex items-center gap-1 text-sm">
-              <Star className="w-4 h-4 fill-primary text-primary" />
-              <span className="font-medium">{Number(artist.rating).toFixed(1)}</span>
-              <span className="text-muted-foreground text-xs">({artist.total_reviews || 0})</span>
-            </div>
-          )}
-          {artist.experience_years !== null && artist.experience_years > 0 && (
-            <span className="text-sm text-muted-foreground">
-              {artist.experience_years} {t.artistsListing.yearsExp}
-            </span>
+        {/* Categories - Fixed height container */}
+        <div className="h-6 flex flex-wrap justify-center gap-1 mt-1.5 overflow-hidden">
+          {artist.categories && artist.categories.length > 0 ? (
+            <>
+              {artist.categories.slice(0, 2).map((category) => (
+                <span
+                  key={category}
+                  className="px-2 py-0.5 text-[9px] font-medium bg-primary/10 text-primary rounded-full"
+                >
+                  {getCategoryLabel(category)}
+                </span>
+              ))}
+              {artist.categories.length > 2 && (
+                <span className="px-2 py-0.5 text-[9px] font-medium bg-muted text-muted-foreground rounded-full">
+                  +{artist.categories.length - 2}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-[9px] text-muted-foreground">—</span>
           )}
         </div>
 
-        {/* Location */}
-        {artist.profile?.location && (
-          <div className="flex items-center justify-center gap-1 mt-2 text-primary text-sm">
-            <MapPin className="w-3.5 h-3.5" />
-            <span className="line-clamp-1">{artist.profile.location}</span>
-          </div>
-        )}
+        {/* Rating & Experience - Fixed height */}
+        <div className="h-5 flex items-center justify-center gap-2 mt-2">
+          {artist.rating !== null ? (
+            <div className="flex items-center gap-1 text-xs">
+              <Star className="w-3 h-3 fill-primary text-primary" />
+              <span className="font-medium">{Number(artist.rating).toFixed(1)}</span>
+              <span className="text-muted-foreground text-[10px]">({artist.total_reviews || 0})</span>
+            </div>
+          ) : (
+            <span className="text-[10px] text-muted-foreground">{t.common?.new || "New"}</span>
+          )}
+        </div>
 
-        {/* Portfolio Previews */}
-        {hasPortfolioPreviews && (
-          <div className="flex justify-center gap-1.5 mt-3">
-            {artist.portfolio_previews!.slice(0, 3).map((img, idx) => (
-              <div key={idx} className="w-14 h-10 rounded-md overflow-hidden">
-                <img src={img} alt="" className="w-full h-full object-cover" />
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Location - Fixed height */}
+        <div className="h-4 flex items-center justify-center gap-1 mt-1 text-primary text-xs">
+          {artist.profile?.location ? (
+            <>
+              <MapPin className="w-3 h-3" />
+              <span className="line-clamp-1">{artist.profile.location}</span>
+            </>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          )}
+        </div>
 
-        {/* Book Button */}
-        <Button className="w-full mt-4" size="sm">
+        {/* Spacer to push button to bottom */}
+        <div className="flex-grow" />
+
+        {/* Book Button - Always at bottom */}
+        <Button className="w-full mt-2" size="sm">
           {t.bookings.bookNow}
         </Button>
       </div>

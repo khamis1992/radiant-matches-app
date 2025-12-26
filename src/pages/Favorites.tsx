@@ -1,8 +1,8 @@
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useNavigate } from "react-router-dom";
 import { Star, MapPin, Heart } from "lucide-react";
-import BackButton from "@/components/BackButton";
 import BottomNavigation from "@/components/BottomNavigation";
+import PageHeader from "@/components/layout/PageHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,16 +30,31 @@ const Favorites = () => {
     queryFn: async () => {
       if (artistFavorites.length === 0) return [];
       
-      const { data, error } = await supabase
+      const artistIds = artistFavorites.map((f) => f.item_id);
+      
+      // Fetch artists
+      const { data: artists, error: artistsError } = await supabase
         .from("artists")
-        .select(`
-          *,
-          profile:profiles(full_name, avatar_url, location)
-        `)
-        .in("id", artistFavorites.map((f) => f.item_id));
+        .select("*")
+        .in("id", artistIds);
 
-      if (error) throw error;
-      return data || [];
+      if (artistsError) throw artistsError;
+      if (!artists || artists.length === 0) return [];
+
+      // Fetch profiles for artists
+      const userIds = artists.map(a => a.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url, location")
+        .in("id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine artists with their profiles
+      return artists.map(artist => ({
+        ...artist,
+        profile: profiles?.find(p => p.id === artist.user_id) || null
+      }));
     },
     enabled: artistFavorites.length > 0,
   });
@@ -47,12 +62,7 @@ const Favorites = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background pb-24">
-        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <BackButton />
-            <h1 className="text-xl font-bold text-foreground">{t.favorites.title}</h1>
-          </div>
-        </header>
+        <PageHeader title={t.favorites.title} />
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <Heart className="w-16 h-16 text-muted-foreground/50 mb-4" />
           <h2 className="text-xl font-semibold text-foreground mb-2">{t.auth.login}</h2>
@@ -73,12 +83,7 @@ const Favorites = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-        <div className="flex items-center gap-3">
-          <BackButton />
-          <h1 className="text-xl font-bold text-foreground">{t.favorites.title}</h1>
-        </div>
-      </header>
+      <PageHeader title={t.favorites.title} />
 
       <div className="px-5 py-6">
         {isLoading ? (

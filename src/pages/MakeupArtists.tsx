@@ -2,9 +2,9 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, X, Clock, History, Sparkles } from "lucide-react";
-import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
 import BottomNavigation from "@/components/BottomNavigation";
+import PageHeader from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -52,7 +52,10 @@ const MakeupArtists = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortBy, setSortBy] = useState<SortOption>("rating");
-  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Initialize search query from URL param
+  const searchParam = searchParams.get("search") || "";
+  const [searchQuery, setSearchQuery] = useState(searchParam);
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -230,12 +233,7 @@ const MakeupArtists = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-        <div className="flex items-center gap-3">
-          <BackButton />
-          <h1 className="text-xl font-bold text-foreground">{t.artistsListing.title}</h1>
-        </div>
-      </header>
+      <PageHeader title={t.artistsListing.title} />
 
       <div className="px-5 py-6">
         {/* Search Bar with History */}

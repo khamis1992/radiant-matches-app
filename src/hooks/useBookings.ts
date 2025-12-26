@@ -18,6 +18,7 @@ export interface Booking {
   artist?: {
     id: string;
     user_id: string;
+    featured_image?: string | null;
     profile?: {
       full_name: string | null;
       avatar_url: string | null;
@@ -85,6 +86,13 @@ export const useUserBookings = () => {
         .select("id, full_name, avatar_url")
         .in("id", userIds);
 
+      // Fetch featured portfolio images (for avatar fallback)
+      const { data: featuredItems } = await supabase
+        .from("portfolio_items")
+        .select("artist_id, image_url")
+        .in("artist_id", artistIds)
+        .eq("is_featured", true);
+
       // Fetch services
       const serviceIds = bookings.map(b => b.service_id).filter(Boolean) as string[];
       const { data: services } = await supabase
@@ -94,9 +102,11 @@ export const useUserBookings = () => {
 
       // Build maps
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+      const featuredMap = new Map(featuredItems?.map(f => [f.artist_id, f.image_url]) || []);
       const artistMap = new Map(artists?.map(a => [a.id, { 
         ...a, 
-        profile: profileMap.get(a.user_id) 
+        profile: profileMap.get(a.user_id),
+        featured_image: featuredMap.get(a.id) || null
       }]) || []);
       const serviceMap = new Map(services?.map(s => [s.id, s]) || []);
 

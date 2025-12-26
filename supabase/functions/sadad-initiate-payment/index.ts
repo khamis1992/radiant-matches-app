@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { SADAD_ENDPOINTS } from "../sadad-shared/constants.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -106,6 +107,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const merchantId = Deno.env.get("SADAD_MERCHANT_ID")!;
     const secretKey = Deno.env.get("SADAD_SECRET_KEY")!;
+    const isTestMode = Deno.env.get("SADAD_TEST_MODE") === "true";
 
     if (!merchantId || !secretKey) {
       console.error("SADAD credentials not configured");
@@ -183,11 +185,15 @@ serve(async (req) => {
       })
       .eq("id", booking_id);
 
+    // Get registered domain from environment or use default
+    const registeredDomain = Deno.env.get("SADAD_WEBSITE_DOMAIN") || "radiant-matches-app.lovable.app";
+
     // Build checksum array matching PHP structure exactly
+    // According to SADAD docs: https://developer.sadad.qa/
     const checksumArray: Record<string, unknown> = {
       merchant_id: merchantId,
       ORDER_ID: orderId,
-      WEBSITE: "lovable.dev",
+      WEBSITE: registeredDomain,
       TXN_AMOUNT: amount,
       CUST_ID: email,
       EMAIL: email,
@@ -195,6 +201,7 @@ serve(async (req) => {
       SADAD_WEBCHECKOUT_PAGE_LANGUAGE: "ENG",
       CALLBACK_URL: callbackUrl,
       txnDate: txnDate,
+      VERSION: "1.1",
       productdetail: [
         {
           order_id: orderId,
@@ -207,6 +214,7 @@ serve(async (req) => {
     };
 
     // Create the data structure for checksum (matching PHP)
+    // The checksum is generated from the combination of postData and secretKey
     const checksumData = {
       postData: checksumArray,
       secretKey: secretKey
@@ -223,10 +231,11 @@ serve(async (req) => {
     console.log("Payment initiated successfully, order:", orderId);
 
     // Return form data for SADAD redirect
+    // Form structure as per SADAD documentation: https://developer.sadad.qa/
     const paymentData = {
       merchant_id: merchantId,
       ORDER_ID: orderId,
-      WEBSITE: "lovable.dev",
+      WEBSITE: registeredDomain,
       TXN_AMOUNT: amount,
       CUST_ID: email,
       EMAIL: email,
@@ -247,7 +256,7 @@ serve(async (req) => {
       checksumhash: checksumhash,
       return_url: return_url || "",
       transaction_id: transaction.id,
-      payment_url: "https://sadadqa.com/webpurchase",
+      payment_url: isTestMode ? SADAD_ENDPOINTS.TEST.PAYMENT : SADAD_ENDPOINTS.PRODUCTION.PAYMENT,
     };
 
     return new Response(

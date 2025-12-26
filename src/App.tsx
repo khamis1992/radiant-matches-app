@@ -42,6 +42,7 @@ import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminServices from "./pages/admin/AdminServices";
 import AdminBanners from "./pages/admin/AdminBanners";
+import ArtistSignup from "./pages/ArtistSignup";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Onboarding />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/artist-signup/:token" element={<ArtistSignup />} />
 
           {/* Customer-only Routes */}
           <Route

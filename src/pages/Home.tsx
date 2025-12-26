@@ -335,11 +335,11 @@ const Home = () => {
               }}
               className="w-full"
             >
-              <CarouselContent className="px-5 -ml-3">
+              <CarouselContent className="px-5 -ml-3 items-stretch">
                 {artists.map((artist, index) => (
-                  <CarouselItem key={artist.id} className="basis-[48%] sm:basis-[45%] pl-3">
+                  <CarouselItem key={artist.id} className="basis-[48%] sm:basis-[45%] pl-3 h-auto">
                     <div
-                      className="animate-fade-in"
+                      className="animate-fade-in h-full"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <EnhancedArtistCard

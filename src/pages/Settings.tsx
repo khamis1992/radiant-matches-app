@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bell, Lock, User, ChevronRight, Eye, EyeOff, Globe, Phone, MapPin, AlertTriangle, Link2 } from "lucide-react";
+import { Bell, Lock, User, ChevronRight, Eye, EyeOff, Globe, Phone, MapPin, AlertTriangle, Link2, Crosshair, Loader2 } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -75,21 +75,24 @@ const Settings = () => {
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
 
-  // Qatar cities
-  const qatarCities = [
-    "Doha",
-    "Al Wakrah",
-    "Al Khor",
-    "Al Rayyan",
-    "Umm Salal",
-    "Al Daayen",
-    "Al Shamal",
-    "Al Shahaniya",
-    "Lusail",
-    "Mesaieed",
-    "Dukhan",
+  // Qatar cities with coordinates
+  const qatarCitiesWithCoords = [
+    { name: "Doha", lat: 25.2854, lng: 51.5310 },
+    { name: "Al Wakrah", lat: 25.1659, lng: 51.5972 },
+    { name: "Al Khor", lat: 25.6804, lng: 51.4969 },
+    { name: "Al Rayyan", lat: 25.2919, lng: 51.4244 },
+    { name: "Umm Salal", lat: 25.4106, lng: 51.4042 },
+    { name: "Al Daayen", lat: 25.4390, lng: 51.4816 },
+    { name: "Al Shamal", lat: 26.1164, lng: 51.2159 },
+    { name: "Al Shahaniya", lat: 25.3106, lng: 51.2091 },
+    { name: "Lusail", lat: 25.4300, lng: 51.4900 },
+    { name: "Mesaieed", lat: 24.9903, lng: 51.5483 },
+    { name: "Dukhan", lat: 25.4284, lng: 50.7816 },
   ];
+  
+  const qatarCities = qatarCitiesWithCoords.map(city => city.name);
   
   const { settings, isLoading, updateSettings } = useUserSettings();
   const { data: profile, isLoading: profileLoading } = useProfile();
@@ -223,6 +226,70 @@ const Settings = () => {
     } finally {
       setIsUpdatingLocation(false);
     }
+  };
+
+  // Calculate distance between two coordinates using Haversine formula
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // Find closest city to given coordinates
+  const findClosestCity = (lat: number, lng: number): string => {
+    let closestCity = qatarCitiesWithCoords[0].name;
+    let minDistance = Infinity;
+
+    for (const city of qatarCitiesWithCoords) {
+      const distance = calculateDistance(lat, lng, city.lat, city.lng);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestCity = city.name;
+      }
+    }
+
+    return closestCity;
+  };
+
+  // Detect current location using browser Geolocation API
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error(t.settings.locationNotAvailable);
+      return;
+    }
+
+    setIsDetectingLocation(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const closestCity = findClosestCity(latitude, longitude);
+        
+        // Update the location
+        await handleLocationChange(closestCity);
+        toast.success(t.settings.locationDetected);
+        setIsDetectingLocation(false);
+      },
+      (error) => {
+        setIsDetectingLocation(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          toast.error(t.settings.locationAccessDenied);
+        } else {
+          toast.error(t.settings.locationNotAvailable);
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
   };
 
   const handleDeleteAccount = async () => {
@@ -504,14 +571,43 @@ const Settings = () => {
               <Skeleton className="h-10 w-full" />
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 {t.settings.locationDesc}
               </p>
+              
+              {/* Auto-detect location button */}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2"
+                onClick={handleDetectLocation}
+                disabled={isDetectingLocation || isUpdatingLocation}
+              >
+                {isDetectingLocation ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {t.settings.detectingLocation}
+                  </>
+                ) : (
+                  <>
+                    <Crosshair className="w-4 h-4" />
+                    {t.settings.useCurrentLocation}
+                  </>
+                )}
+              </Button>
+              
+              <div className="flex items-center gap-3">
+                <Separator className="flex-1" />
+                <span className="text-xs text-muted-foreground">{t.common.or}</span>
+                <Separator className="flex-1" />
+              </div>
+              
+              {/* Manual city selection */}
               <Select 
                 value={selectedLocation} 
                 onValueChange={handleLocationChange}
-                disabled={isUpdatingLocation}
+                disabled={isUpdatingLocation || isDetectingLocation}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={t.settings.selectCity} />

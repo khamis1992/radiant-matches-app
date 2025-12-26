@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, Clock, MapPin, User, Phone, MessageCircle, Edit2, X, Check, Loader2, AlertCircle } from "lucide-react";
 import { useConversations } from "@/hooks/useConversations";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { BookingDetailsSkeleton } from "@/components/ui/skeleton-loader";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -91,6 +91,10 @@ const BookingDetails = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [errors, setErrors] = useState<{
+    date?: string;
+    time?: string;
+  }>({});
 
   // Fetch booking details
   const { data: booking, isLoading } = useQuery({
@@ -228,8 +232,9 @@ const BookingDetails = () => {
   };
 
   const handleSaveEdit = () => {
-    if (!selectedDate || !selectedTime) {
-      toast.error(language === "ar" ? "يرجى اختيار التاريخ والوقت" : "Please select date and time");
+    // Validate form before updating
+    if (!validateEditForm()) {
+      toast.error(language === "ar" ? "يرجى تصحيح الأخطاء" : "Please fix the errors");
       return;
     }
 
@@ -239,6 +244,22 @@ const BookingDetails = () => {
       notes,
     });
   };
+
+  // Form validation for edit dialog
+  const validateEditForm = useCallback(() => {
+    const newErrors: typeof errors = {};
+    
+    if (!selectedDate) {
+      newErrors.date = t.bookings.selectDateError || "Please select a date";
+    }
+    
+    if (!selectedTime) {
+      newErrors.time = t.bookings.selectTimeError || "Please select a time";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [selectedDate, selectedTime, t.bookings]);
 
   // Generate dates for next 14 days
   const dates = Array.from({ length: 14 }, (_, i) => {
@@ -272,22 +293,7 @@ const BookingDetails = () => {
   const canModify = booking?.status === "pending" || booking?.status === "confirmed";
 
   if (authLoading || isLoading) {
-    return (
-      <div className="min-h-screen bg-background pb-24">
-        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <BackButton />
-            <Skeleton className="h-6 w-32" />
-          </div>
-        </header>
-        <div className="px-5 py-6 space-y-4">
-          <Skeleton className="h-20 w-full rounded-2xl" />
-          <Skeleton className="h-40 w-full rounded-2xl" />
-          <Skeleton className="h-32 w-full rounded-2xl" />
-        </div>
-        <BottomNavigation />
-      </div>
-    );
+    return <BookingDetailsSkeleton />;
   }
 
   if (!booking) {
@@ -529,6 +535,15 @@ const BookingDetails = () => {
             {/* Date Selection */}
             <div>
               <h3 className="text-sm font-medium text-foreground mb-3">{t.bookings.selectDate}</h3>
+              
+              {/* Date Selection Error */}
+              {errors.date && (
+                <div className="mb-3 p-2 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
+                  <span className="text-sm text-destructive">{errors.date}</span>
+                </div>
+              )}
+              
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {dates.map((date) => {
                   const isSelected = selectedDate?.toDateString() === date.toDateString();
@@ -539,15 +554,17 @@ const BookingDetails = () => {
                       onClick={() => {
                         setSelectedDate(date);
                         setSelectedTime(null);
+                        setErrors(prev => ({ ...prev, date: undefined }));
                       }}
                       disabled={!isWorking}
                       className={`flex-shrink-0 w-14 py-2 rounded-xl border-2 transition-all duration-200 ${
                         !isWorking
                           ? "border-border bg-muted opacity-50 cursor-not-allowed"
                           : isSelected
-                          ? "border-primary bg-primary/10"
-                          : "border-border bg-card hover:border-primary/50"
+                          ? "border-primary bg-primary/10 scale-105 shadow-sm"
+                          : "border-border bg-card hover:border-primary/50 hover:scale-[1.02]"
                       }`}
+                      aria-label={`Select ${date.toLocaleDateString(language === "ar" ? "ar-QA" : "en-QA", { weekday: 'long', month: 'long', day: 'numeric' })}`}
                     >
                       <p className="text-xs text-muted-foreground">
                         {date.toLocaleDateString(language === "ar" ? "ar-QA" : "en-QA", { weekday: "short" })}
@@ -564,23 +581,44 @@ const BookingDetails = () => {
             {/* Time Selection */}
             <div>
               <h3 className="text-sm font-medium text-foreground mb-3">{t.bookings.selectTime}</h3>
+              
+              {/* Time Selection Error */}
+              {errors.time && (
+                <div className="mb-3 p-2 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
+                  <span className="text-sm text-destructive">{errors.time}</span>
+                </div>
+              )}
+              
               {selectedDate && availableTimeSlots.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {t.bookings.noAvailableSlots}
-                </p>
+                <div className="text-center py-4 bg-muted/30 rounded-xl">
+                  <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {t.bookings.noAvailableSlots}
+                  </p>
+                </div>
               ) : (
                 <div className="grid grid-cols-3 gap-2">
                   {availableTimeSlots.map((time) => {
                     const isSelected = selectedTime === time;
+                    const isPastTime = selectedDate && new Date(selectedDate).toDateString() === new Date().toDateString() && 
+                                      new Date(`${selectedDate.toDateString()} ${time}`) < new Date();
                     return (
                       <button
                         key={time}
-                        onClick={() => setSelectedTime(time)}
+                        onClick={() => {
+                          setSelectedTime(time);
+                          setErrors(prev => ({ ...prev, time: undefined }));
+                        }}
+                        disabled={isPastTime}
                         className={`py-2 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
-                          isSelected
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border bg-card text-foreground hover:border-primary/50"
+                          isPastTime
+                            ? "border-border bg-muted opacity-50 cursor-not-allowed"
+                            : isSelected
+                            ? "border-primary bg-primary/10 text-primary scale-105 shadow-sm"
+                            : "border-border bg-card text-foreground hover:border-primary/50 hover:scale-[1.02]"
                         }`}
+                        aria-label={`Select ${time} slot`}
                       >
                         {time}
                       </button>
@@ -605,16 +643,22 @@ const BookingDetails = () => {
 
             {/* Save Button */}
             <Button
-              className="w-full"
+              className="w-full transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               onClick={handleSaveEdit}
               disabled={!selectedDate || !selectedTime || updateMutation.isPending}
+              aria-label="Save booking changes"
             >
               {updateMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin me-2" />
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin me-2" />
+                  {t.common.saving || "Saving..."}
+                </>
               ) : (
-                <Check className="w-4 h-4 me-2" />
+                <>
+                  <Check className="w-4 h-4 me-2" />
+                  {t.common.save}
+                </>
               )}
-              {t.common.save}
             </Button>
           </div>
         </DialogContent>

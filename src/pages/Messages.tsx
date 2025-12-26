@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
+import PageHeader from "@/components/layout/PageHeader";
 import { Search, MessageSquare } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConversations } from "@/hooks/useConversations";
@@ -21,11 +22,14 @@ const Messages = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-24 flex flex-col items-center justify-center px-5">
-        <MessageSquare className="w-16 h-16 text-muted-foreground mb-4" />
-        <h2 className="text-lg font-semibold mb-2">{t.profile.signInToView}</h2>
-        <p className="text-muted-foreground text-center mb-4">{t.profile.signInDesc}</p>
-        <Button onClick={() => navigate("/auth")}>{t.auth.login}</Button>
+      <div className="min-h-screen bg-background pb-24">
+        <PageHeader title={t.messages.title} />
+        <div className="flex flex-col items-center justify-center px-5 py-16">
+          <MessageSquare className="w-16 h-16 text-muted-foreground mb-4" />
+          <h2 className="text-lg font-semibold mb-2">{t.profile.signInToView}</h2>
+          <p className="text-muted-foreground text-center mb-4">{t.profile.signInDesc}</p>
+          <Button onClick={() => navigate("/auth")}>{t.auth.login}</Button>
+        </div>
         <BottomNavigation />
       </div>
     );
@@ -33,9 +37,8 @@ const Messages = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-        <h1 className="text-xl font-bold text-foreground mb-4">{t.messages.title}</h1>
-        <div className="relative">
+      <PageHeader title={t.messages.title}>
+        <div className="relative mt-4">
           <Search className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
           <input
             type="text"
@@ -43,7 +46,7 @@ const Messages = () => {
             className={`w-full h-10 ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} bg-card border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50`}
           />
         </div>
-      </header>
+      </PageHeader>
 
       <div className="px-5 py-4">
         {isLoading ? (
