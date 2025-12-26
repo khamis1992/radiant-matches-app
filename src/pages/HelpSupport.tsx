@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, MessageCircle, Mail, Phone, ChevronDown, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
