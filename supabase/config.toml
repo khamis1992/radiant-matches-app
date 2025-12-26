@@ -1,1 +1,16 @@
 project_id = "besjfzlgtssriqpluzgn"
+
+[functions.admin-create-user]
+verify_jwt = true
+
+[functions.admin-delete-user]
+verify_jwt = true
+
+[functions.admin-reset-password]
+verify_jwt = true
+
+[functions.admin-update-role]
+verify_jwt = true
+
+[functions.analyze-portfolio-image]
+verify_jwt = false

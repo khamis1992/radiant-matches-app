@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw, Undo2, Redo2, RotateCcw, LayoutGrid, List, Maximize, CheckSquare, Square } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Loader2, Tag, GripVertical, ZoomIn, Star, Crop, Upload, RotateCw, Undo2, Redo2, RotateCcw, LayoutGrid, List, Maximize, CheckSquare, Square, Sparkles } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import ImageLightbox from "@/components/ImageLightbox";
 import ImageCropper from "@/components/ImageCropper";
@@ -62,6 +62,7 @@ import {
   PortfolioCategory,
 } from "@/hooks/usePortfolio";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useImageAnalysis, ImageSuggestion } from "@/hooks/useImageAnalysis";
 
 interface PortfolioUploadProps {
   artistId: string;
@@ -322,6 +323,10 @@ interface SortablePendingListItemProps {
   onReset: (index: number) => void;
   onUpdateItem: (index: number, updates: { title?: string; category?: string; isFeatured?: boolean }) => void;
   onSetFeatured: (index: number) => void;
+  onAnalyze?: (index: number) => void;
+  isAnalyzing?: boolean;
+  suggestion?: ImageSuggestion | null;
+  onApplySuggestion?: (index: number) => void;
 }
 
 const SortablePendingListItem = ({
@@ -339,6 +344,10 @@ const SortablePendingListItem = ({
   onReset,
   onUpdateItem,
   onSetFeatured,
+  onAnalyze,
+  isAnalyzing,
+  suggestion,
+  onApplySuggestion,
 }: SortablePendingListItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
   const style = {
@@ -481,6 +490,22 @@ const SortablePendingListItem = ({
               ))}
             </SelectContent>
           </Select>
+          {onAnalyze && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onAnalyze(index)}
+              disabled={uploading || isAnalyzing}
+              className="gap-1"
+            >
+              {isAnalyzing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4" />
+              )}
+              AI
+            </Button>
+          )}
           <span className="text-xs text-muted-foreground whitespace-nowrap">
             {item.originalSize !== item.compressedSize ? (
               <>
@@ -493,6 +518,40 @@ const SortablePendingListItem = ({
             )}
           </span>
         </div>
+        {/* AI Suggestion Display */}
+        {suggestion && (
+          <div className="mt-2 p-2 bg-primary/10 rounded-lg border border-primary/20">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">اقتراحات ذكية</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-xs mb-2">
+              <div>
+                <span className="text-muted-foreground">الفئة:</span>{" "}
+                <span className="font-medium">{suggestion.category}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">العنوان:</span>{" "}
+                <span className="font-medium">{suggestion.title}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">مميزة:</span>{" "}
+                <span className="font-medium">{suggestion.isFeatured ? "نعم ⭐" : "لا"}</span>
+              </div>
+            </div>
+            {suggestion.reason && (
+              <p className="text-xs text-muted-foreground mb-2">{suggestion.reason}</p>
+            )}
+            <Button
+              size="sm"
+              onClick={() => onApplySuggestion?.(index)}
+              className="w-full gap-1"
+            >
+              <CheckSquare className="w-4 h-4" />
+              تطبيق الاقتراحات
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -505,6 +564,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const updateItem = useUpdatePortfolioItem();
   const deleteItem = useDeletePortfolioItem();
   const reorderItems = useReorderPortfolio();
+  const { analyzeImage, isAnalyzing } = useImageAnalysis();
 
   interface EditState {
     file: File;
@@ -544,6 +604,8 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [analyzingIndex, setAnalyzingIndex] = useState<number | null>(null);
+  const [suggestions, setSuggestions] = useState<Record<string, ImageSuggestion>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
@@ -853,6 +915,54 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
     if (oldIndex === -1 || newIndex === -1) return;
 
     setPendingUploads(prev => arrayMove(prev, oldIndex, newIndex));
+  };
+
+  const handleAnalyzeImage = async (index: number) => {
+    const item = pendingUploads[index];
+    if (!item) return;
+
+    setAnalyzingIndex(index);
+    try {
+      const result = await analyzeImage(item.file);
+      if (result) {
+        setSuggestions(prev => ({ ...prev, [item.id]: result }));
+        toast.success("تم تحليل الصورة بنجاح!");
+      } else {
+        toast.error("فشل تحليل الصورة");
+      }
+    } catch (error) {
+      console.error("Analysis error:", error);
+      toast.error("حدث خطأ أثناء التحليل");
+    } finally {
+      setAnalyzingIndex(null);
+    }
+  };
+
+  const handleApplySuggestion = (index: number) => {
+    const item = pendingUploads[index];
+    if (!item) return;
+
+    const suggestion = suggestions[item.id];
+    if (!suggestion) return;
+
+    setPendingUploads(prev => prev.map((p, idx) => {
+      if (idx !== index) return p;
+      return {
+        ...p,
+        category: suggestion.category as PortfolioCategory,
+        title: suggestion.title,
+        isFeatured: suggestion.isFeatured,
+      };
+    }));
+
+    // Clear the suggestion after applying
+    setSuggestions(prev => {
+      const next = { ...prev };
+      delete next[item.id];
+      return next;
+    });
+
+    toast.success("تم تطبيق الاقتراحات!");
   };
 
   const handleBatchUpload = async () => {
@@ -1459,6 +1569,10 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
                           isFeatured: i === idx ? !p.isFeatured : false
                         })));
                       }}
+                      onAnalyze={handleAnalyzeImage}
+                      isAnalyzing={analyzingIndex === index && isAnalyzing}
+                      suggestion={suggestions[item.id]}
+                      onApplySuggestion={handleApplySuggestion}
                     />
                   ))}
                 </SortableContext>
