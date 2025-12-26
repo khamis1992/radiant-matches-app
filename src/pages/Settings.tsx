@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bell, Lock, User, ChevronRight, Eye, EyeOff, Globe, Phone, MapPin } from "lucide-react";
+import { Bell, Lock, User, ChevronRight, Eye, EyeOff, Globe, Phone, MapPin, AlertTriangle, Link2 } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -19,6 +19,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -53,6 +63,10 @@ const Settings = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [linkedAccountsDialogOpen, setLinkedAccountsDialogOpen] = useState(false);
+  const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -208,6 +222,41 @@ const Settings = () => {
       toast.error(t.settings.locationUpdateFailed);
     } finally {
       setIsUpdatingLocation(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== "DELETE") {
+      toast.error(t.settings.typeDeleteToConfirm);
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error(t.settings.unexpectedError);
+        return;
+      }
+
+      const response = await supabase.functions.invoke("delete-user-account", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      toast.success(t.settings.accountDeleted);
+      await supabase.auth.signOut();
+      navigate("/auth");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast.error(t.settings.accountDeleteFailed);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -502,7 +551,10 @@ const Settings = () => {
             
             <Separator />
             
-            <button className="w-full flex items-center justify-between py-3 hover:bg-muted/50 transition-colors rounded-lg px-2 -mx-2">
+            <button 
+              onClick={() => setLinkedAccountsDialogOpen(true)}
+              className="w-full flex items-center justify-between py-3 hover:bg-muted/50 transition-colors rounded-lg px-2 -mx-2"
+            >
               <span className="text-foreground font-medium">{t.settings.linkedAccounts}</span>
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
@@ -527,7 +579,10 @@ const Settings = () => {
             
             <Separator />
             
-            <button className="w-full flex items-center justify-between py-3 hover:bg-destructive/10 transition-colors rounded-lg px-2 -mx-2">
+            <button 
+              onClick={() => setDeleteAccountDialogOpen(true)}
+              className="w-full flex items-center justify-between py-3 hover:bg-destructive/10 transition-colors rounded-lg px-2 -mx-2"
+            >
               <span className="text-destructive font-medium">{t.settings.deleteAccount}</span>
               <ChevronRight className="w-5 h-5 text-destructive" />
             </button>
@@ -629,6 +684,81 @@ const Settings = () => {
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Linked Accounts Dialog */}
+      <Dialog open={linkedAccountsDialogOpen} onOpenChange={setLinkedAccountsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="w-5 h-5" />
+              {t.settings.linkedAccountsTitle}
+            </DialogTitle>
+            <DialogDescription>
+              {t.settings.linkedAccountsDesc}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-6 text-center">
+            <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+              <Link2 className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <p className="text-muted-foreground text-sm">
+              {t.settings.linkedAccountsComingSoon}
+            </p>
+          </div>
+          
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={() => setLinkedAccountsDialogOpen(false)}>
+              {t.common.close}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Account Dialog */}
+      <AlertDialog open={deleteAccountDialogOpen} onOpenChange={setDeleteAccountDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="w-5 h-5" />
+              {t.settings.deleteAccountTitle}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p className="text-destructive font-medium">
+                {t.settings.deleteAccountWarning}
+              </p>
+              <p>{t.settings.deleteAccountConfirm}</p>
+              <div className="space-y-2">
+                <Label htmlFor="delete-confirm">{t.settings.typeDeleteToConfirm}</Label>
+                <Input
+                  id="delete-confirm"
+                  placeholder={t.settings.deleteAccountPlaceholder}
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  className="border-destructive/50 focus-visible:ring-destructive"
+                />
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => {
+                setDeleteConfirmation("");
+                setDeleteAccountDialogOpen(false);
+              }}
+            >
+              {t.common.cancel}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirmation !== "DELETE" || isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? t.settings.deleting : t.settings.deleteAccount}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <BottomNavigation />
     </div>

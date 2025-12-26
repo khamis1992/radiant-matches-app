@@ -265,6 +265,24 @@ export const ar: TranslationKeys = {
     saturday: "السبت",
     closed: "مغلق",
     to: "إلى",
+    // Linked Accounts
+    linkedAccountsTitle: "الحسابات المرتبطة",
+    linkedAccountsDesc: "إدارة حسابات التواصل الاجتماعي المرتبطة",
+    noLinkedAccounts: "لا توجد حسابات مرتبطة",
+    linkAccount: "ربط حساب",
+    unlinkAccount: "إلغاء الربط",
+    google: "جوجل",
+    apple: "آبل",
+    linkedAccountsComingSoon: "ربط الحسابات الاجتماعية سيكون متاحاً قريباً. ترقبوا!",
+    // Delete Account
+    deleteAccountTitle: "حذف الحساب",
+    deleteAccountWarning: "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بياناتك نهائياً.",
+    deleteAccountConfirm: "هل أنت متأكد من حذف حسابك؟",
+    typeDeleteToConfirm: "اكتب DELETE للتأكيد",
+    deleteAccountPlaceholder: "اكتب DELETE",
+    accountDeleted: "تم حذف الحساب بنجاح",
+    accountDeleteFailed: "فشل في حذف الحساب",
+    deleting: "جاري الحذف...",
   },
   
   // Bookings

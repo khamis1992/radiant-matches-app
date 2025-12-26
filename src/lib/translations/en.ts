@@ -261,6 +261,24 @@ export const en = {
     saturday: "Saturday",
     closed: "Closed",
     to: "to",
+    // Linked Accounts
+    linkedAccountsTitle: "Linked Accounts",
+    linkedAccountsDesc: "Manage your connected social accounts",
+    noLinkedAccounts: "No accounts linked yet",
+    linkAccount: "Link Account",
+    unlinkAccount: "Unlink",
+    google: "Google",
+    apple: "Apple",
+    linkedAccountsComingSoon: "Social account linking will be available soon. Stay tuned!",
+    // Delete Account
+    deleteAccountTitle: "Delete Account",
+    deleteAccountWarning: "This action cannot be undone. All your data will be permanently deleted.",
+    deleteAccountConfirm: "Are you sure you want to delete your account?",
+    typeDeleteToConfirm: "Type DELETE to confirm",
+    deleteAccountPlaceholder: "Type DELETE",
+    accountDeleted: "Account deleted successfully",
+    accountDeleteFailed: "Failed to delete account",
+    deleting: "Deleting...",
   },
   
   // Bookings
