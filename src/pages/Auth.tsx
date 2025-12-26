@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, CheckCircle, Sparkles, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { z } from "zod";
 
@@ -19,7 +19,6 @@ type RoleRedirectResult = {
 
 const getRedirectInfo = async (userId: string): Promise<RoleRedirectResult> => {
   try {
-    // Fetch role and profile in parallel
     const [rolesResult, profileResult] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId),
       supabase.from("profiles").select("full_name").eq("id", userId).single()
@@ -37,7 +36,7 @@ const getRedirectInfo = async (userId: string): Promise<RoleRedirectResult> => {
 };
 
 const getWelcomeMessage = (role: "admin" | "artist" | "customer", userName: string | null, language: "en" | "ar") => {
-  const name = userName?.split(" ")[0]; // First name only
+  const name = userName?.split(" ")[0];
   
   if (language === "ar") {
     if (name) {
@@ -67,6 +66,13 @@ const getWelcomeMessage = (role: "admin" | "artist" | "customer", userName: stri
     default: return "Welcome back!";
   }
 };
+
+const FloatingShape = ({ className, delay = 0 }: { className?: string; delay?: number }) => (
+  <div 
+    className={`absolute rounded-full opacity-20 animate-pulse ${className}`}
+    style={{ animationDelay: `${delay}s` }}
+  />
+);
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -186,7 +192,6 @@ const Auth = () => {
           }
           return;
         }
-        // Toast is shown via onAuthStateChange
       } else {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -208,9 +213,7 @@ const Auth = () => {
           return;
         }
         
-        // Check if email confirmation is required
         if (data.user && !data.session) {
-          // User created but no session means email confirmation is required
           setSignupEmail(email.trim());
           setMode("verify-email");
           setEmail("");
@@ -230,24 +233,6 @@ const Auth = () => {
   const switchMode = (newMode: AuthMode) => {
     setMode(newMode);
     setErrors({});
-  };
-
-  const getTitle = () => {
-    switch (mode) {
-      case "login": return language === "ar" ? "مرحباً بعودتك" : "Welcome back";
-      case "signup": return language === "ar" ? "إنشاء حساب" : "Create account";
-      case "forgot-password": return language === "ar" ? "إعادة تعيين كلمة المرور" : "Reset password";
-      case "verify-email": return t.auth.verifyEmail;
-    }
-  };
-
-  const getSubtitle = () => {
-    switch (mode) {
-      case "login": return language === "ar" ? "سجلي دخولك لمتابعة حجز فنانتك المفضلة" : "Sign in to continue booking your favorite artists";
-      case "signup": return language === "ar" ? "انضمي إلينا لاكتشاف فنانات مكياج مميزات" : "Join us to discover amazing makeup artists";
-      case "forgot-password": return language === "ar" ? "أدخلي بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين" : "Enter your email and we'll send you a reset link";
-      case "verify-email": return `${t.auth.checkEmail}`;
-    }
   };
 
   const handleResendVerification = async () => {
@@ -276,174 +261,140 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/10 flex flex-col relative overflow-hidden">
+      {/* Decorative floating shapes */}
+      <FloatingShape className="w-64 h-64 bg-primary/30 -top-20 -start-20 blur-3xl" delay={0} />
+      <FloatingShape className="w-96 h-96 bg-accent/40 -bottom-32 -end-32 blur-3xl" delay={1} />
+      <FloatingShape className="w-48 h-48 bg-blush/50 top-1/3 end-10 blur-2xl" delay={0.5} />
+      <FloatingShape className="w-32 h-32 bg-gold/30 bottom-1/4 start-10 blur-2xl" delay={1.5} />
+      
+      {/* Back button */}
+      <header className="p-4 relative z-10">
         <button
           onClick={() => mode === "forgot-password" ? switchMode("login") : navigate("/")}
-          className="p-2 rounded-full hover:bg-muted transition-colors"
+          className="p-3 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card shadow-lg transition-all duration-300 hover:scale-105"
         >
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
       </header>
 
-      <div className="flex-1 flex flex-col justify-center px-6 pb-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            {getTitle()}
+      <div className="flex-1 flex flex-col justify-center px-6 pb-12 relative z-10">
+        {/* Logo/Brand area */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/60 shadow-xl mb-6 animate-scale-in">
+            {mode === "signup" ? (
+              <Sparkles className="w-10 h-10 text-primary-foreground" />
+            ) : (
+              <Heart className="w-10 h-10 text-primary-foreground" />
+            )}
+          </div>
+          
+          <h1 className="text-3xl font-bold text-foreground mb-3 animate-fade-in">
+            {mode === "login" && (language === "ar" ? "مرحباً بعودتك" : "Welcome Back")}
+            {mode === "signup" && (language === "ar" ? "انضمي إلينا" : "Join Us")}
+            {mode === "forgot-password" && (language === "ar" ? "استعادة الحساب" : "Reset Password")}
+            {mode === "verify-email" && t.auth.verifyEmail}
           </h1>
-          <p className="text-muted-foreground">
-            {getSubtitle()}
+          
+          <p className="text-muted-foreground max-w-xs mx-auto animate-fade-in" style={{ animationDelay: "0.1s" }}>
+            {mode === "login" && (language === "ar" ? "نحن سعداء برؤيتك مجدداً ✨" : "We're happy to see you again ✨")}
+            {mode === "signup" && (language === "ar" ? "اكتشفي عالم الجمال معنا 💄" : "Discover the world of beauty with us 💄")}
+            {mode === "forgot-password" && (language === "ar" ? "لا تقلقي، سنساعدك 💝" : "Don't worry, we'll help you 💝")}
+            {mode === "verify-email" && (language === "ar" ? "تحققي من بريدك الإلكتروني" : "Check your email inbox")}
           </p>
         </div>
 
-        {mode === "verify-email" ? (
-          <div className="text-center space-y-6">
-            <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-              <CheckCircle className="w-10 h-10 text-primary" />
+        {/* Card container */}
+        <div className="bg-card/90 backdrop-blur-md rounded-3xl shadow-2xl p-6 max-w-md mx-auto w-full border border-border/50 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+          {mode === "verify-email" ? (
+            <div className="text-center space-y-6 py-4">
+              <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center animate-pulse">
+                <Mail className="w-12 h-12 text-primary" />
+              </div>
+              
+              <div className="space-y-3">
+                <p className="text-foreground font-medium">
+                  {language === "ar" ? "تم إرسال رابط التحقق!" : "Verification link sent!"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {language === "ar" 
+                    ? "انقري على الرابط في بريدك الإلكتروني للتحقق من حسابك."
+                    : "Click the link in your email to verify your account."}
+                </p>
+                <div className="bg-muted/50 rounded-xl p-3">
+                  <p className="text-xs text-muted-foreground">
+                    📧 {signupEmail}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-3 pt-2">
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl h-12"
+                  onClick={handleResendVerification}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      {language === "ar" ? "جاري الإرسال..." : "Sending..."}
+                    </span>
+                  ) : (
+                    t.auth.resendEmail
+                  )}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  className="w-full rounded-xl"
+                  onClick={() => switchMode("login")}
+                >
+                  {language === "ar" ? "العودة لتسجيل الدخول" : "Back to Sign In"}
+                </Button>
+              </div>
             </div>
-            
-            <div className="space-y-2">
-              <p className="text-foreground">
-                {language === "ar" ? "انقري على الرابط في بريدك الإلكتروني للتحقق من حسابك." : "Click the link in your email to verify your account."}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {language === "ar" ? "تحققي من مجلد الرسائل غير المرغوب فيها إذا لم تجديه." : "Check your spam folder if you don't see it."}
-              </p>
-            </div>
-            
-            <div className="space-y-3">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleResendVerification}
+          ) : mode === "forgot-password" ? (
+            <form onSubmit={handleForgotPassword} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">{t.auth.email}</Label>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <Mail className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder={language === "ar" ? "أدخلي بريدك الإلكتروني" : "Enter your email"}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="ps-12 h-14 rounded-xl border-2 bg-background/50 focus:bg-background transition-all"
+                    />
+                  </div>
+                </div>
+                {errors.email && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <span className="text-xs">⚠️</span> {errors.email}
+                  </p>
+                )}
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full h-14 rounded-xl text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300" 
                 disabled={loading}
               >
-                {loading ? (language === "ar" ? "جاري الإرسال..." : "Sending...") : t.auth.resendEmail}
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                    {language === "ar" ? "يرجى الانتظار..." : "Please wait..."}
+                  </span>
+                ) : (
+                  language === "ar" ? "إرسال رابط الاستعادة" : "Send Reset Link"
+                )}
               </Button>
               
-              <Button
-                variant="ghost"
-                className="w-full"
-                onClick={() => switchMode("login")}
-              >
-                {language === "ar" ? "العودة لتسجيل الدخول" : "Back to Sign In"}
-              </Button>
-            </div>
-          </div>
-        ) : mode === "forgot-password" ? (
-          <form onSubmit={handleForgotPassword} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="email">{t.auth.email}</Label>
-              <div className="relative">
-                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder={language === "ar" ? "أدخلي بريدك الإلكتروني" : "Enter your email"}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="ps-10"
-                />
-              </div>
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? (language === "ar" ? "يرجى الانتظار..." : "Please wait...") : (language === "ar" ? "إرسال رابط إعادة التعيين" : "Send Reset Link")}
-            </Button>
-          </form>
-        ) : (
-          <form onSubmit={handleAuth} className="space-y-5">
-            {mode === "signup" && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">{t.auth.fullName}</Label>
-                <div className="relative">
-                  <User className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder={language === "ar" ? "أدخلي اسمك الكامل" : "Enter your full name"}
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="ps-10"
-                  />
-                </div>
-                {errors.fullName && (
-                  <p className="text-sm text-destructive">{errors.fullName}</p>
-                )}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email">{t.auth.email}</Label>
-              <div className="relative">
-                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder={language === "ar" ? "أدخلي بريدك الإلكتروني" : "Enter your email"}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="ps-10"
-                />
-              </div>
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="password">{t.auth.password}</Label>
-                {mode === "login" && (
-                  <button
-                    type="button"
-                    onClick={() => switchMode("forgot-password")}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    {t.auth.forgotPassword}
-                  </button>
-                )}
-              </div>
-              <div className="relative">
-                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder={language === "ar" ? "أدخلي كلمة المرور" : "Enter your password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="ps-10 pe-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? (language === "ar" ? "يرجى الانتظار..." : "Please wait...") : mode === "login" ? t.auth.login : t.auth.signup}
-            </Button>
-          </form>
-        )}
-
-        {mode !== "verify-email" && (
-          <div className="mt-6 text-center">
-            {mode === "forgot-password" ? (
-              <p className="text-muted-foreground">
+              <p className="text-center text-sm text-muted-foreground">
                 {language === "ar" ? "تتذكرين كلمة المرور؟" : "Remember your password?"}{" "}
                 <button
                   type="button"
@@ -453,20 +404,152 @@ const Auth = () => {
                   {t.auth.login}
                 </button>
               </p>
-            ) : (
-            <p className="text-muted-foreground">
-              {mode === "login" ? t.auth.noAccount : t.auth.hasAccount}{" "}
-              <button
-                type="button"
-                onClick={() => switchMode(mode === "login" ? "signup" : "login")}
-                className="text-primary font-semibold hover:underline"
+            </form>
+          ) : (
+            <form onSubmit={handleAuth} className="space-y-5">
+              {mode === "signup" && (
+                <div className="space-y-2 animate-fade-in">
+                  <Label htmlFor="fullName" className="text-sm font-medium">{t.auth.fullName}</Label>
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                    <div className="relative">
+                      <User className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <Input
+                        id="fullName"
+                        type="text"
+                        placeholder={language === "ar" ? "اسمك الكامل" : "Your full name"}
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="ps-12 h-14 rounded-xl border-2 bg-background/50 focus:bg-background transition-all"
+                      />
+                    </div>
+                  </div>
+                  {errors.fullName && (
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <span className="text-xs">⚠️</span> {errors.fullName}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">{t.auth.email}</Label>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <Mail className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder={language === "ar" ? "بريدك الإلكتروني" : "Your email address"}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="ps-12 h-14 rounded-xl border-2 bg-background/50 focus:bg-background transition-all"
+                    />
+                  </div>
+                </div>
+                {errors.email && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <span className="text-xs">⚠️</span> {errors.email}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="password" className="text-sm font-medium">{t.auth.password}</Label>
+                  {mode === "login" && (
+                    <button
+                      type="button"
+                      onClick={() => switchMode("forgot-password")}
+                      className="text-xs text-primary hover:underline font-medium"
+                    >
+                      {t.auth.forgotPassword}
+                    </button>
+                  )}
+                </div>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <Lock className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder={language === "ar" ? "كلمة المرور" : "Your password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="ps-12 pe-12 h-14 rounded-xl border-2 bg-background/50 focus:bg-background transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute end-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+                {errors.password && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <span className="text-xs">⚠️</span> {errors.password}
+                  </p>
+                )}
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full h-14 rounded-xl text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]" 
+                disabled={loading}
               >
-                {mode === "login" ? t.auth.signup : t.auth.login}
-              </button>
-            </p>
-            )}
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                    {language === "ar" ? "يرجى الانتظار..." : "Please wait..."}
+                  </span>
+                ) : (
+                  <>
+                    {mode === "login" ? t.auth.login : t.auth.signup}
+                    <Sparkles className="w-5 h-5 ms-2" />
+                  </>
+                )}
+              </Button>
+            </form>
+          )}
+
+          {/* Mode switcher */}
+          {mode !== "verify-email" && mode !== "forgot-password" && (
+            <div className="mt-6 pt-6 border-t border-border/50">
+              <p className="text-center text-sm text-muted-foreground">
+                {mode === "login" ? t.auth.noAccount : t.auth.hasAccount}{" "}
+                <button
+                  type="button"
+                  onClick={() => switchMode(mode === "login" ? "signup" : "login")}
+                  className="text-primary font-semibold hover:underline"
+                >
+                  {mode === "login" ? t.auth.signup : t.auth.login}
+                </button>
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Trust badges */}
+        <div className="flex items-center justify-center gap-6 mt-8 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Lock className="w-3.5 h-3.5" />
+            <span>{language === "ar" ? "تشفير آمن" : "Secure"}</span>
           </div>
-        )}
+          <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <CheckCircle className="w-3.5 h-3.5" />
+            <span>{language === "ar" ? "موثوق" : "Trusted"}</span>
+          </div>
+          <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Heart className="w-3.5 h-3.5" />
+            <span>{language === "ar" ? "+1000 فنانة" : "1000+ Artists"}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
