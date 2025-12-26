@@ -462,4 +462,26 @@ export const ar: TranslationKeys = {
     applyCrop: "تطبيق القص",
     cropPreview: "معاينة القص",
   },
+
+  // Payment
+  payment: {
+    verifyingPayment: "جاري التحقق من الدفع...",
+    paymentSuccess: "تم الدفع بنجاح!",
+    paymentSuccessDesc: "تمت معالجة دفعتك بنجاح. تم تأكيد حجزك الآن.",
+    paymentFailed: "فشل الدفع",
+    paymentFailedDesc: "للأسف، لم نتمكن من معالجة دفعتك. يرجى المحاولة مرة أخرى أو اختيار طريقة دفع أخرى.",
+    processingPayment: "جاري معالجة الدفع",
+    processingPaymentDesc: "يرجى الانتظار بينما نتحقق من دفعتك...",
+    transactionNumber: "رقم المعاملة",
+    tryAgain: "حاول مرة أخرى",
+    payWithSadad: "الدفع عبر SADAD",
+    payWithCash: "الدفع نقداً",
+    choosePaymentMethod: "اختر طريقة الدفع",
+    cashPayment: "الدفع النقدي",
+    cashPaymentDesc: "ادفع نقداً عند موعدك",
+    sadadPayment: "الدفع عبر SADAD",
+    sadadPaymentDesc: "ادفع إلكترونياً بأمان عبر SADAD",
+    processingPleaseWait: "جاري معالجة الدفع، يرجى الانتظار...",
+    redirectingToPayment: "جاري التحويل إلى بوابة الدفع...",
+  },
 };

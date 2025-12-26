@@ -29,6 +29,7 @@ import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 import HelpSupport from "./pages/HelpSupport";
 import PaymentMethods from "./pages/PaymentMethods";
+import PaymentResult from "./pages/PaymentResult";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -113,6 +114,9 @@ const App = () => (
               </RoleGate>
             }
           />
+          
+          {/* Payment Result - Public route for callbacks */}
+          <Route path="/payment-result" element={<PaymentResult />} />
 
           {/* Artist-only Routes */}
           <Route

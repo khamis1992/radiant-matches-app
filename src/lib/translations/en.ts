@@ -458,6 +458,28 @@ export const en = {
     applyCrop: "Apply Crop",
     cropPreview: "Crop preview",
   },
+
+  // Payment
+  payment: {
+    verifyingPayment: "Verifying payment...",
+    paymentSuccess: "Payment Successful!",
+    paymentSuccessDesc: "Your payment has been processed successfully. Your booking is now confirmed.",
+    paymentFailed: "Payment Failed",
+    paymentFailedDesc: "Unfortunately, your payment could not be processed. Please try again or choose a different payment method.",
+    processingPayment: "Processing Payment",
+    processingPaymentDesc: "Please wait while we verify your payment...",
+    transactionNumber: "Transaction #",
+    tryAgain: "Try Again",
+    payWithSadad: "Pay with SADAD",
+    payWithCash: "Pay Cash",
+    choosePaymentMethod: "Choose Payment Method",
+    cashPayment: "Cash Payment",
+    cashPaymentDesc: "Pay in cash at your appointment",
+    sadadPayment: "SADAD Payment",
+    sadadPaymentDesc: "Pay online securely with SADAD",
+    processingPleaseWait: "Processing payment, please wait...",
+    redirectingToPayment: "Redirecting to payment gateway...",
+  },
 };
 
 export type TranslationKeys = typeof en;

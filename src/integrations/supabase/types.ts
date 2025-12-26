@@ -220,8 +220,12 @@ export type Database = {
           location_address: string | null
           location_type: string
           notes: string | null
+          payment_method: string | null
+          payment_status: string | null
           platform_fee: number | null
           promo_code_id: string | null
+          sadad_order_id: string | null
+          sadad_transaction_id: string | null
           service_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total_price: number
@@ -239,8 +243,12 @@ export type Database = {
           location_address?: string | null
           location_type: string
           notes?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
           platform_fee?: number | null
           promo_code_id?: string | null
+          sadad_order_id?: string | null
+          sadad_transaction_id?: string | null
           service_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_price: number
@@ -258,8 +266,12 @@ export type Database = {
           location_address?: string | null
           location_type?: string
           notes?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
           platform_fee?: number | null
           promo_code_id?: string | null
+          sadad_order_id?: string | null
+          sadad_transaction_id?: string | null
           service_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_price?: number
@@ -468,6 +480,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          booking_id: string
+          created_at: string
+          currency: string
+          error_message: string | null
+          id: string
+          payment_method: string
+          response_data: Json | null
+          sadad_order_id: string | null
+          sadad_transaction_number: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          booking_id: string
+          created_at?: string
+          currency?: string
+          error_message?: string | null
+          id?: string
+          payment_method?: string
+          response_data?: Json | null
+          sadad_order_id?: string | null
+          sadad_transaction_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string
+          created_at?: string
+          currency?: string
+          error_message?: string | null
+          id?: string
+          payment_method?: string
+          response_data?: Json | null
+          sadad_order_id?: string | null
+          sadad_transaction_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       platform_settings: {
         Row: {
