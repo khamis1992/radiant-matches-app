@@ -191,47 +191,57 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header - تصميم احترافي Native App */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-2xl border-b border-border/30 safe-area-top">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between gap-3">
-            {/* Logo */}
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <img 
-                src={logoImage} 
-                alt="Logo" 
-                className="h-8 w-auto object-contain"
-              />
+      {/* Header - Premium Native App Design */}
+      <header className="sticky top-0 z-50 safe-area-top">
+        {/* Glassmorphism background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background/80 backdrop-blur-xl" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
+        
+        <div className="relative px-4 py-3">
+          <div className="flex items-center justify-between gap-4">
+            {/* Logo with subtle animation */}
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="relative group">
+                <div className="absolute -inset-2 bg-primary/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <img 
+                  src={logoImage} 
+                  alt="Logo" 
+                  className="relative h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+                />
+              </div>
             </div>
 
-            {/* Right side - Actions */}
-            <div className="flex items-center gap-1.5">
+            {/* Right side - Premium Actions */}
+            <div className="flex items-center gap-2">
+              {/* Language Switcher */}
               <LanguageSwitcher />
               
-              {/* Notification Button */}
+              {/* Notification Button - Enhanced */}
               <button
                 onClick={() => navigate("/notifications")}
-                className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-muted hover:bg-muted/80 active:scale-95 transition-all duration-200"
+                className="relative group flex items-center justify-center w-11 h-11 rounded-xl bg-card shadow-sm border border-border/40 hover:border-primary/30 hover:shadow-md active:scale-95 transition-all duration-200"
               >
-                <Bell className="w-5 h-5 text-foreground" />
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                <Bell className="relative w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors duration-200" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-primary-foreground bg-primary rounded-full shadow-lg animate-in zoom-in-50">
+                  <span className="absolute -top-1 -end-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-bold text-primary-foreground bg-gradient-to-r from-primary to-primary/90 rounded-full shadow-lg ring-2 ring-background animate-in zoom-in-50 duration-200">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
               </button>
 
-              {/* Profile Menu */}
+              {/* Profile Menu - Premium */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center justify-center w-10 h-10 rounded-2xl bg-muted hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-                    <Avatar className="w-8 h-8 ring-2 ring-background shadow-sm">
+                  <button className="relative group flex items-center justify-center w-11 h-11 rounded-xl bg-card shadow-sm border border-border/40 hover:border-primary/30 hover:shadow-md active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    <Avatar className="relative w-8 h-8 ring-2 ring-primary/20 group-hover:ring-primary/40 shadow-sm transition-all duration-200">
                       <AvatarImage
                         src={profile?.avatar_url || undefined}
                         alt={profile?.full_name || "Profile"}
                         className="object-cover"
                       />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-sm font-semibold">
                         {profile?.full_name?.charAt(0) || "U"}
                       </AvatarFallback>
                     </Avatar>
@@ -239,50 +249,68 @@ const Home = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent 
                   align="end" 
-                  sideOffset={8}
-                  className="w-52 bg-card/95 backdrop-blur-xl border border-border/50 shadow-xl rounded-2xl p-1.5"
+                  sideOffset={12}
+                  className="w-56 bg-card border border-border/50 shadow-2xl rounded-2xl p-2 animate-in fade-in-0 zoom-in-95 duration-200"
                 >
                   {user ? (
                     <>
-                      {/* User Info Header */}
-                      <div className="px-3 py-2.5 mb-1">
-                        <p className="text-sm font-semibold text-foreground truncate">
-                          {profile?.full_name || t.userMenu.myProfile}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {profile?.email || user.email}
-                        </p>
+                      {/* User Info Header - Premium */}
+                      <div className="px-3 py-3 mb-1 bg-gradient-to-br from-muted/50 to-transparent rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-10 h-10 ring-2 ring-primary/20">
+                            <AvatarImage src={profile?.avatar_url || undefined} />
+                            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
+                              {profile?.full_name?.charAt(0) || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">
+                              {profile?.full_name || t.userMenu.myProfile}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {profile?.email || user.email}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <DropdownMenuSeparator className="bg-border/50" />
+                      <DropdownMenuSeparator className="bg-border/30 my-1" />
                       <DropdownMenuItem 
                         onClick={() => navigate("/profile")} 
-                        className="cursor-pointer rounded-xl py-2.5 px-3 focus:bg-muted"
+                        className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
                       >
-                        <User className="me-3 h-4 w-4 text-muted-foreground" />
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 me-3">
+                          <User className="h-4 w-4 text-primary" />
+                        </div>
                         <span className="font-medium">{t.userMenu.myProfile}</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => navigate("/settings")} 
-                        className="cursor-pointer rounded-xl py-2.5 px-3 focus:bg-muted"
+                        className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
                       >
-                        <Settings className="me-3 h-4 w-4 text-muted-foreground" />
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted me-3">
+                          <Settings className="h-4 w-4 text-muted-foreground" />
+                        </div>
                         <span className="font-medium">{t.userMenu.settings}</span>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator className="bg-border/50 my-1" />
+                      <DropdownMenuSeparator className="bg-border/30 my-1" />
                       <DropdownMenuItem
                         onClick={handleLogout}
-                        className="cursor-pointer rounded-xl py-2.5 px-3 text-destructive focus:text-destructive focus:bg-destructive/10"
+                        className="cursor-pointer rounded-xl py-3 px-3 text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors duration-150"
                       >
-                        <LogOut className="me-3 h-4 w-4" />
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-destructive/10 me-3">
+                          <LogOut className="h-4 w-4 text-destructive" />
+                        </div>
                         <span className="font-medium">{t.userMenu.logout}</span>
                       </DropdownMenuItem>
                     </>
                   ) : (
                     <DropdownMenuItem 
                       onClick={() => navigate("/auth")} 
-                      className="cursor-pointer rounded-xl py-2.5 px-3 focus:bg-muted"
+                      className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
                     >
-                      <LogIn className="me-3 h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 me-3">
+                        <LogIn className="h-4 w-4 text-primary" />
+                      </div>
                       <span className="font-medium">{t.auth.login}</span>
                     </DropdownMenuItem>
                   )}
