@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MapPin, User, Check, X, Briefcase } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentArtist, useArtistBookings, useUpdateBookingStatus } from "@/hooks/useArtistDashboard";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { formatBookingTime } from "@/lib/locale";
 import { format } from "date-fns";
+import { ar, enUS } from "date-fns/locale";
 import { toast } from "sonner";
 
 const ArtistBookings = () => {
@@ -16,6 +18,9 @@ const ArtistBookings = () => {
   const { data: artist, isLoading: artistLoading } = useCurrentArtist();
   const { data: bookings, isLoading: bookingsLoading } = useArtistBookings();
   const updateBookingStatus = useUpdateBookingStatus();
+  const { t, isRTL, language } = useLanguage();
+
+  const dateLocale = language === "ar" ? ar : enUS;
 
   if (authLoading || artistLoading) {
     return (
@@ -35,15 +40,15 @@ const ArtistBookings = () => {
 
   if (!user || !artist) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-          <h1 className="text-xl font-bold text-foreground">Bookings</h1>
+          <h1 className="text-xl font-bold text-foreground">{t.artistBookings.title}</h1>
         </header>
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <Briefcase className="w-16 h-16 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">Not an Artist</h2>
-          <p className="text-muted-foreground mb-6">You don't have an artist profile yet</p>
-          <Button onClick={() => navigate("/home")}>Go Home</Button>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t.artistBookings.notAnArtist}</h2>
+          <p className="text-muted-foreground mb-6">{t.artistBookings.noArtistProfile}</p>
+          <Button onClick={() => navigate("/home")}>{t.artistBookings.goHome}</Button>
         </div>
         <BottomNavigation />
       </div>
@@ -53,9 +58,14 @@ const ArtistBookings = () => {
   const handleBookingAction = async (bookingId: string, status: "confirmed" | "cancelled" | "completed") => {
     try {
       await updateBookingStatus.mutateAsync({ bookingId, status });
-      toast.success(`Booking ${status}`);
-    } catch (error) {
-      toast.error("Failed to update booking");
+      const messages: Record<string, string> = {
+        confirmed: t.artistBookings.bookingConfirmed,
+        cancelled: t.artistBookings.bookingDeclined,
+        completed: t.artistBookings.bookingCompleted,
+      };
+      toast.success(messages[status]);
+    } catch {
+      toast.error(t.artistBookings.failedToUpdate);
     }
   };
 
@@ -73,15 +83,26 @@ const ArtistBookings = () => {
     return styles[status] || styles.pending;
   };
 
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      pending: t.artistBookings.statusPending,
+      confirmed: t.artistBookings.statusConfirmed,
+      completed: t.artistBookings.statusCompleted,
+      cancelled: t.artistBookings.statusCancelled,
+    };
+    return labels[status] || status;
+  };
+
   const { upcoming = [], past = [] } = bookings || {};
+  const iconMargin = isRTL ? "ml-1" : "mr-1";
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
       <ArtistHeader />
 
       <div className="px-5 py-4 space-y-6">
         <section>
-          <h2 className="text-lg font-semibold text-foreground mb-3">Upcoming Bookings</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-3">{t.artistBookings.upcomingBookings}</h2>
           {bookingsLoading ? (
             <div className="space-y-3">
               {[1, 2].map((i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)}
@@ -97,17 +118,17 @@ const ArtistBookings = () => {
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-foreground">
-                          {booking.customer?.full_name || "Customer"}
+                          {booking.customer?.full_name || t.common.customer}
                         </h3>
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full capitalize ${getStatusBadge(booking.status)}`}>
-                          {booking.status}
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getStatusBadge(booking.status)}`}>
+                          {getStatusLabel(booking.status)}
                         </span>
                       </div>
                       <p className="text-sm text-primary mt-0.5">{booking.service?.name}</p>
                       <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3.5 h-3.5" />
-                          <span>{format(new Date(booking.booking_date), "MMM d, yyyy")}</span>
+                          <span>{format(new Date(booking.booking_date), "d MMM yyyy", { locale: dateLocale })}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5" />
@@ -128,16 +149,16 @@ const ArtistBookings = () => {
                         className="flex-1"
                         onClick={() => handleBookingAction(booking.id, "cancelled")}
                       >
-                        <X className="w-4 h-4 mr-1" />
-                        Decline
+                        <X className={`w-4 h-4 ${iconMargin}`} />
+                        {t.artistBookings.decline}
                       </Button>
                       <Button 
                         size="sm" 
                         className="flex-1"
                         onClick={() => handleBookingAction(booking.id, "confirmed")}
                       >
-                        <Check className="w-4 h-4 mr-1" />
-                        Confirm
+                        <Check className={`w-4 h-4 ${iconMargin}`} />
+                        {t.artistBookings.confirm}
                       </Button>
                     </div>
                   )}
@@ -148,8 +169,8 @@ const ArtistBookings = () => {
                         className="w-full"
                         onClick={() => handleBookingAction(booking.id, "completed")}
                       >
-                        <Check className="w-4 h-4 mr-1" />
-                        Mark Completed
+                        <Check className={`w-4 h-4 ${iconMargin}`} />
+                        {t.artistBookings.markCompleted}
                       </Button>
                     </div>
                   )}
@@ -159,13 +180,13 @@ const ArtistBookings = () => {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>No upcoming bookings</p>
+              <p>{t.artistBookings.noUpcomingBookings}</p>
             </div>
           )}
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-foreground mb-3">Past Bookings</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-3">{t.artistBookings.pastBookings}</h2>
           {past.length > 0 ? (
             <div className="space-y-3">
               {past.slice(0, 5).map((booking) => (
@@ -177,14 +198,14 @@ const ArtistBookings = () => {
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <h3 className="font-medium text-foreground">
-                          {booking.customer?.full_name || "Customer"}
+                          {booking.customer?.full_name || t.common.customer}
                         </h3>
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full capitalize ${getStatusBadge(booking.status)}`}>
-                          {booking.status}
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getStatusBadge(booking.status)}`}>
+                          {getStatusLabel(booking.status)}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {booking.service?.name} • {format(new Date(booking.booking_date), "MMM d")}
+                        {booking.service?.name} • {format(new Date(booking.booking_date), "d MMM", { locale: dateLocale })}
                       </p>
                     </div>
                   </div>
@@ -193,7 +214,7 @@ const ArtistBookings = () => {
             </div>
           ) : (
             <div className="text-center py-6 text-muted-foreground">
-              <p>No past bookings</p>
+              <p>{t.artistBookings.noPastBookings}</p>
             </div>
           )}
         </section>

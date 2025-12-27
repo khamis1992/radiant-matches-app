@@ -160,7 +160,7 @@ const AdminArtists = () => {
                             <AvatarFallback>{artist.profile?.full_name?.[0] || "A"}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{artist.profile?.full_name || "N/A"}</p>
+                            <p className="font-medium">{artist.profile?.full_name || t.common.notAvailable}</p>
                             <p className="text-sm text-muted-foreground">{artist.profile?.email}</p>
                           </div>
                         </div>

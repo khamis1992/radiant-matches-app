@@ -18,6 +18,7 @@ import {
 import { Plus, Pencil, Trash2, Clock, Briefcase } from "lucide-react";
 import { formatQAR } from "@/lib/locale";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   useCurrentArtist,
   useArtistServices,
@@ -44,6 +45,7 @@ const ArtistServices = () => {
   const createService = useCreateService();
   const updateService = useUpdateService();
   const deleteService = useDeleteService();
+  const { t, isRTL } = useLanguage();
 
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<ArtistService | null>(null);
@@ -74,15 +76,15 @@ const ArtistServices = () => {
 
   if (!user || !artist) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-          <h1 className="text-xl font-bold text-foreground">Services</h1>
+          <h1 className="text-xl font-bold text-foreground">{t.artistServices.title}</h1>
         </header>
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <Briefcase className="w-16 h-16 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">Not an Artist</h2>
-          <p className="text-muted-foreground mb-6">You don't have an artist profile yet</p>
-          <Button onClick={() => navigate("/home")}>Go Home</Button>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t.artistBookings.notAnArtist}</h2>
+          <p className="text-muted-foreground mb-6">{t.artistBookings.noArtistProfile}</p>
+          <Button onClick={() => navigate("/home")}>{t.artistBookings.goHome}</Button>
         </div>
         <BottomNavigation />
       </div>
@@ -118,91 +120,95 @@ const ArtistServices = () => {
     try {
       if (editingService) {
         await updateService.mutateAsync({ id: editingService.id, ...serviceForm });
-        toast.success("Service updated");
+        toast.success(t.artistServices.serviceUpdated);
       } else {
         await createService.mutateAsync(serviceForm);
-        toast.success("Service created");
+        toast.success(t.artistServices.serviceCreated);
       }
       setServiceDialogOpen(false);
-    } catch (error) {
-      toast.error("Failed to save service");
+    } catch {
+      toast.error(t.artistServices.failedToSave);
     }
   };
 
   const handleServiceDelete = async (serviceId: string) => {
     try {
       await deleteService.mutateAsync(serviceId);
-      toast.success("Service deleted");
-    } catch (error) {
-      toast.error("Failed to delete service");
+      toast.success(t.artistServices.serviceDeleted);
+    } catch {
+      toast.error(t.artistServices.failedToDelete);
     }
   };
 
+  const iconMargin = isRTL ? "ml-1" : "mr-1";
+
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
       <ArtistHeader />
 
       <div className="px-5 py-4 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Your Services</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t.artistServices.yourServices}</h2>
           <Dialog open={serviceDialogOpen} onOpenChange={setServiceDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" onClick={() => openServiceDialog()}>
-                <Plus className="w-4 h-4 mr-1" />
-                Add Service
+                <Plus className={`w-4 h-4 ${iconMargin}`} />
+                {t.artistServices.addService}
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent dir={isRTL ? "rtl" : "ltr"}>
               <DialogHeader>
-                <DialogTitle>{editingService ? "Edit Service" : "Add New Service"}</DialogTitle>
+                <DialogTitle>{editingService ? t.artistServices.editService : t.artistServices.addNewService}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div>
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">{t.artistServices.serviceName}</Label>
                   <Input
                     id="name"
                     value={serviceForm.name}
                     onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
-                    placeholder="e.g., Bridal Makeup"
+                    placeholder={t.artistServices.serviceNamePlaceholder}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">{t.artistServices.description}</Label>
                   <Textarea
                     id="description"
                     value={serviceForm.description}
                     onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
-                    placeholder="Describe your service..."
+                    placeholder={t.artistServices.descriptionPlaceholder}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="price">Price (QAR)</Label>
+                    <Label htmlFor="price">{t.artistServices.price}</Label>
                     <Input
                       id="price"
                       type="number"
                       value={serviceForm.price}
                       onChange={(e) => setServiceForm({ ...serviceForm, price: parseFloat(e.target.value) || 0 })}
+                      dir="ltr"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="duration">Duration (min)</Label>
+                    <Label htmlFor="duration">{t.artistServices.duration}</Label>
                     <Input
                       id="duration"
                       type="number"
                       value={serviceForm.duration_minutes}
                       onChange={(e) => setServiceForm({ ...serviceForm, duration_minutes: parseInt(e.target.value) || 60 })}
+                      dir="ltr"
                     />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">{t.artistServices.category}</Label>
                   <Select
                     value={serviceForm.category}
                     onValueChange={(value) => setServiceForm({ ...serviceForm, category: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
+                      <SelectValue placeholder={t.artistServices.selectCategory} />
                     </SelectTrigger>
                     <SelectContent>
                       {SERVICE_CATEGORIES.map((cat) => (
@@ -214,7 +220,7 @@ const ArtistServices = () => {
                   </Select>
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="active">Active</Label>
+                  <Label htmlFor="active">{t.artistServices.active}</Label>
                   <Switch
                     id="active"
                     checked={serviceForm.is_active}
@@ -222,7 +228,7 @@ const ArtistServices = () => {
                   />
                 </div>
                 <Button className="w-full" onClick={handleServiceSave}>
-                  {editingService ? "Update Service" : "Create Service"}
+                  {t.artistServices.save}
                 </Button>
               </div>
             </DialogContent>
@@ -242,7 +248,9 @@ const ArtistServices = () => {
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-foreground">{service.name}</h3>
                       {!service.is_active && (
-                        <span className="px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded-full">Inactive</span>
+                        <span className="px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded-full">
+                          {isRTL ? "غير مفعّلة" : "Inactive"}
+                        </span>
                       )}
                     </div>
                     {service.category && (
@@ -257,7 +265,7 @@ const ArtistServices = () => {
                       </div>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>{service.duration_minutes} min</span>
+                        <span>{service.duration_minutes} {t.artistServices.minutes}</span>
                       </div>
                     </div>
                   </div>
@@ -282,8 +290,8 @@ const ArtistServices = () => {
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <Briefcase className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>No services yet</p>
-            <p className="text-sm mt-1">Add your first service to start receiving bookings</p>
+            <p>{t.artistServices.noServicesYet}</p>
+            <p className="text-sm mt-1">{t.artistServices.addFirstService}</p>
           </div>
         )}
       </div>
