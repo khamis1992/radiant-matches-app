@@ -42,6 +42,7 @@ import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminServices from "./pages/admin/AdminServices";
 import AdminBanners from "./pages/admin/AdminBanners";
+import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
 import ArtistSignup from "./pages/ArtistSignup";
 
 const queryClient = new QueryClient();
@@ -191,6 +192,7 @@ const App = () => (
           <Route path="/admin/reviews" element={<AdminReviews />} />
           <Route path="/admin/services" element={<AdminServices />} />
           <Route path="/admin/banners" element={<AdminBanners />} />
+          <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
