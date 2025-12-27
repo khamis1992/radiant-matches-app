@@ -211,7 +211,7 @@ const Home = () => {
               {/* Notification Button */}
               <button
                 onClick={() => navigate("/notifications")}
-                className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-muted/50 hover:bg-muted active:scale-95 transition-all duration-200"
+                className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-muted hover:bg-muted/80 active:scale-95 transition-all duration-200"
               >
                 <Bell className="w-5 h-5 text-foreground" />
                 {unreadCount > 0 && (
@@ -224,7 +224,7 @@ const Home = () => {
               {/* Profile Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center justify-center w-10 h-10 rounded-2xl bg-muted/50 hover:bg-muted active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+                  <button className="flex items-center justify-center w-10 h-10 rounded-2xl bg-muted hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                     <Avatar className="w-8 h-8 ring-2 ring-background shadow-sm">
                       <AvatarImage
                         src={profile?.avatar_url || undefined}

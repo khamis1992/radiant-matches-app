@@ -17,27 +17,26 @@ const LanguageSwitcher = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="rounded-full"
+        <button 
+          className="flex items-center justify-center w-10 h-10 rounded-2xl bg-muted hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           aria-label={t.common.changeLanguage}
         >
-          <Globe className="h-5 w-5" />
-        </Button>
+          <Globe className="w-5 h-5 text-foreground" />
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align={isRTL ? "start" : "end"} 
-        className="bg-card border border-border"
+        sideOffset={8}
+        className="bg-card/95 backdrop-blur-xl border border-border/50 shadow-xl rounded-2xl p-1.5"
       >
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang}
             onClick={() => setLanguage(lang)}
-            className={`cursor-pointer ${language === lang ? "bg-primary/10 text-primary" : ""}`}
+            className={`cursor-pointer rounded-xl py-2.5 px-3 ${language === lang ? "bg-primary/10 text-primary" : "focus:bg-muted"}`}
             aria-current={language === lang ? "true" : undefined}
           >
-            {languageNames[lang]}
+            <span className="font-medium">{languageNames[lang]}</span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
