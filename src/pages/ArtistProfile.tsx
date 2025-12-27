@@ -330,7 +330,11 @@ const ArtistProfile = () => {
                 <ServiceCard
                   key={service.id}
                   name={service.name}
+                  nameAr={(service as any).name_ar}
+                  nameEn={(service as any).name_en}
                   description={service.description || ""}
+                  descriptionAr={(service as any).description_ar}
+                  descriptionEn={(service as any).description_en}
                   duration={`${service.duration_minutes} mins`}
                   price={Number(service.price)}
                   onBook={() => handleBookService(service.id, service.name, Number(service.price))}
