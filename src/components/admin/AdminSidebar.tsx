@@ -9,6 +9,7 @@ import {
   Tag,
   Settings,
   ChevronLeft,
+  ChevronRight,
   LogOut,
   Bell,
   X,
@@ -27,29 +28,33 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 import { formatDistanceToNow } from "date-fns";
-import { ar } from "date-fns/locale";
-
-const navItems = [
-  { to: "/admin", icon: LayoutDashboard, label: "لوحة التحكم" },
-  { to: "/admin/users", icon: Users, label: "المستخدمين" },
-  { to: "/admin/artists", icon: Palette, label: "الفنانين" },
-  { to: "/admin/bookings", icon: Calendar, label: "الحجوزات" },
-  { to: "/admin/services", icon: Scissors, label: "الخدمات" },
-  { to: "/admin/reviews", icon: Star, label: "المراجعات" },
-  { to: "/admin/promo-codes", icon: Tag, label: "أكواد الخصم" },
-  { to: "/admin/banners", icon: Image, label: "البنرات" },
-  { to: "/admin/finance", icon: DollarSign, label: "المالية" },
-  { to: "/admin/withdrawals", icon: Wallet, label: "طلبات السحب" },
-  { to: "/admin/notifications", icon: Bell, label: "سجل الإشعارات" },
-  { to: "/admin/settings", icon: Settings, label: "الإعدادات" },
-];
+import { ar, enUS } from "date-fns/locale";
 
 export const AdminSidebar = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { t, isRTL, language } = useLanguage();
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotifications } = useAdminNotifications();
+
+  const dateLocale = language === "ar" ? ar : enUS;
+
+  const navItems = [
+    { to: "/admin", icon: LayoutDashboard, label: t.adminNav.dashboard },
+    { to: "/admin/users", icon: Users, label: t.adminNav.users },
+    { to: "/admin/artists", icon: Palette, label: t.adminNav.artists },
+    { to: "/admin/bookings", icon: Calendar, label: t.adminNav.bookings },
+    { to: "/admin/services", icon: Scissors, label: t.adminNav.services },
+    { to: "/admin/reviews", icon: Star, label: t.adminNav.reviews },
+    { to: "/admin/promo-codes", icon: Tag, label: t.adminNav.promoCodes },
+    { to: "/admin/banners", icon: Image, label: t.adminNav.banners },
+    { to: "/admin/finance", icon: DollarSign, label: t.adminNav.finance },
+    { to: "/admin/withdrawals", icon: Wallet, label: t.adminNav.withdrawals },
+    { to: "/admin/notifications", icon: Bell, label: t.adminNav.notificationLog },
+    { to: "/admin/settings", icon: Settings, label: t.adminNav.settings },
+  ];
 
   const handleSignOut = async () => {
     await signOut();
@@ -69,12 +74,17 @@ export const AdminSidebar = () => {
     }
   };
 
+  const BackIcon = isRTL ? ChevronLeft : ChevronRight;
+
   return (
-    <aside className="fixed right-0 top-0 h-full w-64 bg-card border-l border-border flex flex-col z-50">
+    <aside className={cn(
+      "fixed top-0 h-full w-64 bg-card border-border flex flex-col z-50",
+      isRTL ? "right-0 border-l" : "left-0 border-r"
+    )}>
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-bold text-foreground">لوحة الإدارة</h1>
+          <h1 className="text-lg font-bold text-foreground">{t.adminNav.adminPanel}</h1>
           <div className="flex items-center gap-1">
             {/* Notifications */}
             <Popover>
@@ -82,15 +92,18 @@ export const AdminSidebar = () => {
                 <Button variant="ghost" size="icon" className="h-8 w-8 relative">
                   <Bell className="h-4 w-4" />
                   {unreadCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                    <Badge className={cn(
+                      "absolute -top-1 h-5 w-5 p-0 flex items-center justify-center text-xs",
+                      isRTL ? "-left-1" : "-right-1"
+                    )}>
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </Badge>
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-0" align="start" dir="rtl">
+              <PopoverContent className="w-80 p-0" align="start" dir={isRTL ? "rtl" : "ltr"}>
                 <div className="flex items-center justify-between p-3 border-b">
-                  <h4 className="font-semibold">الإشعارات</h4>
+                  <h4 className="font-semibold">{t.adminNav.notifications}</h4>
                   <div className="flex gap-1">
                     {unreadCount > 0 && (
                       <Button
@@ -99,8 +112,8 @@ export const AdminSidebar = () => {
                         onClick={markAllAsRead}
                         className="h-7 text-xs"
                       >
-                        <Check className="h-3 w-3 ml-1" />
-                        قراءة الكل
+                        <Check className={cn("h-3 w-3", isRTL ? "ml-1" : "mr-1")} />
+                        {t.adminNav.markAllRead}
                       </Button>
                     )}
                     {notifications.length > 0 && (
@@ -118,7 +131,7 @@ export const AdminSidebar = () => {
                 <ScrollArea className="h-80">
                   {notifications.length === 0 ? (
                     <div className="p-6 text-center text-muted-foreground text-sm">
-                      لا توجد إشعارات
+                      {t.adminNav.noNotifications}
                     </div>
                   ) : (
                     <div className="divide-y">
@@ -148,7 +161,7 @@ export const AdminSidebar = () => {
                               <p className="text-xs text-muted-foreground mt-1">
                                 {formatDistanceToNow(notification.createdAt, {
                                   addSuffix: true,
-                                  locale: ar,
+                                  locale: dateLocale,
                                 })}
                               </p>
                             </div>
@@ -170,7 +183,7 @@ export const AdminSidebar = () => {
               onClick={() => navigate("/home")}
               className="h-8 w-8"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <BackIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -208,7 +221,7 @@ export const AdminSidebar = () => {
           onClick={handleSignOut}
         >
           <LogOut className="h-5 w-5" />
-          <span>تسجيل الخروج</span>
+          <span>{t.adminNav.signOut}</span>
         </Button>
       </div>
     </aside>

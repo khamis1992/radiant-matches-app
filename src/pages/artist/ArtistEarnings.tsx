@@ -19,10 +19,11 @@ import { TrendingUp, TrendingDown, Briefcase, Star, Wallet, Clock, CheckCircle, 
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentArtist, useArtistBookings, useArtistEarnings } from "@/hooks/useArtistDashboard";
 import { useArtistWithdrawals, useCreateWithdrawal } from "@/hooks/useWithdrawals";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { formatQAR } from "@/lib/locale";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
 
 const ArtistEarnings = () => {
   const navigate = useNavigate();
@@ -32,8 +33,10 @@ const ArtistEarnings = () => {
   const { data: earnings, isLoading: earningsLoading } = useArtistEarnings();
   const { data: withdrawals = [] } = useArtistWithdrawals(artist?.id);
   const createWithdrawal = useCreateWithdrawal();
+  const { t, isRTL, language } = useLanguage();
 
   const { upcoming = [] } = bookings || {};
+  const dateLocale = language === "ar" ? ar : enUS;
 
   // حالة Dialog السحب
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
@@ -117,42 +120,43 @@ const ArtistEarnings = () => {
   };
 
   const getStatusBadge = (status: string) => {
+    const iconMargin = isRTL ? "ml-1" : "mr-1";
     switch (status) {
       case "pending":
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200"><Clock className="w-3 h-3 mr-1" />قيد المراجعة</Badge>;
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200"><Clock className={`w-3 h-3 ${iconMargin}`} />{t.earnings.statusPending}</Badge>;
       case "approved":
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200"><CheckCircle className="w-3 h-3 mr-1" />تمت الموافقة</Badge>;
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200"><CheckCircle className={`w-3 h-3 ${iconMargin}`} />{t.earnings.statusApproved}</Badge>;
       case "completed":
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200"><CheckCircle className="w-3 h-3 mr-1" />مكتمل</Badge>;
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200"><CheckCircle className={`w-3 h-3 ${iconMargin}`} />{t.earnings.statusCompleted}</Badge>;
       case "rejected":
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200"><XCircle className="w-3 h-3 mr-1" />مرفوض</Badge>;
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200"><XCircle className={`w-3 h-3 ${iconMargin}`} />{t.earnings.statusRejected}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24" dir="rtl">
+    <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
       <ArtistHeader />
 
       {/* Stats Overview */}
       <div className="px-5 py-4">
         <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-          <div className="grid grid-cols-3 divide-x divide-border">
+          <div className={`grid grid-cols-3 ${isRTL ? "divide-x-reverse" : ""} divide-x divide-border`}>
             <div className="text-center">
               <p className="text-2xl font-bold text-foreground">{upcoming.length}</p>
-              <p className="text-xs text-muted-foreground mt-1">القادمة</p>
+              <p className="text-xs text-muted-foreground mt-1">{t.earnings.upcoming}</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1">
                 <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                 <p className="text-2xl font-bold text-foreground">{artist.rating || 0}</p>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">التقييم</p>
+              <p className="text-xs text-muted-foreground mt-1">{t.earnings.rating}</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-foreground">{artist.total_reviews || 0}</p>
-              <p className="text-xs text-muted-foreground mt-1">التقييمات</p>
+              <p className="text-xs text-muted-foreground mt-1">{t.earnings.reviews}</p>
             </div>
           </div>
         </div>
@@ -166,12 +170,12 @@ const ArtistEarnings = () => {
           </div>
         ) : (
           <>
-            {/* الرصيد المتاح وزر السحب */}
+            {/* Balance and withdraw button */}
             <div className="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-5 text-white shadow-lg">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Wallet className="w-5 h-5" />
-                  <span className="font-medium">الرصيد المتاح</span>
+                  <span className="font-medium">{t.earnings.availableBalance}</span>
                 </div>
                 <Button 
                   size="sm" 
@@ -181,14 +185,14 @@ const ArtistEarnings = () => {
                   className="gap-1"
                 >
                   <ArrowDownToLine className="w-4 h-4" />
-                  سحب
+                  {t.earnings.withdraw}
                 </Button>
               </div>
               <p className="text-3xl font-bold">{formatQAR(availableBalance)}</p>
               {pendingBalance > 0 && (
                 <p className="text-sm text-white/70 mt-2">
-                  <Clock className="w-3 h-3 inline mr-1" />
-                  {formatQAR(pendingBalance)} قيد السحب
+                  <Clock className={`w-3 h-3 inline ${isRTL ? "ml-1" : "mr-1"}`} />
+                  {formatQAR(pendingBalance)} {t.earnings.pendingWithdrawal}
                 </p>
               )}
             </div>
@@ -196,36 +200,36 @@ const ArtistEarnings = () => {
             {/* Revenue Stats */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-                <p className="text-sm text-muted-foreground">إجمالي الأرباح</p>
+                <p className="text-sm text-muted-foreground">{t.earnings.totalEarnings}</p>
                 <p className="text-2xl font-bold text-foreground mt-1">
                   {formatQAR(earnings?.totalEarnings || 0)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {earnings?.completedBookings || 0} حجز مكتمل
+                  {earnings?.completedBookings || 0} {t.earnings.completedBookings}
                 </p>
               </div>
               <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-                <p className="text-sm text-muted-foreground">قيد التأكيد</p>
+                <p className="text-sm text-muted-foreground">{t.earnings.pendingEarnings}</p>
                 <p className="text-2xl font-bold text-primary mt-1">
                   {formatQAR(earnings?.pendingEarnings || 0)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  حجوزات مؤكدة
+                  {t.earnings.confirmedBookings}
                 </p>
               </div>
             </div>
 
-            {/* طلبات السحب الأخيرة */}
+            {/* Recent withdrawal requests */}
             {withdrawals.length > 0 && (
               <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-                <h3 className="font-semibold text-foreground mb-3">طلبات السحب</h3>
+                <h3 className="font-semibold text-foreground mb-3">{t.earnings.withdrawalRequests}</h3>
                 <div className="space-y-3">
                   {withdrawals.slice(0, 3).map((withdrawal) => (
                     <div key={withdrawal.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                       <div>
                         <p className="font-medium text-foreground">{formatQAR(withdrawal.amount)}</p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(withdrawal.created_at), "d MMM yyyy", { locale: ar })}
+                          {format(new Date(withdrawal.created_at), "d MMM yyyy", { locale: dateLocale })}
                         </p>
                       </div>
                       {getStatusBadge(withdrawal.status)}
@@ -237,7 +241,7 @@ const ArtistEarnings = () => {
 
             {/* Monthly Comparison */}
             <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-              <h3 className="font-semibold text-foreground mb-3">هذا الشهر</h3>
+              <h3 className="font-semibold text-foreground mb-3">{t.earnings.thisMonth}</h3>
               <div className="flex items-end justify-between">
                 <div>
                   <p className="text-3xl font-bold text-foreground">
@@ -260,12 +264,12 @@ const ArtistEarnings = () => {
                           </span>
                         </>
                       )}
-                      <span className="text-sm text-muted-foreground">مقارنة بالشهر الماضي</span>
+                      <span className="text-sm text-muted-foreground">{t.earnings.vsLastMonth}</span>
                     </div>
                   )}
                 </div>
-                <div className="text-left">
-                  <p className="text-sm text-muted-foreground">الشهر الماضي</p>
+                <div className={isRTL ? "text-left" : "text-right"}>
+                  <p className="text-sm text-muted-foreground">{t.earnings.lastMonth}</p>
                   <p className="text-lg font-medium text-muted-foreground">
                     {formatQAR(earnings?.lastMonthEarnings || 0)}
                   </p>
@@ -276,7 +280,7 @@ const ArtistEarnings = () => {
             {/* Earnings Chart */}
             {earnings && earnings.monthlyTrend.length > 0 && (
               <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-                <h3 className="font-semibold text-foreground mb-4">تطور الأرباح</h3>
+                <h3 className="font-semibold text-foreground mb-4">{t.earnings.revenueTrend}</h3>
                 <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={earnings.monthlyTrend}>
@@ -304,7 +308,7 @@ const ArtistEarnings = () => {
                           border: "1px solid hsl(var(--border))",
                           borderRadius: "8px",
                         }}
-                        formatter={(value: number) => [formatQAR(value), "الأرباح"]}
+                        formatter={(value: number) => [formatQAR(value), t.earnings.title]}
                       />
                       <Area
                         type="monotone"
@@ -322,13 +326,13 @@ const ArtistEarnings = () => {
             {/* Service Breakdown */}
             {earnings && earnings.serviceBreakdown.length > 0 && (
               <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-                <h3 className="font-semibold text-foreground mb-3">أفضل الخدمات</h3>
+                <h3 className="font-semibold text-foreground mb-3">{t.earnings.topServices}</h3>
                 <div className="space-y-3">
                   {earnings.serviceBreakdown.slice(0, 5).map((service) => (
                     <div key={service.name} className="flex items-center justify-between">
                       <div className="flex-1">
                         <p className="font-medium text-foreground">{service.name}</p>
-                        <p className="text-sm text-muted-foreground">{service.count} حجز</p>
+                        <p className="text-sm text-muted-foreground">{service.count} {t.earnings.bookings}</p>
                       </div>
                       <p className="font-semibold text-foreground">{formatQAR(service.earnings)}</p>
                     </div>
@@ -341,30 +345,30 @@ const ArtistEarnings = () => {
             {earnings && earnings.completedBookings === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <Briefcase className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>لا توجد أرباح بعد</p>
-                <p className="text-sm mt-1">أكملي أول حجز لرؤية الأرباح</p>
+                <p>{t.earnings.noEarningsYet}</p>
+                <p className="text-sm mt-1">{t.earnings.completeFirstBooking}</p>
               </div>
             )}
           </>
         )}
       </div>
 
-      {/* Dialog طلب السحب */}
+      {/* Withdrawal Request Dialog */}
       <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
-        <DialogContent className="sm:max-w-md" dir="rtl">
+        <DialogContent className="sm:max-w-md" dir={isRTL ? "rtl" : "ltr"}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ArrowDownToLine className="h-5 w-5" />
-              طلب سحب الأرباح
+              {t.earnings.requestWithdrawal}
             </DialogTitle>
             <DialogDescription>
-              الرصيد المتاح: {formatQAR(availableBalance)}
+              {t.earnings.availableBalance}: {formatQAR(availableBalance)}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">المبلغ (ر.ق)</Label>
+              <Label htmlFor="amount">{t.earnings.amount}</Label>
               <Input
                 id="amount"
                 type="number"
@@ -380,25 +384,25 @@ const ArtistEarnings = () => {
                 size="sm"
                 onClick={() => setWithdrawForm({ ...withdrawForm, amount: availableBalance.toString() })}
               >
-                سحب كل الرصيد
+                {t.earnings.withdrawAll}
               </Button>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bank_name">اسم البنك</Label>
+              <Label htmlFor="bank_name">{t.earnings.bankName}</Label>
               <Input
                 id="bank_name"
-                placeholder="مثال: بنك قطر الوطني"
+                placeholder={t.earnings.bankNamePlaceholder}
                 value={withdrawForm.bank_name}
                 onChange={(e) => setWithdrawForm({ ...withdrawForm, bank_name: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="account_number">رقم الحساب / IBAN</Label>
+              <Label htmlFor="account_number">{t.earnings.accountNumber}</Label>
               <Input
                 id="account_number"
-                placeholder="QA00 0000 0000 0000 0000 0000 0000"
+                placeholder={t.earnings.accountNumberPlaceholder}
                 value={withdrawForm.account_number}
                 onChange={(e) => setWithdrawForm({ ...withdrawForm, account_number: e.target.value })}
                 dir="ltr"
@@ -406,20 +410,20 @@ const ArtistEarnings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="account_holder_name">اسم صاحب الحساب</Label>
+              <Label htmlFor="account_holder_name">{t.earnings.accountHolderName}</Label>
               <Input
                 id="account_holder_name"
-                placeholder="الاسم كما يظهر في البنك"
+                placeholder={t.earnings.accountHolderPlaceholder}
                 value={withdrawForm.account_holder_name}
                 onChange={(e) => setWithdrawForm({ ...withdrawForm, account_holder_name: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">ملاحظات (اختياري)</Label>
+              <Label htmlFor="notes">{t.earnings.notes}</Label>
               <Textarea
                 id="notes"
-                placeholder="أي ملاحظات إضافية..."
+                placeholder={t.earnings.notesPlaceholder}
                 value={withdrawForm.notes}
                 onChange={(e) => setWithdrawForm({ ...withdrawForm, notes: e.target.value })}
                 rows={2}
@@ -431,11 +435,11 @@ const ArtistEarnings = () => {
               disabled={createWithdrawal.isPending || !withdrawForm.amount || !withdrawForm.bank_name || !withdrawForm.account_number || !withdrawForm.account_holder_name}
               className="w-full"
             >
-              {createWithdrawal.isPending ? "جاري الإرسال..." : "إرسال طلب السحب"}
+              {createWithdrawal.isPending ? t.earnings.submitting : t.earnings.submitWithdrawal}
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
-              سيتم مراجعة طلبك خلال 1-3 أيام عمل
+              {t.earnings.reviewTime}
             </p>
           </div>
         </DialogContent>

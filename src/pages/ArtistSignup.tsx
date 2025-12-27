@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,7 @@ interface InvitationData {
 const ArtistSignup = () => {
   const navigate = useNavigate();
   const { token } = useParams<{ token: string }>();
+  const { t, isRTL } = useLanguage();
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -32,14 +34,14 @@ const ArtistSignup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
 
-  const emailSchema = z.string().email("يرجى إدخال بريد إلكتروني صحيح");
-  const passwordSchema = z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+  const emailSchema = z.string().email(t.artistSignup.invalidEmail);
+  const passwordSchema = z.string().min(6, t.artistSignup.passwordMin);
 
-  // التحقق من صلاحية الدعوة
+  // Check invitation validity
   useEffect(() => {
     const checkInvitation = async () => {
       if (!token) {
-        setError("رابط غير صالح");
+        setError(t.artistSignup.invalidLink);
         setLoading(false);
         return;
       }
@@ -52,21 +54,21 @@ const ArtistSignup = () => {
           .single();
 
         if (fetchError || !data) {
-          setError("رابط الدعوة غير صالح أو منتهي الصلاحية");
+          setError(t.artistSignup.invalidLink);
           setLoading(false);
           return;
         }
 
-        // التحقق من انتهاء الصلاحية
+        // Check expiration
         if (new Date(data.expires_at) < new Date()) {
-          setError("انتهت صلاحية رابط الدعوة");
+          setError(t.artistSignup.linkExpired);
           setLoading(false);
           return;
         }
 
-        // التحقق من الاستخدام السابق
+        // Check previous usage
         if (data.used_at) {
-          setError("تم استخدام هذا الرابط مسبقاً");
+          setError(t.artistSignup.linkUsed);
           setLoading(false);
           return;
         }
@@ -75,13 +77,13 @@ const ArtistSignup = () => {
         setFullName(data.full_name || "");
         setLoading(false);
       } catch {
-        setError("حدث خطأ أثناء التحقق من الدعوة");
+        setError(t.artistSignup.errorCheckingInvitation);
         setLoading(false);
       }
     };
 
     checkInvitation();
-  }, [token]);
+  }, [token, t.artistSignup]);
 
   const validateForm = (): boolean => {
     const newErrors: { email?: string; password?: string; fullName?: string } = {};
@@ -97,7 +99,7 @@ const ArtistSignup = () => {
     }
     
     if (!fullName.trim()) {
-      newErrors.fullName = "الاسم الكامل مطلوب";
+      newErrors.fullName = t.artistSignup.fullNameRequired;
     }
     
     setFormErrors(newErrors);
@@ -112,7 +114,7 @@ const ArtistSignup = () => {
     setSubmitting(true);
 
     try {
-      // إنشاء الحساب
+      // Create account
       const { data: authData, error: signupError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -126,7 +128,7 @@ const ArtistSignup = () => {
 
       if (signupError) {
         if (signupError.message.includes("User already registered")) {
-          toast.error("يوجد حساب بهذا البريد بالفعل. يرجى تسجيل الدخول.");
+          toast.error(t.artistSignup.accountExists);
         } else {
           toast.error(signupError.message);
         }
@@ -134,11 +136,11 @@ const ArtistSignup = () => {
       }
 
       if (!authData.user) {
-        toast.error("حدث خطأ أثناء إنشاء الحساب");
+        toast.error(t.artistSignup.errorCreatingAccount);
         return;
       }
 
-      // استدعاء edge function لإكمال التسجيل كفنانة
+      // Call edge function to complete artist signup
       const { data: completeData, error: completeError } = await supabase.functions.invoke(
         "complete-artist-signup",
         {
@@ -151,31 +153,31 @@ const ArtistSignup = () => {
 
       if (completeError) {
         console.error("Error completing artist signup:", completeError);
-        toast.error("حدث خطأ أثناء إكمال التسجيل");
+        toast.error(t.artistSignup.errorCompletingSignup);
         return;
       }
 
       if (!completeData?.success) {
         console.error("Artist signup failed:", completeData?.error);
-        toast.error(completeData?.error || "حدث خطأ أثناء إكمال التسجيل");
+        toast.error(completeData?.error || t.artistSignup.errorCompletingSignup);
         return;
       }
 
-      toast.success("تم إنشاء حسابك بنجاح! يرجى التحقق من بريدك الإلكتروني.");
+      toast.success(t.artistSignup.accountCreatedSuccess);
       navigate("/auth", { replace: true });
       
     } catch (error) {
       console.error("Signup error:", error);
-      toast.error("حدث خطأ أثناء إنشاء الحساب");
+      toast.error(t.artistSignup.errorCreatingAccount);
     } finally {
       setSubmitting(false);
     }
   };
 
-  // حالة التحميل
+  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/10 flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/10 flex items-center justify-center" dir={isRTL ? "rtl" : "ltr"}>
         <div className="text-center space-y-4">
           <Skeleton className="w-24 h-24 rounded-full mx-auto" />
           <Skeleton className="h-6 w-48 mx-auto" />
@@ -185,20 +187,20 @@ const ArtistSignup = () => {
     );
   }
 
-  // حالة الخطأ
+  // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/10 flex items-center justify-center p-6" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/10 flex items-center justify-center p-6" dir={isRTL ? "rtl" : "ltr"}>
         <div className="bg-card rounded-3xl shadow-2xl p-8 max-w-md w-full text-center space-y-6">
           <div className="w-20 h-20 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
             <AlertCircle className="w-10 h-10 text-destructive" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">رابط غير صالح</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-2">{t.artistSignup.invalidLink}</h1>
             <p className="text-muted-foreground">{error}</p>
           </div>
           <Button onClick={() => navigate("/")} variant="outline" className="w-full">
-            العودة للصفحة الرئيسية
+            {t.artistSignup.backToHome}
           </Button>
         </div>
       </div>
@@ -206,7 +208,7 @@ const ArtistSignup = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/10 flex flex-col relative overflow-hidden" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/10 flex flex-col relative overflow-hidden" dir={isRTL ? "rtl" : "ltr"}>
       {/* Decorative shapes */}
       <div className="absolute w-64 h-64 bg-primary/30 -top-20 -start-20 blur-3xl rounded-full opacity-20" />
       <div className="absolute w-96 h-96 bg-accent/40 -bottom-32 -end-32 blur-3xl rounded-full opacity-20" />
@@ -218,35 +220,35 @@ const ArtistSignup = () => {
             <img src={logo} alt="Logo" className="w-20 h-20 object-contain" />
           </div>
           
-          <h1 className="text-3xl font-bold text-foreground mb-3">مرحباً بك كفنانة</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-3">{t.artistSignup.welcome}</h1>
           <p className="text-muted-foreground max-w-xs mx-auto">
-            أنشئي حسابك وابدأي رحلتك معنا ✨
+            {t.artistSignup.createAccount}
           </p>
         </div>
 
-        {/* تفاصيل الدعوة */}
+        {/* Invitation details */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 max-w-md mx-auto w-full mb-6">
           <div className="flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-green-800">دعوة صالحة</p>
-              <p className="text-xs text-green-600">مدعوة كفنانة للانضمام للمنصة</p>
+              <p className="text-sm font-medium text-green-800">{t.artistSignup.validInvitation}</p>
+              <p className="text-xs text-green-600">{t.artistSignup.invitedAsArtist}</p>
             </div>
           </div>
         </div>
 
-        {/* نموذج التسجيل */}
+        {/* Signup form */}
         <div className="bg-card/90 backdrop-blur-md rounded-3xl shadow-2xl p-6 max-w-md mx-auto w-full border border-border/50">
           <form onSubmit={handleSignup} className="space-y-5">
-            {/* الاسم الكامل */}
+            {/* Full name */}
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-sm font-medium">الاسم الكامل</Label>
+              <Label htmlFor="fullName" className="text-sm font-medium">{t.artistSignup.fullName}</Label>
               <div className="relative">
                 <User className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="fullName"
                   type="text"
-                  placeholder="اسمك الكامل"
+                  placeholder={t.artistSignup.fullNamePlaceholder}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="ps-12 h-14 rounded-xl border-2"
@@ -257,15 +259,15 @@ const ArtistSignup = () => {
               )}
             </div>
 
-            {/* البريد الإلكتروني */}
+            {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">البريد الإلكتروني</Label>
+              <Label htmlFor="email" className="text-sm font-medium">{t.artistSignup.email}</Label>
               <div className="relative">
                 <Mail className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="بريدك الإلكتروني"
+                  placeholder={t.artistSignup.emailPlaceholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="ps-12 h-14 rounded-xl border-2"
@@ -277,15 +279,15 @@ const ArtistSignup = () => {
               )}
             </div>
 
-            {/* كلمة المرور */}
+            {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">كلمة المرور</Label>
+              <Label htmlFor="password" className="text-sm font-medium">{t.artistSignup.password}</Label>
               <div className="relative">
                 <Lock className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="كلمة المرور (6 أحرف على الأقل)"
+                  placeholder={t.artistSignup.passwordPlaceholder}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="ps-12 pe-12 h-14 rounded-xl border-2"
@@ -312,12 +314,12 @@ const ArtistSignup = () => {
               {submitting ? (
                 <span className="flex items-center gap-2">
                   <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  جاري إنشاء الحساب...
+                  {t.artistSignup.creatingAccount}
                 </span>
               ) : (
                 <>
-                  إنشاء الحساب
-                  <Sparkles className="w-5 h-5 ms-2" />
+                  {t.artistSignup.createAccountBtn}
+                  <Sparkles className={`w-5 h-5 ${isRTL ? "me-2" : "ms-2"}`} />
                 </>
               )}
             </Button>
@@ -325,13 +327,13 @@ const ArtistSignup = () => {
 
           <div className="mt-6 pt-6 border-t border-border/50">
             <p className="text-center text-sm text-muted-foreground">
-              لديك حساب بالفعل؟{" "}
+              {t.artistSignup.alreadyHaveAccount}{" "}
               <button
                 type="button"
                 onClick={() => navigate("/auth")}
                 className="text-primary font-semibold hover:underline"
               >
-                تسجيل الدخول
+                {t.artistSignup.signIn}
               </button>
             </p>
           </div>
@@ -342,4 +344,3 @@ const ArtistSignup = () => {
 };
 
 export default ArtistSignup;
-

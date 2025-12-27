@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAdminWithdrawals, useUpdateWithdrawalStatus } from "@/hooks/useWithdrawals";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,12 +19,15 @@ import {
 import { Wallet, Clock, CheckCircle, XCircle, Banknote, User } from "lucide-react";
 import { formatQAR } from "@/lib/locale";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
 
 const AdminWithdrawals = () => {
   const { role, loading: roleLoading } = useUserRole();
   const { data: withdrawals, isLoading } = useAdminWithdrawals();
   const updateStatus = useUpdateWithdrawalStatus();
+  const { t, isRTL, language } = useLanguage();
+
+  const dateLocale = language === "ar" ? ar : enUS;
 
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<any>(null);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
@@ -64,16 +68,18 @@ const AdminWithdrawals = () => {
     setSelectedWithdrawal(null);
   };
 
+  const iconMargin = isRTL ? "ml-1" : "mr-1";
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200"><Clock className="w-3 h-3 mr-1" />قيد المراجعة</Badge>;
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200"><Clock className={`w-3 h-3 ${iconMargin}`} />{t.earnings.statusPending}</Badge>;
       case "approved":
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200"><CheckCircle className="w-3 h-3 mr-1" />تمت الموافقة</Badge>;
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200"><CheckCircle className={`w-3 h-3 ${iconMargin}`} />{t.earnings.statusApproved}</Badge>;
       case "completed":
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200"><CheckCircle className="w-3 h-3 mr-1" />مكتمل</Badge>;
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200"><CheckCircle className={`w-3 h-3 ${iconMargin}`} />{t.earnings.statusCompleted}</Badge>;
       case "rejected":
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200"><XCircle className="w-3 h-3 mr-1" />مرفوض</Badge>;
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200"><XCircle className={`w-3 h-3 ${iconMargin}`} />{t.earnings.statusRejected}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -84,20 +90,20 @@ const AdminWithdrawals = () => {
   const totalPending = withdrawals?.filter((w) => w.status === "pending").reduce((sum, w) => sum + w.amount, 0) || 0;
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
 
-      <main className="mr-64 p-8">
+      <main className={`${isRTL ? "mr-64" : "ml-64"} p-8`}>
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
                 <Wallet className="h-8 w-8" />
-                طلبات السحب
+                {t.adminWithdrawals.title}
               </h1>
               <p className="text-muted-foreground mt-1">
-                إدارة طلبات سحب أرباح الفنانات
+                {t.adminWithdrawals.description}
               </p>
             </div>
           </div>
@@ -111,7 +117,7 @@ const AdminWithdrawals = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-foreground">{pendingCount}</p>
-                  <p className="text-sm text-muted-foreground">طلبات قيد المراجعة</p>
+                  <p className="text-sm text-muted-foreground">{t.adminWithdrawals.pendingRequests}</p>
                 </div>
               </div>
             </div>
@@ -122,7 +128,7 @@ const AdminWithdrawals = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-foreground">{approvedCount}</p>
-                  <p className="text-sm text-muted-foreground">بانتظار التحويل</p>
+                  <p className="text-sm text-muted-foreground">{t.adminWithdrawals.awaitingTransfer}</p>
                 </div>
               </div>
             </div>
@@ -133,7 +139,7 @@ const AdminWithdrawals = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-foreground">{formatQAR(totalPending)}</p>
-                  <p className="text-sm text-muted-foreground">إجمالي الطلبات المعلقة</p>
+                  <p className="text-sm text-muted-foreground">{t.adminWithdrawals.totalPending}</p>
                 </div>
               </div>
             </div>
@@ -151,12 +157,12 @@ const AdminWithdrawals = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right">الفنانة</TableHead>
-                    <TableHead className="text-right">المبلغ</TableHead>
-                    <TableHead className="text-right">البنك</TableHead>
-                    <TableHead className="text-right">التاريخ</TableHead>
-                    <TableHead className="text-right">الحالة</TableHead>
-                    <TableHead className="text-right">الإجراءات</TableHead>
+                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminWithdrawals.artist}</TableHead>
+                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminWithdrawals.amount}</TableHead>
+                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminWithdrawals.bank}</TableHead>
+                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminWithdrawals.date}</TableHead>
+                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminWithdrawals.status}</TableHead>
+                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminWithdrawals.actions}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -168,7 +174,7 @@ const AdminWithdrawals = () => {
                             <User className="w-4 h-4 text-primary" />
                           </div>
                           <div>
-                            <p className="font-medium">{withdrawal.artist_profile?.full_name || "فنانة"}</p>
+                            <p className="font-medium">{withdrawal.artist_profile?.full_name || "Artist"}</p>
                             <p className="text-xs text-muted-foreground">{withdrawal.artist_profile?.email}</p>
                           </div>
                         </div>
@@ -183,7 +189,7 @@ const AdminWithdrawals = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <p className="text-sm">{format(new Date(withdrawal.created_at), "d MMM yyyy", { locale: ar })}</p>
+                        <p className="text-sm">{format(new Date(withdrawal.created_at), "d MMM yyyy", { locale: dateLocale })}</p>
                         <p className="text-xs text-muted-foreground">{format(new Date(withdrawal.created_at), "HH:mm")}</p>
                       </TableCell>
                       <TableCell>{getStatusBadge(withdrawal.status)}</TableCell>
@@ -197,7 +203,7 @@ const AdminWithdrawals = () => {
                                 className="text-green-600 hover:text-green-700 hover:bg-green-50"
                                 onClick={() => handleAction(withdrawal, "approve")}
                               >
-                                موافقة
+                                {t.adminWithdrawals.approve}
                               </Button>
                               <Button
                                 size="sm"
@@ -205,7 +211,7 @@ const AdminWithdrawals = () => {
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 onClick={() => handleAction(withdrawal, "reject")}
                               >
-                                رفض
+                                {t.adminWithdrawals.reject}
                               </Button>
                             </>
                           )}
@@ -214,7 +220,7 @@ const AdminWithdrawals = () => {
                               size="sm"
                               onClick={() => handleAction(withdrawal, "complete")}
                             >
-                              تم التحويل
+                              {t.adminWithdrawals.transferComplete}
                             </Button>
                           )}
                         </div>
@@ -226,7 +232,7 @@ const AdminWithdrawals = () => {
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <Wallet className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>لا توجد طلبات سحب</p>
+                <p>{t.adminWithdrawals.noRequests}</p>
               </div>
             )}
           </div>
@@ -235,18 +241,18 @@ const AdminWithdrawals = () => {
 
       {/* Action Dialog */}
       <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
-        <DialogContent className="sm:max-w-md" dir="rtl">
+        <DialogContent className="sm:max-w-md" dir={isRTL ? "rtl" : "ltr"}>
           <DialogHeader>
             <DialogTitle>
-              {actionType === "approve" && "تأكيد الموافقة على الطلب"}
-              {actionType === "reject" && "تأكيد رفض الطلب"}
-              {actionType === "complete" && "تأكيد اكتمال التحويل"}
+              {actionType === "approve" && t.adminWithdrawals.confirmApprove}
+              {actionType === "reject" && t.adminWithdrawals.confirmReject}
+              {actionType === "complete" && t.adminWithdrawals.confirmComplete}
             </DialogTitle>
             <DialogDescription>
               {selectedWithdrawal && (
                 <>
-                  المبلغ: {formatQAR(selectedWithdrawal.amount)} - 
-                  الفنانة: {selectedWithdrawal.artist_profile?.full_name}
+                  {t.adminWithdrawals.amount}: {formatQAR(selectedWithdrawal.amount)} - 
+                  {t.adminWithdrawals.artist}: {selectedWithdrawal.artist_profile?.full_name}
                 </>
               )}
             </DialogDescription>
@@ -255,16 +261,16 @@ const AdminWithdrawals = () => {
           <div className="space-y-4 pt-4">
             {selectedWithdrawal && (
               <div className="bg-muted p-3 rounded-lg text-sm space-y-1">
-                <p><strong>البنك:</strong> {selectedWithdrawal.bank_name}</p>
-                <p><strong>رقم الحساب:</strong> {selectedWithdrawal.account_number}</p>
-                <p><strong>صاحب الحساب:</strong> {selectedWithdrawal.account_holder_name}</p>
+                <p><strong>{t.adminWithdrawals.bankInfo}:</strong> {selectedWithdrawal.bank_name}</p>
+                <p><strong>{t.adminWithdrawals.accountInfo}:</strong> {selectedWithdrawal.account_number}</p>
+                <p><strong>{t.adminWithdrawals.holderInfo}:</strong> {selectedWithdrawal.account_holder_name}</p>
               </div>
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">ملاحظات (اختياري)</label>
+              <label className="text-sm font-medium">{t.adminWithdrawals.notesOptional}</label>
               <Textarea
-                placeholder={actionType === "reject" ? "سبب الرفض..." : "ملاحظات إضافية..."}
+                placeholder={actionType === "reject" ? t.adminWithdrawals.rejectionReason : t.adminWithdrawals.additionalNotes}
                 value={adminNotes}
                 onChange={(e) => setAdminNotes(e.target.value)}
                 rows={3}
@@ -277,14 +283,14 @@ const AdminWithdrawals = () => {
                 className="flex-1"
                 onClick={() => setActionDialogOpen(false)}
               >
-                إلغاء
+                {t.adminWithdrawals.cancel}
               </Button>
               <Button
                 className={`flex-1 ${actionType === "reject" ? "bg-red-600 hover:bg-red-700" : ""}`}
                 onClick={confirmAction}
                 disabled={updateStatus.isPending}
               >
-                {updateStatus.isPending ? "جاري..." : "تأكيد"}
+                {updateStatus.isPending ? t.adminWithdrawals.processing : t.adminWithdrawals.confirm}
               </Button>
             </div>
           </div>
@@ -295,4 +301,3 @@ const AdminWithdrawals = () => {
 };
 
 export default AdminWithdrawals;
-
