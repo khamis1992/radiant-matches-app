@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, User, Settings, LogOut, LogIn } from "lucide-react";
-import SearchBar from "@/components/SearchBar";
+import { Bell, User, Settings, LogOut, LogIn, MapPin } from "lucide-react";
 import CategoryCard from "@/components/CategoryCard";
 import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -192,52 +191,80 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50">
-        <div className="px-5 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <img src={logoImage} alt="Glam" className="h-10 w-auto" />
-            <div className="flex items-center gap-2">
+      {/* Header - تصميم احترافي جديد */}
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/30 shadow-sm">
+        <div className="px-5 py-3">
+          <div className="flex items-center justify-between">
+            {/* Logo and Location */}
+            <div className="flex items-center gap-3">
+              <img src={logoImage} alt="Glam" className="h-9 w-auto" />
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 rounded-full">
+                <MapPin className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-medium text-muted-foreground">Doha, Qatar</span>
+              </div>
+            </div>
+            
+            {/* Actions */}
+            <div className="flex items-center gap-1.5">
               <LanguageSwitcher />
+              
+              {/* Notifications */}
               <button 
                 onClick={() => navigate("/notifications")}
-                className="relative p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors"
+                className="relative p-2.5 rounded-full hover:bg-muted/80 transition-colors"
               >
-                <Bell className="w-5 h-5 text-foreground" />
+                <Bell className="w-5 h-5 text-muted-foreground" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-primary-foreground bg-primary rounded-full px-1">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </button>
+              
+              {/* Profile Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="rounded-full border-2 border-primary/20 hover:border-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                  <button className="rounded-full ring-2 ring-transparent hover:ring-primary/30 transition-all focus:outline-none focus:ring-primary/50">
                     <Avatar className="w-9 h-9">
                       <AvatarImage 
                         src={profile?.avatar_url || undefined} 
                         alt={profile?.full_name || "Profile"} 
                       />
-                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-sm font-semibold">
                         {profile?.full_name?.charAt(0) || "U"}
                       </AvatarFallback>
                     </Avatar>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 bg-card border border-border">
+                <DropdownMenuContent align="end" className="w-52 bg-card/95 backdrop-blur-xl border border-border/50 shadow-xl rounded-xl p-1">
                   {user ? (
                     <>
-                      <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
+                      {/* User Info */}
+                      <div className="px-3 py-2 mb-1">
+                        <p className="text-sm font-semibold text-foreground truncate">
+                          {profile?.full_name || t.userMenu.myProfile}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                      <DropdownMenuSeparator className="my-1" />
+                      <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer rounded-lg">
                         <User className="me-2 h-4 w-4" />
                         {t.userMenu.myProfile}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+                      <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer rounded-lg">
                         <Settings className="me-2 h-4 w-4" />
                         {t.userMenu.settings}
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                      <DropdownMenuSeparator className="my-1" />
+                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer rounded-lg text-destructive focus:text-destructive focus:bg-destructive/10">
                         <LogOut className="me-2 h-4 w-4" />
                         {t.userMenu.logout}
                       </DropdownMenuItem>
                     </>
                   ) : (
-                    <DropdownMenuItem onClick={() => navigate("/auth")} className="cursor-pointer">
+                    <DropdownMenuItem onClick={() => navigate("/auth")} className="cursor-pointer rounded-lg">
                       <LogIn className="me-2 h-4 w-4" />
                       {t.auth.login}
                     </DropdownMenuItem>
@@ -246,7 +273,6 @@ const Home = () => {
               </DropdownMenu>
             </div>
           </div>
-          <SearchBar />
         </div>
       </header>
 
