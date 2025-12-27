@@ -15,7 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Clock, Briefcase } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Pencil, Trash2, Clock, Briefcase, Languages, Loader2 } from "lucide-react";
 import { formatQAR } from "@/lib/locale";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -27,6 +28,7 @@ import {
   useDeleteService,
   ArtistService,
 } from "@/hooks/useArtistDashboard";
+import { useTranslateService } from "@/hooks/useTranslateService";
 import { SERVICE_CATEGORIES } from "@/hooks/useArtists";
 import { toast } from "sonner";
 import {
@@ -37,6 +39,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+interface BilingualServiceForm {
+  name_ar: string;
+  name_en: string;
+  description_ar: string;
+  description_en: string;
+  duration_minutes: number;
+  price: number;
+  category: string;
+  is_active: boolean;
+}
+
 const ArtistServices = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -45,13 +58,17 @@ const ArtistServices = () => {
   const createService = useCreateService();
   const updateService = useUpdateService();
   const deleteService = useDeleteService();
-  const { t, isRTL } = useLanguage();
+  const { translate, isTranslating } = useTranslateService();
+  const { t, isRTL, language } = useLanguage();
 
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<ArtistService | null>(null);
-  const [serviceForm, setServiceForm] = useState({
-    name: "",
-    description: "",
+  const [activeTab, setActiveTab] = useState<"ar" | "en">(language === "ar" ? "ar" : "en");
+  const [serviceForm, setServiceForm] = useState<BilingualServiceForm>({
+    name_ar: "",
+    name_en: "",
+    description_ar: "",
+    description_en: "",
     duration_minutes: 60,
     price: 0,
     category: "",
@@ -95,8 +112,10 @@ const ArtistServices = () => {
     if (service) {
       setEditingService(service);
       setServiceForm({
-        name: service.name,
-        description: service.description || "",
+        name_ar: (service as any).name_ar || service.name || "",
+        name_en: (service as any).name_en || "",
+        description_ar: (service as any).description_ar || service.description || "",
+        description_en: (service as any).description_en || "",
         duration_minutes: service.duration_minutes,
         price: service.price,
         category: service.category || "",
@@ -105,24 +124,78 @@ const ArtistServices = () => {
     } else {
       setEditingService(null);
       setServiceForm({
-        name: "",
-        description: "",
+        name_ar: "",
+        name_en: "",
+        description_ar: "",
+        description_en: "",
         duration_minutes: 60,
         price: 0,
         category: "",
         is_active: true,
       });
     }
+    setActiveTab(language === "ar" ? "ar" : "en");
     setServiceDialogOpen(true);
   };
 
+  const handleAutoTranslate = async () => {
+    const currentLang = activeTab;
+    const targetLang = currentLang === "ar" ? "en" : "ar";
+    
+    const nameToTranslate = currentLang === "ar" ? serviceForm.name_ar : serviceForm.name_en;
+    const descToTranslate = currentLang === "ar" ? serviceForm.description_ar : serviceForm.description_en;
+
+    if (!nameToTranslate && !descToTranslate) {
+      toast.error(isRTL ? "أدخل النص أولاً" : "Enter text first");
+      return;
+    }
+
+    const [translatedName, translatedDesc] = await Promise.all([
+      nameToTranslate ? translate(nameToTranslate, targetLang) : null,
+      descToTranslate ? translate(descToTranslate, targetLang) : null,
+    ]);
+
+    setServiceForm(prev => ({
+      ...prev,
+      ...(targetLang === "ar" ? {
+        name_ar: translatedName || prev.name_ar,
+        description_ar: translatedDesc || prev.description_ar,
+      } : {
+        name_en: translatedName || prev.name_en,
+        description_en: translatedDesc || prev.description_en,
+      }),
+    }));
+
+    toast.success(isRTL ? "تمت الترجمة بنجاح" : "Translation completed");
+    setActiveTab(targetLang);
+  };
+
   const handleServiceSave = async () => {
+    // Validate at least one language has name
+    if (!serviceForm.name_ar && !serviceForm.name_en) {
+      toast.error(isRTL ? "أدخل اسم الخدمة بلغة واحدة على الأقل" : "Enter service name in at least one language");
+      return;
+    }
+
     try {
+      const serviceData = {
+        name: serviceForm.name_ar || serviceForm.name_en,
+        description: serviceForm.description_ar || serviceForm.description_en,
+        name_ar: serviceForm.name_ar || null,
+        name_en: serviceForm.name_en || null,
+        description_ar: serviceForm.description_ar || null,
+        description_en: serviceForm.description_en || null,
+        duration_minutes: serviceForm.duration_minutes,
+        price: serviceForm.price,
+        category: serviceForm.category,
+        is_active: serviceForm.is_active,
+      };
+
       if (editingService) {
-        await updateService.mutateAsync({ id: editingService.id, ...serviceForm });
+        await updateService.mutateAsync({ id: editingService.id, ...serviceData });
         toast.success(t.artistServices.serviceUpdated);
       } else {
-        await createService.mutateAsync(serviceForm);
+        await createService.mutateAsync(serviceData);
         toast.success(t.artistServices.serviceCreated);
       }
       setServiceDialogOpen(false);
@@ -138,6 +211,22 @@ const ArtistServices = () => {
     } catch {
       toast.error(t.artistServices.failedToDelete);
     }
+  };
+
+  const getServiceDisplayName = (service: ArtistService) => {
+    const s = service as any;
+    if (language === "ar") {
+      return s.name_ar || s.name_en || service.name;
+    }
+    return s.name_en || s.name_ar || service.name;
+  };
+
+  const getServiceDisplayDescription = (service: ArtistService) => {
+    const s = service as any;
+    if (language === "ar") {
+      return s.description_ar || s.description_en || service.description;
+    }
+    return s.description_en || s.description_ar || service.description;
   };
 
   const iconMargin = isRTL ? "ml-1" : "mr-1";
@@ -156,29 +245,83 @@ const ArtistServices = () => {
                 {t.artistServices.addService}
               </Button>
             </DialogTrigger>
-            <DialogContent dir={isRTL ? "rtl" : "ltr"}>
+            <DialogContent dir={isRTL ? "rtl" : "ltr"} className="max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingService ? t.artistServices.editService : t.artistServices.addNewService}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
-                <div>
-                  <Label htmlFor="name">{t.artistServices.serviceName}</Label>
-                  <Input
-                    id="name"
-                    value={serviceForm.name}
-                    onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
-                    placeholder={t.artistServices.serviceNamePlaceholder}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">{t.artistServices.description}</Label>
-                  <Textarea
-                    id="description"
-                    value={serviceForm.description}
-                    onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
-                    placeholder={t.artistServices.descriptionPlaceholder}
-                  />
-                </div>
+                {/* Language Tabs */}
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "ar" | "en")}>
+                  <div className="flex items-center justify-between mb-2">
+                    <TabsList className="grid grid-cols-2 w-[200px]">
+                      <TabsTrigger value="ar">العربية</TabsTrigger>
+                      <TabsTrigger value="en">English</TabsTrigger>
+                    </TabsList>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAutoTranslate}
+                      disabled={isTranslating}
+                    >
+                      {isTranslating ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Languages className="w-4 h-4 me-1" />
+                          {isRTL ? "ترجمة تلقائية" : "Auto Translate"}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <TabsContent value="ar" className="space-y-4 mt-0">
+                    <div>
+                      <Label htmlFor="name_ar">{t.artistServices.serviceName} (العربية)</Label>
+                      <Input
+                        id="name_ar"
+                        value={serviceForm.name_ar}
+                        onChange={(e) => setServiceForm({ ...serviceForm, name_ar: e.target.value })}
+                        placeholder="مثال: مكياج عروس كامل"
+                        dir="rtl"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="description_ar">{t.artistServices.description} (العربية)</Label>
+                      <Textarea
+                        id="description_ar"
+                        value={serviceForm.description_ar}
+                        onChange={(e) => setServiceForm({ ...serviceForm, description_ar: e.target.value })}
+                        placeholder="وصف تفصيلي للخدمة..."
+                        dir="rtl"
+                      />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="en" className="space-y-4 mt-0">
+                    <div>
+                      <Label htmlFor="name_en">{t.artistServices.serviceName} (English)</Label>
+                      <Input
+                        id="name_en"
+                        value={serviceForm.name_en}
+                        onChange={(e) => setServiceForm({ ...serviceForm, name_en: e.target.value })}
+                        placeholder="e.g. Full Bridal Makeup"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="description_en">{t.artistServices.description} (English)</Label>
+                      <Textarea
+                        id="description_en"
+                        value={serviceForm.description_en}
+                        onChange={(e) => setServiceForm({ ...serviceForm, description_en: e.target.value })}
+                        placeholder="Detailed service description..."
+                        dir="ltr"
+                      />
+                    </div>
+                  </TabsContent>
+                </Tabs>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="price">{t.artistServices.price}</Label>
@@ -246,7 +389,7 @@ const ArtistServices = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-foreground">{service.name}</h3>
+                      <h3 className="font-semibold text-foreground">{getServiceDisplayName(service)}</h3>
                       {!service.is_active && (
                         <span className="px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded-full">
                           {isRTL ? "غير مفعّلة" : "Inactive"}
@@ -256,8 +399,8 @@ const ArtistServices = () => {
                     {service.category && (
                       <span className="text-xs text-primary">{service.category}</span>
                     )}
-                    {service.description && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{service.description}</p>
+                    {getServiceDisplayDescription(service) && (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{getServiceDisplayDescription(service)}</p>
                     )}
                     <div className="flex items-center gap-4 mt-2">
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">

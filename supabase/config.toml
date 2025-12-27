@@ -23,3 +23,12 @@ verify_jwt = true
 
 [functions.sadad-payment-callback]
 verify_jwt = false
+
+[functions.translate-service]
+verify_jwt = true
+
+[functions.create-artist-invitation]
+verify_jwt = true
+
+[functions.delete-user-account]
+verify_jwt = true

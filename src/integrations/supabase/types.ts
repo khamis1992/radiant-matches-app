@@ -782,11 +782,15 @@ export type Database = {
           category: string | null
           created_at: string
           description: string | null
+          description_ar: string | null
+          description_en: string | null
           duration_minutes: number
           id: string
           image_url: string | null
           is_active: boolean | null
           name: string
+          name_ar: string | null
+          name_en: string | null
           price: number
           updated_at: string
         }
@@ -795,11 +799,15 @@ export type Database = {
           category?: string | null
           created_at?: string
           description?: string | null
+          description_ar?: string | null
+          description_en?: string | null
           duration_minutes?: number
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           name: string
+          name_ar?: string | null
+          name_en?: string | null
           price: number
           updated_at?: string
         }
@@ -808,11 +816,15 @@ export type Database = {
           category?: string | null
           created_at?: string
           description?: string | null
+          description_ar?: string | null
+          description_en?: string | null
           duration_minutes?: number
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           name?: string
+          name_ar?: string | null
+          name_en?: string | null
           price?: number
           updated_at?: string
         }
