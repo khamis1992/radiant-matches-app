@@ -155,41 +155,50 @@ export type Database = {
       }
       artists: {
         Row: {
+          available_balance: number | null
           bio: string | null
           created_at: string
           experience_years: number | null
           id: string
           is_available: boolean | null
+          pending_balance: number | null
           portfolio_images: string[] | null
           rating: number | null
           studio_address: string | null
           total_reviews: number | null
+          total_withdrawn: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          available_balance?: number | null
           bio?: string | null
           created_at?: string
           experience_years?: number | null
           id?: string
           is_available?: boolean | null
+          pending_balance?: number | null
           portfolio_images?: string[] | null
           rating?: number | null
           studio_address?: string | null
           total_reviews?: number | null
+          total_withdrawn?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          available_balance?: number | null
           bio?: string | null
           created_at?: string
           experience_years?: number | null
           id?: string
           is_available?: boolean | null
+          pending_balance?: number | null
           portfolio_images?: string[] | null
           rating?: number | null
           studio_address?: string | null
           total_reviews?: number | null
+          total_withdrawn?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -933,6 +942,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      withdrawal_requests: {
+        Row: {
+          account_holder_name: string | null
+          account_number: string | null
+          admin_notes: string | null
+          amount: number
+          artist_id: string
+          bank_name: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          processed_at: string | null
+          processed_by: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_holder_name?: string | null
+          account_number?: string | null
+          admin_notes?: string | null
+          amount: number
+          artist_id: string
+          bank_name?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_holder_name?: string | null
+          account_number?: string | null
+          admin_notes?: string | null
+          amount?: number
+          artist_id?: string
+          bank_name?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
