@@ -199,14 +199,14 @@ const Home = () => {
         
         <div className="relative px-4 py-3">
           <div className="flex items-center justify-between gap-4">
-            {/* Logo with subtle animation */}
+            {/* Logo with enhanced visibility */}
             <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="relative group">
-                <div className="absolute -inset-2 bg-primary/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative group cursor-pointer" onClick={() => navigate("/home")}>
+                <div className="absolute -inset-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <img 
                   src={logoImage} 
-                  alt="Logo" 
-                  className="relative h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+                  alt="Glam" 
+                  className="relative h-12 w-auto object-contain drop-shadow-md transition-all duration-200 group-hover:scale-105 group-hover:drop-shadow-lg"
                 />
               </div>
             </div>
