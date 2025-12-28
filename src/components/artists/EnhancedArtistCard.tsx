@@ -1,7 +1,7 @@
-import React from "react";
-import { Star, MapPin, Clock } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Star, MapPin, Clock, GitCompare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -17,13 +17,53 @@ interface EnhancedArtistCardProps {
   viewMode: "grid" | "list";
 }
 
-export const EnhancedArtistCard = ({
+const MAX_COMPARE_COUNT = 3;
+
+const EnhancedArtistCard = ({
   artist,
   availability,
   viewMode,
 }: EnhancedArtistCardProps) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t, isRTL } = useLanguage();
+
+  // Get current compare IDs from URL
+  const [compareIds, setCompareIds] = useState<string[]>(() => {
+    const ids = searchParams.get("ids")?.split(",").filter(Boolean) || [];
+    return ids;
+  });
+
+  // Update compare IDs when URL changes
+  useEffect(() => {
+    const ids = searchParams.get("ids")?.split(",").filter(Boolean) || [];
+    setCompareIds(ids);
+  }, [searchParams]);
+
+  const isCompared = compareIds.includes(artist.id);
+  const canAddToCompare = compareIds.length < MAX_COMPARE_COUNT;
+
+  const handleToggleCompare = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+
+    let newIds: string[];
+    if (isCompared) {
+      // Remove from compare
+      newIds = compareIds.filter(id => id !== artist.id);
+    } else if (canAddToCompare) {
+      // Add to compare
+      newIds = [...compareIds, artist.id];
+    } else {
+      return; // Cannot add more than 3
+    }
+
+    // Update URL
+    const newUrl = newIds.length > 0
+      ? `/compare?ids=${newIds.join(",")}`
+      : "/makeup-artists";
+
+    navigate(newUrl, { replace: true });
+  };
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(":");
@@ -202,13 +242,28 @@ export const EnhancedArtistCard = ({
           </div>
         )}
         
-        {/* Favorite Button */}
-        <div className={`absolute top-2 ${isRTL ? "left-2" : "right-2"}`}>
-          <FavoriteButton
-            itemType="artist"
-            itemId={artist.id}
-            className="bg-card/80 backdrop-blur-sm hover:bg-card w-8 h-8"
-          />
+        {/* Actions */}
+        <div className="absolute top-2 flex gap-1">
+          <div className={isRTL ? "right-2" : "left-2"}>
+            <FavoriteButton
+              itemType="artist"
+              itemId={artist.id}
+              className="bg-card/80 backdrop-blur-sm hover:bg-card w-8 h-8"
+            />
+          </div>
+          <Button
+            variant={isCompared ? "default" : "outline"}
+            size="icon"
+            className={`
+              ${isRTL ? "left-2" : "right-2"}
+              bg-card/80 backdrop-blur-sm hover:bg-card w-8 h-8
+              transition-all
+              ${isCompared ? "bg-primary text-primary-foreground" : "hover:bg-primary/20"}
+            `}
+            onClick={handleToggleCompare}
+          >
+            <GitCompare className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Price Badge */}

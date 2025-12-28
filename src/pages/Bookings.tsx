@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import BottomNavigation from "@/components/BottomNavigation";
-import PageHeader from "@/components/layout/PageHeader";
+import AppHeader from "@/components/layout/AppHeader";
 import { 
   Calendar, Clock, MapPin, MessageCircle, ChevronRight, 
   Sparkles, Star, CalendarCheck, History, AlertCircle,
@@ -398,12 +398,12 @@ const Bookings = () => {
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-24">
-        <PageHeader title={t.bookings.title}>
+        <AppHeader title={t.bookings.title} style="modern">
           <div className="flex gap-2 mt-4">
             <Skeleton className="h-12 flex-1 rounded-xl" />
             <Skeleton className="h-12 flex-1 rounded-xl" />
           </div>
-        </PageHeader>
+        </AppHeader>
         <div className="px-5 py-4">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -419,7 +419,7 @@ const Bookings = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-24">
-        <PageHeader title={t.bookings.title} />
+        <AppHeader title={t.bookings.title} style="modern" />
         <EmptyState type="login" language={language} />
         <BottomNavigation />
       </div>
@@ -429,7 +429,7 @@ const Bookings = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-24">
       {/* Header */}
-      <PageHeader title={t.bookings.title}>
+      <AppHeader title={t.bookings.title} style="modern">
         {/* Tabs */}
         <div className="flex gap-2 mt-4">
           <TabButton
@@ -447,7 +447,7 @@ const Bookings = () => {
             count={sortedPast.length}
           />
         </div>
-      </PageHeader>
+      </AppHeader>
 
       {/* Content */}
       <div className="px-5 py-4">

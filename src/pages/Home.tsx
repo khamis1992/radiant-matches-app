@@ -1,38 +1,24 @@
 import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, User, Settings, LogOut, LogIn, ChevronLeft } from "lucide-react";
 import CategoryCard from "@/components/CategoryCard";
 import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import AppHeader from "@/components/layout/AppHeader";
 import { useArtistsWithPricing } from "@/hooks/useArtistsWithPricing";
 import { useArtistsAvailability } from "@/hooks/useArtistAvailability";
 import { useUserRole } from "@/hooks/useUserRole";
-import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadNotificationsCount } from "@/hooks/useArtistNotifications";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselDots,
 } from "@/components/ui/carousel";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { useActiveBanners } from "@/hooks/useAdminBanners";
 
-import logoImage from "@/assets/logo.png";
-import artist1 from "@/assets/artist-1.jpg";
 import promoBanner1 from "@/assets/promo-banner-1.jpg";
 import categoryMakeup from "@/assets/category-makeup.jpg";
 import categoryHairstyling from "@/assets/category-hairstyling.jpg";
@@ -151,25 +137,14 @@ const Home = () => {
   const { user } = useAuth();
   const { isArtist, loading: roleLoading } = useUserRole();
   const { data: artists, isLoading } = useArtistsWithPricing();
-  const { data: profile } = useProfile();
   const { data: unreadCount = 0 } = useUnreadNotificationsCount();
   const { t } = useLanguage();
-  
+
   const categories = getCategoryTranslations(t);
 
   // Get artist IDs for availability check
   const artistIds = useMemo(() => artists?.map(a => a.id) || [], [artists]);
   const { data: availabilityMap } = useArtistsAvailability(artistIds);
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error(t.auth.logoutFailed);
-    } else {
-      toast.success(t.auth.logoutSuccess);
-      navigate("/auth");
-    }
-  };
 
   useEffect(() => {
     if (!roleLoading && isArtist) {
@@ -191,135 +166,11 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header - Premium Native App Design */}
-      <header className="sticky top-0 z-50 safe-area-top">
-        {/* Glassmorphism background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background/80 backdrop-blur-xl" />
-        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
-        
-        <div className="relative px-4 py-3">
-          <div className="flex items-center justify-between gap-4">
-            {/* Logo with enhanced visibility */}
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="relative group cursor-pointer" onClick={() => navigate("/home")}>
-                <div className="absolute -inset-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <img 
-                  src={logoImage} 
-                  alt="Glam" 
-                  className="relative h-12 w-auto object-contain drop-shadow-md transition-all duration-200 group-hover:scale-105 group-hover:drop-shadow-lg"
-                />
-              </div>
-            </div>
-
-            {/* Right side - Premium Actions */}
-            <div className="flex items-center gap-2">
-              {/* Language Switcher */}
-              <LanguageSwitcher />
-              
-              {/* Notification Button - Enhanced */}
-              <button
-                onClick={() => navigate("/notifications")}
-                className="relative group flex items-center justify-center w-11 h-11 rounded-xl bg-card shadow-sm border border-border/40 hover:border-primary/30 hover:shadow-md active:scale-95 transition-all duration-200"
-              >
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                <Bell className="relative w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors duration-200" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -end-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-bold text-primary-foreground bg-gradient-to-r from-primary to-primary/90 rounded-full shadow-lg ring-2 ring-background animate-in zoom-in-50 duration-200">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Profile Menu - Premium */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="relative group flex items-center justify-center w-11 h-11 rounded-xl bg-card shadow-sm border border-border/40 hover:border-primary/30 hover:shadow-md active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                    <Avatar className="relative w-8 h-8 ring-2 ring-primary/20 group-hover:ring-primary/40 shadow-sm transition-all duration-200">
-                      <AvatarImage
-                        src={profile?.avatar_url || undefined}
-                        alt={profile?.full_name || "Profile"}
-                        className="object-cover"
-                      />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-sm font-semibold">
-                        {profile?.full_name?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
-                  sideOffset={12}
-                  className="w-56 bg-card border border-border/50 shadow-2xl rounded-2xl p-2 animate-in fade-in-0 zoom-in-95 duration-200"
-                >
-                  {user ? (
-                    <>
-                      {/* User Info Header - Premium */}
-                      <div className="px-3 py-3 mb-1 bg-gradient-to-br from-muted/50 to-transparent rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="w-10 h-10 ring-2 ring-primary/20">
-                            <AvatarImage src={profile?.avatar_url || undefined} />
-                            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
-                              {profile?.full_name?.charAt(0) || "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-foreground truncate">
-                              {profile?.full_name || t.userMenu.myProfile}
-                            </p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {profile?.email || user.email}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <DropdownMenuSeparator className="bg-border/30 my-1" />
-                      <DropdownMenuItem 
-                        onClick={() => navigate("/profile")} 
-                        className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 me-3">
-                          <User className="h-4 w-4 text-primary" />
-                        </div>
-                        <span className="font-medium">{t.userMenu.myProfile}</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => navigate("/settings")} 
-                        className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted me-3">
-                          <Settings className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                        <span className="font-medium">{t.userMenu.settings}</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator className="bg-border/30 my-1" />
-                      <DropdownMenuItem
-                        onClick={handleLogout}
-                        className="cursor-pointer rounded-xl py-3 px-3 text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors duration-150"
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-destructive/10 me-3">
-                          <LogOut className="h-4 w-4 text-destructive" />
-                        </div>
-                        <span className="font-medium">{t.userMenu.logout}</span>
-                      </DropdownMenuItem>
-                    </>
-                  ) : (
-                    <DropdownMenuItem 
-                      onClick={() => navigate("/auth")} 
-                      className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 me-3">
-                        <LogIn className="h-4 w-4 text-primary" />
-                      </div>
-                      <span className="font-medium">{t.auth.login}</span>
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Header - Modern App Design */}
+      <AppHeader
+        showLogo={true}
+        style="modern"
+      />
 
       {/* Categories */}
       <section className="px-5 py-6">

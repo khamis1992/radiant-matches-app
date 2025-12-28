@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, X, Clock, History, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import BottomNavigation from "@/components/BottomNavigation";
-import PageHeader from "@/components/layout/PageHeader";
+import AppHeader from "@/components/layout/AppHeader";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -233,7 +233,12 @@ const MakeupArtists = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <PageHeader title={t.artistsListing.title} />
+      <AppHeader
+        title={t.artistsListing.title}
+        showSearch={true}
+        onSearchClick={() => {}}
+        style="modern"
+      />
 
       <div className="px-5 py-6">
         {/* Search Bar with History */}

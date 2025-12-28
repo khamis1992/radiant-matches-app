@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Home, Calendar, User, LayoutDashboard, Palette, LucideIcon, Users, Heart, Images, Search, X } from "lucide-react";
+import { Home, Calendar, User, LayoutDashboard, Palette, LucideIcon, Users, Heart, Images, Search, X, Gift } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePendingBookingsCount } from "@/hooks/usePendingBookings";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessages";
+import { useReferrals } from "@/hooks/useReferrals";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Sheet,
@@ -29,6 +30,7 @@ const customerNavItemsLeft: NavItem[] = [
 
 const customerNavItemsRight: NavItem[] = [
   { icon: Heart, labelKey: "favorites", path: "/favorites" },
+  { icon: Users, labelKey: "referrals", path: "/referrals", badgeType: "referrals" },
   { icon: Calendar, labelKey: "bookings", path: "/bookings", badgeType: "bookings" },
 ];
 
@@ -50,6 +52,7 @@ const BottomNavigation = () => {
   const { role, isArtist, loading } = useUserRole();
   const { data: pendingCount = 0 } = usePendingBookingsCount();
   const { data: unreadCount = 0 } = useUnreadMessagesCount();
+  const { data: referralsCount = 0 } = useReferrals();
   const { t, isRTL } = useLanguage();
   
   const [searchOpen, setSearchOpen] = useState(false);
@@ -83,9 +86,10 @@ const BottomNavigation = () => {
 
   if (navItems.length === 0) return null;
 
-  const getBadgeCount = (badgeType?: "bookings" | "messages") => {
+  const getBadgeCount = (badgeType?: "bookings" | "messages" | "referrals") => {
     if (badgeType === "bookings") return pendingCount;
     if (badgeType === "messages") return unreadCount;
+    if (badgeType === "referrals") return referralsCount;
     return 0;
   };
 

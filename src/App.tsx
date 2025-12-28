@@ -44,6 +44,8 @@ import AdminServices from "./pages/admin/AdminServices";
 import AdminBanners from "./pages/admin/AdminBanners";
 import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
 import ArtistSignup from "./pages/ArtistSignup";
+import CompareArtists from "./pages/CompareArtists";
+import Referrals from "./pages/Referrals";
 
 const queryClient = new QueryClient();
 
@@ -117,6 +119,15 @@ const App = () => (
               </RoleGate>
             }
           />
+          <Route
+            path="/compare"
+            element={
+              <RoleGate allow={["customer"]} showLoading>
+                <CompareArtists />
+              </RoleGate>
+            }
+          />
+          <Route path="/referrals" element={<Referrals />} />
           
           {/* Payment Result - Public route for callbacks */}
           <Route path="/payment-result" element={<PaymentResult />} />

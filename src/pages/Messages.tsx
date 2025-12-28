@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
-import PageHeader from "@/components/layout/PageHeader";
+import AppHeader from "@/components/layout/AppHeader";
 import { Search, MessageSquare } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConversations } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { formatDistanceToNow } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 
@@ -23,7 +24,7 @@ const Messages = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background pb-24">
-        <PageHeader title={t.messages.title} />
+        <AppHeader title={t.messages.title} />
         <div className="flex flex-col items-center justify-center px-5 py-16">
           <MessageSquare className="w-16 h-16 text-muted-foreground mb-4" />
           <h2 className="text-lg font-semibold mb-2">{t.profile.signInToView}</h2>
@@ -37,16 +38,19 @@ const Messages = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <PageHeader title={t.messages.title}>
+      <AppHeader
+        title={t.messages.title}
+        style="modern"
+      >
         <div className="relative mt-4">
           <Search className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
-          <input
+          <Input
             type="text"
             placeholder={t.messages.searchPlaceholder}
-            className={`w-full h-10 ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} bg-card border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50`}
+            className={`h-10 ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} bg-card/50 backdrop-blur-sm border-border/50 rounded-full text-sm focus:border-primary/50`}
           />
         </div>
-      </PageHeader>
+      </AppHeader>
 
       <div className="px-5 py-4">
         {isLoading ? (
