@@ -351,3 +351,6 @@ const EnhancedArtistCard = ({
     </div>
   );
 };
+
+export { EnhancedArtistCard };
+export default EnhancedArtistCard;
