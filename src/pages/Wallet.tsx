@@ -8,7 +8,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import AppHeader from "@/components/layout/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, Gift, TrendingUp, Plus, History, ArrowRight, CheckCircle, Calendar, RefreshCw } from "lucide-react";
+import { Wallet as WalletIcon, Gift, TrendingUp, Plus, History, ArrowRight, CheckCircle, Calendar, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -42,7 +42,7 @@ const Wallet = () => {
       <div className="min-h-screen bg-background pb-24">
         <AppHeader title={t.wallet.title} style="modern" />
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
-          <Wallet className="w-16 h-16 text-muted-foreground mb-4" />
+          <WalletIcon className="w-16 h-16 text-muted-foreground mb-4" />
           <h2 className="text-lg font-semibold mb-2">{t.profile.signInToView}</h2>
           <p className="text-muted-foreground text-center mb-4">{t.profile.signInDesc}</p>
           <Button onClick={() => navigate("/auth")}>{t.auth.login}</Button>
@@ -53,46 +53,8 @@ const Wallet = () => {
   }
 
   const handleWithdraw = async () => {
-    if (!amount || !accountNumber) {
-      toast.error(t.wallet.fillAllFields);
-      return;
-    }
-
-    const numAmount = parseFloat(amount);
-    
-    if (numAmount < MIN_WITHDRAW_AMOUNT) {
-      toast.error(`${t.wallet.minWithdraw}: ${formatQAR(MIN_WITHDRAW_AMOUNT)}`);
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      const { error } = await supabase.from("withdrawal_requests").insert({
-        user_id: user.id,
-        amount: numAmount,
-        account_number: accountNumber,
-        account_holder_name: accountName,
-        bank_name: bankName,
-        status: "pending",
-        requested_at: new Date().toISOString(),
-      });
-
-      if (error) throw error;
-
-      toast.success(t.wallet.withdrawalRequested);
-      setWithdrawDialogOpen(false);
-      
-      setAmount("");
-      setAccountNumber("");
-      setAccountName("");
-      setBankName("");
-    } catch (error: any) {
-      console.error("Withdrawal error:", error);
-      toast.error(t.wallet.withdrawalFailed);
-    } finally {
-      setIsProcessing(false);
-    }
+    toast.info("Withdrawal feature coming soon!");
+    setWithdrawDialogOpen(false);
   };
 
   return (
@@ -100,14 +62,6 @@ const Wallet = () => {
       <AppHeader
         title={t.wallet.title}
         style="modern"
-        action={
-          <Button
-            variant="ghost"
-            size="icon"
-          >
-            <RefreshCw className="w-5 h-5" />
-          </Button>
-        }
       />
 
       <div className="px-5 py-6">
@@ -116,7 +70,7 @@ const Wallet = () => {
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center flex-shrink-0">
-                  <Wallet className="w-6 h-6 text-primary" />
+                  <WalletIcon className="w-6 h-6 text-primary" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground mb-1">
@@ -242,7 +196,7 @@ const Wallet = () => {
 
             <Card className="bg-gradient-to-br from-primary/5 to-primary/0 border-primary/10">
               <CardContent className="text-center py-12">
-                <Wallet className="w-20 h-20 text-muted-foreground/20 mb-4" />
+                <WalletIcon className="w-20 h-20 text-muted-foreground/20 mb-4" />
                 <h3 className="text-lg font-semibold text-foreground mb-2">
                   {t.wallet.walletComing}
                 </h3>
@@ -348,94 +302,93 @@ const Wallet = () => {
       </div>
 
       <BottomNavigation />
+
+      <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <WalletIcon className="w-5 h-5 text-primary" />
+              {t.wallet.withdrawal}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount">
+                {t.wallet.withdrawalAmount}
+              </Label>
+              <Input
+                id="amount"
+                type="number"
+                placeholder={`${MIN_WITHDRAW_AMOUNT} ${formatQAR(MIN_WITHDRAW_AMOUNT)}`}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                min={MIN_WITHDRAW_AMOUNT}
+                step="0.01"
+                disabled={isProcessing}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="accountNumber">
+                {t.wallet.accountNumber}
+              </Label>
+              <Input
+                id="accountNumber"
+                type="text"
+                placeholder={t.wallet.accountNumberPlaceholder}
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                disabled={isProcessing}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="accountName">
+                {t.wallet.accountHolderName}
+              </Label>
+              <Input
+                id="accountName"
+                type="text"
+                placeholder={t.wallet.accountNamePlaceholder}
+                value={accountName}
+                onChange={(e) => setAccountName(e.target.value)}
+                disabled={isProcessing}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bankName">
+                {t.wallet.bankName}
+              </Label>
+              <Input
+                id="bankName"
+                type="text"
+                placeholder={t.wallet.bankNamePlaceholder}
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                disabled={isProcessing}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setWithdrawDialogOpen(false)}
+              disabled={isProcessing}
+            >
+              {t.common.cancel}
+            </Button>
+            <Button
+              onClick={handleWithdraw}
+              disabled={!amount || !accountNumber || isProcessing}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {isProcessing ? t.common.processing : t.wallet.requestWithdrawal}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
-
-    <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-primary" />
-            {t.wallet.withdrawal}
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="amount">
-              {t.wallet.withdrawalAmount}
-            </Label>
-            <Input
-              id="amount"
-              type="number"
-              placeholder={`${MIN_WITHDRAW_AMOUNT} ${formatQAR(MIN_WITHDRAW_AMOUNT)}`}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              min={MIN_WITHDRAW_AMOUNT}
-              step="0.01"
-              disabled={isProcessing}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="accountNumber">
-              {t.wallet.accountNumber}
-            </Label>
-            <Input
-              id="accountNumber"
-              type="text"
-              placeholder={t.wallet.accountNumberPlaceholder}
-              value={accountNumber}
-              onChange={(e) => setAccountNumber(e.target.value)}
-              disabled={isProcessing}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="accountName">
-              {t.wallet.accountHolderName}
-            </Label>
-            <Input
-              id="accountName"
-              type="text"
-              placeholder={t.wallet.accountNamePlaceholder}
-              value={accountName}
-              onChange={(e) => setAccountName(e.target.value)}
-              disabled={isProcessing}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="bankName">
-              {t.wallet.bankName}
-            </Label>
-            <Input
-              id="bankName"
-              type="text"
-              placeholder={t.wallet.bankNamePlaceholder}
-              value={bankName}
-              onChange={(e) => setBankName(e.target.value)}
-              disabled={isProcessing}
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => setWithdrawDialogOpen(false)}
-            disabled={isProcessing}
-          >
-            {t.common.cancel}
-          </Button>
-          <Button
-            onClick={handleWithdraw}
-            disabled={!amount || !accountNumber || isProcessing}
-            className="bg-primary hover:bg-primary/90"
-          >
-            {isProcessing ? t.common.processing : t.wallet.requestWithdrawal}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 };
 
 export default Wallet;
-

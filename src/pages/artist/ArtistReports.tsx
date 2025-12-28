@@ -60,7 +60,7 @@ const ArtistReports = () => {
 
       const { data: bookings, error } = await supabase
         .from("bookings")
-        .select("amount, created_at, status")
+        .select("total_price, created_at, status")
         .eq("artist_id", user.id)
         .eq("status", "completed")
         .gte("created_at", startDate.toISOString())
@@ -68,7 +68,7 @@ const ArtistReports = () => {
 
       if (error) throw error;
 
-      const totalEarnings = bookings?.reduce((sum, booking) => sum + (booking.amount || 0), 0) || 0;
+      const totalEarnings = bookings?.reduce((sum, booking) => sum + (booking.total_price || 0), 0) || 0;
       const completedBookings = bookings?.length || 0;
       const avgRevenue = completedBookings > 0 ? totalEarnings / completedBookings : 0;
 
@@ -99,7 +99,7 @@ const ArtistReports = () => {
             </h2>
           </div>
 
-          <Select value={period} onValueChange={setPeriod}>
+          <Select value={period} onValueChange={(v) => setPeriod(v as ReportPeriod)}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
@@ -111,7 +111,7 @@ const ArtistReports = () => {
             </SelectContent>
           </Select>
 
-          <Select value={reportType} onValueChange={setReportType}>
+          <Select value={reportType} onValueChange={(v) => setReportType(v as ReportType)}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
