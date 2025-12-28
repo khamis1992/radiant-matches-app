@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatQAR } from "@/lib/locale";
-import { format, subDays, startOfMonth, endOfMonth, isSameMonth, isSameYear, differenceInCalendarDays, eachDayOfInterval, isSameMonth, isSameYear } from "date-fns";
+import { format, subDays } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 
 type ReportPeriod = "7days" | "30days" | "90days" | "all";
@@ -58,7 +58,7 @@ const AnalyticsDashboard = () => {
 
       const { data, error } = await supabase
         .from("bookings")
-        .select("amount, created_at")
+        .select("total_price, created_at")
         .eq("artist_id", user.id)
         .eq("status", "completed")
         .gte("created_at", startDate.toISOString())
@@ -66,7 +66,7 @@ const AnalyticsDashboard = () => {
 
       if (error) throw error;
 
-      const totalEarnings = data?.reduce((sum, booking) => sum + (booking.amount || 0), 0) || 0;
+      const totalEarnings = data?.reduce((sum, booking) => sum + (booking.total_price || 0), 0) || 0;
 
       return {
         total: totalEarnings,
@@ -109,7 +109,7 @@ const AnalyticsDashboard = () => {
             </h2>
           </div>
 
-          <Select value={period} onValueChange={setPeriod}>
+          <Select value={period} onValueChange={(v) => setPeriod(v as ReportPeriod)}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
@@ -196,9 +196,8 @@ const AnalyticsDashboard = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
 
-    <BottomNavigation />
+      <BottomNavigation />
     </div>
   );
 };

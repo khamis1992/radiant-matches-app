@@ -19,7 +19,7 @@ interface NavItem {
   icon: LucideIcon;
   labelKey: keyof typeof import("@/lib/translations/en").en.nav;
   path: string;
-  badgeType?: "bookings" | "messages";
+  badgeType?: "bookings" | "messages" | "referrals";
 }
 
 // عناصر العميل - مقسمة ليسار ويمين الزر المركزي
