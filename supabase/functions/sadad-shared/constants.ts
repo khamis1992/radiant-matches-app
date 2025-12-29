@@ -54,13 +54,15 @@ export const SADAD_IPS = {
   PRODUCTION: ["52.51.150.1", "52.51.150.2", "52.51.150.11", "52.51.150.12"],
 } as const;
 
+// SADAD Qatar endpoints - https://developer.sadad.qa/
 export const SADAD_ENDPOINTS = {
   TEST: {
     PAYMENT: "https://sadadqa.com/webpurchase",
     VERIFICATION: "https://api.sadadqa.com/api-v4/transactionstatus",
   },
   PRODUCTION: {
-    PAYMENT: "https://sadad.com/webpurchase",
-    VERIFICATION: "https://api.sadad.com/api-v4/transactionstatus",
+    // SADAD Qatar uses sadadqa.com for both test and production
+    PAYMENT: "https://sadadqa.com/webpurchase",
+    VERIFICATION: "https://api.sadadqa.com/api-v4/transactionstatus",
   },
 } as const;
