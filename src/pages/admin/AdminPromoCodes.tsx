@@ -63,6 +63,8 @@ const AdminPromoCodes = () => {
   const deletePromoCode = useDeletePromoCode();
   const togglePromoCode = useTogglePromoCode();
 
+  const dateLocale = language === "ar" ? ar : enUS;
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreatePromoCodeData>({
@@ -79,7 +81,7 @@ const AdminPromoCodes = () => {
     return (
       <div className="min-h-screen bg-background flex">
         <AdminSidebar />
-        <main className="flex-1 mr-64 p-8">
+        <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
           <Skeleton className="h-8 w-48 mb-8" />
           <Skeleton className="h-96 w-full" />
         </main>
@@ -95,17 +97,17 @@ const AdminPromoCodes = () => {
     e.preventDefault();
     
     if (!formData.code.trim()) {
-      toast.error("يرجى إدخال كود الخصم");
+      toast.error(t.adminPromoCodes.pleaseEnterCode);
       return;
     }
 
     if (formData.discount_value <= 0) {
-      toast.error("يرجى إدخال قيمة خصم صحيحة");
+      toast.error(t.adminPromoCodes.pleaseEnterValidDiscount);
       return;
     }
 
     if (formData.discount_type === "percentage" && formData.discount_value > 100) {
-      toast.error("نسبة الخصم لا يمكن أن تتجاوز 100%");
+      toast.error(t.adminPromoCodes.discountCannotExceed);
       return;
     }
 
@@ -129,7 +131,7 @@ const AdminPromoCodes = () => {
   const copyToClipboard = async (code: string) => {
     await navigator.clipboard.writeText(code);
     setCopiedCode(code);
-    toast.success("تم نسخ الكود");
+    toast.success(t.adminPromoCodes.codeCopied);
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
@@ -141,22 +143,22 @@ const AdminPromoCodes = () => {
     const validUntil = promo.valid_until ? new Date(promo.valid_until) : null;
     
     if (!promo.is_active) {
-      return <Badge variant="secondary">غير مفعل</Badge>;
+      return <Badge variant="secondary">{t.adminPromoCodes.inactive}</Badge>;
     }
     
     if (validUntil && validUntil < now) {
-      return <Badge variant="destructive">منتهي</Badge>;
+      return <Badge variant="destructive">{t.adminPromoCodes.expired}</Badge>;
     }
     
     if (validFrom && validFrom > now) {
-      return <Badge variant="outline">قادم</Badge>;
+      return <Badge variant="outline">{t.adminPromoCodes.upcoming}</Badge>;
     }
     
     if (promo.max_uses && promo.current_uses >= promo.max_uses) {
-      return <Badge variant="destructive">مستنفد</Badge>;
+      return <Badge variant="destructive">{t.adminPromoCodes.exhausted}</Badge>;
     }
     
-    return <Badge className="bg-green-500 hover:bg-green-600">نشط</Badge>;
+    return <Badge className="bg-green-500 hover:bg-green-600">{t.adminPromoCodes.active}</Badge>;
   };
 
   return (
@@ -166,30 +168,30 @@ const AdminPromoCodes = () => {
       <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">أكواد الخصم</h1>
-            <p className="text-muted-foreground mt-1">إدارة العروض الترويجية وأكواد الخصم</p>
+            <h1 className="text-2xl font-bold text-foreground">{t.adminPromoCodes.title}</h1>
+            <p className="text-muted-foreground mt-1">{t.adminPromoCodes.subtitle}</p>
           </div>
           
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
-                إنشاء كود جديد
+                {t.adminPromoCodes.createCode}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md" dir="rtl">
+            <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
               <DialogHeader>
-                <DialogTitle>إنشاء كود خصم جديد</DialogTitle>
+                <DialogTitle>{t.adminPromoCodes.createNewCode}</DialogTitle>
               </DialogHeader>
               
               <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="code">كود الخصم</Label>
+                  <Label htmlFor="code">{t.adminPromoCodes.discountCode}</Label>
                   <Input
                     id="code"
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                    placeholder="مثال: SAVE20"
+                    placeholder={t.adminPromoCodes.exampleCode}
                     className="uppercase"
                     maxLength={20}
                   />
@@ -197,7 +199,7 @@ const AdminPromoCodes = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>نوع الخصم</Label>
+                    <Label>{t.adminPromoCodes.discountType}</Label>
                     <Select
                       value={formData.discount_type}
                       onValueChange={(value: "percentage" | "fixed") => 
@@ -208,16 +210,14 @@ const AdminPromoCodes = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="percentage">نسبة مئوية (%)</SelectItem>
-                        <SelectItem value="fixed">مبلغ ثابت (ر.ق)</SelectItem>
+                        <SelectItem value="percentage">{t.adminPromoCodes.percentage}</SelectItem>
+                        <SelectItem value="fixed">{t.adminPromoCodes.fixed}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="discount_value">
-                      قيمة الخصم {formData.discount_type === "percentage" ? "(%)" : "(ر.ق)"}
-                    </Label>
+                    <Label htmlFor="discount_value">{t.adminPromoCodes.discountValue}</Label>
                     <Input
                       id="discount_value"
                       type="number"
@@ -231,7 +231,7 @@ const AdminPromoCodes = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="max_uses">الحد الأقصى للاستخدام</Label>
+                    <Label htmlFor="max_uses">{t.adminPromoCodes.maxUsage}</Label>
                     <Input
                       id="max_uses"
                       type="number"
@@ -241,12 +241,12 @@ const AdminPromoCodes = () => {
                         ...formData, 
                         max_uses: e.target.value ? Number(e.target.value) : null 
                       })}
-                      placeholder="غير محدود"
+                      placeholder={t.adminPromoCodes.unlimited}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="min_order_amount">الحد الأدنى للطلب (ر.ق)</Label>
+                    <Label htmlFor="min_order_amount">{t.adminPromoCodes.minOrderAmount}</Label>
                     <Input
                       id="min_order_amount"
                       type="number"
@@ -263,7 +263,7 @@ const AdminPromoCodes = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="valid_from">تاريخ البداية</Label>
+                    <Label htmlFor="valid_from">{t.adminPromoCodes.startDate}</Label>
                     <Input
                       id="valid_from"
                       type="datetime-local"
@@ -276,7 +276,7 @@ const AdminPromoCodes = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="valid_until">تاريخ الانتهاء</Label>
+                    <Label htmlFor="valid_until">{t.adminPromoCodes.endDate}</Label>
                     <Input
                       id="valid_until"
                       type="datetime-local"
@@ -291,10 +291,10 @@ const AdminPromoCodes = () => {
 
                 <div className="flex justify-end gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    إلغاء
+                    {t.common.cancel}
                   </Button>
                   <Button type="submit" disabled={createPromoCode.isPending}>
-                    {createPromoCode.isPending ? "جاري الإنشاء..." : "إنشاء"}
+                    {createPromoCode.isPending ? t.adminPromoCodes.creating : t.adminPromoCodes.create}
                   </Button>
                 </div>
               </form>
@@ -314,13 +314,13 @@ const AdminPromoCodes = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-right">الكود</TableHead>
-                  <TableHead className="text-right">الخصم</TableHead>
-                  <TableHead className="text-right">الاستخدام</TableHead>
-                  <TableHead className="text-right">الصلاحية</TableHead>
-                  <TableHead className="text-right">الحالة</TableHead>
-                  <TableHead className="text-right">مفعل</TableHead>
-                  <TableHead className="text-right">الإجراءات</TableHead>
+                  <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminPromoCodes.code}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminPromoCodes.discount}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminPromoCodes.usage}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminPromoCodes.validity}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminPromoCodes.status}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminPromoCodes.enabled}</TableHead>
+                  <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminPromoCodes.actions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -348,7 +348,7 @@ const AdminPromoCodes = () => {
                     <TableCell>
                       {promo.discount_type === "percentage" 
                         ? `${promo.discount_value}%` 
-                        : `${promo.discount_value} ر.ق`}
+                        : `${promo.discount_value} ${language === "ar" ? "ر.ق" : "QAR"}`}
                     </TableCell>
                     <TableCell>
                       <span className="text-muted-foreground">
@@ -360,16 +360,16 @@ const AdminPromoCodes = () => {
                       <div className="text-sm">
                         {promo.valid_from && (
                           <div className="text-muted-foreground">
-                            من: {format(new Date(promo.valid_from), "dd MMM yyyy", { locale: ar })}
+                            {t.adminPromoCodes.from}: {format(new Date(promo.valid_from), "dd MMM yyyy", { locale: dateLocale })}
                           </div>
                         )}
                         {promo.valid_until && (
                           <div className="text-muted-foreground">
-                            إلى: {format(new Date(promo.valid_until), "dd MMM yyyy", { locale: ar })}
+                            {t.adminPromoCodes.to}: {format(new Date(promo.valid_until), "dd MMM yyyy", { locale: dateLocale })}
                           </div>
                         )}
                         {!promo.valid_from && !promo.valid_until && (
-                          <span className="text-muted-foreground">غير محدد</span>
+                          <span className="text-muted-foreground">{t.adminPromoCodes.notSpecified}</span>
                         )}
                       </div>
                     </TableCell>
@@ -389,20 +389,20 @@ const AdminPromoCodes = () => {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent dir="rtl">
+                        <AlertDialogContent dir={isRTL ? "rtl" : "ltr"}>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>حذف كود الخصم</AlertDialogTitle>
+                            <AlertDialogTitle>{t.adminPromoCodes.deleteCode}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              هل أنت متأكد من حذف كود الخصم "{promo.code}"؟ لا يمكن التراجع عن هذا الإجراء.
+                              {t.adminPromoCodes.deleteConfirm} "{promo.code}"? {t.adminPromoCodes.deleteWarning}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter className="gap-2">
-                            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                            <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
                             <AlertDialogAction
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               onClick={() => deletePromoCode.mutate(promo.id)}
                             >
-                              حذف
+                              {t.common.delete}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -414,9 +414,9 @@ const AdminPromoCodes = () => {
             </Table>
           ) : (
             <div className="p-12 text-center">
-              <p className="text-muted-foreground mb-4">لا توجد أكواد خصم</p>
+              <p className="text-muted-foreground mb-4">{t.adminPromoCodes.noPromoCodes}</p>
               <Button onClick={() => setIsDialogOpen(true)} variant="outline">
-                إنشاء أول كود خصم
+                {t.adminPromoCodes.createFirstCode}
               </Button>
             </div>
           )}
