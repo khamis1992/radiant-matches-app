@@ -735,6 +735,12 @@ export const ar = {
     noPointsHistory: "لم يتم ربح أي نقاط بعد",
     tierBenefits: "مزايا المستوى",
     currentTier: "الحالي",
+    points: "نقاط",
+    rewards: "المكافآت",
+    recentTransactions: "المعاملات الأخيرة",
+    addFunds: "إضافة رصيد",
+    selectAmount: "اختر مبلغ أو أدخل قيمة مخصصة",
+    customAmount: "مبلغ مخصص",
   },
 
 

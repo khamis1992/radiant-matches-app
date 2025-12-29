@@ -834,6 +834,12 @@ export const en = {
     noPointsHistory: "No points earned yet",
     tierBenefits: "Tier Benefits",
     currentTier: "Current",
+    points: "points",
+    rewards: "Rewards",
+    recentTransactions: "Recent Transactions",
+    addFunds: "Add Funds",
+    selectAmount: "Select an amount or enter a custom value",
+    customAmount: "Custom amount",
   },
 
   // Artist Signup
