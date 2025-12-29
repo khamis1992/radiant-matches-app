@@ -718,13 +718,12 @@ export const en = {
     statusCompleted: "Completed",
     statusRejected: "Rejected",
     // Admin
-    title: "Withdrawal Requests",
+    adminTitle: "Withdrawal Requests",
     description: "Manage artist withdrawal requests",
     pendingRequests: "Pending requests",
     awaitingTransfer: "Awaiting transfer",
     totalPending: "Total pending",
     artist: "Artist",
-    amount: "Amount",
     bank: "Bank",
     date: "Date",
     status: "Status",
@@ -932,7 +931,6 @@ export const en = {
     customerName: "Customer Name",
     artistName: "Artist Name",
     serviceName: "Service Name",
-    status: "Status",
     bookingDate: "Booking Date",
     bookingTime: "Booking Time",
     location: "Location",
@@ -1005,6 +1003,22 @@ export const en = {
     reportFailed: "Failed to generate report",
     exportSuccess: "Report exported",
     exportFailed: "Failed to export report",
+  },
+
+  // Compare Artists
+  compare: {
+    title: "Compare Artists",
+    noArtists: "No artists to compare",
+    noArtistsDesc: "Select two or more artists to compare",
+    browseArtists: "Browse Artists",
+    tooManyArtists: "Too many artists",
+    tooManyArtistsDesc: "You can compare up to 3 artists",
+    backToArtists: "Back to Artists",
+    addArtist: "Add Artist",
+    distance: "Distance",
+    distanceUnknown: "Unknown",
+    bookNow: "Book Now",
+    shareTitle: "Compare Artists",
   },
 };
 
