@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate } from "react-router-dom";
-import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff } from "lucide-react";
+import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff, Flag } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ServiceCard from "@/components/ServiceCard";
 import ReviewCard from "@/components/ReviewCard";
 import ImageLightbox from "@/components/ImageLightbox";
@@ -30,6 +31,8 @@ import ReviewReplyForm from "@/components/ReviewReplyForm";
 
 import artist1 from "@/assets/artist-1.jpg";
 
+type ReviewSort = "newest" | "highest";
+
 const ArtistProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -37,6 +40,7 @@ const ArtistProfile = () => {
   const [portfolioFilter, setPortfolioFilter] = useState<string>("all");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [lightboxImages, setLightboxImages] = useState<Array<{ url: string; caption?: string }>>([]);
 
   const { data: artist, isLoading: artistLoading } = useArtist(id);
   const { data: services, isLoading: servicesLoading } = useArtistServices(id);
@@ -52,7 +56,28 @@ const ArtistProfile = () => {
 
   // Review filtering and sorting
   const [reviewFilter, setReviewFilter] = useState<"all" | "photos">("all");
-  const [reviewSort, setReviewSort] = useState<"newest" | "highest">("newest");
+  const [reviewSort, setReviewSort] = useState<ReviewSort>("newest");
+
+  // Compute filtered and sorted reviews
+  const filteredAndSortedReviews = useMemo(() => {
+    if (!reviews) return [];
+    
+    let filtered = [...reviews];
+    
+    // Filter by photos
+    if (reviewFilter === "photos") {
+      filtered = filtered.filter(r => r.photos && r.photos.length > 0);
+    }
+    
+    // Sort
+    if (reviewSort === "newest") {
+      filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } else if (reviewSort === "highest") {
+      filtered.sort((a, b) => b.rating - a.rating);
+    }
+    
+    return filtered;
+  }, [reviews, reviewFilter, reviewSort]);
   
   // Filter to only show upcoming blocked dates
   const upcomingBlockedDates = blockedDates.filter(bd => 

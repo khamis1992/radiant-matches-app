@@ -37,4 +37,3 @@ export const AnalyticsProvider = ({ children }: { children: React.ReactNode }) =
   useAnalytics();
   return <>{children}</>;
 };
-
