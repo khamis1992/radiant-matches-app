@@ -19,6 +19,8 @@ export default defineConfig(({ mode }) => ({
       "react-dom/server": path.resolve(__dirname, "node_modules/react-dom/server"),
       "react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime"),
       "react/jsx-dev-runtime": path.resolve(__dirname, "node_modules/react/jsx-dev-runtime"),
+      "@tanstack/react-query": path.resolve(__dirname, "node_modules/@tanstack/react-query"),
+      "@tanstack/query-core": path.resolve(__dirname, "node_modules/@tanstack/query-core"),
     },
     dedupe: [
       "react",
@@ -27,6 +29,8 @@ export default defineConfig(({ mode }) => ({
       "react-dom/server",
       "react/jsx-runtime",
       "react/jsx-dev-runtime",
+      "@tanstack/react-query",
+      "@tanstack/query-core",
     ],
   },
   optimizeDeps: {
@@ -38,6 +42,8 @@ export default defineConfig(({ mode }) => ({
       "react-dom/server",
       "react/jsx-runtime",
       "react/jsx-dev-runtime",
+      "@tanstack/react-query",
+      "@tanstack/query-core",
     ],
   },
 }));
