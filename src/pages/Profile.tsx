@@ -1,5 +1,5 @@
 import BottomNavigation from "@/components/BottomNavigation";
-import { Settings, Heart, MessageCircle, HelpCircle, LogOut, ChevronRight, ChevronLeft, User, Briefcase, Shield, Gift, Wallet } from "lucide-react";
+import { Settings, Heart, MessageCircle, HelpCircle, LogOut, ChevronRight, ChevronLeft, User, Briefcase, Shield, Gift, Wallet, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile, useProfileStats } from "@/hooks/useProfile";
@@ -115,12 +115,12 @@ const Profile = () => {
 
       {/* Wallet Balance */}
       <div className="px-5 -mt-6 mb-3">
-        <button 
-          onClick={() => navigate("/wallet")}
-          className="w-full bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-4 shadow-md hover:opacity-90 transition-opacity"
-        >
+        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-4 shadow-md">
           <div className="flex items-center justify-between">
-            <div className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}>
+            <button 
+              onClick={() => navigate("/wallet")}
+              className={`flex items-center gap-3 flex-1 ${isRTL ? "flex-row-reverse" : ""}`}
+            >
               <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
                 <Wallet className="w-5 h-5 text-primary-foreground" />
               </div>
@@ -132,10 +132,19 @@ const Profile = () => {
                   <p className="text-xl font-bold text-primary-foreground">{balance} QAR</p>
                 )}
               </div>
-            </div>
-            <ChevronIcon className="w-5 h-5 text-primary-foreground" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/wallet?action=topup");
+              }}
+              className="flex items-center gap-1.5 bg-primary-foreground text-primary px-3 py-2 rounded-xl text-sm font-medium hover:bg-primary-foreground/90 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t.wallet?.topUp || "Top Up"}</span>
+            </button>
           </div>
-        </button>
+        </div>
       </div>
 
       {/* Stats */}
