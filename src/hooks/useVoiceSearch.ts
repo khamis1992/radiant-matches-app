@@ -13,6 +13,53 @@ interface UseVoiceSearchOptions {
   onError?: (error: string) => void;
 }
 
+// Define types for Web Speech API
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+}
+
+interface SpeechRecognitionInstance extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognitionInstance;
+    webkitSpeechRecognition: new () => SpeechRecognitionInstance;
+  }
+}
+
 /**
  * Hook for voice search using Web Speech API
  * Provides speech-to-text functionality for artist search
@@ -25,21 +72,21 @@ export const useVoiceSearch = (options: UseVoiceSearchOptions = {}) => {
   const [error, setError] = useState<string | null>(null);
   const [isSupported, setIsSupported] = useState(false);
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   // Check if speech recognition is supported
   useEffect(() => {
-    const SpeechRecognition =
+    const SpeechRecognitionConstructor =
       window.SpeechRecognition || window.webkitSpeechRecognition;
-    setIsSupported(!!SpeechRecognition);
+    setIsSupported(!!SpeechRecognitionConstructor);
 
-    if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
+    if (SpeechRecognitionConstructor) {
+      recognitionRef.current = new SpeechRecognitionConstructor();
       recognitionRef.current.continuous = continuous;
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = language;
 
-      recognitionRef.current.onresult = (event) => {
+      recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
         let interimTranscript = "";
         let finalTranscript = "";
 
@@ -64,7 +111,7 @@ export const useVoiceSearch = (options: UseVoiceSearchOptions = {}) => {
         }
       };
 
-      recognitionRef.current.onerror = (event) => {
+      recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
         const errorMessage = getErrorMessage(event.error);
         setError(errorMessage);
         setIsListening(false);
@@ -122,7 +169,6 @@ export const useVoiceSearch = (options: UseVoiceSearchOptions = {}) => {
       recognitionRef.current?.start();
       setIsListening(true);
     } catch (err) {
-      // Recognition might already be running
       setError("Failed to start voice recognition.");
     }
   }, [isSupported]);
@@ -158,12 +204,3 @@ export const useVoiceSearch = (options: UseVoiceSearchOptions = {}) => {
     resetTranscript,
   };
 };
-
-// TypeScript declarations for Web Speech API
-declare global {
-  interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
-  }
-}
-

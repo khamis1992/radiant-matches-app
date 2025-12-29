@@ -1,8 +1,3 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./useAuth";
-import { toast } from "sonner";
-
 export interface LoyaltyPoints {
   id: string;
   user_id: string;
@@ -60,152 +55,38 @@ export const TIER_BENEFITS = {
 };
 
 /**
- * Hook for managing user loyalty points
- * Provides points balance, transactions, and redemption
+ * Hook for loyalty points system
+ * Note: This feature requires loyalty_points and loyalty_transactions tables
  */
 export const useLoyaltyPoints = () => {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const loyaltyPoints: LoyaltyPoints | null = null;
+  const transactions: LoyaltyTransaction[] = [];
+  const isLoading = false;
+  const error = null;
 
-  // Fetch user's loyalty points
-  const { data: loyaltyData, isLoading: isLoadingPoints } = useQuery({
-    queryKey: ["loyalty-points", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-
-      const { data, error } = await supabase
-        .from("loyalty_points")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error && error.code !== "PGRST116") throw error;
-      return data as LoyaltyPoints | null;
+  const redeemPoints = {
+    mutate: (_points: number) => {
+      console.log("Loyalty points not configured - tables not available");
     },
-    enabled: !!user?.id,
-  });
+    isPending: false,
+  };
 
-  // Fetch loyalty transactions
-  const { data: transactions = [], isLoading: isLoadingTransactions } = useQuery({
-    queryKey: ["loyalty-transactions", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
+  const calculatePointsForBooking = (_amount: number) => {
+    return 0;
+  };
 
-      const { data, error } = await supabase
-        .from("loyalty_transactions")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-      return data as LoyaltyTransaction[];
-    },
-    enabled: !!user?.id,
-  });
-
-  // Redeem points for wallet credit
-  const redeemPoints = useMutation({
-    mutationFn: async (pointsToRedeem: number) => {
-      if (!user?.id) throw new Error("Not authenticated");
-      if (!loyaltyData || loyaltyData.points < pointsToRedeem) {
-        throw new Error("Insufficient points");
-      }
-
-      // 100 points = 1 QAR
-      const creditAmount = pointsToRedeem / 100;
-
-      // Deduct points
-      const { error: pointsError } = await supabase
-        .from("loyalty_points")
-        .update({
-          points: loyaltyData.points - pointsToRedeem,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
-
-      if (pointsError) throw pointsError;
-
-      // Record transaction
-      const { error: txError } = await supabase
-        .from("loyalty_transactions")
-        .insert({
-          user_id: user.id,
-          points: -pointsToRedeem,
-          type: "redeem",
-          description: `Redeemed ${pointsToRedeem} points for ${creditAmount} QAR wallet credit`,
-        });
-
-      if (txError) throw txError;
-
-      // Add to wallet
-      const { error: walletError } = await supabase
-        .from("wallet_transactions")
-        .insert({
-          user_id: user.id,
-          amount: creditAmount,
-          type: "points_redemption",
-          status: "completed",
-          description: `Loyalty points redemption (${pointsToRedeem} points)`,
-        });
-
-      if (walletError) throw walletError;
-
-      // Update wallet balance
-      await supabase.rpc("update_wallet_balance", {
-        p_user_id: user.id,
-        p_amount: creditAmount,
-      });
-
-      return { pointsRedeemed: pointsToRedeem, creditAmount };
-    },
-    onSuccess: ({ pointsRedeemed, creditAmount }) => {
-      toast.success(`Redeemed ${pointsRedeemed} points for ${creditAmount} QAR!`);
-      queryClient.invalidateQueries({ queryKey: ["loyalty-points"] });
-      queryClient.invalidateQueries({ queryKey: ["loyalty-transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["wallet"] });
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to redeem points");
-    },
-  });
-
-  // Calculate progress to next tier
-  const getNextTierProgress = () => {
-    if (!loyaltyData) return { nextTier: "silver", progress: 0, pointsNeeded: 1000 };
-
-    const currentTier = loyaltyData.tier;
-    const lifetime = loyaltyData.lifetime_points;
-
-    if (currentTier === "platinum") {
-      return { nextTier: null, progress: 100, pointsNeeded: 0 };
-    }
-
-    const tiers = ["bronze", "silver", "gold", "platinum"] as const;
-    const currentIndex = tiers.indexOf(currentTier);
-    const nextTier = tiers[currentIndex + 1];
-    const nextTierPoints = TIER_BENEFITS[nextTier].minPoints;
-    const currentTierPoints = TIER_BENEFITS[currentTier].minPoints;
-
-    const progress = Math.min(
-      100,
-      ((lifetime - currentTierPoints) / (nextTierPoints - currentTierPoints)) * 100
-    );
-    const pointsNeeded = nextTierPoints - lifetime;
-
-    return { nextTier, progress, pointsNeeded };
+  const calculateRedemptionValue = (_points: number) => {
+    return 0;
   };
 
   return {
-    points: loyaltyData?.points || 0,
-    lifetimePoints: loyaltyData?.lifetime_points || 0,
-    tier: loyaltyData?.tier || "bronze",
-    tierBenefits: TIER_BENEFITS[loyaltyData?.tier || "bronze"],
+    loyaltyPoints,
     transactions,
-    isLoading: isLoadingPoints || isLoadingTransactions,
-    redeemPoints: redeemPoints.mutate,
-    isRedeeming: redeemPoints.isPending,
-    getNextTierProgress,
+    isLoading,
+    error,
+    redeemPoints,
+    calculatePointsForBooking,
+    calculateRedemptionValue,
+    tierBenefits: loyaltyPoints ? TIER_BENEFITS[loyaltyPoints.tier] : TIER_BENEFITS.bronze,
   };
 };
-

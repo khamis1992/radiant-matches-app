@@ -17,7 +17,7 @@ export const HelpfulReviewButton = ({ reviewId, helpfulCount = 0, isCompact = fa
     <Button
       variant={hasVoted ? "default" : "outline"}
       size={isCompact ? "sm" : "default"}
-      onClick={() => toggleVote()}
+      onClick={() => toggleVote.mutate()}
       disabled={isVoting}
       className={`${isCompact ? "gap-1.5" : "gap-2"} ${isRTL ? "flex-row-reverse" : ""}`}
     >

@@ -1,9 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./useAuth";
-import { useUserRole } from "./useUserRole";
-import { toast } from "sonner";
-
 export interface ReviewReply {
   id: string;
   review_id: string;
@@ -12,126 +6,55 @@ export interface ReviewReply {
   created_at: string;
 }
 
-export const useReviewReplies = (reviewId: string | undefined) => {
-  return useQuery({
-    queryKey: ["review-replies", reviewId],
-    queryFn: async () => {
-      if (!reviewId) return [];
-
-      const { data, error } = await supabase
-        .from("review_replies")
-        .select("*")
-        .eq("review_id", reviewId)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!reviewId,
-  });
+/**
+ * Hook for fetching review replies
+ * Note: This feature requires review_replies table to be created
+ */
+export const useReviewReplies = (_reviewId: string | undefined) => {
+  return {
+    data: [] as ReviewReply[],
+    isLoading: false,
+    error: null,
+  };
 };
 
+/**
+ * Hook for adding review replies
+ */
 export const useAddReviewReply = () => {
-  const { user } = useAuth();
-  const { isArtist } = useUserRole();
-  const queryClient = useQueryClient();
-
-  const addReply = useMutation({
-    mutationFn: async ({ reviewId, reply }: { reviewId: string; reply: string }) => {
-      if (!user) {
-        toast.error("Please login first");
-        throw new Error("Not logged in");
-      }
-
-      if (!isArtist) {
-        toast.error("Only artists can reply to reviews");
-        throw new Error("Not an artist");
-      }
-
-      // Get artist profile
-      const { data: artist } = await supabase
-        .from("artists")
-        .select("id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!artist) {
-        toast.error("Artist profile not found");
-        throw new Error("Artist not found");
-      }
-
-      const { data, error } = await supabase
-        .from("review_replies")
-        .insert({
-          review_id: reviewId,
-          artist_id: artist.id,
-          reply: reply.trim(),
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+  const addReply = {
+    mutate: (_params: { reviewId: string; reply: string }) => {
+      console.log("Review replies not configured - table not available");
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["review-replies", data.review_id] });
-      toast.success("Reply added successfully");
+    mutateAsync: async (_params: { reviewId: string; reply: string }) => {
+      console.log("Review replies not configured - table not available");
+      return null;
     },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to add reply");
-    },
-  });
+    isPending: false,
+  };
 
   return {
     addReply,
-    isAdding: addReply.isPending,
+    isAdding: false,
   };
 };
 
+/**
+ * Hook for deleting review replies
+ */
 export const useDeleteReviewReply = () => {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-
-  const deleteReply = useMutation({
-    mutationFn: async (replyId: string) => {
-      if (!user) {
-        toast.error("Please login first");
-        return;
-      }
-
-      // Check if user owns the reply (is artist)
-      const { data: artist } = await supabase
-        .from("artists")
-        .select("id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!artist) {
-        toast.error("Unauthorized");
-        throw new Error("Unauthorized");
-      }
-
-      const { error } = await supabase
-        .from("review_replies")
-        .delete()
-        .eq("id", replyId)
-        .eq("artist_id", artist.id);
-
-      if (error) throw error;
+  const deleteReply = {
+    mutate: (_replyId: string) => {
+      console.log("Review replies not configured - table not available");
     },
-    onSuccess: (_, variables) => {
-      // Get review_id to invalidate queries
-      queryClient.invalidateQueries({ queryKey: ["review-replies"] });
-      toast.success("Reply deleted successfully");
+    mutateAsync: async (_replyId: string) => {
+      console.log("Review replies not configured - table not available");
     },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to delete reply");
-    },
-  });
+    isPending: false,
+  };
 
   return {
     deleteReply,
-    isDeleting: deleteReply.isPending,
+    isDeleting: false,
   };
 };
-

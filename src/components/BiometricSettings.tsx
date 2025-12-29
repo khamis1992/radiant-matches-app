@@ -28,8 +28,8 @@ export const BiometricSettings = () => {
     isEnabled,
     isLoading,
     credentials,
-    registerBiometric,
-    removeBiometric,
+    registerCredential,
+    removeCredential,
   } = useBiometricAuth();
 
   const [showRegisterDialog, setShowRegisterDialog] = useState(false);
@@ -38,7 +38,7 @@ export const BiometricSettings = () => {
 
   const handleRegister = async () => {
     setIsRegistering(true);
-    const success = await registerBiometric(deviceName || "My Device");
+    const success = await registerCredential(deviceName || "My Device");
     setIsRegistering(false);
     if (success) {
       setShowRegisterDialog(false);
@@ -139,7 +139,7 @@ export const BiometricSettings = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => removeBiometric(credential.credential_id)}
+                        onClick={() => removeCredential(credential.credential_id)}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />

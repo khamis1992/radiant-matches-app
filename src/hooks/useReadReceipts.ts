@@ -1,8 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
-import { toast } from "sonner";
 
+/**
+ * Hook for marking messages as read
+ * Uses the is_read field on messages table
+ */
 export const useMarkAsRead = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -10,13 +13,12 @@ export const useMarkAsRead = () => {
   const markAsRead = useMutation({
     mutationFn: async (messageId: string) => {
       if (!user) {
-        toast.error("Please login first");
         throw new Error("Not logged in");
       }
 
       const { error } = await supabase
         .from("messages")
-        .update({ read_at: new Date().toISOString() })
+        .update({ is_read: true })
         .eq("id", messageId);
 
       if (error) throw error;
@@ -25,32 +27,25 @@ export const useMarkAsRead = () => {
       queryClient.invalidateQueries({ queryKey: ["messages"] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to mark as read");
-    },
   });
 
   const markConversationAsRead = useMutation({
     mutationFn: async (conversationId: string) => {
       if (!user) {
-        toast.error("Please login first");
         throw new Error("Not logged in");
       }
 
       const { error } = await supabase
         .from("messages")
-        .update({ read_at: new Date().toISOString() })
+        .update({ is_read: true })
         .eq("conversation_id", conversationId)
-        .is("read_at", null);
+        .eq("is_read", false);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages"] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
-    },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to mark conversation as read");
     },
   });
 
@@ -60,4 +55,3 @@ export const useMarkAsRead = () => {
     isMarking: markAsRead.isPending || markConversationAsRead.isPending,
   };
 };
-

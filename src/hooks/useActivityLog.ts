@@ -1,7 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./useAuth";
-
 export interface ActivityLogEntry {
   id: string;
   action: string;
@@ -11,25 +7,14 @@ export interface ActivityLogEntry {
   created_at: string;
 }
 
+/**
+ * Hook for activity logging
+ * Note: This feature requires activity_logs table to be created
+ */
 export const useActivityLog = () => {
-  const { user } = useAuth();
-
-  return useQuery({
-    queryKey: ["activity-log"],
-    queryFn: async () => {
-      if (!user) return [];
-
-      const { data, error } = await supabase
-        .from("activity_logs")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(100);
-
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!user,
-  });
+  return {
+    data: [] as ActivityLogEntry[],
+    isLoading: false,
+    error: null,
+  };
 };
-

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect, ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { initGA, trackPageView, setUserId, analytics } from "@/lib/analytics";
 import { useAuth } from "./useAuth";
@@ -29,11 +29,15 @@ export const useAnalytics = () => {
   return analytics;
 };
 
+interface AnalyticsProviderProps {
+  children: ReactNode;
+}
+
 /**
  * Analytics Provider Component
  * Wrap your app with this to enable analytics
  */
-export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AnalyticsProvider = ({ children }: AnalyticsProviderProps) => {
   useAnalytics();
-  return <>{children}</>;
+  return React.createElement(React.Fragment, null, children);
 };
