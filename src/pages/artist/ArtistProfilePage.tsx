@@ -27,7 +27,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Pencil, Briefcase, LogOut, Star, MessageSquare, Phone, MapPin, Clock, CalendarOff, X, Plus } from "lucide-react";
-import PortfolioUpload from "@/components/PortfolioUpload";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useCurrentArtist, useUpdateArtistProfile } from "@/hooks/useArtistDashboard";
@@ -421,11 +421,6 @@ const ArtistProfilePage = () => {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Portfolio Section */}
-        <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-          <PortfolioUpload artistId={artist.id} />
         </div>
 
         {/* Reviews Section */}
