@@ -18,7 +18,9 @@ import {
   Scissors,
   Image,
   Wallet,
+  Globe,
 } from "lucide-react";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -86,6 +88,8 @@ export const AdminSidebar = () => {
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-bold text-foreground">{t.adminNav.adminPanel}</h1>
           <div className="flex items-center gap-1">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
             {/* Notifications */}
             <Popover>
               <PopoverTrigger asChild>
