@@ -864,6 +864,10 @@ export const ar = {
     avgRating: "متوسط التقييم",
     years: "سنوات",
     startingFrom: "السعر: من الأقل",
+    suggestions: "اقتراحات",
+    artistLabel: "فنانة",
+    locationLabel: "موقع",
+    categoryLabel: "فئة",
   },
 
   // Artist Signup
