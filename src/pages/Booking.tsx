@@ -580,7 +580,7 @@ const Booking = () => {
                       </span>
                     </div>
                   )}
-                  {artistInfo?.rating && artistInfo.rating > 0 && (
+                  {(artistInfo?.rating ?? 0) > 0 && (
                     <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-sm">
                       <Star className="w-3 h-3 text-white fill-white" />
                     </div>
@@ -606,7 +606,7 @@ const Booking = () => {
                 {/* Price */}
                 <div className="text-end flex-shrink-0">
                   <p className="text-lg font-bold text-primary">{formatQAR(actualServicePrice)}</p>
-                  {artistInfo?.rating && artistInfo.rating > 0 && artistInfo.total_reviews && artistInfo.total_reviews > 0 && (
+                  {(artistInfo?.rating ?? 0) > 0 && (artistInfo?.total_reviews ?? 0) > 0 && (
                     <p className="text-xs text-muted-foreground">
                       {artistInfo.rating.toFixed(1)} ({artistInfo.total_reviews})
                     </p>
@@ -972,11 +972,13 @@ const Booking = () => {
                     <Sparkles className="w-4 h-4 text-primary" />
                     <p className="text-sm text-primary font-medium">{actualServiceName}</p>
                   </div>
-                  {artistInfo?.rating && artistInfo.rating > 0 && (
+                  {(artistInfo?.rating ?? 0) > 0 && (
                     <div className="flex items-center gap-1 mt-2">
                       <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
                       <span className="text-sm font-medium text-foreground">{artistInfo.rating.toFixed(1)}</span>
-                      <span className="text-xs text-muted-foreground">({artistInfo.total_reviews || 0})</span>
+                      {(artistInfo?.total_reviews ?? 0) > 0 && (
+                        <span className="text-xs text-muted-foreground">({artistInfo.total_reviews})</span>
+                      )}
                     </div>
                   )}
                 </div>
