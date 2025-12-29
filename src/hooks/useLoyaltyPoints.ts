@@ -63,12 +63,14 @@ export const useLoyaltyPoints = () => {
   const transactions: LoyaltyTransaction[] = [];
   const isLoading = false;
   const error = null;
+  const isRedeeming = false;
 
-  const redeemPoints = {
-    mutate: (_points: number) => {
-      console.log("Loyalty points not configured - tables not available");
-    },
-    isPending: false,
+  const points = loyaltyPoints?.points ?? 0;
+  const lifetimePoints = loyaltyPoints?.lifetime_points ?? 0;
+  const tier = loyaltyPoints?.tier ?? "bronze";
+
+  const redeemPoints = (_points: number) => {
+    console.log("Loyalty points not configured - tables not available");
   };
 
   const calculatePointsForBooking = (_amount: number) => {
@@ -79,14 +81,41 @@ export const useLoyaltyPoints = () => {
     return 0;
   };
 
+  const getNextTierProgress = () => {
+    const tiers = Object.entries(TIER_BENEFITS).sort((a, b) => a[1].minPoints - b[1].minPoints);
+    const currentTierIndex = tiers.findIndex(([key]) => key === tier);
+    const nextTier = tiers[currentTierIndex + 1];
+    
+    if (!nextTier) {
+      return { progress: 100, pointsNeeded: 0, nextTier: null };
+    }
+
+    const currentMinPoints = TIER_BENEFITS[tier].minPoints;
+    const nextMinPoints = nextTier[1].minPoints;
+    const pointsInRange = lifetimePoints - currentMinPoints;
+    const rangeSize = nextMinPoints - currentMinPoints;
+    const progress = Math.min((pointsInRange / rangeSize) * 100, 100);
+
+    return {
+      progress,
+      pointsNeeded: Math.max(nextMinPoints - lifetimePoints, 0),
+      nextTier: nextTier[0],
+    };
+  };
+
   return {
     loyaltyPoints,
     transactions,
     isLoading,
     error,
     redeemPoints,
+    isRedeeming,
     calculatePointsForBooking,
     calculateRedemptionValue,
-    tierBenefits: loyaltyPoints ? TIER_BENEFITS[loyaltyPoints.tier] : TIER_BENEFITS.bronze,
+    tierBenefits: TIER_BENEFITS[tier],
+    points,
+    lifetimePoints,
+    tier,
+    getNextTierProgress,
   };
 };
