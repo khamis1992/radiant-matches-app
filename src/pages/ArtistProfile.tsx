@@ -11,11 +11,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ServiceCard from "@/components/ServiceCard";
-import ImageLightbox from "@/components/ImageLightbox";
+
 import { useArtist } from "@/hooks/useArtists";
 import { useArtistServices } from "@/hooks/useServices";
 import { useArtistReviews } from "@/hooks/useReviews";
-import { useArtistPortfolio } from "@/hooks/usePortfolio";
+
 import { useWorkingHours } from "@/hooks/useWorkingHours";
 import { useBlockedDates } from "@/hooks/useBlockedDates";
 import { useConversations } from "@/hooks/useConversations";
@@ -33,15 +33,12 @@ type ReviewSort = "newest" | "highest";
 const ArtistProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [portfolioFilter, setPortfolioFilter] = useState<string>("all");
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
   const [showAllHours, setShowAllHours] = useState(false);
 
   const { data: artist, isLoading: artistLoading } = useArtist(id);
   const { data: services, isLoading: servicesLoading } = useArtistServices(id);
   const { data: reviews, isLoading: reviewsLoading } = useArtistReviews(id);
-  const { data: portfolioItems = [], isLoading: portfolioLoading } = useArtistPortfolio(id);
+  
   const { data: workingHours = [], isLoading: workingHoursLoading } = useWorkingHours(artist?.id);
   const { data: blockedDates = [] } = useBlockedDates(artist?.id);
   const { getOrCreateConversation } = useConversations();
@@ -172,7 +169,7 @@ const ArtistProfile = () => {
   const displayImage = artist.profile?.avatar_url || artist1;
   const displayName = artist.profile?.full_name || "Unknown Artist";
   const displayLocation = artist.profile?.location || artist.studio_address || "Location TBD";
-  const featuredPortfolio = portfolioItems.slice(0, 4);
+  
   const lowestPrice = services?.length ? Math.min(...services.map(s => Number(s.price))) : null;
 
   return (
@@ -263,10 +260,10 @@ const ArtistProfile = () => {
             </div>
             <div className="bg-muted/50 rounded-2xl p-3 text-center">
               <div className="flex items-center justify-center gap-1 text-primary">
-                <Camera className="w-4 h-4" />
+                <Star className="w-4 h-4" />
               </div>
-              <p className="font-bold text-foreground mt-1">{portfolioItems.length}</p>
-              <p className="text-xs text-muted-foreground">{t.artist.portfolio || "Photos"}</p>
+              <p className="font-bold text-foreground mt-1">{artist.total_reviews || 0}</p>
+              <p className="text-xs text-muted-foreground">{t.artist.reviews}</p>
             </div>
             <div className="bg-muted/50 rounded-2xl p-3 text-center">
               <div className="flex items-center justify-center gap-1 text-primary">
@@ -391,49 +388,6 @@ const ArtistProfile = () => {
         )}
       </div>
 
-      {/* Portfolio Preview */}
-      {featuredPortfolio.length > 0 && (
-        <div className="px-5 mt-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-foreground">{t.artist.portfolio}</h2>
-            <button 
-              onClick={() => {
-                const portfolioTab = document.querySelector('[value="portfolio"]');
-                if (portfolioTab) {
-                  (portfolioTab as HTMLButtonElement).click();
-                }
-              }}
-              className="text-sm text-primary font-medium flex items-center gap-1"
-            >
-              {t.common.seeAll}
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {featuredPortfolio.map((item, index) => (
-              <div
-                key={item.id}
-                className="aspect-square rounded-xl overflow-hidden cursor-pointer group relative"
-                onClick={() => {
-                  setLightboxIndex(index);
-                  setLightboxOpen(true);
-                }}
-              >
-                <img
-                  src={item.image_url}
-                  alt={item.title || "Portfolio"}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                {index === 3 && portfolioItems.length > 4 && (
-                  <div className="absolute inset-0 bg-background/70 backdrop-blur-sm flex items-center justify-center">
-                    <span className="text-lg font-bold text-foreground">+{portfolioItems.length - 4}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Main Tabs */}
       <div className="px-5 mt-6">
@@ -445,13 +399,6 @@ const ArtistProfile = () => {
             >
               <Briefcase className="w-4 h-4 me-1.5" />
               {t.artist.servicesOffered}
-            </TabsTrigger>
-            <TabsTrigger
-              value="portfolio"
-              className="flex-1 rounded-xl py-2.5 text-sm data-[state=active]:bg-card data-[state=active]:shadow-sm"
-            >
-              <Camera className="w-4 h-4 me-1.5" />
-              {t.artist.portfolio}
             </TabsTrigger>
             <TabsTrigger
               value="reviews"
@@ -502,121 +449,6 @@ const ArtistProfile = () => {
             )}
           </TabsContent>
 
-          {/* Portfolio Tab */}
-          <TabsContent value="portfolio" className="mt-4 space-y-4">
-            {portfolioLoading ? (
-              <div className="grid grid-cols-2 gap-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="aspect-[4/5] rounded-2xl" />
-                ))}
-              </div>
-            ) : portfolioItems.length > 0 ? (
-              <>
-                {/* Category Filter */}
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-5 px-5">
-                  <Badge
-                    variant={portfolioFilter === "all" ? "default" : "outline"}
-                    className="cursor-pointer whitespace-nowrap rounded-full px-4 py-1.5"
-                    onClick={() => setPortfolioFilter("all")}
-                  >
-                    {t.artist.all} ({portfolioItems.length})
-                  </Badge>
-                  {Object.entries(
-                    portfolioItems.reduce((acc, item) => {
-                      acc[item.category] = (acc[item.category] || 0) + 1;
-                      return acc;
-                    }, {} as Record<string, number>)
-                  ).map(([category, count]) => (
-                    <Badge
-                      key={category}
-                      variant={portfolioFilter === category ? "default" : "outline"}
-                      className="cursor-pointer whitespace-nowrap rounded-full px-4 py-1.5"
-                      onClick={() => setPortfolioFilter(category)}
-                    >
-                      {category} ({count})
-                    </Badge>
-                  ))}
-                </div>
-
-                {/* Portfolio Grid - Masonry-like */}
-                <div className="grid grid-cols-2 gap-3">
-                  {(() => {
-                    const filtered = portfolioFilter === "all"
-                      ? portfolioItems
-                      : portfolioItems.filter(item => item.category === portfolioFilter);
-                    const sorted = [...filtered].sort((a, b) => {
-                      if (a.is_featured && !b.is_featured) return -1;
-                      if (!a.is_featured && b.is_featured) return 1;
-                      return a.display_order - b.display_order;
-                    });
-                    return sorted.map((item, index) => (
-                      <div
-                        key={item.id}
-                        className={`rounded-2xl overflow-hidden shadow-md relative group cursor-pointer animate-fade-in ${index % 3 === 0 ? 'aspect-[3/4]' : 'aspect-square'}`}
-                        style={{ animationDelay: `${index * 50}ms` }}
-                        onClick={() => {
-                          setLightboxIndex(index);
-                          setLightboxOpen(true);
-                        }}
-                      >
-                        <img
-                          src={item.image_url}
-                          alt={item.title || "Portfolio"}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        {item.is_featured && (
-                          <div className="absolute top-2 end-2">
-                            <Badge className="bg-primary/90 backdrop-blur-sm text-primary-foreground text-xs gap-1 border-0">
-                              <Star className="w-3 h-3 fill-current" />
-                              {t.artist.featured}
-                            </Badge>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="absolute bottom-3 start-3 end-3">
-                            <Badge variant="secondary" className="text-xs mb-1">
-                              {item.category}
-                            </Badge>
-                            {item.title && (
-                              <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ));
-                  })()}
-                </div>
-
-                {/* Lightbox */}
-                <ImageLightbox
-                  images={(() => {
-                    const filtered = portfolioFilter === "all"
-                      ? portfolioItems
-                      : portfolioItems.filter(item => item.category === portfolioFilter);
-                    return [...filtered].sort((a, b) => {
-                      if (a.is_featured && !b.is_featured) return -1;
-                      if (!a.is_featured && b.is_featured) return 1;
-                      return a.display_order - b.display_order;
-                    }).map(item => ({
-                      url: item.image_url,
-                      title: item.title,
-                      category: item.category,
-                    }));
-                  })()}
-                  initialIndex={lightboxIndex}
-                  open={lightboxOpen}
-                  onOpenChange={setLightboxOpen}
-                />
-              </>
-            ) : (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                  <Camera className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <p className="text-muted-foreground">{t.artist.noPortfolio}</p>
-              </div>
-            )}
-          </TabsContent>
 
           {/* Reviews Tab */}
           <TabsContent value="reviews" className="mt-4 space-y-4">
@@ -721,11 +553,7 @@ const ArtistProfile = () => {
                                 key={idx}
                                 src={photo}
                                 alt={`Review photo ${idx + 1}`}
-                                className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity flex-shrink-0"
-                                onClick={() => {
-                                  setLightboxIndex(0);
-                                  setLightboxOpen(true);
-                                }}
+                                className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
                               />
                             ))}
                           </div>
