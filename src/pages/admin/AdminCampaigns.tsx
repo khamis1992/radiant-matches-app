@@ -176,11 +176,11 @@ const AdminCampaigns = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="discount">Discount</SelectItem>
-                          <SelectItem value="promo_code">Promo Code</SelectItem>
-                          <SelectItem value="banner">Banner</SelectItem>
-                          <SelectItem value="push_notification">Push Notification</SelectItem>
-                          <SelectItem value="email">Email</SelectItem>
+                          <SelectItem value="discount">{t.admin?.campaigns?.discount || "Discount"}</SelectItem>
+                          <SelectItem value="promo_code">{t.admin?.campaigns?.promoCode || "Promo Code"}</SelectItem>
+                          <SelectItem value="banner">{t.admin?.campaigns?.banner || "Banner"}</SelectItem>
+                          <SelectItem value="push_notification">{t.admin?.campaigns?.pushNotification || "Push Notification"}</SelectItem>
+                          <SelectItem value="email">{t.admin?.campaigns?.email || "Email"}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -195,11 +195,11 @@ const AdminCampaigns = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Users</SelectItem>
-                          <SelectItem value="new_users">New Users</SelectItem>
-                          <SelectItem value="returning_users">Returning Users</SelectItem>
-                          <SelectItem value="inactive_users">Inactive Users</SelectItem>
-                          <SelectItem value="high_value">High Value</SelectItem>
+                          <SelectItem value="all">{t.admin?.campaigns?.allUsers || "All Users"}</SelectItem>
+                          <SelectItem value="new_users">{t.admin?.campaigns?.newUsers || "New Users"}</SelectItem>
+                          <SelectItem value="returning_users">{t.admin?.campaigns?.returningUsers || "Returning Users"}</SelectItem>
+                          <SelectItem value="inactive_users">{t.admin?.campaigns?.inactiveUsers || "Inactive Users"}</SelectItem>
+                          <SelectItem value="high_value">{t.admin?.campaigns?.highValue || "High Value"}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -255,7 +255,7 @@ const AdminCampaigns = () => {
                     {t.common?.cancel || "Cancel"}
                   </Button>
                   <Button onClick={handleCreateCampaign} disabled={isCreating}>
-                    {isCreating ? "Creating..." : (t.admin?.campaigns?.create || "Create")}
+                    {isCreating ? (t.admin?.campaigns?.creating || "Creating...") : (t.admin?.campaigns?.create || "Create")}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -271,7 +271,7 @@ const AdminCampaigns = () => {
                     <Eye className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Impressions</p>
+                    <p className="text-sm text-muted-foreground">{t.admin?.campaigns?.impressions || "Impressions"}</p>
                     <p className="text-2xl font-bold">{stats.totalImpressions.toLocaleString()}</p>
                   </div>
                 </div>
@@ -285,7 +285,7 @@ const AdminCampaigns = () => {
                     <MousePointer className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Clicks</p>
+                    <p className="text-sm text-muted-foreground">{t.admin?.campaigns?.clicks || "Clicks"}</p>
                     <p className="text-2xl font-bold">{stats.totalClicks.toLocaleString()}</p>
                   </div>
                 </div>
@@ -299,7 +299,7 @@ const AdminCampaigns = () => {
                     <ShoppingCart className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Conversions</p>
+                    <p className="text-sm text-muted-foreground">{t.admin?.campaigns?.conversions || "Conversions"}</p>
                     <p className="text-2xl font-bold">{stats.totalConversions.toLocaleString()}</p>
                   </div>
                 </div>
@@ -313,7 +313,7 @@ const AdminCampaigns = () => {
                     <TrendingUp className="w-5 h-5 text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Revenue</p>
+                    <p className="text-sm text-muted-foreground">{t.admin?.campaigns?.revenue || "Revenue"}</p>
                     <p className="text-2xl font-bold">QAR {stats.totalRevenue.toLocaleString()}</p>
                   </div>
                 </div>
@@ -324,20 +324,20 @@ const AdminCampaigns = () => {
           {/* Campaigns Table */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                 <CardTitle>{t.admin?.campaigns?.allCampaigns || "All Campaigns"}</CardTitle>
                 <div className="flex gap-2">
                   <Badge variant="outline" className="gap-1">
                     <div className="w-2 h-2 rounded-full bg-green-500" />
-                    {getActiveCampaigns().length} Active
+                    {getActiveCampaigns().length} {t.admin?.campaigns?.active || "Active"}
                   </Badge>
                   <Badge variant="outline" className="gap-1">
                     <div className="w-2 h-2 rounded-full bg-blue-500" />
-                    {getScheduledCampaigns().length} Scheduled
+                    {getScheduledCampaigns().length} {t.admin?.campaigns?.scheduled || "Scheduled"}
                   </Badge>
                   <Badge variant="outline" className="gap-1">
                     <div className="w-2 h-2 rounded-full bg-gray-400" />
-                    {getDraftCampaigns().length} Draft
+                    {getDraftCampaigns().length} {t.admin?.campaigns?.draft || "Draft"}
                   </Badge>
                 </div>
               </div>
@@ -353,13 +353,13 @@ const AdminCampaigns = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Campaign</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Audience</TableHead>
-                      <TableHead>Performance</TableHead>
-                      <TableHead>Dates</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t.admin?.campaigns?.campaign || "Campaign"}</TableHead>
+                      <TableHead>{t.admin?.campaigns?.type || "Type"}</TableHead>
+                      <TableHead>{t.admin?.campaigns?.status || "Status"}</TableHead>
+                      <TableHead>{t.admin?.campaigns?.audience || "Audience"}</TableHead>
+                      <TableHead>{t.admin?.campaigns?.performance || "Performance"}</TableHead>
+                      <TableHead>{t.admin?.campaigns?.dates || "Dates"}</TableHead>
+                      <TableHead className={isRTL ? "text-left" : "text-right"}>{t.admin?.campaigns?.actions || "Actions"}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -389,9 +389,9 @@ const AdminCampaigns = () => {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            <div>{campaign.impressions.toLocaleString()} views</div>
+                            <div>{campaign.impressions.toLocaleString()} {t.admin?.campaigns?.views || "views"}</div>
                             <div className="text-muted-foreground">
-                              {campaign.conversions} conversions
+                              {campaign.conversions} {t.admin?.campaigns?.conversions?.toLowerCase() || "conversions"}
                             </div>
                           </div>
                         </TableCell>
@@ -442,13 +442,13 @@ const AdminCampaigns = () => {
               ) : (
                 <div className="text-center py-12">
                   <BarChart3 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-lg font-medium mb-2">No campaigns yet</p>
+                  <p className="text-lg font-medium mb-2">{t.admin?.campaigns?.noCampaigns || "No campaigns yet"}</p>
                   <p className="text-muted-foreground mb-4">
-                    Create your first marketing campaign to boost engagement
+                    {t.admin?.campaigns?.noCampaignsDesc || "Create your first marketing campaign to boost engagement"}
                   </p>
                   <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
                     <Plus className="w-4 h-4" />
-                    Create Campaign
+                    {t.admin?.campaigns?.create || "Create Campaign"}
                   </Button>
                 </div>
               )}
