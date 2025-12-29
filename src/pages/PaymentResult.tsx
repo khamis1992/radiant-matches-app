@@ -13,7 +13,7 @@ const PaymentResult = () => {
   
   const orderId = searchParams.get("order_id") || searchParams.get("ORDER_ID") || searchParams.get("ORDERID");
   const status = searchParams.get("status") || searchParams.get("RESPCODE");
-  const transactionNumber = searchParams.get("transaction_number") || searchParams.get("transactionNumber") || searchParams.get("transactionNumber") || searchParams.get("transaction_number") || searchParams.get("transactionNumber") || searchParams.get("transactionNumber") || searchParams.get("transaction_number") || searchParams.get("transaction_number");
+  const transactionNumber = searchParams.get("transaction_number") || searchParams.get("transactionNumber") || searchParams.get("TRANSACTIONNUMBER");
   const respMsg = searchParams.get("RESPMSG") || searchParams.get("respmsg");
 
   // Fetch booking details based on order_id
