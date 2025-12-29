@@ -109,7 +109,7 @@ const AdminReviews = () => {
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
-      <main className="mr-64 p-6">
+      <main className={cn("p-6", isRTL ? "mr-64" : "ml-64")}>
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">

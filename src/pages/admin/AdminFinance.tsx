@@ -181,10 +181,10 @@ const AdminFinance = () => {
   })) || [];
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
-      <main className="flex-1 mr-64 p-8">
+      <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">الإدارة المالية</h1>
           <p className="text-muted-foreground mt-1">تتبع الإيرادات والعمولات والمدفوعات</p>
