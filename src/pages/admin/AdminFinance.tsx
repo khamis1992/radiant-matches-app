@@ -52,11 +52,13 @@ const AdminFinance = () => {
   const { data: transactions, isLoading: transactionsLoading } = useTransactions(20);
   const { data: artistPayouts, isLoading: payoutsLoading } = useArtistPayouts();
 
+  const dateLocale = language === "ar" ? ar : enUS;
+
   if (roleLoading) {
     return (
-      <div className="min-h-screen bg-background flex">
+      <div className="min-h-screen bg-background flex" dir={isRTL ? "rtl" : "ltr"}>
         <AdminSidebar />
-        <main className="flex-1 mr-64 p-8">
+        <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
           <Skeleton className="h-8 w-48 mb-8" />
           <div className="grid grid-cols-4 gap-6 mb-8">
             {[...Array(4)].map((_, i) => (
@@ -76,11 +78,11 @@ const AdminFinance = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge className="bg-green-500 hover:bg-green-600">مكتمل</Badge>;
+        return <Badge className="bg-green-500 hover:bg-green-600">{t.adminFinance.statusCompleted}</Badge>;
       case "pending":
-        return <Badge variant="secondary">قيد الانتظار</Badge>;
+        return <Badge variant="secondary">{t.adminFinance.statusPending}</Badge>;
       case "refunded":
-        return <Badge variant="destructive">مسترد</Badge>;
+        return <Badge variant="destructive">{t.adminFinance.statusRefunded}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -89,128 +91,138 @@ const AdminFinance = () => {
   const getTypeLabel = (type: string) => {
     switch (type) {
       case "booking_payment":
-        return "دفعة حجز";
+        return t.adminFinance.typeBookingPayment;
       case "platform_fee":
-        return "عمولة المنصة";
+        return t.adminFinance.typePlatformFee;
       case "artist_payout":
-        return "دفعة للفنان";
+        return t.adminFinance.typeArtistPayout;
       case "subscription":
-        return "اشتراك";
+        return t.adminFinance.typeSubscription;
       default:
         return type;
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return `${amount.toFixed(2)} ر.ق`;
+    const currency = language === "ar" ? "ر.ق" : "QAR";
+    return `${amount.toFixed(2)} ${currency}`;
   };
 
   const handleExportTransactions = () => {
     if (!transactions?.length) {
-      toast.error("لا توجد معاملات للتصدير");
+      toast.error(t.adminFinance.noTransactionsToExport);
       return;
     }
     exportToCSV(
       transactions,
       [
-        { header: "التاريخ", accessor: (t) => format(new Date(t.created_at), "yyyy-MM-dd HH:mm") },
-        { header: "النوع", accessor: (t) => getTypeLabel(t.type) },
-        { header: "الفنان", accessor: (t) => t.artist?.profiles?.full_name || "غير معروف" },
-        { header: "المبلغ", accessor: (t) => t.amount },
-        { header: "العمولة", accessor: (t) => t.platform_fee },
-        { header: "الصافي", accessor: (t) => t.net_amount },
-        { header: "الحالة", accessor: (t) => t.status },
+        { header: t.adminFinance.colDate, accessor: (row) => format(new Date(row.created_at), "yyyy-MM-dd HH:mm") },
+        { header: t.adminFinance.colType, accessor: (row) => getTypeLabel(row.type) },
+        { header: t.adminFinance.colArtist, accessor: (row) => row.artist?.profiles?.full_name || t.common.unknown },
+        { header: t.adminFinance.colAmount, accessor: (row) => row.amount },
+        { header: t.adminFinance.colFee, accessor: (row) => row.platform_fee },
+        { header: t.adminFinance.colNet, accessor: (row) => row.net_amount },
+        { header: t.adminFinance.colStatus, accessor: (row) => row.status },
       ],
       "transactions"
     );
-    toast.success("تم تصدير المعاملات بنجاح");
+    toast.success(t.adminFinance.exportTransactionsSuccess);
   };
 
   const handleExportArtistPayouts = () => {
     if (!artistPayouts?.length) {
-      toast.error("لا توجد مدفوعات للتصدير");
+      toast.error(t.adminFinance.noPayoutsToExport);
       return;
     }
     exportToCSV(
       artistPayouts,
       [
-        { header: "الفنان", accessor: (a) => a.full_name },
-        { header: "البريد الإلكتروني", accessor: (a) => a.email },
-        { header: "عدد المعاملات", accessor: (a) => a.transactions_count },
-        { header: "إجمالي العمولات", accessor: (a) => a.total_fees },
-        { header: "إجمالي الأرباح", accessor: (a) => a.total_earnings },
+        { header: t.adminFinance.colArtist, accessor: (row) => row.full_name },
+        { header: t.adminFinance.colEmail, accessor: (row) => row.email },
+        { header: t.adminFinance.colTransactionsCount, accessor: (row) => row.transactions_count },
+        { header: t.adminFinance.colTotalFees, accessor: (row) => row.total_fees },
+        { header: t.adminFinance.colTotalEarnings, accessor: (row) => row.total_earnings },
       ],
       "artist_payouts"
     );
-    toast.success("تم تصدير مدفوعات الفنانين بنجاح");
+    toast.success(t.adminFinance.exportPayoutsSuccess);
   };
 
   const handleExportTransactionsPDF = () => {
     if (!transactions?.length) {
-      toast.error("لا توجد معاملات للتصدير");
+      toast.error(t.adminFinance.noTransactionsToExport);
       return;
     }
+
     const typeLabelsMap: Record<string, string> = {
-      booking_payment: "دفعة حجز",
-      platform_fee: "عمولة المنصة",
-      artist_payout: "دفعة للفنان",
-      subscription: "اشتراك",
+      booking_payment: t.adminFinance.typeBookingPayment,
+      platform_fee: t.adminFinance.typePlatformFee,
+      artist_payout: t.adminFinance.typeArtistPayout,
+      subscription: t.adminFinance.typeSubscription,
     };
+
     exportTransactionsToPDF(transactions, typeLabelsMap);
-    toast.success("تم تصدير التقرير بصيغة PDF");
+    toast.success(t.adminFinance.exportPdfSuccess);
   };
 
   const handleExportPayoutsPDF = () => {
     if (!artistPayouts?.length) {
-      toast.error("لا توجد مدفوعات للتصدير");
+      toast.error(t.adminFinance.noPayoutsToExport);
       return;
     }
     exportArtistPayoutsToPDF(artistPayouts);
-    toast.success("تم تصدير التقرير بصيغة PDF");
+    toast.success(t.adminFinance.exportPdfSuccess);
   };
 
-  const monthNames: { [key: string]: string } = {
-    '01': 'يناير', '02': 'فبراير', '03': 'مارس', '04': 'أبريل',
-    '05': 'مايو', '06': 'يونيو', '07': 'يوليو', '08': 'أغسطس',
-    '09': 'سبتمبر', '10': 'أكتوبر', '11': 'نوفمبر', '12': 'ديسمبر'
+  const monthLabelFor = (month: string) => {
+    const [yearStr, monthStr] = month.split("-");
+    const year = Number(yearStr);
+    const m = Number(monthStr);
+    if (!Number.isFinite(year) || !Number.isFinite(m)) return month;
+    const d = new Date(year, m - 1, 1);
+    return format(d, "MMM", { locale: dateLocale });
   };
 
-  const chartData = stats?.monthlyRevenue.map(item => ({
-    ...item,
-    name: monthNames[item.month.split('-')[1]] || item.month,
-  })) || [];
+  const chartData =
+    stats?.monthlyRevenue.map((item) => ({
+      ...item,
+      name: monthLabelFor(item.month),
+    })) || [];
+
+  const iconSpacing = isRTL ? "ml-2" : "mr-2";
+  const thAlign = isRTL ? "text-right" : "text-left";
 
   return (
     <div className="min-h-screen bg-background flex" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
-      
+
       <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">الإدارة المالية</h1>
-          <p className="text-muted-foreground mt-1">تتبع الإيرادات والعمولات والمدفوعات</p>
+          <h1 className="text-2xl font-bold text-foreground">{t.adminFinance.title}</h1>
+          <p className="text-muted-foreground mt-1">{t.adminFinance.subtitle}</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard
-            title="إجمالي الإيرادات"
+            title={t.adminFinance.totalRevenue}
             value={statsLoading ? "..." : formatCurrency(stats?.totalRevenue || 0)}
             icon={<DollarSign className="h-5 w-5" />}
             trend={{ value: 12, isPositive: true }}
           />
           <StatsCard
-            title="عمولات المنصة"
+            title={t.adminFinance.platformFees}
             value={statsLoading ? "..." : formatCurrency(stats?.totalPlatformFees || 0)}
             icon={<TrendingUp className="h-5 w-5" />}
             trend={{ value: 8, isPositive: true }}
           />
           <StatsCard
-            title="مدفوعات الفنانين"
+            title={t.adminFinance.artistPayouts}
             value={statsLoading ? "..." : formatCurrency(stats?.totalArtistPayouts || 0)}
             icon={<Users className="h-5 w-5" />}
           />
           <StatsCard
-            title="مدفوعات معلقة"
+            title={t.adminFinance.pendingPayouts}
             value={statsLoading ? "..." : formatCurrency(stats?.pendingPayouts || 0)}
             icon={<Clock className="h-5 w-5" />}
             className={stats?.pendingPayouts ? "border-yellow-500/50" : ""}
@@ -221,7 +233,7 @@ const AdminFinance = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Revenue Chart */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">الإيرادات الشهرية</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t.adminFinance.monthlyRevenue}</h3>
             <div className="h-[300px]">
               {statsLoading ? (
                 <Skeleton className="h-full w-full" />
@@ -230,27 +242,27 @@ const AdminFinance = () => {
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" className="text-xs" />
                     <YAxis className="text-xs" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
                       }}
-                      formatter={(value: number) => [formatCurrency(value), 'الإيرادات']}
+                      formatter={(value: number) => [formatCurrency(value), t.adminFinance.revenue]}
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="revenue" 
-                      stroke="hsl(var(--primary))" 
-                      fillOpacity={1} 
-                      fill="url(#colorRevenue)" 
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="hsl(var(--primary))"
+                      fillOpacity={1}
+                      fill="url(#colorRevenue)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -260,7 +272,7 @@ const AdminFinance = () => {
 
           {/* Commission Chart */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">الإيرادات مقابل العمولات</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t.adminFinance.revenueVsFees}</h3>
             <div className="h-[300px]">
               {statsLoading ? (
                 <Skeleton className="h-full w-full" />
@@ -270,20 +282,18 @@ const AdminFinance = () => {
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" className="text-xs" />
                     <YAxis className="text-xs" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
                       }}
                       formatter={(value: number, name: string) => [
-                        formatCurrency(value), 
-                        name === 'revenue' ? 'الإيرادات' : 'العمولات'
+                        formatCurrency(value),
+                        name === "revenue" ? t.adminFinance.revenue : t.adminFinance.fees,
                       ]}
                     />
-                    <Legend 
-                      formatter={(value) => value === 'revenue' ? 'الإيرادات' : 'العمولات'}
-                    />
+                    <Legend formatter={(value) => (value === "revenue" ? t.adminFinance.revenue : t.adminFinance.fees)} />
                     <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="fees" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -297,25 +307,25 @@ const AdminFinance = () => {
         <Tabs defaultValue="transactions" className="space-y-4">
           <div className="flex items-center justify-between">
             <TabsList>
-              <TabsTrigger value="transactions">المعاملات الأخيرة</TabsTrigger>
-              <TabsTrigger value="artists">مدفوعات الفنانين</TabsTrigger>
+              <TabsTrigger value="transactions">{t.adminFinance.recentTransactions}</TabsTrigger>
+              <TabsTrigger value="artists">{t.adminFinance.artistPayoutsTab}</TabsTrigger>
             </TabsList>
             <div className="flex gap-2 flex-wrap">
               <Button variant="outline" size="sm" onClick={handleExportTransactions}>
-                <Download className="h-4 w-4 ml-2" />
-                CSV معاملات
+                <Download className={cn("h-4 w-4", iconSpacing)} />
+                {t.adminFinance.exportTransactionsCsv}
               </Button>
               <Button variant="outline" size="sm" onClick={handleExportTransactionsPDF}>
-                <FileDown className="h-4 w-4 ml-2" />
-                PDF معاملات
+                <FileDown className={cn("h-4 w-4", iconSpacing)} />
+                {t.adminFinance.exportTransactionsPdf}
               </Button>
               <Button variant="outline" size="sm" onClick={handleExportArtistPayouts}>
-                <Download className="h-4 w-4 ml-2" />
-                CSV مدفوعات
+                <Download className={cn("h-4 w-4", iconSpacing)} />
+                {t.adminFinance.exportPayoutsCsv}
               </Button>
               <Button variant="outline" size="sm" onClick={handleExportPayoutsPDF}>
-                <FileDown className="h-4 w-4 ml-2" />
-                PDF مدفوعات
+                <FileDown className={cn("h-4 w-4", iconSpacing)} />
+                {t.adminFinance.exportPayoutsPdf}
               </Button>
             </div>
           </div>
@@ -332,34 +342,30 @@ const AdminFinance = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right">التاريخ</TableHead>
-                      <TableHead className="text-right">النوع</TableHead>
-                      <TableHead className="text-right">الفنان</TableHead>
-                      <TableHead className="text-right">المبلغ</TableHead>
-                      <TableHead className="text-right">العمولة</TableHead>
-                      <TableHead className="text-right">الصافي</TableHead>
-                      <TableHead className="text-right">الحالة</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colDate}</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colType}</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colArtist}</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colAmount}</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colFee}</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colNet}</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colStatus}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {transactions.map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell className="text-muted-foreground">
-                          {format(new Date(transaction.created_at), "dd MMM yyyy", { locale: ar })}
+                          {format(new Date(transaction.created_at), "dd MMM yyyy", { locale: dateLocale })}
                         </TableCell>
                         <TableCell>{getTypeLabel(transaction.type)}</TableCell>
-                        <TableCell>
-                          {transaction.artist?.profiles?.full_name || "غير معروف"}
-                        </TableCell>
+                        <TableCell>{transaction.artist?.profiles?.full_name || t.common.unknown}</TableCell>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-1">
                             <ArrowUpRight className="h-4 w-4 text-green-500" />
                             {formatCurrency(transaction.amount)}
                           </div>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatCurrency(transaction.platform_fee)}
-                        </TableCell>
+                        <TableCell className="text-muted-foreground">{formatCurrency(transaction.platform_fee)}</TableCell>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-1">
                             <ArrowDownRight className="h-4 w-4 text-primary" />
@@ -373,7 +379,7 @@ const AdminFinance = () => {
                 </Table>
               ) : (
                 <div className="p-12 text-center">
-                  <p className="text-muted-foreground">لا توجد معاملات بعد</p>
+                  <p className="text-muted-foreground">{t.adminFinance.noTransactionsYet}</p>
                 </div>
               )}
             </div>
@@ -391,11 +397,11 @@ const AdminFinance = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right">الفنان</TableHead>
-                      <TableHead className="text-right">البريد الإلكتروني</TableHead>
-                      <TableHead className="text-right">عدد المعاملات</TableHead>
-                      <TableHead className="text-right">إجمالي العمولات</TableHead>
-                      <TableHead className="text-right">إجمالي الأرباح</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colArtist}</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colEmail}</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colTransactionsCount}</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colTotalFees}</TableHead>
+                      <TableHead className={thAlign}>{t.adminFinance.colTotalEarnings}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -404,19 +410,15 @@ const AdminFinance = () => {
                         <TableCell className="font-medium">{artist.full_name}</TableCell>
                         <TableCell className="text-muted-foreground">{artist.email}</TableCell>
                         <TableCell>{artist.transactions_count}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatCurrency(artist.total_fees)}
-                        </TableCell>
-                        <TableCell className="font-medium text-green-600">
-                          {formatCurrency(artist.total_earnings)}
-                        </TableCell>
+                        <TableCell className="text-muted-foreground">{formatCurrency(artist.total_fees)}</TableCell>
+                        <TableCell className="font-medium text-green-600">{formatCurrency(artist.total_earnings)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               ) : (
                 <div className="p-12 text-center">
-                  <p className="text-muted-foreground">لا توجد مدفوعات للفنانين بعد</p>
+                  <p className="text-muted-foreground">{t.adminFinance.noPayoutsYet}</p>
                 </div>
               )}
             </div>
@@ -428,3 +430,4 @@ const AdminFinance = () => {
 };
 
 export default AdminFinance;
+
