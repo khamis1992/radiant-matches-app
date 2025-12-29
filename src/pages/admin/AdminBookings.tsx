@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -38,8 +39,9 @@ import { exportBookingsToPDF } from "@/lib/pdfExport";
 import { toast } from "sonner";
 import { useAdminBookings, useUpdateBookingStatus } from "@/hooks/useAdminBookings";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
 import type { Database } from "@/integrations/supabase/types";
+import { cn } from "@/lib/utils";
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"];
 
@@ -89,6 +91,7 @@ const statusColors: Record<BookingStatus, string> = {
 };
 
 const AdminBookings = () => {
+  const { t, isRTL, language } = useLanguage();
   const [statusFilter, setStatusFilter] = useState<BookingStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -150,13 +153,13 @@ const AdminBookings = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-background" dir="rtl">
+    <div className="flex min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
-      <main className="flex-1 p-6 mr-64">
+      <main className={cn("flex-1 p-6", isRTL ? "mr-64" : "ml-64")}>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">إدارة الحجوزات</h1>
-          <p className="text-muted-foreground">عرض وإدارة جميع الحجوزات</p>
+          <h1 className="text-2xl font-bold text-foreground">{t.adminNav.bookings}</h1>
+          <p className="text-muted-foreground">{isRTL ? "عرض وإدارة جميع الحجوزات" : "View and manage all bookings"}</p>
         </div>
 
         {/* Filters */}

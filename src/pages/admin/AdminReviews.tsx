@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useAdminReviews } from "@/hooks/useAdminReviews";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -34,9 +35,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, Filter, Star, Trash2, User, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const AdminReviews = () => {
+  const { t, isRTL, language } = useLanguage();
   const { reviews, isLoading, deleteReview, isDeleting } = useAdminReviews();
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,9 +96,9 @@ const AdminReviews = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background" dir="rtl">
+      <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
         <AdminSidebar />
-        <main className="mr-64 p-6 flex items-center justify-center min-h-screen">
+        <main className={cn("p-6 flex items-center justify-center min-h-screen", isRTL ? "mr-64" : "ml-64")}>
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </main>
       </div>
@@ -103,7 +106,7 @@ const AdminReviews = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
       <main className="mr-64 p-6">

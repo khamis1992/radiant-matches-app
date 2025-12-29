@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useAdminNotifications } from "@/hooks/useAdminNotifications";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,12 +23,14 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, Filter, Check, Trash2, Bell, Calendar } from "lucide-react";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
 const AdminNotifications = () => {
   const navigate = useNavigate();
+  const { t, isRTL, language } = useLanguage();
+  const dateLocale = language === "ar" ? ar : enUS;
   const { notifications, markAsRead, markAllAsRead, clearNotifications } = useAdminNotifications();
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,10 +86,10 @@ const AdminNotifications = () => {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
-      <main className="mr-64 p-6">
+      <main className={cn("p-6", isRTL ? "mr-64" : "ml-64")}>
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -95,9 +98,9 @@ const AdminNotifications = () => {
                 <Bell className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">سجل الإشعارات</h1>
+                <h1 className="text-2xl font-bold">{t.adminNav.notificationLog}</h1>
                 <p className="text-muted-foreground text-sm">
-                  {notifications.length} إشعار • {unreadCount} غير مقروء
+                  {notifications.length} {isRTL ? "إشعار" : "notifications"} • {unreadCount} {isRTL ? "غير مقروء" : "unread"}
                 </p>
               </div>
             </div>
