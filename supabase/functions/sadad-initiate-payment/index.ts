@@ -156,6 +156,7 @@ serve(async (req) => {
     const serviceName = booking.services?.name || "Booking Service";
     const mobileNo = (customer_phone?.replace(/\D/g, '') || "00000000");
     const email = customer_email || "";
+    const returnUrl = return_url || "";
 
     // Create payment transaction record
     const { data: transaction, error: txError } = await supabase
@@ -204,6 +205,7 @@ serve(async (req) => {
       MOBILE_NO: mobileNo,
       SADAD_WEBCHECKOUT_PAGE_LANGUAGE: "ENG",
       CALLBACK_URL: callbackUrl,
+      RETURN_URL: returnUrl,
       txnDate: txnDate,
       VERSION: "1.1",
       // productdetail structure as per PHP documentation
@@ -250,6 +252,7 @@ serve(async (req) => {
       MOBILE_NO: mobileNo,
       SADAD_WEBCHECKOUT_PAGE_LANGUAGE: "ENG",
       CALLBACK_URL: callbackUrl,
+      RETURN_URL: returnUrl,
       txnDate: txnDate,
       VERSION: "1.1",
       // productdetail will be formatted as productdetail[0][key] in the form
@@ -263,7 +266,6 @@ serve(async (req) => {
         }
       ],
       checksumhash: checksumhash,
-      return_url: return_url || "",
       transaction_id: transaction.id,
       payment_url: isTestMode ? SADAD_ENDPOINTS.TEST.PAYMENT : SADAD_ENDPOINTS.PRODUCTION.PAYMENT,
     };
