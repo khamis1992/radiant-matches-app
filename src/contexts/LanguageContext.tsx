@@ -63,8 +63,25 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
 export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
+
+  // Defensive fallback: prevents blank screens if something (e.g. stale cached modules)
+  // causes a provider mismatch at runtime.
   if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider");
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.warn("[i18n] useLanguage used outside LanguageProvider. Falling back to defaults.");
+    }
+
+    return {
+      language: "en",
+      setLanguage: () => {
+        // no-op fallback
+      },
+      t: translations.en,
+      isRTL: false,
+      languageNames,
+    };
   }
+
   return context;
 };
