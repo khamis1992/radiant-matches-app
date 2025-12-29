@@ -199,6 +199,7 @@ const App = () => (
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/help" element={<HelpSupport />} />
           <Route path="/payment-methods" element={<PaymentMethods />} />
+          <Route path="/wallet" element={<Wallet />} />
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />
