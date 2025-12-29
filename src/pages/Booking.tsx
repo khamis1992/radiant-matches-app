@@ -434,16 +434,21 @@ const Booking = () => {
         const standardFields = [
           "merchant_id", "ORDER_ID", "WEBSITE", "TXN_AMOUNT", "CUST_ID",
           "EMAIL", "MOBILE_NO", "SADAD_WEBCHECKOUT_PAGE_LANGUAGE",
-          "CALLBACK_URL", "txnDate", "VERSION", "checksumhash"
+          "CALLBACK_URL", "txnDate", "VERSION", "checksumhash",
+          // Some SADAD setups require return URL to show the continue/redirect button
+          "return_url", "RETURN_URL",
         ];
         
         standardFields.forEach((fieldName) => {
-          if (paymentData[fieldName] !== undefined) {
+          // Support both `return_url` and `RETURN_URL` from the same payload
+          const value = fieldName === "RETURN_URL" ? paymentData.return_url : paymentData[fieldName];
+
+          if (value !== undefined && value !== null && String(value).length > 0) {
             const input = document.createElement("input");
             input.type = "hidden";
             input.name = fieldName;
             input.id = fieldName;
-            input.value = String(paymentData[fieldName]);
+            input.value = String(value);
             form.appendChild(input);
           }
         });
