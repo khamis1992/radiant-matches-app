@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
@@ -6,12 +7,20 @@ import BottomNavigation from "@/components/BottomNavigation";
 import AppHeader from "@/components/layout/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Star, MapPin, Clock, X, Calendar, Plus, Check } from "lucide-react";
+import { Star, MapPin, Clock, X, Calendar, Plus, Check, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import artist1 from "@/assets/artist-1.jpg";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ArtistWithProfile {
   id: string;
@@ -34,6 +43,8 @@ const CompareArtists = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t, isRTL } = useLanguage();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   
   const artistIds = searchParams.get("ids")?.split(",").filter(Boolean) || [];
 
@@ -105,14 +116,26 @@ const CompareArtists = () => {
     
     const newIds = [...artistIds, artistId];
     setSearchParams({ ids: newIds.join(",") });
+    setSheetOpen(false);
+    setSearchQuery("");
   };
 
   const handleBookArtist = (artistId: string) => {
     navigate(`/artist/${artistId}`);
   };
 
-  // Artists not yet selected
-  const availableToAdd = allArtists?.filter(a => !artistIds.includes(a.id)) || [];
+  // Artists not yet selected, filtered by search
+  const availableToAdd = useMemo(() => {
+    const notSelected = allArtists?.filter(a => !artistIds.includes(a.id)) || [];
+    if (!searchQuery.trim()) return notSelected;
+    
+    const query = searchQuery.toLowerCase();
+    return notSelected.filter(a => 
+      a.profile?.full_name?.toLowerCase().includes(query) ||
+      a.profile?.location?.toLowerCase().includes(query)
+    );
+  }, [allArtists, artistIds, searchQuery]);
+
   const canAddMore = artistIds.length < MAX_COMPARE;
 
   if (artistIds.length === 0) {
@@ -149,54 +172,86 @@ const CompareArtists = () => {
       <AppHeader title={t.compare.title} showBack style="modern" />
 
       <div className="px-5 py-6">
-        {/* Header with count */}
-        <div className="flex items-center justify-between mb-4">
+        {/* Header with count and Add button */}
+        <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-muted-foreground">
             {artistIds.length} / {MAX_COMPARE} {t.compare.title}
           </p>
-        </div>
-
-        {/* Add More Artists Section */}
-        {canAddMore && availableToAdd.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
-              <Plus className="w-4 h-4 text-primary" />
-              {t.compare.addArtist || "Add Artist"}
-            </h3>
-            <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex gap-3 pb-2">
-                {availableToAdd.slice(0, 10).map((artist) => (
-                  <button
-                    key={artist.id}
-                    onClick={() => handleAddArtist(artist.id)}
-                    className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all min-w-[100px]"
-                  >
-                    <Avatar className="w-14 h-14 ring-2 ring-primary/10">
-                      <AvatarImage 
-                        src={artist.profile?.avatar_url || undefined} 
-                        alt={artist.profile?.full_name || "Artist"} 
-                        className="object-cover"
-                      />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {artist.profile?.full_name?.charAt(0) || "A"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs font-medium text-foreground truncate max-w-[80px]">
-                      {artist.profile?.full_name || t.artist.anonymous}
-                    </span>
-                    {artist.rating && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
-                        {Number(artist.rating).toFixed(1)}
-                      </div>
+          
+          {canAddMore && (
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+              <SheetTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  {t.compare.addArtist}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-[80vh] rounded-t-3xl">
+                <SheetHeader className="pb-4">
+                  <SheetTitle>{t.compare.addArtist}</SheetTitle>
+                </SheetHeader>
+                
+                {/* Search */}
+                <div className="relative mb-4">
+                  <Search className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
+                  <Input
+                    placeholder={t.artistsListing?.searchPlaceholder || "Search artists..."}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={isRTL ? "pr-10" : "pl-10"}
+                  />
+                </div>
+                
+                {/* Artists List */}
+                <ScrollArea className="h-[calc(80vh-180px)]">
+                  <div className="space-y-2 pr-4">
+                    {availableToAdd.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">
+                        {t.common?.noResults || "No artists found"}
+                      </p>
+                    ) : (
+                      availableToAdd.map((artist) => (
+                        <button
+                          key={artist.id}
+                          onClick={() => handleAddArtist(artist.id)}
+                          className="w-full flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-start"
+                        >
+                          <Avatar className="w-12 h-12 ring-2 ring-primary/10 flex-shrink-0">
+                            <AvatarImage 
+                              src={artist.profile?.avatar_url || undefined} 
+                              alt={artist.profile?.full_name || "Artist"} 
+                              className="object-cover"
+                            />
+                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                              {artist.profile?.full_name?.charAt(0) || "A"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground truncate">
+                              {artist.profile?.full_name || t.artist.anonymous}
+                            </p>
+                            {artist.profile?.location && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                <MapPin className="w-3 h-3" />
+                                {artist.profile.location}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 text-sm">
+                            <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                            <span className="font-medium">{Number(artist.rating || 0).toFixed(1)}</span>
+                            <span className="text-muted-foreground text-xs">({artist.total_reviews || 0})</span>
+                          </div>
+                          <Plus className="w-5 h-5 text-primary flex-shrink-0" />
+                        </button>
+                      ))
                     )}
-                  </button>
-                ))}
-              </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-          </div>
-        )}
+                  </div>
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
+          )}
+        </div>
 
         {/* Selected Artists for Comparison */}
         <div className="space-y-4">
