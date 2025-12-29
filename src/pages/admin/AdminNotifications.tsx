@@ -60,11 +60,11 @@ const AdminNotifications = () => {
   const getNotificationTypeLabel = (type: string) => {
     switch (type) {
       case "new_booking":
-        return "حجز جديد";
+        return t.adminNotifications.newBooking;
       case "cancelled_booking":
-        return "حجز ملغي";
+        return t.adminNotifications.cancelledBooking;
       case "pending_booking":
-        return "حجز معلق";
+        return t.adminNotifications.pendingBooking;
       default:
         return type;
     }
@@ -73,11 +73,11 @@ const AdminNotifications = () => {
   const getNotificationTypeBadge = (type: string) => {
     switch (type) {
       case "new_booking":
-        return <Badge className="bg-green-500/20 text-green-600 border-green-500/30">حجز جديد</Badge>;
+        return <Badge className="bg-green-500/20 text-green-600 border-green-500/30">{t.adminNotifications.newBooking}</Badge>;
       case "cancelled_booking":
-        return <Badge variant="destructive">ملغي</Badge>;
+        return <Badge variant="destructive">{t.adminNotifications.cancelledBooking}</Badge>;
       case "pending_booking":
-        return <Badge className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30">معلق</Badge>;
+        return <Badge className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30">{t.adminNotifications.pendingBooking}</Badge>;
       default:
         return <Badge variant="secondary">{type}</Badge>;
     }
@@ -98,23 +98,23 @@ const AdminNotifications = () => {
                 <Bell className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">{t.adminNav.notificationLog}</h1>
+                <h1 className="text-2xl font-bold">{t.adminNotifications.title}</h1>
                 <p className="text-muted-foreground text-sm">
-                  {notifications.length} {isRTL ? "إشعار" : "notifications"} • {unreadCount} {isRTL ? "غير مقروء" : "unread"}
+                  {notifications.length} {t.adminNotifications.notificationCount} • {unreadCount} {t.adminNotifications.unread}
                 </p>
               </div>
             </div>
             <div className="flex gap-2">
               {unreadCount > 0 && (
                 <Button variant="outline" onClick={markAllAsRead}>
-                  <Check className="h-4 w-4 ml-2" />
-                  تعيين الكل كمقروء
+                  <Check className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                  {t.adminNotifications.markAllRead}
                 </Button>
               )}
               {notifications.length > 0 && (
                 <Button variant="outline" onClick={clearNotifications}>
-                  <Trash2 className="h-4 w-4 ml-2" />
-                  مسح الكل
+                  <Trash2 className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                  {t.adminNotifications.clearAll}
                 </Button>
               )}
             </div>
@@ -125,41 +125,41 @@ const AdminNotifications = () => {
             <CardHeader className="pb-4">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Filter className="h-5 w-5" />
-                البحث والفلترة
+                {t.adminNotifications.searchAndFilter}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="relative">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", isRTL ? "right-3" : "left-3")} />
                   <Input
-                    placeholder="البحث في الإشعارات..."
+                    placeholder={t.adminNotifications.searchPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pr-10"
+                    className={cn(isRTL ? "pr-10" : "pl-10")}
                   />
                 </div>
                 
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="نوع الإشعار" />
+                    <SelectValue placeholder={t.adminNotifications.notificationType} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">جميع الأنواع</SelectItem>
-                    <SelectItem value="new_booking">حجز جديد</SelectItem>
-                    <SelectItem value="pending_booking">حجز معلق</SelectItem>
-                    <SelectItem value="cancelled_booking">حجز ملغي</SelectItem>
+                    <SelectItem value="all">{t.adminNotifications.allTypes}</SelectItem>
+                    <SelectItem value="new_booking">{t.adminNotifications.newBooking}</SelectItem>
+                    <SelectItem value="pending_booking">{t.adminNotifications.pendingBooking}</SelectItem>
+                    <SelectItem value="cancelled_booking">{t.adminNotifications.cancelledBooking}</SelectItem>
                   </SelectContent>
                 </Select>
                 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="الحالة" />
+                    <SelectValue placeholder={t.adminNotifications.statusFilter} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">جميع الحالات</SelectItem>
-                    <SelectItem value="unread">غير مقروء</SelectItem>
-                    <SelectItem value="read">مقروء</SelectItem>
+                    <SelectItem value="all">{t.adminNotifications.allStatuses}</SelectItem>
+                    <SelectItem value="unread">{t.adminNotifications.unreadStatus}</SelectItem>
+                    <SelectItem value="read">{t.adminNotifications.readStatus}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -174,22 +174,22 @@ const AdminNotifications = () => {
                   <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
                     <Bell className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="font-medium text-lg mb-2">لا توجد إشعارات</h3>
+                  <h3 className="font-medium text-lg mb-2">{t.adminNotifications.noNotifications}</h3>
                   <p className="text-muted-foreground text-sm max-w-sm">
                     {searchQuery || typeFilter !== "all" || statusFilter !== "all"
-                      ? "لا توجد نتائج تطابق معايير البحث"
-                      : "ستظهر الإشعارات هنا عند وجود حجوزات جديدة أو تحديثات"}
+                      ? t.adminNotifications.noResultsMessage
+                      : t.adminNotifications.notificationsWillAppear}
                   </p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right w-12">الحالة</TableHead>
-                      <TableHead className="text-right">الرسالة</TableHead>
-                      <TableHead className="text-right w-32">النوع</TableHead>
-                      <TableHead className="text-right w-48">التاريخ</TableHead>
-                      <TableHead className="text-right w-32">إجراءات</TableHead>
+                      <TableHead className={cn(isRTL ? "text-right" : "text-left", "w-12")}>{t.adminNotifications.statusColumn}</TableHead>
+                      <TableHead className={cn(isRTL ? "text-right" : "text-left")}>{t.adminNotifications.message}</TableHead>
+                      <TableHead className={cn(isRTL ? "text-right" : "text-left", "w-32")}>{t.adminNotifications.type}</TableHead>
+                      <TableHead className={cn(isRTL ? "text-right" : "text-left", "w-48")}>{t.adminNotifications.dateColumn}</TableHead>
+                      <TableHead className={cn(isRTL ? "text-right" : "text-left", "w-32")}>{t.adminNotifications.actionsColumn}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -225,7 +225,7 @@ const AdminNotifications = () => {
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
                             {format(notification.createdAt, "dd MMM yyyy - HH:mm", {
-                              locale: ar,
+                              locale: dateLocale,
                             })}
                           </div>
                         </TableCell>
@@ -239,8 +239,8 @@ const AdminNotifications = () => {
                                 markAsRead(notification.id);
                               }}
                             >
-                              <Check className="h-4 w-4 ml-1" />
-                              قراءة
+                              <Check className={cn("h-4 w-4", isRTL ? "ml-1" : "mr-1")} />
+                              {t.adminNotifications.markRead}
                             </Button>
                           )}
                         </TableCell>

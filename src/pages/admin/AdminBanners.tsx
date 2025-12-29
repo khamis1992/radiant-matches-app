@@ -101,9 +101,11 @@ interface SortableRowProps {
   onDelete: (id: string) => void;
   onToggle: (id: string, isActive: boolean) => void;
   getScheduleStatus: (banner: BannerData) => { label: string; variant: "default" | "secondary" | "destructive" | "outline" };
+  t: any;
+  dateLocale: typeof ar | typeof enUS;
 }
 
-const SortableRow = ({ banner, onEdit, onDelete, onToggle, getScheduleStatus }: SortableRowProps) => {
+const SortableRow = ({ banner, onEdit, onDelete, onToggle, getScheduleStatus, t, dateLocale }: SortableRowProps) => {
   const {
     attributes,
     listeners,
@@ -122,7 +124,7 @@ const SortableRow = ({ banner, onEdit, onDelete, onToggle, getScheduleStatus }: 
   const status = getScheduleStatus(banner);
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "-";
-    return format(new Date(dateStr), "d MMM yyyy", { locale: ar });
+    return format(new Date(dateStr), "d MMM yyyy", { locale: dateLocale });
   };
 
   return (
@@ -148,8 +150,8 @@ const SortableRow = ({ banner, onEdit, onDelete, onToggle, getScheduleStatus }: 
       <TableCell className="font-medium">{banner.title}</TableCell>
       <TableCell className="text-muted-foreground">
         <div className="flex flex-col text-xs">
-          <span>من: {formatDate(banner.valid_from)}</span>
-          <span>إلى: {formatDate(banner.valid_until)}</span>
+          <span>{t.adminBanners.from}: {formatDate(banner.valid_from)}</span>
+          <span>{t.adminBanners.to}: {formatDate(banner.valid_until)}</span>
         </div>
       </TableCell>
       <TableCell>
@@ -211,6 +213,9 @@ const AdminBanners = () => {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  const { t, isRTL, language } = useLanguage();
+  const dateLocale = language === "ar" ? ar : enUS;
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -315,15 +320,15 @@ const AdminBanners = () => {
     const validUntil = banner.valid_until ? new Date(banner.valid_until) : null;
 
     if (validUntil && isBefore(validUntil, now)) {
-      return { label: "منتهي", variant: "destructive" as const };
+      return { label: t.adminBanners.expired, variant: "destructive" as const };
     }
     if (validFrom && isAfter(validFrom, now)) {
-      return { label: "مجدول", variant: "secondary" as const };
+      return { label: t.adminBanners.scheduled, variant: "secondary" as const };
     }
     if (banner.is_active) {
-      return { label: "نشط", variant: "default" as const };
+      return { label: t.adminBanners.activeStatus, variant: "default" as const };
     }
-    return { label: "متوقف", variant: "outline" as const };
+    return { label: t.adminBanners.stoppedStatus, variant: "outline" as const };
   };
 
   const handleDelete = (id: string) => {
@@ -339,20 +344,18 @@ const AdminBanners = () => {
     }
   };
 
-  const { t, isRTL, language } = useLanguage();
-  
   return (
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       <main className={cn("p-6", isRTL ? "mr-64" : "ml-64")}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">إدارة البنرات الإعلانية</h1>
-            <p className="text-muted-foreground">إضافة وتعديل وترتيب البنرات المعروضة في الصفحة الرئيسية</p>
+            <h1 className="text-2xl font-bold text-foreground">{t.adminBanners.title}</h1>
+            <p className="text-muted-foreground">{t.adminBanners.subtitle}</p>
           </div>
           <Button onClick={() => handleOpenDialog()}>
-            <Plus className="h-4 w-4 ml-2" />
-            إضافة بنر
+            <Plus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+            {t.adminBanners.addBanner}
           </Button>
         </div>
 
@@ -367,11 +370,11 @@ const AdminBanners = () => {
             ) : banners.length === 0 ? (
               <div className="p-12 text-center">
                 <Image className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">لا توجد بنرات</h3>
-                <p className="text-muted-foreground mb-4">أضف بنرات إعلانية لعرضها في الصفحة الرئيسية</p>
+                <h3 className="text-lg font-medium mb-2">{t.adminBanners.noBanners}</h3>
+                <p className="text-muted-foreground mb-4">{t.adminBanners.noBannersDesc}</p>
                 <Button onClick={() => handleOpenDialog()}>
-                  <Plus className="h-4 w-4 ml-2" />
-                  إضافة أول بنر
+                  <Plus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                  {t.adminBanners.addFirstBanner}
                 </Button>
               </div>
             ) : (
@@ -384,12 +387,12 @@ const AdminBanners = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-12"></TableHead>
-                      <TableHead className="w-24">الصورة</TableHead>
-                      <TableHead>العنوان</TableHead>
-                      <TableHead>الجدولة</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead className="w-20">مفعّل</TableHead>
-                      <TableHead className="w-24">الإجراءات</TableHead>
+                      <TableHead className="w-24">{t.adminBanners.image}</TableHead>
+                      <TableHead>{t.adminBanners.bannerTitle}</TableHead>
+                      <TableHead>{t.adminBanners.schedule}</TableHead>
+                      <TableHead>{t.adminBanners.scheduleStatus}</TableHead>
+                      <TableHead className="w-20">{t.adminBanners.enabled}</TableHead>
+                      <TableHead className="w-24">{t.adminBanners.actions}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -407,6 +410,8 @@ const AdminBanners = () => {
                             toggleBannerStatus.mutate({ id, is_active: isActive })
                           }
                           getScheduleStatus={getScheduleStatus}
+                          t={t}
+                          dateLocale={dateLocale}
                         />
                       ))}
                     </SortableContext>
@@ -420,61 +425,61 @@ const AdminBanners = () => {
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[700px]" dir="rtl">
+        <DialogContent className="sm:max-w-[700px]" dir={isRTL ? "rtl" : "ltr"}>
           <DialogHeader>
             <DialogTitle>
-              {editingBanner ? "تعديل البنر" : "إضافة بنر جديد"}
+              {editingBanner ? t.adminBanners.editBanner : t.adminBanners.addNewBanner}
             </DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
             {/* Form Fields */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">العنوان *</Label>
+                <Label htmlFor="title">{t.adminBanners.titleRequired}</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  placeholder="أدخل عنوان البنر"
+                  placeholder={t.adminBanners.titlePlaceholder}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="subtitle">النص الثانوي</Label>
+                <Label htmlFor="subtitle">{t.adminBanners.subtitleLabel}</Label>
                 <Input
                   id="subtitle"
                   value={formData.subtitle}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, subtitle: e.target.value }))
                   }
-                  placeholder="أدخل النص الثانوي"
+                  placeholder={t.adminBanners.subtitlePlaceholder}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="button_text">نص الزر</Label>
+                <Label htmlFor="button_text">{t.adminBanners.buttonText}</Label>
                 <Input
                   id="button_text"
                   value={formData.button_text}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, button_text: e.target.value }))
                   }
-                  placeholder="مثال: احجز الآن"
+                  placeholder={t.adminBanners.buttonTextPlaceholder}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="link_url">رابط الزر</Label>
+                <Label htmlFor="link_url">{t.adminBanners.linkUrl}</Label>
                 <Input
                   id="link_url"
                   value={formData.link_url}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, link_url: e.target.value }))
                   }
-                  placeholder="/makeup-artists"
+                  placeholder={t.adminBanners.linkUrlPlaceholder}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="image">صورة البنر *</Label>
+                <Label htmlFor="image">{t.adminBanners.bannerImage}</Label>
                 <Input
                   id="image"
                   type="file"
@@ -487,24 +492,24 @@ const AdminBanners = () => {
               <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <Clock className="h-4 w-4" />
-                  <span>جدولة العرض</span>
+                  <span>{t.adminBanners.scheduling}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-xs">تاريخ البدء</Label>
+                    <Label className="text-xs">{t.adminBanners.startDate}</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full justify-start text-right font-normal h-9 text-xs",
+                            "w-full justify-start font-normal h-9 text-xs",
                             !formData.valid_from && "text-muted-foreground"
                           )}
                         >
-                          <CalendarIcon className="ml-2 h-3 w-3" />
+                          <CalendarIcon className={cn("h-3 w-3", isRTL ? "ml-2" : "mr-2")} />
                           {formData.valid_from
-                            ? format(formData.valid_from, "d MMM yyyy", { locale: ar })
-                            : "اختر تاريخ"}
+                            ? format(formData.valid_from, "d MMM yyyy", { locale: dateLocale })
+                            : t.adminBanners.selectDate}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
@@ -521,20 +526,20 @@ const AdminBanners = () => {
                     </Popover>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">تاريخ الانتهاء</Label>
+                    <Label className="text-xs">{t.adminBanners.endDate}</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full justify-start text-right font-normal h-9 text-xs",
+                            "w-full justify-start font-normal h-9 text-xs",
                             !formData.valid_until && "text-muted-foreground"
                           )}
                         >
-                          <CalendarIcon className="ml-2 h-3 w-3" />
+                          <CalendarIcon className={cn("h-3 w-3", isRTL ? "ml-2" : "mr-2")} />
                           {formData.valid_until
-                            ? format(formData.valid_until, "d MMM yyyy", { locale: ar })
-                            : "غير محدد"}
+                            ? format(formData.valid_until, "d MMM yyyy", { locale: dateLocale })
+                            : t.common.notAvailable}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
@@ -561,7 +566,7 @@ const AdminBanners = () => {
                     className="text-xs h-7"
                     onClick={() => setFormData((prev) => ({ ...prev, valid_until: undefined }))}
                   >
-                    إزالة تاريخ الانتهاء
+                    {t.common.remove} {t.adminBanners.endDate}
                   </Button>
                 )}
               </div>
@@ -571,7 +576,7 @@ const AdminBanners = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Eye className="h-4 w-4" />
-                <span>معاينة البنر</span>
+                <span>{t.common.view} {t.adminBanners.banner}</span>
               </div>
               <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 border">
                 {imagePreview ? (
@@ -588,11 +593,11 @@ const AdminBanners = () => {
                 <div className="relative z-10 p-5 flex items-center justify-between min-h-[120px]">
                   <div className="space-y-1">
                     <h3 className="text-lg font-bold text-foreground">
-                      {formData.title || "عنوان البنر"}
+                      {formData.title || t.adminBanners.bannerTitle}
                     </h3>
                     {(formData.subtitle || !formData.title) && (
                       <p className="text-sm text-muted-foreground">
-                        {formData.subtitle || "النص الثانوي"}
+                        {formData.subtitle || t.adminBanners.subtitleLabel}
                       </p>
                     )}
                   </div>
@@ -601,25 +606,25 @@ const AdminBanners = () => {
                       className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
                       disabled
                     >
-                      {formData.button_text || "الزر"}
+                      {formData.button_text || t.adminBanners.buttonText}
                     </button>
                   )}
                 </div>
               </div>
               <p className="text-xs text-muted-foreground text-center">
-                هذه معاينة تقريبية لشكل البنر في الصفحة الرئيسية
+                {isRTL ? "هذه معاينة تقريبية لشكل البنر في الصفحة الرئيسية" : "This is an approximate preview of the banner on the homepage"}
               </p>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCloseDialog}>
-              إلغاء
+              {t.common.cancel}
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={!formData.title || (!imagePreview && !imageFile) || isUploading}
             >
-              {isUploading ? "جاري الحفظ..." : editingBanner ? "تحديث" : "إضافة"}
+              {isUploading ? t.common.saving : editingBanner ? t.common.update : t.common.add}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -627,20 +632,20 @@ const AdminBanners = () => {
 
       {/* Delete Confirmation */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent dir="rtl">
+        <AlertDialogContent dir={isRTL ? "rtl" : "ltr"}>
           <AlertDialogHeader>
-            <AlertDialogTitle>هل أنت متأكد من الحذف؟</AlertDialogTitle>
+            <AlertDialogTitle>{t.adminBanners.deleteConfirmTitle}</AlertDialogTitle>
             <AlertDialogDescription>
-              سيتم حذف هذا البنر نهائياً ولن تتمكن من استعادته.
+              {t.adminBanners.deleteConfirmDesc}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              حذف
+              {t.common.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -30,12 +30,12 @@ const AdminReports = () => {
     // Simulate report generation
     setTimeout(() => {
       setIsGenerating(false);
-      toast.success("Report generated successfully");
+      toast.success(t.reports.reportGenerated);
     }, 2000);
   };
 
   const handleExport = (format: "csv" | "pdf" | "excel") => {
-    toast.success(`Report exported as ${format.toUpperCase()}`);
+    toast.success(t.reports.exportSuccess);
   };
 
   return (
@@ -44,30 +44,30 @@ const AdminReports = () => {
       <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground mb-2">
-          {t.adminNav.notificationLog}
+          {t.reports.title}
         </h1>
         <p className="text-muted-foreground">
-          Generate custom reports for your platform
+          {t.reports.overview}
         </p>
       </div>
 
       <Tabs defaultValue="bookings" className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-6">
           <TabsTrigger value="bookings">
-            <FileText className="w-4 h-4 mr-2" />
-            {t.adminNav.bookings}
+            <FileText className={cn("w-4 h-4", isRTL ? "ml-2" : "mr-2")} />
+            {t.reports.bookingsReport}
           </TabsTrigger>
           <TabsTrigger value="revenue">
-            <DollarSign className="w-4 h-4 mr-2" />
-            {t.adminNav.finance}
+            <DollarSign className={cn("w-4 h-4", isRTL ? "ml-2" : "mr-2")} />
+            {t.reports.revenueReport}
           </TabsTrigger>
           <TabsTrigger value="artists">
-            <Users className="w-4 h-4 mr-2" />
-            {t.adminNav.artists}
+            <Users className={cn("w-4 h-4", isRTL ? "ml-2" : "mr-2")} />
+            {t.reports.artistsReport}
           </TabsTrigger>
           <TabsTrigger value="customers">
-            <Activity className="w-4 h-4 mr-2" />
-            Customers
+            <Activity className={cn("w-4 h-4", isRTL ? "ml-2" : "mr-2")} />
+            {t.reports.usersReport}
           </TabsTrigger>
         </TabsList>
 
@@ -75,12 +75,12 @@ const AdminReports = () => {
         <TabsContent value="bookings" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t.adminNav.bookings}</CardTitle>
+              <CardTitle>{t.reports.bookingsReport}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Date Range</Label>
+                  <Label>{t.reports.dateRange}</Label>
                   <DateRangePicker
                     value={dateRange}
                     onChange={setDateRange}
@@ -88,19 +88,19 @@ const AdminReports = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Filters</Label>
+                  <Label>{t.reports.applyFilters}</Label>
                   <div className="space-y-2">
                     <div>
-                      <Label className="text-sm">Status</Label>
+                      <Label className="text-sm">{t.adminBookings.status}</Label>
                       <Select value={status.length > 0 ? status[0] : undefined}>
                         <SelectTrigger>
-                          {status.length > 0 ? status[0] : "All Status"}
+                          {status.length > 0 ? status[0] : t.adminBookings.filterByStatus}
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="confirmed">Confirmed</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                          <SelectItem value="pending">{t.adminBookings.pending}</SelectItem>
+                          <SelectItem value="confirmed">{t.adminBookings.confirmed}</SelectItem>
+                          <SelectItem value="completed">{t.adminBookings.completed}</SelectItem>
+                          <SelectItem value="cancelled">{t.adminBookings.cancelled}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -108,43 +108,43 @@ const AdminReports = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Sort By</Label>
+                  <Label>{t.artistsListing.sortBy}</Label>
                   <Select value={sortBy}>
                     <SelectTrigger>
-                      {sortBy === "date" ? "Date" : sortBy === "amount" ? "Amount" : "Count"}
+                      {sortBy === "date" ? t.adminBookings.date : sortBy === "amount" ? t.adminBookings.amount : t.reports.totalBookings}
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="date">Date</SelectItem>
-                      <SelectItem value="amount">Amount</SelectItem>
-                      <SelectItem value="count">Count</SelectItem>
+                      <SelectItem value="date">{t.adminBookings.date}</SelectItem>
+                      <SelectItem value="amount">{t.adminBookings.amount}</SelectItem>
+                      <SelectItem value="count">{t.reports.totalBookings}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Export Format</Label>
+                <Label>{t.reports.exportFormat}</Label>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleExport("csv")}
                   >
-                    CSV
+                    {t.reports.csv}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleExport("pdf")}
                   >
-                    PDF
+                    {t.reports.pdf}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleExport("excel")}
                   >
-                    Excel
+                    {t.reports.excel}
                   </Button>
                 </div>
               </div>
@@ -155,7 +155,7 @@ const AdminReports = () => {
                   disabled={isGenerating}
                   className="min-w-[200px]"
                 >
-                  {isGenerating ? "Generating..." : "Generate Report"}
+                  {isGenerating ? t.reports.generatingReport : t.reports.generateReport}
                 </Button>
               </div>
             </CardContent>
@@ -166,7 +166,7 @@ const AdminReports = () => {
         <TabsContent value="revenue" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t.adminNav.finance}</CardTitle>
+              <CardTitle>{t.reports.revenueReport}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -176,7 +176,7 @@ const AdminReports = () => {
                       QAR 0
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      Total Revenue
+                      {t.reports.totalRevenue}
                     </div>
                   </CardContent>
                 </Card>
@@ -186,7 +186,7 @@ const AdminReports = () => {
                       QAR 0
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      This Month
+                      {t.reports.thisMonthRevenue}
                     </div>
                   </CardContent>
                 </Card>
@@ -196,7 +196,7 @@ const AdminReports = () => {
                       +0%
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      vs Last Month
+                      {t.reports.growth}
                     </div>
                   </CardContent>
                 </Card>
@@ -208,7 +208,7 @@ const AdminReports = () => {
                   disabled={isGenerating}
                   className="min-w-[200px]"
                 >
-                  {isGenerating ? "Generating..." : "Generate Report"}
+                  {isGenerating ? t.reports.generatingReport : t.reports.generateReport}
                 </Button>
               </div>
             </CardContent>
@@ -219,12 +219,12 @@ const AdminReports = () => {
         <TabsContent value="artists" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Artist Analytics</CardTitle>
+              <CardTitle>{t.reports.artistsReport}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Top Rated Artists</Label>
+                  <Label>{isRTL ? "أعلى الفنانات تقييماً" : "Top Rated Artists"}</Label>
                   <div className="space-y-2">
                     {[1, 2, 3].map((i) => (
                       <div key={i} className="flex items-center gap-3 p-3 bg-accent/50 rounded-lg">
@@ -232,8 +232,8 @@ const AdminReports = () => {
                           {i}
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium">Artist Name {i}</div>
-                          <div className="text-sm text-muted-foreground">Rating: 5.{Math.floor(Math.random() * 3)}</div>
+                          <div className="font-medium">{isRTL ? `فنانة ${i}` : `Artist Name ${i}`}</div>
+                          <div className="text-sm text-muted-foreground">{t.adminArtists.rating}: 5.{Math.floor(Math.random() * 3)}</div>
                         </div>
                       </div>
                     ))}
@@ -241,12 +241,12 @@ const AdminReports = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Active Artists</Label>
+                  <Label>{t.reports.activeArtists}</Label>
                   <div className="text-3xl font-bold text-primary">
                     0
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Total active artists
+                    {isRTL ? "إجمالي الفنانات النشطات" : "Total active artists"}
                   </div>
                 </div>
               </div>
@@ -257,7 +257,7 @@ const AdminReports = () => {
                   disabled={isGenerating}
                   className="min-w-[200px]"
                 >
-                  {isGenerating ? "Generating..." : "View Full Report"}
+                  {isGenerating ? t.reports.generatingReport : t.reports.downloadReport}
                 </Button>
               </div>
             </CardContent>
@@ -268,7 +268,7 @@ const AdminReports = () => {
         <TabsContent value="customers" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Customer Insights</CardTitle>
+              <CardTitle>{t.reports.usersReport}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -278,7 +278,7 @@ const AdminReports = () => {
                       0
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      Total Customers
+                      {isRTL ? "إجمالي العملاء" : "Total Customers"}
                     </div>
                   </CardContent>
                 </Card>
@@ -288,7 +288,7 @@ const AdminReports = () => {
                       0
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      New This Month
+                      {t.reports.newCustomers}
                     </div>
                   </CardContent>
                 </Card>
@@ -298,7 +298,7 @@ const AdminReports = () => {
                       0
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      Repeat Customers
+                      {t.reports.returningCustomers}
                     </div>
                   </CardContent>
                 </Card>
@@ -310,7 +310,7 @@ const AdminReports = () => {
                   disabled={isGenerating}
                   className="min-w-[200px]"
                 >
-                  {isGenerating ? "Generating..." : "View Full Report"}
+                  {isGenerating ? t.reports.generatingReport : t.reports.downloadReport}
                 </Button>
               </div>
             </CardContent>
@@ -323,4 +323,3 @@ const AdminReports = () => {
 };
 
 export default AdminReports;
-
