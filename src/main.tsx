@@ -1,3 +1,7 @@
+/**
+ * Application entry point
+ * Renders the main App component wrapped in React StrictMode
+ */
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
