@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff, Flag } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import BackButton from "@/components/BackButton";
+import BottomNavigation from "@/components/BottomNavigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -605,6 +606,8 @@ const ArtistProfile = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      <BottomNavigation />
     </div>
   );
 };
