@@ -1,3 +1,7 @@
+/**
+ * Admin Promo Codes Management Page
+ * Supports full i18n through LanguageProvider
+ */
 import { useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useUserRole } from "@/hooks/useUserRole";
