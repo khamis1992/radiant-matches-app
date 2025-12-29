@@ -160,10 +160,10 @@ const AdminPromoCodes = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
-      <main className="flex-1 mr-64 p-8">
+      <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-foreground">أكواد الخصم</h1>

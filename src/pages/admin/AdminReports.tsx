@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { cn } from "@/lib/utils";
 
 const AdminReports = () => {
   const { t, isRTL } = useLanguage();
@@ -37,7 +39,9 @@ const AdminReports = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="min-h-screen bg-background flex" dir={isRTL ? "rtl" : "ltr"}>
+      <AdminSidebar />
+      <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground mb-2">
           {t.adminNav.notificationLog}
@@ -313,6 +317,7 @@ const AdminReports = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      </main>
     </div>
   );
 };
