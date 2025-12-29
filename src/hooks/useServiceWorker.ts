@@ -19,18 +19,38 @@ export const useServiceWorker = () => {
     registration: null,
   });
 
-  // Register service worker
+  // Register service worker (PROD only) + always track offline status
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      registerServiceWorker();
-    }
-
     // Listen for online/offline status
     const handleOnline = () => setState((prev) => ({ ...prev, isOffline: false }));
     const handleOffline = () => setState((prev) => ({ ...prev, isOffline: true }));
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
+
+    // Service Worker: disable in development to prevent stale-module caching/HMR issues
+    if ("serviceWorker" in navigator) {
+      if (import.meta.env.DEV) {
+        const key = "glam-sw-dev-unregistered";
+        try {
+          if (!sessionStorage.getItem(key)) {
+            sessionStorage.setItem(key, "1");
+            navigator.serviceWorker.getRegistrations().then(async (regs) => {
+              await Promise.all(regs.map((r) => r.unregister()));
+            }).finally(() => {
+              // If an SW was controlling this tab, reload once to ensure fresh assets.
+              if (navigator.serviceWorker.controller) {
+                window.location.reload();
+              }
+            });
+          }
+        } catch {
+          // ignore storage access issues
+        }
+      } else {
+        registerServiceWorker();
+      }
+    }
 
     return () => {
       window.removeEventListener("online", handleOnline);

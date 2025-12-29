@@ -1,8 +1,8 @@
-// Radiant Matches Service Worker
-// Enables offline functionality and caching
+// Glam App Service Worker
+// Enables offline functionality and caching (production use)
 
-const CACHE_NAME = 'radiant-matches-v1';
-const DYNAMIC_CACHE = 'radiant-matches-dynamic-v1';
+const CACHE_NAME = 'glam-app-v2';
+const DYNAMIC_CACHE = 'glam-app-dynamic-v2';
 
 // Assets to cache on install
 const STATIC_ASSETS = [
@@ -39,6 +39,13 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Allow the app to trigger immediate activation
+self.addEventListener('message', (event) => {
+  if (event?.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
   const { request } = event;
@@ -46,6 +53,16 @@ self.addEventListener('fetch', (event) => {
 
   // Skip non-GET requests
   if (request.method !== 'GET') return;
+
+  // Skip Vite dev/HMR module requests
+  if (
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/@vite/') ||
+    url.pathname.startsWith('/@react-refresh') ||
+    url.pathname.startsWith('/node_modules/')
+  ) {
+    return;
+  }
 
   // Skip API requests (let them go to network)
   if (url.pathname.startsWith('/api') || url.hostname.includes('supabase')) {
