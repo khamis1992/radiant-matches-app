@@ -61,13 +61,6 @@ const statusColors: Record<string, string> = {
   cancelled: "bg-red-100 text-red-800",
 };
 
-const statusLabels: Record<string, string> = {
-  pending: "قيد الانتظار",
-  confirmed: "مؤكد",
-  completed: "مكتمل",
-  cancelled: "ملغي",
-};
-
 const AdminDashboard = () => {
   const { role, loading: roleLoading } = useUserRole();
   const { t, isRTL, language } = useLanguage();
@@ -76,6 +69,13 @@ const AdminDashboard = () => {
   const { data: monthlyRevenue, isLoading: revenueLoading } = useMonthlyRevenue();
   
   const dateLocale = language === "ar" ? ar : enUS;
+
+  const statusLabels: Record<string, string> = {
+    pending: t.adminDashboard.statusPending,
+    confirmed: t.adminDashboard.statusConfirmed,
+    completed: t.adminDashboard.statusCompleted,
+    cancelled: t.adminDashboard.statusCancelled,
+  };
 
   // Date range state for advanced reports
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -190,10 +190,11 @@ const AdminDashboard = () => {
       <main className={cn("p-8", isRTL ? "mr-64" : "ml-64")}>
         <div className="max-w-7xl mx-auto">
           {/* Header */}
+          {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground">{t.adminNav.dashboard}</h1>
             <p className="text-muted-foreground mt-1">
-              {isRTL ? "مرحباً بك في لوحة إدارة المنصة" : "Welcome to the platform admin panel"}
+              {t.adminDashboard.welcomeMessage}
             </p>
           </div>
 
@@ -208,23 +209,23 @@ const AdminDashboard = () => {
             ) : (
               <>
                 <StatsCard
-                  title="إجمالي المستخدمين"
+                  title={t.adminDashboard.totalUsers}
                   value={stats?.totalUsers || 0}
                   icon={<Users className="h-6 w-6" />}
                 />
                 <StatsCard
-                  title="إجمالي الفنانين"
+                  title={t.adminDashboard.totalArtists}
                   value={stats?.totalArtists || 0}
                   icon={<Palette className="h-6 w-6" />}
                 />
                 <StatsCard
-                  title="إجمالي الحجوزات"
+                  title={t.adminDashboard.totalBookings}
                   value={stats?.totalBookings || 0}
                   icon={<CalendarIcon className="h-6 w-6" />}
                 />
                 <StatsCard
-                  title="إيرادات المنصة"
-                  value={`${stats?.platformEarnings?.toFixed(0) || 0} ر.ق`}
+                  title={t.adminDashboard.platformRevenue}
+                  value={`${stats?.platformEarnings?.toFixed(0) || 0} ${t.adminDashboard.qar}`}
                   icon={<DollarSign className="h-6 w-6" />}
                   trend={
                     revenueTrend !== 0
@@ -247,18 +248,18 @@ const AdminDashboard = () => {
             ) : (
               <>
                 <StatsCard
-                  title="الحجوزات المعلقة"
+                  title={t.adminDashboard.pendingBookings}
                   value={stats?.pendingBookings || 0}
                   icon={<Clock className="h-6 w-6" />}
                 />
                 <StatsCard
-                  title="الحجوزات المكتملة"
+                  title={t.adminDashboard.completedBookings}
                   value={stats?.completedBookings || 0}
                   icon={<CheckCircle className="h-6 w-6" />}
                 />
                 <StatsCard
-                  title="إيرادات هذا الشهر"
-                  value={`${stats?.thisMonthRevenue?.toFixed(0) || 0} ر.ق`}
+                  title={t.adminDashboard.revenueThisMonth}
+                  value={`${stats?.thisMonthRevenue?.toFixed(0) || 0} ${t.adminDashboard.qar}`}
                   icon={<TrendingUp className="h-6 w-6" />}
                 />
               </>
@@ -270,7 +271,7 @@ const AdminDashboard = () => {
             {/* Revenue Chart */}
             <div className="bg-card rounded-xl border border-border p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">
-                الإيرادات الشهرية
+                {t.adminDashboard.monthlyRevenue}
               </h2>
               {revenueLoading ? (
                 <Skeleton className="h-64" />
@@ -292,7 +293,7 @@ const AdminDashboard = () => {
                         border: "1px solid hsl(var(--border))",
                         borderRadius: "8px",
                       }}
-                      formatter={(value: number) => [`${value} ر.ق`, "الإيرادات"]}
+                      formatter={(value: number) => [`${value} ${t.adminDashboard.qar}`, t.adminDashboard.revenue]}
                     />
                     <Area
                       type="monotone"
@@ -309,7 +310,7 @@ const AdminDashboard = () => {
             {/* Recent Bookings */}
             <div className="bg-card rounded-xl border border-border p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">
-                آخر الحجوزات
+                {t.adminDashboard.recentBookings}
               </h2>
               {bookingsLoading ? (
                 <div className="space-y-4">
@@ -321,24 +322,24 @@ const AdminDashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right">العميل</TableHead>
-                      <TableHead className="text-right">الفنانة</TableHead>
-                      <TableHead className="text-right">التاريخ</TableHead>
-                      <TableHead className="text-right">الحالة</TableHead>
+                      <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminDashboard.customer}</TableHead>
+                      <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminDashboard.artist}</TableHead>
+                      <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminDashboard.date}</TableHead>
+                      <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminDashboard.status}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {recentBookings?.map((booking) => (
                       <TableRow key={booking.id}>
                         <TableCell className="font-medium">
-                          {booking.customer?.full_name || "غير معروف"}
+                          {booking.customer?.full_name || t.adminDashboard.unknown}
                         </TableCell>
                         <TableCell>
-                          {booking.artist?.full_name || "غير معروف"}
+                          {booking.artist?.full_name || t.adminDashboard.unknown}
                         </TableCell>
                         <TableCell>
                           {format(new Date(booking.booking_date), "d MMM", {
-                            locale: ar,
+                            locale: dateLocale,
                           })}
                         </TableCell>
                         <TableCell>
@@ -354,7 +355,7 @@ const AdminDashboard = () => {
                     {(!recentBookings || recentBookings.length === 0) && (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center text-muted-foreground">
-                          لا توجد حجوزات
+                          {t.adminDashboard.noBookings}
                         </TableCell>
                       </TableRow>
                     )}
@@ -371,7 +372,7 @@ const AdminDashboard = () => {
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-5 w-5 text-primary" />
-                  <span className="font-medium text-foreground">الفترة الزمنية:</span>
+                  <span className="font-medium text-foreground">{t.adminDashboard.timePeriod}:</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -379,42 +380,42 @@ const AdminDashboard = () => {
                     size="sm"
                     onClick={() => handlePresetClick("all")}
                   >
-                    الكل
+                    {t.adminDashboard.all}
                   </Button>
                   <Button
                     variant={activePreset === "7days" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handlePresetClick("7days")}
                   >
-                    آخر 7 أيام
+                    {t.adminDashboard.last7Days}
                   </Button>
                   <Button
                     variant={activePreset === "30days" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handlePresetClick("30days")}
                   >
-                    آخر 30 يوم
+                    {t.adminDashboard.last30Days}
                   </Button>
                   <Button
                     variant={activePreset === "thisMonth" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handlePresetClick("thisMonth")}
                   >
-                    هذا الشهر
+                    {t.adminDashboard.thisMonth}
                   </Button>
                   <Button
                     variant={activePreset === "lastMonth" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handlePresetClick("lastMonth")}
                   >
-                    الشهر الماضي
+                    {t.adminDashboard.lastMonth}
                   </Button>
                   <Button
                     variant={activePreset === "thisYear" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handlePresetClick("thisYear")}
                   >
-                    هذه السنة
+                    {t.adminDashboard.thisYear}
                   </Button>
                 </div>
 
@@ -428,8 +429,8 @@ const AdminDashboard = () => {
                     >
                       <CalendarIcon className="h-4 w-4" />
                       {dateRange.from && dateRange.to && activePreset === "custom"
-                        ? `${format(dateRange.from, "d MMM", { locale: ar })} - ${format(dateRange.to, "d MMM", { locale: ar })}`
-                        : "فترة مخصصة"}
+                        ? `${format(dateRange.from, "d MMM", { locale: dateLocale })} - ${format(dateRange.to, "d MMM", { locale: dateLocale })}`
+                        : t.adminDashboard.customPeriod}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
