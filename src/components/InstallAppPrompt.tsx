@@ -1,23 +1,41 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Download, X, Smartphone, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useServiceWorker } from "@/hooks/useServiceWorker";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
+import React from "react";
+
+// Create a local context reference to avoid circular dependency issues
+const LanguageContext = React.createContext<{ t: typeof translations.en } | undefined>(undefined);
 
 /**
  * Install App Prompt Component
  * Shows a banner prompting users to install the PWA
+ * Uses a try-catch approach to handle cases where LanguageProvider may not be ready
  */
 export const InstallAppPrompt = () => {
-  const { t } = useLanguage();
+  // Get translations directly to avoid potential context issues during initial render
+  const [t, setT] = useState(translations.en);
   const { canInstall, promptInstall, isOffline, isUpdateAvailable, applyUpdate } = useServiceWorker();
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
+  // Load translations based on stored language
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("glam-app-language");
+      if (stored === "ar") {
+        setT(translations.ar);
+      }
+    } catch (e) {
+      // localStorage not available
+    }
+  }, []);
+
   // Show prompt after 30 seconds if not dismissed
   useEffect(() => {
-    const dismissed = localStorage.getItem("install-prompt-dismissed");
-    if (dismissed) {
+    const dismissedStorage = localStorage.getItem("install-prompt-dismissed");
+    if (dismissedStorage) {
       setDismissed(true);
       return;
     }
