@@ -5,7 +5,7 @@ import { useState, useCallback } from "react";
  * Note: This feature requires typing_indicators table to be created
  */
 export const useTypingIndicator = (_conversationId: string | undefined) => {
-  const [typingUsers] = useState<Set<string>>(new Set());
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
 
   const startTyping = useCallback(() => {
     console.log("Typing indicators not configured - table not available");
@@ -15,10 +15,16 @@ export const useTypingIndicator = (_conversationId: string | undefined) => {
     console.log("Typing indicators not configured - table not available");
   }, []);
 
+  const setTyping = useCallback((_isTyping: boolean) => {
+    console.log("Typing indicators not configured - table not available");
+  }, []);
+
   return {
-    typingUsers: Array.from(typingUsers),
+    typingUsers: [typingUsers, setTypingUsers] as [Set<string>, React.Dispatch<React.SetStateAction<Set<string>>>],
     isTyping: typingUsers.size > 0,
+    isOtherTyping: false,
     startTyping,
     stopTyping,
+    setTyping,
   };
 };

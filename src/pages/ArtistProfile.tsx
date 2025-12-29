@@ -563,20 +563,8 @@ const ArtistProfile = () => {
                           ))}
                           <HelpfulReviewButton 
                             reviewId={review.id} 
-                            helpfulCount={review.helpful_count || 0}
+                            helpfulCount={0}
                             isCompact
-                          />
-                          <ReportReviewDialog 
-                            reviewId={review.id}
-                            trigger={
-                              <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
-                                <Flag className="w-4 h-4" />
-                              </button>
-                            }
-                            onReported={() => {
-                              toast.success(t.artist.reportSuccess);
-                              queryClient.invalidateQueries({ queryKey: ["artist-reviews", artistId] });
-                            }}
                           />
                         </div>
                       </div>
@@ -605,29 +593,6 @@ const ArtistProfile = () => {
                           ))}
                         </div>
                       )}
-
-                      {/* Artist Reply */}
-                      {isArtist && artist && artist.user_id === user?.id && (
-                        <ReviewReplyForm
-                          reviewId={review.id}
-                          artistId={artist.id}
-                          existingReplies={review.replies || []}
-                          onSuccess={() => {
-                            queryClient.invalidateQueries({ queryKey: ["artist-reviews", artistId] });
-                          }}
-                        />
-                      )}
-
-                      {/* Customer View Replies */}
-                      {(!isArtist || artist?.user_id !== user?.id) && review.replies && review.replies.length > 0 && (
-                        <div className="mt-3 space-y-2 ml-8 md:ml-12">
-                          {review.replies.map((reply: any) => (
-                            <div key={reply.id} className="bg-accent/50 p-3 rounded-lg">
-                              <div className="flex items-start gap-2">
-                                <div className="font-semibold text-primary text-sm">
-                                  Artist Reply
-                                </div>
-                                <span className="text-xs text-muted-foreground">
                                   {new Date(reply.created_at).toLocaleDateString()}
                                 </span>
                               </div>

@@ -1,13 +1,24 @@
-import { Loader2, Users } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-interface TypingIndicatorProps {
+export interface TypingIndicatorProps {
   typingUsers?: string[];
   userNames?: Map<string, string>;
+  typingText?: string;
 }
 
-export const TypingIndicator = ({ typingUsers = [], userNames = new Map() }: TypingIndicatorProps) => {
+export const TypingIndicator = ({ typingUsers = [], userNames = new Map(), typingText }: TypingIndicatorProps) => {
   const { t, isRTL } = useLanguage();
+
+  // If typingText is provided directly, use it
+  if (typingText) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-muted-foreground py-2 px-4 bg-accent/50 rounded-lg animate-pulse">
+        <Loader2 className="w-4 h-4 animate-spin" />
+        <span>{typingText}</span>
+      </div>
+    );
+  }
 
   if (typingUsers.length === 0) return null;
 
