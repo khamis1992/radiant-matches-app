@@ -23,7 +23,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 
-const roleLabels: Record<string, string> = { admin: "مدير", artist: "فنانة", customer: "عميل" };
 const roleColors: Record<string, string> = { admin: "bg-purple-100 text-purple-800", artist: "bg-pink-100 text-pink-800", customer: "bg-blue-100 text-blue-800" };
 
 const AdminUsers = () => {
@@ -57,12 +56,18 @@ const AdminUsers = () => {
   if (roleLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><Skeleton className="h-8 w-32" /></div>;
   if (role !== "admin") return <Navigate to="/home" replace />;
 
+  const roleLabels: Record<string, string> = { 
+    admin: t.adminUsers.admin, 
+    artist: t.adminUsers.artist, 
+    customer: t.adminUsers.customer 
+  };
+
   const handleRoleChange = async (userId: string, targetRole: "admin" | "artist" | "customer") => {
     try {
       await updateRole.mutateAsync({ userId, role: targetRole });
-      toast.success(`تم تغيير الدور إلى ${roleLabels[targetRole]}`);
+      toast.success(`${t.adminUsers.roleChanged} ${roleLabels[targetRole]}`);
     } catch (error: any) {
-      toast.error(error?.message || "حدث خطأ");
+      toast.error(error?.message || t.adminUsers.error);
     }
   };
 
@@ -92,11 +97,11 @@ const AdminUsers = () => {
         throw new Error(response.error.message);
       }
 
-      toast.success("تم حذف المستخدم بنجاح");
+      toast.success(t.adminUsers.userDeleted);
       setDeleteDialog(false);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (error: any) {
-      toast.error(error.message || "حدث خطأ أثناء حذف المستخدم");
+      toast.error(error.message || t.adminUsers.error);
     } finally {
       setIsDeleting(false);
     }
@@ -106,12 +111,12 @@ const AdminUsers = () => {
     if (!selectedUser) return;
     
     if (newPassword.length < 6) {
-      toast.error("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+      toast.error(t.adminUsers.passwordMinError);
       return;
     }
     
     if (newPassword !== confirmPassword) {
-      toast.error("كلمات المرور غير متطابقة");
+      toast.error(t.adminUsers.passwordMismatch);
       return;
     }
 
@@ -127,10 +132,10 @@ const AdminUsers = () => {
         throw new Error(response.error.message);
       }
 
-      toast.success("تم تغيير كلمة المرور بنجاح");
+      toast.success(t.adminUsers.passwordChanged);
       setPasswordDialog(false);
     } catch (error: any) {
-      toast.error(error.message || "حدث خطأ أثناء تغيير كلمة المرور");
+      toast.error(error.message || t.adminUsers.error);
     } finally {
       setIsUpdating(false);
     }
@@ -147,12 +152,12 @@ const AdminUsers = () => {
 
   const handleCreateUser = async () => {
     if (!newUserEmail || !newUserPassword) {
-      toast.error("البريد الإلكتروني وكلمة المرور مطلوبان");
+      toast.error(t.adminUsers.emailRequired);
       return;
     }
 
     if (newUserPassword.length < 6) {
-      toast.error("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+      toast.error(t.adminUsers.passwordMin);
       return;
     }
 
@@ -172,12 +177,12 @@ const AdminUsers = () => {
         throw new Error(response.error.message);
       }
 
-      toast.success("تم إنشاء المستخدم بنجاح");
+      toast.success(t.adminUsers.userCreated);
       setAddUserDialog(false);
       resetAddUserForm();
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (error: any) {
-      toast.error(error.message || "حدث خطأ أثناء إنشاء المستخدم");
+      toast.error(error.message || t.adminUsers.error);
     } finally {
       setIsCreating(false);
     }
@@ -189,31 +194,31 @@ const AdminUsers = () => {
       <main className={cn("p-8", isRTL ? "mr-64" : "ml-64")}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <div><h1 className="text-3xl font-bold text-foreground">{t.adminNav.users}</h1><p className="text-muted-foreground mt-1">{users?.length || 0} {isRTL ? "مستخدم" : "users"}</p></div>
+            <div><h1 className="text-3xl font-bold text-foreground">{t.adminUsers.title}</h1><p className="text-muted-foreground mt-1">{users?.length || 0} {t.adminUsers.userCount}</p></div>
             <div className="flex items-center gap-4">
-              <div className="relative w-72"><Search className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", isRTL ? "right-3" : "left-3")} /><Input placeholder={isRTL ? "البحث..." : "Search..."} value={search} onChange={(e) => setSearch(e.target.value)} className={isRTL ? "pr-10" : "pl-10"} /></div>
-              <Button onClick={() => setAddUserDialog(true)}><UserPlus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{isRTL ? "إضافة مستخدم" : "Add User"}</Button>
+              <div className="relative w-72"><Search className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", isRTL ? "right-3" : "left-3")} /><Input placeholder={t.adminUsers.search} value={search} onChange={(e) => setSearch(e.target.value)} className={isRTL ? "pr-10" : "pl-10"} /></div>
+              <Button onClick={() => setAddUserDialog(true)}><UserPlus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.addUser}</Button>
             </div>
           </div>
           <div className="bg-card rounded-xl border border-border">
             {isLoading ? <div className="p-8 space-y-4">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16" />)}</div> : (
               <Table>
-                <TableHeader><TableRow><TableHead className="text-right">المستخدم</TableHead><TableHead className="text-right">الأدوار</TableHead><TableHead className="text-right">الحجوزات</TableHead><TableHead className="text-right">تاريخ التسجيل</TableHead><TableHead className="text-right">الإجراءات</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.user}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.roles}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.bookings}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.registrationDate}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.actions}</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {users?.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell><div className="flex items-center gap-3"><Avatar className="h-10 w-10"><AvatarImage src={user.avatar_url || undefined} /><AvatarFallback>{user.full_name?.[0] || "U"}</AvatarFallback></Avatar><div><p className="font-medium">{user.full_name || "بدون اسم"}</p><p className="text-sm text-muted-foreground">{user.email}</p></div></div></TableCell>
+                      <TableCell><div className="flex items-center gap-3"><Avatar className="h-10 w-10"><AvatarImage src={user.avatar_url || undefined} /><AvatarFallback>{user.full_name?.[0] || "U"}</AvatarFallback></Avatar><div><p className="font-medium">{user.full_name || t.adminUsers.noName}</p><p className="text-sm text-muted-foreground">{user.email}</p></div></div></TableCell>
                       <TableCell><div className="flex gap-1 flex-wrap">{user.roles.map((r) => <Badge key={r} variant="secondary" className={roleColors[r]}>{roleLabels[r]}</Badge>)}</div></TableCell>
                       <TableCell>{user.bookings_count}</TableCell>
-                      <TableCell>{format(new Date(user.created_at), "d MMM yyyy", { locale: ar })}</TableCell>
+                      <TableCell>{format(new Date(user.created_at), "d MMM yyyy", { locale: dateLocale })}</TableCell>
                       <TableCell>
                         <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "admin")} disabled={user.roles.includes("admin")}><Shield className="h-4 w-4 ml-2" />جعله مدير</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "artist")} disabled={user.roles.includes("artist")}><Palette className="h-4 w-4 ml-2" />جعله فنانة</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "customer")} disabled={user.roles.includes("customer")}><Shield className="h-4 w-4 ml-2" />جعله عميل</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openPasswordDialog(user.id, user.full_name || user.email || "المستخدم")}><Key className="h-4 w-4 ml-2" />تغيير كلمة المرور</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openDeleteDialog(user.id, user.full_name || user.email || "المستخدم")} className="text-destructive focus:text-destructive"><Trash2 className="h-4 w-4 ml-2" />حذف المستخدم</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "admin")} disabled={user.roles.includes("admin")}><Shield className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.makeAdmin}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "artist")} disabled={user.roles.includes("artist")}><Palette className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.makeArtist}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "customer")} disabled={user.roles.includes("customer")}><Shield className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.makeCustomer}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openPasswordDialog(user.id, user.full_name || user.email || t.adminUsers.user)}><Key className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.changePassword}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openDeleteDialog(user.id, user.full_name || user.email || t.adminUsers.user)} className="text-destructive focus:text-destructive"><Trash2 className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.deleteUser}</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -227,94 +232,91 @@ const AdminUsers = () => {
       </main>
 
       <Dialog open={passwordDialog} onOpenChange={setPasswordDialog}>
-        <DialogContent className="sm:max-w-md" dir="rtl">
+        <DialogContent className="sm:max-w-md" dir={isRTL ? "rtl" : "ltr"}>
           <DialogHeader>
-            <DialogTitle>تغيير كلمة المرور</DialogTitle>
+            <DialogTitle>{t.adminUsers.changePasswordTitle}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
-              تغيير كلمة المرور للمستخدم: <span className="font-medium text-foreground">{selectedUser?.name}</span>
+              {t.adminUsers.changePasswordFor} <span className="font-medium text-foreground">{selectedUser?.name}</span>
             </p>
             <div className="space-y-2">
-              <Label htmlFor="new-password">كلمة المرور الجديدة</Label>
+              <Label htmlFor="new-password">{t.adminUsers.newPassword}</Label>
               <div className="relative">
                 <Input
                   id="new-password"
                   type={showPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="أدخل كلمة المرور الجديدة"
-                  className="pl-10"
+                  className={isRTL ? "pr-10" : "pl-10"}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className={cn("absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground", isRTL ? "right-3" : "left-3")}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">تأكيد كلمة المرور</Label>
+              <Label htmlFor="confirm-password">{t.adminUsers.confirmPassword}</Label>
               <Input
                 id="confirm-password"
                 type={showPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="أعد إدخال كلمة المرور"
               />
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setPasswordDialog(false)}>إلغاء</Button>
+            <Button variant="outline" onClick={() => setPasswordDialog(false)}>{t.adminUsers.cancel}</Button>
             <Button onClick={handlePasswordChange} disabled={isUpdating}>
-              {isUpdating ? "جاري التحديث..." : "تغيير كلمة المرور"}
+              {isUpdating ? t.adminUsers.updating : t.adminUsers.changePassword}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <AlertDialog open={deleteDialog} onOpenChange={setDeleteDialog}>
-        <AlertDialogContent dir="rtl">
+        <AlertDialogContent dir={isRTL ? "rtl" : "ltr"}>
           <AlertDialogHeader>
-            <AlertDialogTitle>تأكيد حذف المستخدم</AlertDialogTitle>
+            <AlertDialogTitle>{t.adminUsers.confirmDeleteUser}</AlertDialogTitle>
             <AlertDialogDescription>
-              هل أنت متأكد من حذف المستخدم <span className="font-medium">{selectedUser?.name}</span>؟
+              {t.adminUsers.deleteUserConfirmation} <span className="font-medium">{selectedUser?.name}</span>?
               <br />
-              سيتم حذف جميع بيانات المستخدم بشكل نهائي ولا يمكن التراجع عن هذا الإجراء.
+              {t.adminUsers.deleteWarning}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogCancel>{t.adminUsers.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteUser}
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "جاري الحذف..." : "حذف المستخدم"}
+              {isDeleting ? t.adminUsers.deleting : t.adminUsers.deleteUser}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <Dialog open={addUserDialog} onOpenChange={(open) => { setAddUserDialog(open); if (!open) resetAddUserForm(); }}>
-        <DialogContent className="sm:max-w-md" dir="rtl">
+        <DialogContent className="sm:max-w-md" dir={isRTL ? "rtl" : "ltr"}>
           <DialogHeader>
-            <DialogTitle>إضافة مستخدم جديد</DialogTitle>
+            <DialogTitle>{t.adminUsers.addNewUser}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="user-name">الاسم الكامل</Label>
+              <Label htmlFor="user-name">{t.adminUsers.fullName}</Label>
               <Input
                 id="user-name"
                 value={newUserName}
                 onChange={(e) => setNewUserName(e.target.value)}
-                placeholder="أدخل اسم المستخدم"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="user-email">البريد الإلكتروني *</Label>
+              <Label htmlFor="user-email">{t.adminUsers.email} *</Label>
               <Input
                 id="user-email"
                 type="email"
@@ -324,7 +326,7 @@ const AdminUsers = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="user-phone">رقم الهاتف</Label>
+              <Label htmlFor="user-phone">{t.adminUsers.phone}</Label>
               <Input
                 id="user-phone"
                 type="tel"
@@ -334,43 +336,42 @@ const AdminUsers = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="user-password">كلمة المرور *</Label>
+              <Label htmlFor="user-password">{t.adminUsers.password} *</Label>
               <div className="relative">
                 <Input
                   id="user-password"
                   type={showNewUserPassword ? "text" : "password"}
                   value={newUserPassword}
                   onChange={(e) => setNewUserPassword(e.target.value)}
-                  placeholder="6 أحرف على الأقل"
-                  className="pl-10"
+                  className={isRTL ? "pr-10" : "pl-10"}
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewUserPassword(!showNewUserPassword)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className={cn("absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground", isRTL ? "right-3" : "left-3")}
                 >
                   {showNewUserPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
             <div className="space-y-2">
-              <Label>الدور</Label>
+              <Label>{t.adminUsers.role}</Label>
               <Select value={newUserRole} onValueChange={setNewUserRole}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="customer">عميل</SelectItem>
-                  <SelectItem value="artist">فنانة</SelectItem>
-                  <SelectItem value="admin">مدير</SelectItem>
+                  <SelectItem value="customer">{t.adminUsers.customer}</SelectItem>
+                  <SelectItem value="artist">{t.adminUsers.artist}</SelectItem>
+                  <SelectItem value="admin">{t.adminUsers.admin}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setAddUserDialog(false)}>إلغاء</Button>
+            <Button variant="outline" onClick={() => setAddUserDialog(false)}>{t.adminUsers.cancel}</Button>
             <Button onClick={handleCreateUser} disabled={isCreating}>
-              {isCreating ? "جاري الإنشاء..." : "إنشاء المستخدم"}
+              {isCreating ? t.adminUsers.creating : t.adminUsers.addUser}
             </Button>
           </DialogFooter>
         </DialogContent>
