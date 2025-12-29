@@ -24,7 +24,7 @@ export const HelpfulReviewButton = ({ reviewId, helpfulCount = 0, isCompact = fa
       <ThumbsUp className={isCompact ? "w-4 h-4" : "w-5 h-5"} />
       {!isCompact && (
         <span className="text-sm">
-          {hasVoted ? t.artist.notHelpful : t.artist.helpful}
+          {hasVoted ? t.artist?.notHelpful || "Not Helpful" : t.artist?.helpful || "Helpful"}
         </span>
       )}
       <span className="text-xs text-muted-foreground bg-accent/50 px-2 py-0.5 rounded-full">
@@ -34,3 +34,4 @@ export const HelpfulReviewButton = ({ reviewId, helpfulCount = 0, isCompact = fa
   );
 };
 
+export default HelpfulReviewButton;

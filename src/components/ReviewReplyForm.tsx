@@ -114,3 +114,4 @@ export const ReviewReplyForm = ({ reviewId, artistId, existingReplies = [], onSu
   );
 };
 
+export default ReviewReplyForm;

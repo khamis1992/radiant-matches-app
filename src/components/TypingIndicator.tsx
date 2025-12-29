@@ -30,3 +30,5 @@ export const TypingIndicator = ({ typingUsers = [], userNames = new Map() }: Typ
     </div>
   );
 };
+
+export default TypingIndicator;

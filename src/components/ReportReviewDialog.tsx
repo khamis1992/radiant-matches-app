@@ -131,3 +131,4 @@ export const ReportReviewDialog = ({ reviewId, open, onClose }: { reviewId: stri
   );
 };
 
+export default ReportReviewDialog;

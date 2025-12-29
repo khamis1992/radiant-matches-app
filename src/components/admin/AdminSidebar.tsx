@@ -227,3 +227,5 @@ export const AdminSidebar = () => {
     </aside>
   );
 };
+
+export default AdminSidebar;
