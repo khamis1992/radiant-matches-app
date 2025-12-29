@@ -221,6 +221,7 @@ export const en = {
     favorites: "Favorites",
     paymentMethods: "Payment Methods",
     messages: "Messages",
+    wallet: "Wallet",
     referrals: "Invite Friends",
     settings: "Settings",
     helpSupport: "Help & Support",

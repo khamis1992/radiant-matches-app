@@ -193,6 +193,7 @@ export const ar = {
     favorites: "المفضلات",
     paymentMethods: "طرق الدفع",
     messages: "الرسائل",
+    wallet: "المحفظة",
     referrals: "دعوة الأصدقاء",
     settings: "الإعدادات",
     helpSupport: "المساعدة والدعم",
