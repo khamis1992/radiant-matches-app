@@ -2,10 +2,13 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { 
-  Calendar, Clock, MapPin, CreditCard, Check, Loader2, Banknote, 
-  AlertCircle, ChevronLeft, Sparkles, Home, Building2, Sun, Sunset,
+  Calendar as CalendarIcon, Clock, MapPin, CreditCard, Check, Loader2, Banknote, 
+  AlertCircle, ChevronLeft, ChevronRight, Sparkles, Home, Building2, Sun, Sunset,
   Star, Shield
 } from "lucide-react";
+
+// Calendar alias for JSX usage
+const Calendar = CalendarIcon;
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { formatQAR } from "@/lib/locale";
@@ -22,6 +25,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { BookingSkeleton } from "@/components/ui/skeleton-loader";
 import ErrorDisplay from "@/components/ui/error-display";
 import PaymentProcessing from "@/components/ui/payment-processing";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, isBefore, startOfDay } from "date-fns";
+import { ar, enUS } from "date-fns/locale";
 
 // Generate time slots from start to end time
 const generateTimeSlots = (startTime: string | null, endTime: string | null): string[] => {
@@ -182,6 +187,8 @@ const Booking = () => {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "sadad">("cash");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [timeFilter, setTimeFilter] = useState<"AM" | "PM">("AM");
   
   const [errors, setErrors] = useState<{
     date?: string;
@@ -260,8 +267,7 @@ const Booking = () => {
   const actualServicePrice = serviceInfo?.price || servicePrice;
   const travelFee = selectedLocation === "client_home" ? 90 : 0;
   const totalPrice = actualServicePrice + travelFee;
-
-  const dateLocale = language === "ar" ? "ar-QA" : "en-QA";
+  const dateFnsLocale = language === "ar" ? ar : enUS;
 
   const selectedDayWorkingHours = useMemo(() => {
     if (!selectedDate || workingHours.length === 0) return null;
@@ -278,24 +284,32 @@ const Booking = () => {
     );
   }, [selectedDayWorkingHours]);
 
-  // Split time slots into morning and afternoon
-  const { morningSlots, afternoonSlots } = useMemo(() => {
-    const morning: string[] = [];
-    const afternoon: string[] = [];
-    
-    availableTimeSlots.forEach(slot => {
-      if (slot.includes("AM")) {
-        morning.push(slot);
-      } else {
-        afternoon.push(slot);
-      }
+  // Filter time slots based on AM/PM toggle
+  const filteredTimeSlots = useMemo(() => {
+    return availableTimeSlots.filter(slot => {
+      if (timeFilter === "AM") return slot.includes("AM");
+      return slot.includes("PM");
     });
+  }, [availableTimeSlots, timeFilter]);
+
+  // Generate calendar days for the current month
+  const calendarDays = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
     
-    return { morningSlots: morning, afternoonSlots: afternoon };
-  }, [availableTimeSlots]);
+    // Get the day of week for the first day (0 = Sunday)
+    const startDayOfWeek = monthStart.getDay();
+    
+    // Add empty slots for days before the start of month
+    const paddedDays: (Date | null)[] = Array(startDayOfWeek).fill(null);
+    paddedDays.push(...days);
+    
+    return paddedDays;
+  }, [currentMonth]);
 
   const isBlockedDate = (date: Date): boolean => {
-    const dateString = date.toISOString().split("T")[0];
+    const dateString = format(date, "yyyy-MM-dd");
     return blockedDates.some((bd) => bd.blocked_date === dateString);
   };
 
@@ -305,6 +319,12 @@ const Booking = () => {
     const dayOfWeek = date.getDay();
     const dayHours = workingHours.find((wh) => wh.day_of_week === dayOfWeek);
     return dayHours?.is_working ?? true;
+  };
+
+  const hasAvailability = (date: Date): boolean => {
+    if (!isWorkingDay(date)) return false;
+    if (isBefore(startOfDay(date), startOfDay(new Date()))) return false;
+    return true;
   };
 
   const validateForm = useCallback(() => {
@@ -551,189 +571,180 @@ const Booking = () => {
         {/* Step 1: Select Date & Time */}
         {step === 1 && (
           <div className="animate-fade-in space-y-6">
-            {/* Date Selection */}
-            <div className="bg-card rounded-2xl p-5 shadow-sm border border-border/50">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Calendar className="w-4 h-4 text-primary" />
+            {/* Calendar Section */}
+            <div className="bg-card rounded-3xl p-6 shadow-sm">
+              {/* Month Navigation */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-muted-foreground">
+                  {format(currentMonth, "MMM", { locale: dateFnsLocale })}
+                </h2>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
+                    disabled={isSameMonth(currentMonth, new Date())}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    aria-label="Previous month"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+                    aria-label="Next month"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
                 </div>
-                <h2 className="font-semibold text-foreground">{t.bookings.selectDate}</h2>
               </div>
-              
+
               {errors.date && (
                 <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
                   <span className="text-sm text-destructive">{errors.date}</span>
                 </div>
               )}
-              
-              <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
-                {dates.map((date, index) => {
-                  const isSelected = selectedDate?.toDateString() === date.toDateString();
-                  const isWorking = isWorkingDay(date);
-                  const isToday = date.toDateString() === new Date().toDateString();
+
+              {/* Weekday Headers */}
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {(language === "ar" 
+                  ? ["أحد", "اثن", "ثلا", "أرب", "خمس", "جمع", "سبت"]
+                  : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                ).map((day) => (
+                  <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {calendarDays.map((day, index) => {
+                  if (!day) {
+                    return <div key={`empty-${index}`} className="aspect-square" />;
+                  }
+                  
+                  const isSelected = selectedDate && isSameDay(day, selectedDate);
+                  const isAvailable = hasAvailability(day);
+                  const isTodayDate = isToday(day);
+                  const isPast = isBefore(startOfDay(day), startOfDay(new Date()));
                   
                   return (
                     <button
-                      key={date.toISOString()}
+                      key={day.toISOString()}
                       onClick={() => {
-                        setSelectedDate(date);
-                        setSelectedTime(null);
-                        setErrors(prev => ({ ...prev, date: undefined }));
+                        if (isAvailable) {
+                          setSelectedDate(day);
+                          setSelectedTime(null);
+                          setErrors(prev => ({ ...prev, date: undefined }));
+                        }
                       }}
-                      disabled={!isWorking}
+                      disabled={!isAvailable || isPast}
                       className={`
-                        flex-shrink-0 w-[68px] py-3 px-2 rounded-2xl border-2 transition-all duration-300 
-                        touch-manipulation select-none relative overflow-hidden
-                        ${!isWorking
-                          ? "border-border bg-muted/50 opacity-40 cursor-not-allowed"
+                        aspect-square flex flex-col items-center justify-center rounded-full text-sm font-medium
+                        transition-all duration-200 relative touch-manipulation
+                        ${!isAvailable || isPast
+                          ? "text-muted-foreground/40 cursor-not-allowed"
                           : isSelected
-                          ? "border-primary bg-gradient-to-br from-primary to-primary/90 scale-105 shadow-lg shadow-primary/25"
-                          : isToday
-                          ? "border-primary/40 bg-primary/5 hover:border-primary/60 hover:scale-102"
-                          : "border-border bg-card hover:border-primary/40 hover:scale-102 hover:shadow-md"
+                          ? "bg-primary text-primary-foreground shadow-lg scale-110"
+                          : isTodayDate
+                          ? "text-foreground font-bold"
+                          : "text-foreground hover:bg-muted"
                         }
                       `}
-                      style={{ animationDelay: `${index * 50}ms` }}
-                      aria-label={`Select ${date.toLocaleDateString(dateLocale, { weekday: 'long', month: 'long', day: 'numeric' })}`}
                     >
-                      {isToday && !isSelected && (
-                        <div className="absolute top-1 right-1">
-                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                        </div>
+                      <span>{day.getDate()}</span>
+                      {/* Availability dot indicator */}
+                      {isAvailable && !isPast && !isSelected && (
+                        <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-primary" />
                       )}
-                      
-                      <p className={`text-[10px] font-medium uppercase tracking-wide ${
-                        isSelected ? "text-white/80" : "text-muted-foreground"
-                      }`}>
-                        {date.toLocaleDateString(dateLocale, { weekday: "short" })}
-                      </p>
-                      <p className={`text-xl font-bold my-0.5 ${
-                        isSelected ? "text-white" : "text-foreground"
-                      }`}>
-                        {date.getDate()}
-                      </p>
-                      <p className={`text-[10px] font-medium ${
-                        isSelected ? "text-white/80" : "text-muted-foreground"
-                      }`}>
-                        {date.toLocaleDateString(dateLocale, { month: "short" })}
-                      </p>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Time Selection */}
-            <div className="bg-card rounded-2xl p-5 shadow-sm border border-border/50">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Clock className="w-4 h-4 text-primary" />
+            {/* Time Selection with AM/PM Toggle */}
+            <div className="bg-card rounded-3xl p-6 shadow-sm">
+              {/* Header with AM/PM Toggle */}
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-base font-medium text-muted-foreground">
+                  {language === "ar" ? "الوقت المتاح" : "Available Time"}
+                </h3>
+                <div className="flex items-center bg-muted rounded-full p-1">
+                  <button
+                    onClick={() => setTimeFilter("AM")}
+                    className={`
+                      px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200
+                      ${timeFilter === "AM"
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                      }
+                    `}
+                  >
+                    AM
+                  </button>
+                  <button
+                    onClick={() => setTimeFilter("PM")}
+                    className={`
+                      px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200
+                      ${timeFilter === "PM"
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                      }
+                    `}
+                  >
+                    PM
+                  </button>
                 </div>
-                <h2 className="font-semibold text-foreground">{t.bookings.selectTime}</h2>
               </div>
-              
+
               {errors.time && (
                 <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
                   <span className="text-sm text-destructive">{errors.time}</span>
                 </div>
               )}
-              
-              {selectedDate && availableTimeSlots.length === 0 ? (
-                <div className="text-center py-8 bg-muted/30 rounded-xl">
-                  <Clock className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">
-                    {t.bookings.noAvailableSlots || "No available time slots for this day"}
-                  </p>
+
+              {!selectedDate ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  {language === "ar" ? "اختر تاريخاً أولاً" : "Select a date first"}
+                </div>
+              ) : filteredTimeSlots.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  {t.bookings.noAvailableSlots || "No available time slots"}
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {/* Morning Slots */}
-                  {morningSlots.length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Sun className="w-4 h-4 text-amber-500" />
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {language === "ar" ? "صباحاً" : "Morning"}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {morningSlots.map((time) => {
-                          const isTimeSelected = selectedTime === time;
-                          const isPastTime = selectedDate && new Date(selectedDate).toDateString() === new Date().toDateString() && 
-                                            new Date(`${selectedDate.toDateString()} ${time}`) < new Date();
-                          
-                          return (
-                            <button
-                              key={time}
-                              onClick={() => {
-                                setSelectedTime(time);
-                                setErrors(prev => ({ ...prev, time: undefined }));
-                              }}
-                              disabled={isPastTime}
-                              className={`
-                                py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 
-                                touch-manipulation select-none relative
-                                ${isPastTime
-                                  ? "bg-muted/50 text-muted-foreground/50 cursor-not-allowed line-through"
-                                  : isTimeSelected
-                                  ? "bg-gradient-to-br from-primary to-primary/90 text-white shadow-lg shadow-primary/25 scale-105"
-                                  : "bg-muted/50 text-foreground hover:bg-primary/10 hover:scale-102"
-                                }
-                              `}
-                              aria-label={`Select ${time} slot`}
-                            >
-                              {time.replace(" AM", "")}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Afternoon Slots */}
-                  {afternoonSlots.length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Sunset className="w-4 h-4 text-orange-500" />
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {language === "ar" ? "مساءً" : "Afternoon"}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {afternoonSlots.map((time) => {
-                          const isTimeSelected = selectedTime === time;
-                          const isPastTime = selectedDate && new Date(selectedDate).toDateString() === new Date().toDateString() && 
-                                            new Date(`${selectedDate.toDateString()} ${time}`) < new Date();
-                          
-                          return (
-                            <button
-                              key={time}
-                              onClick={() => {
-                                setSelectedTime(time);
-                                setErrors(prev => ({ ...prev, time: undefined }));
-                              }}
-                              disabled={isPastTime}
-                              className={`
-                                py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 
-                                touch-manipulation select-none relative
-                                ${isPastTime
-                                  ? "bg-muted/50 text-muted-foreground/50 cursor-not-allowed line-through"
-                                  : isTimeSelected
-                                  ? "bg-gradient-to-br from-primary to-primary/90 text-white shadow-lg shadow-primary/25 scale-105"
-                                  : "bg-muted/50 text-foreground hover:bg-primary/10 hover:scale-102"
-                                }
-                              `}
-                              aria-label={`Select ${time} slot`}
-                            >
-                              {time.replace(" PM", "")}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                <div className="grid grid-cols-3 gap-3">
+                  {filteredTimeSlots.map((time) => {
+                    const isTimeSelected = selectedTime === time;
+                    const hourDisplay = time.replace(" AM", ".00").replace(" PM", ".00");
+                    const isPastTime = selectedDate && isToday(selectedDate) && 
+                      new Date(`${format(selectedDate, "yyyy-MM-dd")} ${time.replace(" AM", ":00 AM").replace(" PM", ":00 PM")}`) < new Date();
+                    
+                    return (
+                      <button
+                        key={time}
+                        onClick={() => {
+                          setSelectedTime(time);
+                          setErrors(prev => ({ ...prev, time: undefined }));
+                        }}
+                        disabled={isPastTime}
+                        className={`
+                          py-3 px-4 rounded-xl text-base font-medium transition-all duration-200
+                          touch-manipulation select-none
+                          ${isPastTime
+                            ? "bg-muted/50 text-muted-foreground/50 cursor-not-allowed"
+                            : isTimeSelected
+                            ? "bg-primary text-primary-foreground shadow-lg"
+                            : "bg-muted/50 text-foreground border border-border hover:border-primary/50"
+                          }
+                        `}
+                        aria-label={`Select ${time}`}
+                      >
+                        {hourDisplay}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -873,11 +884,7 @@ const Booking = () => {
                   <div className="flex-1">
                     <p className="text-xs text-muted-foreground">{t.bookings.date}</p>
                     <p className="font-medium text-foreground">
-                      {selectedDate?.toLocaleDateString(dateLocale, {
-                        weekday: "long",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {selectedDate && format(selectedDate, "EEEE, MMMM d", { locale: dateFnsLocale })}
                     </p>
                   </div>
                 </div>
