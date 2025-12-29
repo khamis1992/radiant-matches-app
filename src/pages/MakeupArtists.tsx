@@ -22,6 +22,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import { ViewModeToggle, ViewMode } from "@/components/artists/ViewModeToggle";
 import { ArtistFiltersSheet, FilterState } from "@/components/artists/ArtistFiltersSheet";
+import { VoiceSearchButton } from "@/components/VoiceSearchButton";
 
 // Category images
 import categoryMakeup from "@/assets/category-makeup.jpg";
@@ -74,6 +75,8 @@ const MakeupArtists = () => {
     priceRange: [0, 2000],
     minRating: 0,
     minExperience: 0,
+    locations: [],
+    serviceTypes: [],
   });
   
   // Get category from URL params
@@ -207,6 +210,20 @@ const MakeupArtists = () => {
       if (filters.minExperience > 0) {
         if (!artist.experience_years || artist.experience_years < filters.minExperience) return false;
       }
+
+      // Location filter
+      if (filters.locations && filters.locations.length > 0) {
+        const artistLocation = artist.profile?.location?.trim();
+        if (!artistLocation || !filters.locations.includes(artistLocation)) return false;
+      }
+
+      // Service types filter
+      if (filters.serviceTypes && filters.serviceTypes.length > 0) {
+        const hasMatchingService = filters.serviceTypes.some(
+          (service) => artist.categories?.includes(service)
+        );
+        if (!hasMatchingService) return false;
+      }
       
       return true;
     });
@@ -253,14 +270,24 @@ const MakeupArtists = () => {
             onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
             className={`${isRTL ? "pr-10 pl-10" : "pl-10 pr-10"}`}
           />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className={`absolute ${isRTL ? "left-3" : "right-3"} top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full`}
-            >
-              <X className="w-4 h-4 text-muted-foreground" />
-            </button>
-          )}
+          <div className={`absolute ${isRTL ? "left-3" : "right-3"} top-1/2 -translate-y-1/2 flex items-center gap-1`}>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="p-1 hover:bg-muted rounded-full"
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            )}
+            <VoiceSearchButton
+              onResult={(transcript) => {
+                setSearchQuery(transcript);
+                saveToSearchHistory(transcript);
+              }}
+              size="sm"
+              className="h-7 w-7"
+            />
+          </div>
 
           {/* Search History Dropdown */}
           {showSearchHistory && searchHistory.length > 0 && !searchQuery && (
@@ -417,7 +444,7 @@ const MakeupArtists = () => {
                 setSearchQuery("");
                 setSelectedCategory(null);
                 setShowAvailableOnly(false);
-                setFilters({ priceRange: [0, maxPrice], minRating: 0, minExperience: 0 });
+                setFilters({ priceRange: [0, maxPrice], minRating: 0, minExperience: 0, locations: [], serviceTypes: [] });
               }}
             >
               {t.artistsListing.resetFilters}

@@ -44,6 +44,7 @@ import AdminServices from "./pages/admin/AdminServices";
 import AdminBanners from "./pages/admin/AdminBanners";
 import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
 import AdminReports from "./pages/admin/AdminReports";
+import AdminCampaigns from "./pages/admin/AdminCampaigns";
 import ArtistSignup from "./pages/ArtistSignup";
 import CompareArtists from "./pages/CompareArtists";
 import Referrals from "./pages/Referrals";
@@ -206,6 +207,8 @@ const App = () => (
           <Route path="/admin/services" element={<AdminServices />} />
           <Route path="/admin/banners" element={<AdminBanners />} />
           <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
+          <Route path="/admin/reports" element={<AdminReports />} />
+          <Route path="/admin/campaigns" element={<AdminCampaigns />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -128,6 +128,33 @@ export const ar = {
     natural: "طبيعي",
   },
 
+  // Voice Search
+  voiceSearch: {
+    startListening: "البحث الصوتي",
+    stopListening: "إيقاف الاستماع",
+    notSupported: "البحث الصوتي غير مدعوم في هذا المتصفح",
+    noSpeech: "لم يتم اكتشاف كلام. يرجى المحاولة مرة أخرى.",
+    microphoneError: "تم رفض الوصول إلى الميكروفون. يرجى السماح بالوصول.",
+    networkError: "خطأ في الشبكة. يرجى التحقق من الاتصال.",
+    listening: "جاري الاستماع...",
+  },
+
+  // Advanced Filters
+  advancedFilters: {
+    description: "تصفية الفنانات حسب السعر والموقع والخدمات والمزيد",
+    savedSearches: "عمليات البحث المحفوظة",
+    saveCurrentSearch: "حفظ البحث الحالي",
+    saveSearch: "حفظ هذا البحث",
+    searchNamePlaceholder: "أدخل اسم البحث...",
+    enterSearchName: "الرجاء إدخال اسم للبحث",
+    searchSaved: "تم حفظ البحث!",
+    searchLoaded: "تم تحميل الفلاتر",
+    location: "الموقع",
+    serviceTypes: "أنواع الخدمات",
+    anyLocation: "أي موقع",
+    allServices: "جميع الخدمات",
+  },
+
   // Auth
   auth: {
     login: "تسجيل الدخول",
@@ -822,6 +849,47 @@ export const ar = {
     topUpSuccess: "تم شحن المحفظة بنجاح",
     topUpFailed: "فشل في شحن المحفظة",
     thisMonth: "هذا الشهر",
+    // Loyalty Points
+    loyaltyPoints: "نقاط الولاء",
+    member: "عضو",
+    discountOnBookings: "خصم على الحجوزات",
+    availablePoints: "النقاط المتاحة",
+    progressToNextTier: "التقدم نحو",
+    pointsToNextTier: "نقاط للمستوى التالي",
+    redeemPoints: "استبدال النقاط",
+    pointsEqual: "نقطة",
+    redeemNow: "استبدل الآن",
+    pointsHistory: "سجل النقاط",
+    noPointsHistory: "لم يتم ربح أي نقاط بعد",
+    tierBenefits: "مزايا المستوى",
+    currentTier: "الحالي",
+  },
+
+  // Security/2FA
+  security: {
+    twoFactorAuth: "المصادقة الثنائية",
+    twoFactorDesc: "أضف طبقة إضافية من الأمان لحسابك",
+    enabled: "مفعّل",
+    disabled: "معطّل",
+    twoFactorEnabledDesc: "حسابك محمي بالمصادقة الثنائية.",
+    twoFactorDisabledDesc: "فعّل المصادقة الثنائية لإضافة طبقة أمان إضافية.",
+    enable2FA: "تفعيل المصادقة الثنائية",
+    disable2FA: "تعطيل المصادقة الثنائية",
+    disable2FATitle: "تعطيل المصادقة الثنائية",
+    disable2FADesc: "أدخل كلمة المرور لتعطيل المصادقة الثنائية.",
+    disable: "تعطيل",
+    setup2FA: "إعداد المصادقة الثنائية",
+    scanQRCode: "امسح رمز QR باستخدام تطبيق المصادقة، ثم أدخل الرمز.",
+    secretKey: "المفتاح السري",
+    manualEntry: "إذا لم تتمكن من مسح الرمز، أدخل هذا المفتاح يدوياً.",
+    backupCodes: "رموز الاسترداد",
+    saveBackupCodes: "احفظ هذه الرموز في مكان آمن.",
+    regenerateCodes: "إعادة إنشاء رموز الاسترداد",
+    codesRegenerated: "تم إنشاء رموز جديدة",
+    codesCopied: "تم نسخ رموز الاسترداد!",
+    verificationCode: "رمز التحقق",
+    verify: "تحقق وتفعيل",
+    invalidCode: "الرجاء إدخال رمز مكون من 6 أرقام",
   },
 };
 
