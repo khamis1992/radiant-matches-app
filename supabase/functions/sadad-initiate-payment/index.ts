@@ -211,26 +211,21 @@ serve(async (req) => {
       ]
     };
 
-    // CRITICAL: URL-encode secretKey as per PHP documentation:
-    // $sadad_secrete_key = urlencode($secretKey);
-    const encodedSecretKey = encodeURIComponent(secretKey);
-
-    // Create the data structure for checksum (matching PHP exactly)
-    // $sadad__checksum_data['postData'] = $sadad_checksum_array;
-    // $sadad__checksum_data['secretKey'] = $sadad_secrete_key; (URL encoded!)
+    // Checksum generation (Web Checkout 2.1)
+    // IMPORTANT: For *generation*, SADAD docs use the RAW secretKey (no urlencode)
+    // $sadad__checksum_data['secretKey'] = $secretKey;
+    // $checksum = getChecksumFromString(json_encode($sadad__checksum_data), $secretKey . $merchantID);
     const checksumData = {
       postData: checksumArray,
-      secretKey: encodedSecretKey
+      secretKey: secretKey,
     };
 
-    // Generate checksumhash with key = secretKey + merchantId (URL encoded secret + merchant ID)
-    // $checksum = getChecksumFromString(json_encode($sadad__checksum_data), $secretKey . $merchantID);
-    const checksumKey = encodedSecretKey + merchantId;
+    const checksumKey = secretKey + merchantId;
     const jsonForChecksum = JSON.stringify(checksumData);
-    
+
     console.log("Checksum JSON:", jsonForChecksum);
     console.log("Checksum Key (first 10 chars):", checksumKey.substring(0, 10) + "...");
-    
+
     const checksumhash = await generateChecksumFromString(jsonForChecksum, checksumKey);
 
     console.log("Payment initiated successfully, order:", orderId);
