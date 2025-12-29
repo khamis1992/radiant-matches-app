@@ -593,16 +593,6 @@ const ArtistProfile = () => {
                           ))}
                         </div>
                       )}
-                                  {new Date(reply.created_at).toLocaleDateString()}
-                                </span>
-                              </div>
-                              <p className="text-sm text-foreground mt-1">
-                                {reply.reply}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
