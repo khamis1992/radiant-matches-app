@@ -70,15 +70,12 @@ const AdminSettings = () => {
 
       <main className={cn("p-8", isRTL ? "mr-64" : "ml-64")}>
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
               <Settings className="h-8 w-8" />
-              {t.adminNav.settings}
+              {t.adminSettings.title}
             </h1>
-            <p className="text-muted-foreground mt-1">
-              {isRTL ? "إدارة إعدادات المنصة العامة" : "Manage platform settings"}
-            </p>
+            <p className="text-muted-foreground mt-1">{t.adminSettings.subtitle}</p>
           </div>
 
           {isLoading ? (
@@ -89,120 +86,93 @@ const AdminSettings = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Commission Settings */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Percent className="h-5 w-5" />
-                    إعدادات العمولة
+                    {t.adminSettings.commissionSettings}
                   </CardTitle>
-                  <CardDescription>
-                    تحديد نسبة عمولة المنصة من كل حجز
-                  </CardDescription>
+                  <CardDescription>{t.adminSettings.commissionDesc}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="commission_rate">نسبة العمولة (%)</Label>
+                      <Label htmlFor="commission_rate">{t.adminSettings.commissionRate}</Label>
                       <Input
                         id="commission_rate"
                         type="number"
                         min="0"
                         max="100"
                         value={formData.commission_rate}
-                        onChange={(e) =>
-                          handleChange("commission_rate", Number(e.target.value))
-                        }
+                        onChange={(e) => handleChange("commission_rate", Number(e.target.value))}
                         className="max-w-xs"
                       />
-                      <p className="text-sm text-muted-foreground">
-                        النسبة المئوية التي تحصل عليها المنصة من كل حجز
-                      </p>
+                      <p className="text-sm text-muted-foreground">{t.adminSettings.commissionHelp}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Booking Settings */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Clock className="h-5 w-5" />
-                    إعدادات الحجز
+                    {t.adminSettings.bookingSettings}
                   </CardTitle>
-                  <CardDescription>
-                    تحديد قواعد الحجز والإلغاء
-                  </CardDescription>
+                  <CardDescription>{t.adminSettings.bookingDesc}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-6 md:grid-cols-3">
                     <div className="grid gap-2">
-                      <Label htmlFor="min_booking_hours">
-                        الحد الأدنى للحجز المسبق (ساعات)
-                      </Label>
+                      <Label htmlFor="min_booking_hours">{t.adminSettings.minBookingHours}</Label>
                       <Input
                         id="min_booking_hours"
                         type="number"
                         min="1"
                         value={formData.min_booking_hours}
-                        onChange={(e) =>
-                          handleChange("min_booking_hours", Number(e.target.value))
-                        }
+                        onChange={(e) => handleChange("min_booking_hours", Number(e.target.value))}
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="max_booking_days">
-                        الحد الأقصى للحجز المسبق (أيام)
-                      </Label>
+                      <Label htmlFor="max_booking_days">{t.adminSettings.maxBookingDays}</Label>
                       <Input
                         id="max_booking_days"
                         type="number"
                         min="1"
                         value={formData.max_booking_days}
-                        onChange={(e) =>
-                          handleChange("max_booking_days", Number(e.target.value))
-                        }
+                        onChange={(e) => handleChange("max_booking_days", Number(e.target.value))}
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="cancellation_hours">
-                        مهلة الإلغاء المجاني (ساعات)
-                      </Label>
+                      <Label htmlFor="cancellation_hours">{t.adminSettings.cancellationHours}</Label>
                       <Input
                         id="cancellation_hours"
                         type="number"
                         min="0"
                         value={formData.cancellation_hours}
-                        onChange={(e) =>
-                          handleChange("cancellation_hours", Number(e.target.value))
-                        }
+                        onChange={(e) => handleChange("cancellation_hours", Number(e.target.value))}
                       />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Platform Info */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Building className="h-5 w-5" />
-                    معلومات المنصة
+                    {t.adminSettings.platformInfo}
                   </CardTitle>
-                  <CardDescription>
-                    المعلومات الأساسية للمنصة والدعم
-                  </CardDescription>
+                  <CardDescription>{t.adminSettings.platformInfoDesc}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-6">
                     <div className="grid gap-2">
-                      <Label htmlFor="platform_name">اسم المنصة</Label>
+                      <Label htmlFor="platform_name">{t.adminSettings.platformName}</Label>
                       <Input
                         id="platform_name"
                         value={formData.platform_name}
-                        onChange={(e) =>
-                          handleChange("platform_name", e.target.value)
-                        }
+                        onChange={(e) => handleChange("platform_name", e.target.value)}
                         className="max-w-md"
                       />
                     </div>
@@ -213,30 +183,26 @@ const AdminSettings = () => {
                       <div className="grid gap-2">
                         <Label htmlFor="support_email" className="flex items-center gap-2">
                           <Mail className="h-4 w-4" />
-                          بريد الدعم
+                          {t.adminSettings.platformEmail}
                         </Label>
                         <Input
                           id="support_email"
                           type="email"
                           value={formData.support_email}
-                          onChange={(e) =>
-                            handleChange("support_email", e.target.value)
-                          }
+                          onChange={(e) => handleChange("support_email", e.target.value)}
                         />
                       </div>
                       <div className="grid gap-2">
                         <Label htmlFor="support_phone" className="flex items-center gap-2">
                           <Phone className="h-4 w-4" />
-                          هاتف الدعم
+                          {t.adminSettings.platformPhone}
                         </Label>
                         <Input
                           id="support_phone"
                           type="tel"
                           dir="ltr"
                           value={formData.support_phone}
-                          onChange={(e) =>
-                            handleChange("support_phone", e.target.value)
-                          }
+                          onChange={(e) => handleChange("support_phone", e.target.value)}
                         />
                       </div>
                     </div>
@@ -244,14 +210,9 @@ const AdminSettings = () => {
                 </CardContent>
               </Card>
 
-              {/* Submit Button */}
               <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={updateSettings.isPending}
-                >
-                  {updateSettings.isPending ? "جاري الحفظ..." : "حفظ الإعدادات"}
+                <Button type="submit" size="lg" disabled={updateSettings.isPending}>
+                  {updateSettings.isPending ? t.adminSettings.saving : t.adminSettings.saveSettings}
                 </Button>
               </div>
             </form>
