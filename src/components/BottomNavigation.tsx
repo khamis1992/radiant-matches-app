@@ -30,7 +30,6 @@ const customerNavItemsLeft: NavItem[] = [
 
 const customerNavItemsRight: NavItem[] = [
   { icon: Heart, labelKey: "favorites", path: "/favorites" },
-  { icon: Users, labelKey: "referrals", path: "/referrals", badgeType: "referrals" },
   { icon: Calendar, labelKey: "bookings", path: "/bookings", badgeType: "bookings" },
 ];
 

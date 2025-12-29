@@ -220,6 +220,7 @@ export const en = {
     favorites: "Favorites",
     paymentMethods: "Payment Methods",
     messages: "Messages",
+    referrals: "Invite Friends",
     settings: "Settings",
     helpSupport: "Help & Support",
     logOut: "Log Out",
