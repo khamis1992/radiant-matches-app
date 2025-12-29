@@ -291,34 +291,109 @@ const MakeupArtists = () => {
             />
           </div>
 
-          {/* Search History Dropdown */}
-          {showSearchHistory && searchHistory.length > 0 && !searchQuery && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden animate-fade-in">
-              <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <History className="w-3 h-3" />
-                  {t.artistsListing.recentSearches}
-                </span>
-                <button 
-                  onClick={clearSearchHistory}
-                  className="text-xs text-primary hover:underline"
-                >
-                  {t.artistsListing.clearHistory}
-                </button>
-              </div>
-              {searchHistory.map((query, idx) => (
-                <button
-                  key={idx}
-                  onMouseDown={() => {
-                    setSearchQuery(query);
-                    setShowSearchHistory(false);
-                  }}
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors flex items-center gap-2"
-                >
-                  <Search className="w-3.5 h-3.5 text-muted-foreground" />
-                  {query}
-                </button>
-              ))}
+          {/* Auto-suggestions & Search History Dropdown */}
+          {showSearchHistory && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden animate-fade-in max-h-72 overflow-y-auto">
+              {/* Show suggestions when typing */}
+              {searchQuery.trim() && (() => {
+                const query = searchQuery.toLowerCase();
+                const suggestions: { type: 'artist' | 'location' | 'category'; value: string; label: string }[] = [];
+                
+                // Get matching artists
+                artists?.forEach(artist => {
+                  if (artist.profile?.full_name?.toLowerCase().includes(query)) {
+                    suggestions.push({ type: 'artist', value: artist.profile.full_name, label: artist.profile.full_name });
+                  }
+                });
+                
+                // Get matching locations
+                const locations = [...new Set(artists?.map(a => a.profile?.location).filter(Boolean) as string[])];
+                locations.forEach(loc => {
+                  if (loc.toLowerCase().includes(query) && !suggestions.find(s => s.value === loc)) {
+                    suggestions.push({ type: 'location', value: loc, label: loc });
+                  }
+                });
+                
+                // Get matching categories
+                SERVICE_CATEGORIES.forEach(cat => {
+                  const catLabel = getCategoryLabel(cat);
+                  if (cat.toLowerCase().includes(query) || catLabel.toLowerCase().includes(query)) {
+                    suggestions.push({ type: 'category', value: cat, label: catLabel });
+                  }
+                });
+                
+                const uniqueSuggestions = suggestions.slice(0, 8);
+                
+                if (uniqueSuggestions.length === 0) return null;
+                
+                return (
+                  <>
+                    <div className="px-3 py-2 border-b border-border">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        {t.artistsListing.suggestions || "Suggestions"}
+                      </span>
+                    </div>
+                    {uniqueSuggestions.map((suggestion, idx) => (
+                      <button
+                        key={`${suggestion.type}-${idx}`}
+                        onMouseDown={() => {
+                          if (suggestion.type === 'category') {
+                            handleCategoryChange(suggestion.value as ServiceCategory);
+                            setSearchQuery("");
+                          } else {
+                            setSearchQuery(suggestion.value);
+                            saveToSearchHistory(suggestion.value);
+                          }
+                          setShowSearchHistory(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors flex items-center gap-2"
+                      >
+                        {suggestion.type === 'artist' && <Search className="w-3.5 h-3.5 text-muted-foreground" />}
+                        {suggestion.type === 'location' && <span className="w-3.5 h-3.5 text-muted-foreground text-center">📍</span>}
+                        {suggestion.type === 'category' && <Sparkles className="w-3.5 h-3.5 text-primary" />}
+                        <span className="flex-1">{suggestion.label}</span>
+                        <span className="text-xs text-muted-foreground capitalize">
+                          {suggestion.type === 'artist' ? (t.artistsListing.artistLabel || "Artist") : 
+                           suggestion.type === 'location' ? (t.artistsListing.locationLabel || "Location") : 
+                           (t.artistsListing.categoryLabel || "Category")}
+                        </span>
+                      </button>
+                    ))}
+                  </>
+                );
+              })()}
+              
+              {/* Show history when input is empty */}
+              {!searchQuery && searchHistory.length > 0 && (
+                <>
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <History className="w-3 h-3" />
+                      {t.artistsListing.recentSearches}
+                    </span>
+                    <button 
+                      onClick={clearSearchHistory}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      {t.artistsListing.clearHistory}
+                    </button>
+                  </div>
+                  {searchHistory.map((query, idx) => (
+                    <button
+                      key={idx}
+                      onMouseDown={() => {
+                        setSearchQuery(query);
+                        setShowSearchHistory(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors flex items-center gap-2"
+                    >
+                      <Search className="w-3.5 h-3.5 text-muted-foreground" />
+                      {query}
+                    </button>
+                  ))}
+                </>
+              )}
             </div>
           )}
         </div>

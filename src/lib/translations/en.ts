@@ -143,6 +143,10 @@ export const en = {
     avgRating: "Avg Rating",
     years: "Years",
     startingFrom: "Price: Low to High",
+    suggestions: "Suggestions",
+    artistLabel: "Artist",
+    locationLabel: "Location",
+    categoryLabel: "Category",
   },
 
   // Voice Search
