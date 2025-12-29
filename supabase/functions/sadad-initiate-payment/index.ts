@@ -219,12 +219,12 @@ serve(async (req) => {
     };
 
     // Checksum generation (Web Checkout 2.1)
-    // IMPORTANT: For *generation*, SADAD docs use the RAW secretKey (no urlencode)
-    // $sadad__checksum_data['secretKey'] = $secretKey;
-    // $checksum = getChecksumFromString(json_encode($sadad__checksum_data), $secretKey . $merchantID);
+    // Based on SADAD PHP sample: the secretKey inside checksumData should be URL-encoded
+    // $sadad__checksum_data['secretKey'] = urlencode($secretKey);
+    // but the key used for encryption is: $secretKey . $merchantID (raw, not encoded)
     const checksumData = {
       postData: checksumArray,
-      secretKey: secretKey,
+      secretKey: encodeURIComponent(secretKey),
     };
 
     const checksumKey = secretKey + merchantId;
