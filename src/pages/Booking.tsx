@@ -558,19 +558,63 @@ const Booking = () => {
         <StepIndicator currentStep={step} steps={steps} />
       </header>
 
-      {/* Floating Artist Card */}
-      <FloatingArtistCard
-        artistName={artistName}
-        artistAvatar={artistAvatar}
-        serviceName={actualServiceName}
-        price={actualServicePrice}
-        duration={serviceInfo?.duration_minutes}
-      />
-
       <div className="px-4">
         {/* Step 1: Select Date & Time */}
         {step === 1 && (
-          <div className="animate-fade-in space-y-6">
+          <div className="animate-fade-in space-y-4">
+            {/* Service & Artist Card - Compact */}
+            <div className="bg-gradient-to-br from-card via-card to-primary/5 rounded-2xl p-4 shadow-sm border border-primary/10">
+              <div className="flex items-center gap-3">
+                {/* Artist Avatar */}
+                <div className="relative flex-shrink-0">
+                  {artistAvatar ? (
+                    <img
+                      src={artistAvatar}
+                      alt={artistName}
+                      className="w-14 h-14 rounded-xl object-cover ring-2 ring-primary/20"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center ring-2 ring-primary/20">
+                      <span className="text-xl font-bold text-white">
+                        {artistName.charAt(0)}
+                      </span>
+                    </div>
+                  )}
+                  {artistInfo?.rating && (
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-sm">
+                      <Star className="w-3 h-3 text-white fill-white" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Service Info */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground text-sm truncate">{artistName}</h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    <p className="text-xs text-primary font-medium truncate">{actualServiceName}</p>
+                  </div>
+                  {serviceInfo?.duration_minutes && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      <Clock className="w-3 h-3 inline-block mr-1" />
+                      {Math.floor(serviceInfo.duration_minutes / 60) > 0 && `${Math.floor(serviceInfo.duration_minutes / 60)}h `}
+                      {serviceInfo.duration_minutes % 60 > 0 && `${serviceInfo.duration_minutes % 60}m`}
+                    </p>
+                  )}
+                </div>
+
+                {/* Price */}
+                <div className="text-end flex-shrink-0">
+                  <p className="text-lg font-bold text-primary">{formatQAR(actualServicePrice)}</p>
+                  {artistInfo?.rating && (
+                    <p className="text-xs text-muted-foreground">
+                      {artistInfo.rating.toFixed(1)} ({artistInfo.total_reviews || 0})
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Calendar Section */}
             <div className="bg-card rounded-3xl p-6 shadow-sm">
               {/* Month Navigation */}
@@ -754,6 +798,35 @@ const Booking = () => {
         {/* Step 2: Select Location */}
         {step === 2 && (
           <div className="animate-fade-in space-y-4">
+            {/* Service & Artist Card - Compact */}
+            <div className="bg-gradient-to-br from-card via-card to-primary/5 rounded-2xl p-4 shadow-sm border border-primary/10">
+              <div className="flex items-center gap-3">
+                {artistAvatar ? (
+                  <img
+                    src={artistAvatar}
+                    alt={artistName}
+                    className="w-12 h-12 rounded-xl object-cover ring-2 ring-primary/20"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center ring-2 ring-primary/20">
+                    <span className="text-lg font-bold text-white">
+                      {artistName.charAt(0)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground text-sm truncate">{artistName}</h3>
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-primary" />
+                    <p className="text-xs text-primary font-medium truncate">{actualServiceName}</p>
+                  </div>
+                </div>
+                <div className="text-end">
+                  <p className="text-base font-bold text-primary">{formatQAR(actualServicePrice)}</p>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-card rounded-2xl p-5 shadow-sm border border-border/50">
               <div className="flex items-center gap-2 mb-5">
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
