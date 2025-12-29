@@ -1,0 +1,6 @@
+Line 195:          <Route path="/notifications" element={<Notifications />} />
+Line 196:          <Route path="/help" element={<HelpSupport />} />
+Line 197:          <Route path="/payment-methods" element={<PaymentMethods />} />
+Line 198:          <Route path="/wallet" element={<Wallet />} />  
+Line 199:          {/* Admin Routes */}
+

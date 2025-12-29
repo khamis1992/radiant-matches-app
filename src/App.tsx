@@ -43,9 +43,11 @@ import AdminReviews from "./pages/admin/AdminReviews";
 import AdminServices from "./pages/admin/AdminServices";
 import AdminBanners from "./pages/admin/AdminBanners";
 import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
+import AdminReports from "./pages/admin/AdminReports";
 import ArtistSignup from "./pages/ArtistSignup";
 import CompareArtists from "./pages/CompareArtists";
 import Referrals from "./pages/Referrals";
+import Wallet from "./pages/Wallet";
 
 const queryClient = new QueryClient();
 
