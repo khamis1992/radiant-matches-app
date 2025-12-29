@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Generate random salt (matching PHP's implementation)
+// Generate random salt (matching PHP's implementation exactly)
 function generateSalt(length: number): string {
   const chars = "AbcDE123IJKLMN67QRSTUVWXYZaBCdefghijklmn123opq45rs67tuv89wxyz0FGH45OP89";
   let result = "";
@@ -37,12 +37,15 @@ function uint8ArrayToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-// AES-128-CBC encryption (matching PHP openssl_encrypt)
+// AES-128-CBC encryption (matching PHP openssl_encrypt with OPENSSL_ZERO_PADDING disabled - default)
 async function encryptAES(input: string, key: string): Promise<string> {
   const iv = new TextEncoder().encode("@@@@&&&&####$$$$");
   
+  // Decode HTML entities like PHP's html_entity_decode (for the key)
+  const decodedKey = key.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
+  
   // PHP uses first 16 bytes of key for AES-128
-  const keyStr = key.substring(0, 16);
+  const keyStr = decodedKey.substring(0, 16);
   const keyBytes = new TextEncoder().encode(keyStr);
   
   // Ensure key is exactly 16 bytes
@@ -90,11 +93,6 @@ async function generateChecksumFromString(jsonStr: string, key: string): Promise
   const checksum = await encryptAES(hashString, key);
   
   return checksum;
-}
-
-// PHP-style JSON encoding (no spaces after colons/commas)
-function phpJsonEncode(obj: unknown): string {
-  return JSON.stringify(obj);
 }
 
 serve(async (req) => {
@@ -189,7 +187,7 @@ serve(async (req) => {
     const registeredDomain = Deno.env.get("SADAD_WEBSITE_DOMAIN") || "radiant-matches-app.lovable.app";
 
     // Build checksum array matching PHP structure exactly
-    // According to SADAD docs: https://developer.sadad.qa/
+    // Following: https://developer.sadad.qa/ Web Checkout 2.1
     const checksumArray: Record<string, unknown> = {
       merchant_id: merchantId,
       ORDER_ID: orderId,
@@ -201,7 +199,7 @@ serve(async (req) => {
       SADAD_WEBCHECKOUT_PAGE_LANGUAGE: "ENG",
       CALLBACK_URL: callbackUrl,
       txnDate: txnDate,
-      VERSION: "1.1",
+      // productdetail structure as per PHP documentation
       productdetail: [
         {
           order_id: orderId,
@@ -213,22 +211,30 @@ serve(async (req) => {
       ]
     };
 
-    // Create the data structure for checksum (matching PHP)
-    // The checksum is generated from the combination of postData and secretKey
+    // CRITICAL: URL-encode secretKey as per PHP documentation:
+    // $sadad_secrete_key = urlencode($secretKey);
+    const encodedSecretKey = encodeURIComponent(secretKey);
+
+    // Create the data structure for checksum (matching PHP exactly)
+    // $sadad__checksum_data['postData'] = $sadad_checksum_array;
+    // $sadad__checksum_data['secretKey'] = $sadad_secrete_key; (URL encoded!)
     const checksumData = {
       postData: checksumArray,
-      secretKey: secretKey
+      secretKey: encodedSecretKey
     };
 
-    // Generate checksumhash with key = secretKey + merchantId
-    const checksumKey = secretKey + merchantId;
-    const jsonForChecksum = phpJsonEncode(checksumData);
+    // Generate checksumhash with key = secretKey + merchantId (URL encoded secret + merchant ID)
+    // $checksum = getChecksumFromString(json_encode($sadad__checksum_data), $secretKey . $merchantID);
+    const checksumKey = encodedSecretKey + merchantId;
+    const jsonForChecksum = JSON.stringify(checksumData);
     
     console.log("Checksum JSON:", jsonForChecksum);
+    console.log("Checksum Key (first 10 chars):", checksumKey.substring(0, 10) + "...");
     
     const checksumhash = await generateChecksumFromString(jsonForChecksum, checksumKey);
 
     console.log("Payment initiated successfully, order:", orderId);
+    console.log("Generated checksumhash:", checksumhash);
 
     // Return form data for SADAD redirect
     // Form structure as per SADAD documentation: https://developer.sadad.qa/
@@ -244,6 +250,7 @@ serve(async (req) => {
       CALLBACK_URL: callbackUrl,
       txnDate: txnDate,
       VERSION: "1.1",
+      // productdetail will be formatted as productdetail[0][key] in the form
       productdetail: [
         {
           order_id: orderId,
