@@ -7,7 +7,8 @@ import BottomNavigation from "@/components/BottomNavigation";
 import AppHeader from "@/components/layout/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Star, MapPin, Clock, X, Calendar, Plus, Check, Search } from "lucide-react";
+import { Star, MapPin, Clock, X, Calendar, Plus, Check, Search, DollarSign } from "lucide-react";
+import { Tables } from "@/integrations/supabase/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import artist1 from "@/assets/artist-1.jpg";
@@ -75,6 +76,45 @@ const CompareArtists = () => {
     },
     enabled: artistIds.length > 0 && artistIds.length <= 3,
   });
+
+  // Fetch services for selected artists
+  const { data: services } = useQuery({
+    queryKey: ["compare-services", artistIds],
+    queryFn: async () => {
+      if (artistIds.length === 0) return [];
+      
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .in("artist_id", artistIds)
+        .eq("is_active", true)
+        .order("price", { ascending: true });
+
+      if (error) throw error;
+      return data as Tables<"services">[];
+    },
+    enabled: artistIds.length > 0,
+  });
+
+  // Group services by category
+  const servicesByCategory = useMemo(() => {
+    if (!services) return {};
+    const grouped: Record<string, Tables<"services">[]> = {};
+    services.forEach(service => {
+      const category = service.category || "Other";
+      if (!grouped[category]) grouped[category] = [];
+      grouped[category].push(service);
+    });
+    return grouped;
+  }, [services]);
+
+  // Get unique service names across all artists for table rows
+  const allServiceNames = useMemo(() => {
+    if (!services) return [];
+    const names = new Set<string>();
+    services.forEach(s => names.add(s.name));
+    return Array.from(names);
+  }, [services]);
 
   // Fetch all available artists for adding
   const { data: allArtists } = useQuery({
@@ -345,6 +385,109 @@ const CompareArtists = () => {
             </Card>
           ))}
         </div>
+
+        {/* Services & Prices Comparison Table */}
+        {artists && artists.length > 1 && allServiceNames.length > 0 && (
+          <div className="mt-8">
+            <div className="flex items-center gap-2 mb-4">
+              <DollarSign className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-bold text-foreground">
+                {isRTL ? "مقارنة الخدمات والأسعار" : "Services & Prices Comparison"}
+              </h2>
+            </div>
+
+            <div className="overflow-x-auto rounded-2xl border border-border">
+              <table className="w-full min-w-[400px]">
+                <thead>
+                  <tr className="bg-muted/50">
+                    <th className={`p-3 text-sm font-semibold text-foreground ${isRTL ? "text-right" : "text-left"} border-b border-border`}>
+                      {isRTL ? "الخدمة" : "Service"}
+                    </th>
+                    {artists.map((artist) => (
+                      <th key={artist.id} className="p-3 text-sm font-semibold text-foreground text-center border-b border-border min-w-[120px]">
+                        <div className="flex flex-col items-center gap-1">
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={artist.profile?.avatar_url || undefined} />
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                              {artist.profile?.full_name?.charAt(0) || "A"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="truncate max-w-[100px]">
+                            {artist.profile?.full_name?.split(" ")[0] || t.artist.anonymous}
+                          </span>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {allServiceNames.map((serviceName, idx) => (
+                    <tr key={serviceName} className={idx % 2 === 0 ? "bg-background" : "bg-muted/30"}>
+                      <td className={`p-3 text-sm font-medium text-foreground ${isRTL ? "text-right" : "text-left"} border-b border-border/50`}>
+                        {serviceName}
+                      </td>
+                      {artists.map((artist) => {
+                        const service = services?.find(
+                          s => s.artist_id === artist.id && s.name === serviceName
+                        );
+                        return (
+                          <td key={artist.id} className="p-3 text-center border-b border-border/50">
+                            {service ? (
+                              <div className="flex flex-col items-center">
+                                <span className="font-bold text-primary">
+                                  {service.price} {isRTL ? "ر.ق" : "QAR"}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {service.duration_minutes} {isRTL ? "دقيقة" : "min"}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Price Summary */}
+            <div className="mt-4 grid gap-3" style={{ gridTemplateColumns: `repeat(${artists.length}, 1fr)` }}>
+              {artists.map((artist) => {
+                const artistServices = services?.filter(s => s.artist_id === artist.id) || [];
+                const minPrice = artistServices.length > 0 
+                  ? Math.min(...artistServices.map(s => s.price)) 
+                  : 0;
+                const maxPrice = artistServices.length > 0 
+                  ? Math.max(...artistServices.map(s => s.price)) 
+                  : 0;
+                
+                return (
+                  <Card key={artist.id} className="rounded-xl border-primary/20">
+                    <CardContent className="p-3 text-center">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {isRTL ? "نطاق الأسعار" : "Price Range"}
+                      </p>
+                      <p className="font-bold text-foreground">
+                        {artistServices.length > 0 ? (
+                          <>
+                            {minPrice} - {maxPrice} <span className="text-xs">{isRTL ? "ر.ق" : "QAR"}</span>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">
+                            {isRTL ? "لا توجد خدمات" : "No services"}
+                          </span>
+                        )}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl p-4 border border-primary/20">
           <p className="text-sm text-muted-foreground">
