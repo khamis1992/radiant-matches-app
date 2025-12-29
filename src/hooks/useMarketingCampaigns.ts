@@ -45,13 +45,11 @@ export interface CreateCampaignInput {
 export const useMarketingCampaigns = () => {
   const campaigns: MarketingCampaign[] = [];
   const isLoading = false;
+  const isCreating = false;
   const error = null;
 
-  const createCampaign = {
-    mutateAsync: async (_input: CreateCampaignInput) => {
-      console.log("Marketing campaigns not configured - table not available");
-    },
-    isPending: false,
+  const createCampaign = (_input: CreateCampaignInput) => {
+    console.log("Marketing campaigns not configured - table not available");
   };
 
   const updateCampaign = {
@@ -61,11 +59,8 @@ export const useMarketingCampaigns = () => {
     isPending: false,
   };
 
-  const deleteCampaign = {
-    mutateAsync: async (_id: string) => {
-      console.log("Marketing campaigns not configured - table not available");
-    },
-    isPending: false,
+  const deleteCampaign = (_id: string) => {
+    console.log("Marketing campaigns not configured - table not available");
   };
 
   const updateCampaignStatus = {
@@ -75,13 +70,39 @@ export const useMarketingCampaigns = () => {
     isPending: false,
   };
 
+  const activateCampaign = (_id: string) => {
+    console.log("Marketing campaigns not configured - table not available");
+  };
+
+  const pauseCampaign = (_id: string) => {
+    console.log("Marketing campaigns not configured - table not available");
+  };
+
+  const getActiveCampaigns = () => campaigns.filter(c => c.status === "active");
+  const getDraftCampaigns = () => campaigns.filter(c => c.status === "draft");
+  const getScheduledCampaigns = () => campaigns.filter(c => c.status === "scheduled");
+
+  const getTotalStats = () => ({
+    totalImpressions: campaigns.reduce((sum, c) => sum + c.impressions, 0),
+    totalClicks: campaigns.reduce((sum, c) => sum + c.clicks, 0),
+    totalConversions: campaigns.reduce((sum, c) => sum + c.conversions, 0),
+    totalRevenue: campaigns.reduce((sum, c) => sum + c.revenue_generated, 0),
+  });
+
   return {
     campaigns,
     isLoading,
+    isCreating,
     error,
     createCampaign,
     updateCampaign,
     deleteCampaign,
     updateCampaignStatus,
+    activateCampaign,
+    pauseCampaign,
+    getActiveCampaigns,
+    getDraftCampaigns,
+    getScheduledCampaigns,
+    getTotalStats,
   };
 };
