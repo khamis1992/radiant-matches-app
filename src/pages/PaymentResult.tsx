@@ -11,9 +11,10 @@ const PaymentResult = () => {
   const navigate = useNavigate();
   const { t, isRTL } = useLanguage();
   
-  const orderId = searchParams.get("order_id");
-  const status = searchParams.get("status");
-  const transactionNumber = searchParams.get("transaction_number");
+  const orderId = searchParams.get("order_id") || searchParams.get("ORDER_ID") || searchParams.get("ORDERID");
+  const status = searchParams.get("status") || searchParams.get("RESPCODE");
+  const transactionNumber = searchParams.get("transaction_number") || searchParams.get("transactionNumber") || searchParams.get("transactionNumber") || searchParams.get("transaction_number") || searchParams.get("transactionNumber") || searchParams.get("transactionNumber") || searchParams.get("transaction_number") || searchParams.get("transaction_number");
+  const respMsg = searchParams.get("RESPMSG") || searchParams.get("respmsg");
 
   // Fetch booking details based on order_id
   const { data: booking, isLoading } = useQuery({
@@ -44,8 +45,13 @@ const PaymentResult = () => {
     enabled: !!orderId,
   });
 
-  const isSuccess = status === "success" || status === "completed" || booking?.payment_status === "completed";
-  const isFailed = status === "failed" || status === "error" || booking?.payment_status === "failed";
+  // SADAD commonly returns RESPCODE: 1 success, 810 failed
+  const statusLower = (status || "").toLowerCase();
+  const isRespCodeSuccess = status === "1";
+  const isRespCodeFailed = status === "810";
+
+  const isSuccess = isRespCodeSuccess || statusLower === "success" || statusLower === "completed" || booking?.payment_status === "completed";
+  const isFailed = isRespCodeFailed || statusLower === "failed" || statusLower === "error" || booking?.payment_status === "failed";
 
   if (isLoading) {
     return (
