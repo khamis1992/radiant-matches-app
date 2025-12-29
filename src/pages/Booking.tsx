@@ -873,129 +873,206 @@ const Booking = () => {
 
         {/* Step 3: Confirm & Pay */}
         {step === 3 && (
-          <div className="animate-fade-in space-y-4">
-            {/* Booking Summary */}
-            <div className="bg-card rounded-2xl p-5 shadow-sm border border-border/50">
-              <h2 className="font-semibold text-foreground mb-4">{t.bookings.bookingSummary}</h2>
+          <div className="animate-fade-in space-y-5">
+            {/* Artist & Service Card - Premium Design */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-card to-primary/5 rounded-3xl p-5 border border-primary/20 shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
               
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
-                  <Calendar className="w-5 h-5 text-primary" />
+              <div className="relative flex items-center gap-4">
+                {artistInfo?.profile?.avatar_url ? (
+                  <img
+                    src={artistInfo.profile.avatar_url}
+                    alt={artistInfo?.profile?.full_name || "Artist"}
+                    className="w-20 h-20 rounded-2xl object-cover ring-3 ring-primary/30 shadow-xl"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center ring-3 ring-primary/30 shadow-xl">
+                    <span className="text-3xl font-bold text-white">
+                      {(artistInfo?.profile?.full_name || "A").charAt(0)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-foreground">{artistInfo?.profile?.full_name || "Artist"}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    <p className="text-sm text-primary font-medium">{actualServiceName}</p>
+                  </div>
+                  {artistInfo?.rating && (
+                    <div className="flex items-center gap-1 mt-2">
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      <span className="text-sm font-medium text-foreground">{artistInfo.rating.toFixed(1)}</span>
+                      <span className="text-xs text-muted-foreground">({artistInfo.total_reviews || 0})</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Booking Details Cards */}
+            <div className="grid grid-cols-1 gap-3">
+              {/* Date Card */}
+              <div className="bg-card rounded-2xl p-4 shadow-sm border border-border/50 hover:border-primary/30 transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-primary" />
+                  </div>
                   <div className="flex-1">
-                    <p className="text-xs text-muted-foreground">{t.bookings.date}</p>
-                    <p className="font-medium text-foreground">
-                      {selectedDate && format(selectedDate, "EEEE, MMMM d", { locale: dateFnsLocale })}
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{t.bookings.date}</p>
+                    <p className="text-base font-semibold text-foreground mt-0.5">
+                      {selectedDate && format(selectedDate, "EEEE", { locale: dateFnsLocale })}
                     </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
-                  <Clock className="w-5 h-5 text-primary" />
-                  <div className="flex-1">
-                    <p className="text-xs text-muted-foreground">{t.bookings.time}</p>
-                    <p className="font-medium text-foreground">{selectedTime}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  <div className="flex-1">
-                    <p className="text-xs text-muted-foreground">{t.bookings.location}</p>
-                    <p className="font-medium text-foreground">
-                      {selectedLocation === "client_home" ? t.bookings.yourLocation : t.bookings.artistStudio}
+                    <p className="text-sm text-muted-foreground">
+                      {selectedDate && format(selectedDate, "d MMMM yyyy", { locale: dateFnsLocale })}
                     </p>
                   </div>
                 </div>
               </div>
+
+              {/* Time Card */}
+              <div className="bg-card rounded-2xl p-4 shadow-sm border border-border/50 hover:border-primary/30 transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                    <Clock className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{t.bookings.time}</p>
+                    <p className="text-base font-semibold text-foreground mt-0.5">{selectedTime}</p>
+                    {serviceInfo?.duration_minutes && (
+                      <p className="text-sm text-muted-foreground">
+                        {Math.floor(serviceInfo.duration_minutes / 60)}h {serviceInfo.duration_minutes % 60 > 0 ? `${serviceInfo.duration_minutes % 60}m` : ''}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Location Card */}
+              <div className="bg-card rounded-2xl p-4 shadow-sm border border-border/50 hover:border-primary/30 transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                    {selectedLocation === "client_home" ? (
+                      <Home className="w-6 h-6 text-primary" />
+                    ) : (
+                      <Building2 className="w-6 h-6 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{t.bookings.location}</p>
+                    <p className="text-base font-semibold text-foreground mt-0.5">
+                      {selectedLocation === "client_home" ? t.bookings.yourLocation : t.bookings.artistStudio}
+                    </p>
+                    {selectedLocation === "artist_studio" && artistInfo?.studio_address && (
+                      <p className="text-sm text-muted-foreground">{artistInfo.studio_address}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Price Summary - Premium Design */}
+            <div className="bg-gradient-to-br from-card to-muted/30 rounded-3xl p-5 shadow-lg border border-border/50">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-primary" />
+                {t.bookings.bookingSummary}
+              </h3>
               
-              <div className="border-t border-border mt-4 pt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t.bookings.serviceFee}</span>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">{serviceName}</span>
                   <span className="font-medium text-foreground">{formatQAR(actualServicePrice)}</span>
                 </div>
+                
                 {selectedLocation === "client_home" && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{t.bookings.travelFee}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">{t.bookings.travelFee}</span>
                     <span className="font-medium text-foreground">{formatQAR(travelFee)}</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 border-t border-dashed border-border">
-                  <span className="font-semibold text-foreground">{t.bookings.total}</span>
-                  <span className="text-xl font-bold text-primary">{formatQAR(totalPrice)}</span>
+                
+                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-2" />
+                
+                <div className="flex justify-between items-center pt-1">
+                  <span className="text-base font-bold text-foreground">{t.bookings.total}</span>
+                  <div className="text-end">
+                    <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                      {formatQAR(totalPrice)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Payment Method */}
-            <div className="bg-card rounded-2xl p-5 shadow-sm border border-border/50">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <CreditCard className="w-4 h-4 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground">{t.payment?.choosePaymentMethod || t.bookings.paymentMethod}</h3>
-              </div>
+            {/* Payment Method Selection */}
+            <div className="bg-card rounded-3xl p-5 shadow-sm border border-border/50">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Banknote className="w-4 h-4 text-primary" />
+                {t.payment?.choosePaymentMethod || t.bookings.paymentMethod}
+              </h3>
               
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                {/* SADAD Payment */}
                 <button
                   onClick={() => setPaymentMethod("sadad")}
                   className={`
-                    w-full p-4 rounded-xl border-2 text-start transition-all duration-200 flex items-center gap-4
+                    relative p-4 rounded-2xl border-2 text-center transition-all duration-300
                     ${paymentMethod === "sadad"
-                      ? "border-primary bg-primary/5"
+                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
                       : "border-border bg-card hover:border-primary/40"
                     }
                   `}
                 >
-                  <div className="w-14 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm">
-                    <span className="text-xs font-bold text-white">SADAD</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className={`font-medium ${paymentMethod === "sadad" ? "text-primary" : "text-foreground"}`}>
-                      {t.payment?.sadadPayment || "SADAD Payment"}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t.payment?.sadadPaymentDesc || "Pay online securely"}</p>
-                  </div>
                   {paymentMethod === "sadad" && (
-                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                      <Check className="w-4 h-4 text-white" />
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                      <Check className="w-3.5 h-3.5 text-white" />
                     </div>
                   )}
+                  <div className="w-12 h-8 mx-auto bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm mb-2">
+                    <span className="text-[10px] font-bold text-white">SADAD</span>
+                  </div>
+                  <p className={`text-sm font-medium ${paymentMethod === "sadad" ? "text-primary" : "text-foreground"}`}>
+                    {t.payment?.sadadPayment || "SADAD"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{t.payment?.sadadPaymentDesc || "Online"}</p>
                 </button>
-                
+
+                {/* Cash Payment */}
                 <button
                   onClick={() => setPaymentMethod("cash")}
                   className={`
-                    w-full p-4 rounded-xl border-2 text-start transition-all duration-200 flex items-center gap-4
+                    relative p-4 rounded-2xl border-2 text-center transition-all duration-300
                     ${paymentMethod === "cash"
-                      ? "border-primary bg-primary/5"
+                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
                       : "border-border bg-card hover:border-primary/40"
                     }
                   `}
                 >
-                  <div className="w-14 h-10 bg-muted rounded-lg flex items-center justify-center">
-                    <Banknote className="w-6 h-6 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    <p className={`font-medium ${paymentMethod === "cash" ? "text-primary" : "text-foreground"}`}>
-                      {t.payment?.cashPayment || "Cash Payment"}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t.payment?.cashPaymentDesc || "Pay at appointment"}</p>
-                  </div>
                   {paymentMethod === "cash" && (
-                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                      <Check className="w-4 h-4 text-white" />
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                      <Check className="w-3.5 h-3.5 text-white" />
                     </div>
                   )}
+                  <div className="w-12 h-8 mx-auto bg-muted rounded-lg flex items-center justify-center mb-2">
+                    <Banknote className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <p className={`text-sm font-medium ${paymentMethod === "cash" ? "text-primary" : "text-foreground"}`}>
+                    {t.payment?.cashPayment || "Cash"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{t.payment?.cashPaymentDesc || "At visit"}</p>
                 </button>
               </div>
             </div>
 
-            {/* Terms */}
-            <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-xl">
-              <Shield className="w-5 h-5 text-primary mt-0.5" />
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {t.bookings.agreeToTerms}
-              </p>
+            {/* Security Badge */}
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 rounded-2xl border border-emerald-500/20">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">{language === "ar" ? "حجز آمن" : "Secure Booking"}</p>
+                <p className="text-xs text-muted-foreground">{t.bookings.agreeToTerms}</p>
+              </div>
             </div>
           </div>
         )}
