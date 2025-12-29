@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatQAR } from "@/lib/locale";
 import { format, subDays } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 type ReportPeriod = "7days" | "30days" | "90days" | "all";
 type ReportType = "earnings" | "services" | "clients" | "performance";
@@ -22,7 +23,7 @@ type ReportType = "earnings" | "services" | "clients" | "performance";
 const ArtistReports = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t, language } = useLanguage();
+  const { t, language, isRTL } = useLanguage();
   const dateLocale = language === "ar" ? ar : enUS;
 
   const [period, setPeriod] = useState<ReportPeriod>("30days");
@@ -31,13 +32,13 @@ const ArtistReports = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-24">
-        <AppHeader title="Reports" style="modern" />
+      <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
+        <AppHeader title={t.artistReports.title} style="modern" />
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <BarChart3 className="w-16 h-16 text-muted-foreground mb-4" />
-          <h2 className="text-lg font-semibold mb-2">Sign In</h2>
-          <p className="text-muted-foreground text-center mb-4">Please sign in to view your reports</p>
-          <Button onClick={() => navigate("/auth")}>Sign In</Button>
+          <h2 className="text-lg font-semibold mb-2">{t.artistReports.signIn}</h2>
+          <p className="text-muted-foreground text-center mb-4">{t.artistReports.signInToView}</p>
+          <Button onClick={() => navigate("/auth")}>{t.artistReports.signIn}</Button>
         </div>
         <BottomNavigation />
       </div>
@@ -73,7 +74,7 @@ const ArtistReports = () => {
       const avgRevenue = completedBookings > 0 ? totalEarnings / completedBookings : 0;
 
       return {
-        totalRevenue,
+        totalRevenue: totalEarnings,
         totalBookings: completedBookings,
         avgRevenue,
         bookings: bookings || [],
@@ -87,15 +88,15 @@ const ArtistReports = () => {
   const avgRevenue = earningsData?.avgRevenue || 0;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <AppHeader title="Reports" style="modern" />
+    <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
+      <AppHeader title={t.artistReports.title} style="modern" />
 
       <div className="px-5 py-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-primary" />
             <h2 className="text-2xl font-bold text-foreground">
-              Reports
+              {t.artistReports.title}
             </h2>
           </div>
 
@@ -104,10 +105,10 @@ const ArtistReports = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7days">Last 7 Days</SelectItem>
-              <SelectItem value="30days">Last 30 Days</SelectItem>
-              <SelectItem value="90days">Last 90 Days</SelectItem>
-              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="7days">{t.artistReports.last7Days}</SelectItem>
+              <SelectItem value="30days">{t.artistReports.last30Days}</SelectItem>
+              <SelectItem value="90days">{t.artistReports.last90Days}</SelectItem>
+              <SelectItem value="all">{t.artistReports.allTime}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -116,10 +117,10 @@ const ArtistReports = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="earnings">Earnings</SelectItem>
-              <SelectItem value="services">Top Services</SelectItem>
-              <SelectItem value="clients">Customers</SelectItem>
-              <SelectItem value="performance">Analytics</SelectItem>
+              <SelectItem value="earnings">{t.artistReports.earnings}</SelectItem>
+              <SelectItem value="services">{t.artistReports.topServices}</SelectItem>
+              <SelectItem value="clients">{t.artistReports.customers}</SelectItem>
+              <SelectItem value="performance">{t.artistReports.analytics}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -136,7 +137,7 @@ const ArtistReports = () => {
                   <DollarSign className="w-7 h-7 text-green-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Total Revenue</p>
+                  <p className="text-sm text-muted-foreground">{t.artistReports.totalRevenue}</p>
                   <p className="text-3xl font-bold text-green-600">{formatQAR(totalRevenue)}</p>
                 </div>
               </div>
@@ -150,7 +151,7 @@ const ArtistReports = () => {
                   <Calendar className="w-7 h-7 text-blue-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Total Bookings</p>
+                  <p className="text-sm text-muted-foreground">{t.artistReports.totalBookings}</p>
                   <p className="text-3xl font-bold text-blue-600">{totalBookings}</p>
                 </div>
               </div>
@@ -164,7 +165,7 @@ const ArtistReports = () => {
                   <Star className="w-7 h-7 text-purple-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Average Revenue</p>
+                  <p className="text-sm text-muted-foreground">{t.artistReports.averageRevenue}</p>
                   <p className="text-3xl font-bold text-purple-600">{formatQAR(avgRevenue)}</p>
                 </div>
               </div>
@@ -178,8 +179,8 @@ const ArtistReports = () => {
                   <TrendingUp className="w-7 h-7 text-orange-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Best Day</p>
-                  <p className="text-3xl font-bold text-orange-600">Today</p>
+                  <p className="text-sm text-muted-foreground">{t.artistReports.bestDay}</p>
+                  <p className="text-3xl font-bold text-orange-600">{t.artistReports.today}</p>
                 </div>
               </div>
             </CardContent>
@@ -191,7 +192,7 @@ const ArtistReports = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-primary" />
-                Earnings Trend
+                {t.artistReports.earningsTrend}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
@@ -210,9 +211,9 @@ const ArtistReports = () => {
               ) : (
                 <div className="text-center py-12">
                   <BarChart3 className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No earnings yet</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.artistReports.noEarningsYet}</h3>
                   <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
-                    Complete your first booking to see your earnings
+                    {t.artistReports.completeFirstBooking}
                   </p>
                 </div>
               )}
@@ -220,14 +221,14 @@ const ArtistReports = () => {
           </Card>
         )}
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-6">
           <Button variant="outline" className="flex-1" onClick={() => navigate("/artist-bookings")}>
-            <Calendar className="w-4 h-4 mr-2" />
-            View Bookings
+            <Calendar className={cn("w-4 h-4", isRTL ? "ml-2" : "mr-2")} />
+            {t.artistReports.viewBookings}
           </Button>
           <Button variant="outline" className="flex-1" onClick={() => navigate("/artist-services")}>
-            <Filter className="w-4 h-4 mr-2" />
-            Manage Services
+            <Filter className={cn("w-4 h-4", isRTL ? "ml-2" : "mr-2")} />
+            {t.artistReports.manageServices}
           </Button>
         </div>
       </div>
