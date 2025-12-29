@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate } from "react-router-dom";
 import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff, Camera, Briefcase, ChevronRight, Play, Sparkles, Check } from "lucide-react";
@@ -34,6 +34,8 @@ const ArtistProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [showAllHours, setShowAllHours] = useState(false);
+  const [activeTab, setActiveTab] = useState<"services" | "reviews">("services");
+  const servicesSectionRef = useRef<HTMLDivElement | null>(null);
 
   const { data: artist, isLoading: artistLoading } = useArtist(id);
   const { data: services, isLoading: servicesLoading } = useArtistServices(id);
@@ -283,11 +285,10 @@ const ArtistProfile = () => {
                   navigate("/auth");
                   return;
                 }
-                // Scroll to services or navigate to booking
-                const servicesTab = document.querySelector('[value="services"]');
-                if (servicesTab) {
-                  (servicesTab as HTMLButtonElement).click();
-                }
+
+                setActiveTab("services");
+                // Scroll to the services section so the user can pick a service to book.
+                servicesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
             >
               {lowestPrice ? `${t.artist.bookAppointment} • QAR ${lowestPrice}+` : t.artist.bookAppointment}
@@ -390,8 +391,8 @@ const ArtistProfile = () => {
 
 
       {/* Main Tabs */}
-      <div className="px-5 mt-6">
-        <Tabs defaultValue="services" className="w-full">
+      <div ref={servicesSectionRef} className="px-5 mt-6">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "services" | "reviews")} className="w-full">
           <TabsList className="w-full bg-muted/50 p-1.5 rounded-2xl h-auto">
             <TabsTrigger
               value="services"
