@@ -171,13 +171,13 @@ const ArtistProfilePage = () => {
     return (
       <div className="min-h-screen bg-background pb-24">
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-          <h1 className="text-xl font-bold text-foreground">Profile</h1>
+          <h1 className="text-xl font-bold text-foreground">{t.artistProfile.title}</h1>
         </header>
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <Briefcase className="w-16 h-16 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">Not an Artist</h2>
-          <p className="text-muted-foreground mb-6">You don't have an artist profile yet</p>
-          <Button onClick={() => navigate("/home")}>Go Home</Button>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t.artistProfile.notAnArtist}</h2>
+          <p className="text-muted-foreground mb-6">{t.artistProfile.noArtistProfile}</p>
+          <Button onClick={() => navigate("/home")}>{t.artistProfile.goHome}</Button>
         </div>
         <BottomNavigation />
       </div>
@@ -197,10 +197,10 @@ const ArtistProfilePage = () => {
   const handleProfileSave = async () => {
     try {
       await updateProfile.mutateAsync(profileForm);
-      toast.success("Profile updated");
+      toast.success(t.artistProfile.profileUpdated);
       setEditingProfile(false);
     } catch (error) {
-      toast.error("Failed to update profile");
+      toast.error(t.artistProfile.profileUpdateFailed);
     }
   };
 
@@ -337,17 +337,17 @@ const ArtistProfilePage = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-        <h1 className="text-xl font-bold text-foreground">Profile</h1>
+        <h1 className="text-xl font-bold text-foreground">{t.artistProfile.title}</h1>
       </header>
 
       <div className="px-5 py-4 space-y-4">
         <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground">Artist Profile</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t.artistProfile.artistProfile}</h2>
             {!editingProfile && (
               <Button variant="outline" size="sm" onClick={handleProfileEdit}>
                 <Pencil className="w-4 h-4 mr-1" />
-                Edit
+                {t.artistProfile.edit}
               </Button>
             )}
           </div>
@@ -355,17 +355,17 @@ const ArtistProfilePage = () => {
           {editingProfile ? (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="bio">Bio</Label>
+                <Label htmlFor="bio">{t.artistProfile.bio}</Label>
                 <Textarea
                   id="bio"
                   value={profileForm.bio}
                   onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
-                  placeholder="Tell clients about yourself..."
+                  placeholder={t.artistProfile.tellClientsAboutYourself}
                   rows={4}
                 />
               </div>
               <div>
-                <Label htmlFor="experience">Years of Experience</Label>
+                <Label htmlFor="experience">{t.artistProfile.yearsOfExperience}</Label>
                 <Input
                   id="experience"
                   type="number"
@@ -374,16 +374,16 @@ const ArtistProfilePage = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="studio">Studio Address</Label>
+                <Label htmlFor="studio">{t.artistProfile.studioAddress}</Label>
                 <Input
                   id="studio"
                   value={profileForm.studio_address}
                   onChange={(e) => setProfileForm({ ...profileForm, studio_address: e.target.value })}
-                  placeholder="Your studio location"
+                  placeholder={t.artistProfile.yourStudioLocation}
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="available">Available for Bookings</Label>
+                <Label htmlFor="available">{t.artistProfile.availableForBookings}</Label>
                 <Switch
                   id="available"
                   checked={profileForm.is_available}
@@ -392,32 +392,32 @@ const ArtistProfilePage = () => {
               </div>
               <div className="flex gap-2 pt-2">
                 <Button variant="outline" className="flex-1" onClick={() => setEditingProfile(false)}>
-                  Cancel
+                  {t.common.cancel}
                 </Button>
                 <Button className="flex-1" onClick={handleProfileSave}>
-                  Save Changes
+                  {t.artistProfile.saveChanges}
                 </Button>
               </div>
             </div>
           ) : (
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-muted-foreground">Bio</p>
-                <p className="text-foreground mt-1">{artist.bio || "No bio added"}</p>
+                <p className="text-sm text-muted-foreground">{t.artistProfile.bio}</p>
+                <p className="text-foreground mt-1">{artist.bio || t.artistProfile.noBioAdded}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Experience</p>
-                  <p className="text-foreground mt-1">{artist.experience_years || 0} years</p>
+                  <p className="text-sm text-muted-foreground">{t.artistProfile.experience}</p>
+                  <p className="text-foreground mt-1">{artist.experience_years || 0} {t.artistProfile.years}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  <p className="text-foreground mt-1">{artist.is_available ? "Available" : "Unavailable"}</p>
+                  <p className="text-sm text-muted-foreground">{t.artistProfile.status}</p>
+                  <p className="text-foreground mt-1">{artist.is_available ? t.artistProfile.available : t.artistProfile.unavailable}</p>
                 </div>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Studio Address</p>
-                <p className="text-foreground mt-1">{artist.studio_address || "Not set"}</p>
+                <p className="text-sm text-muted-foreground">{t.artistProfile.studioAddress}</p>
+                <p className="text-foreground mt-1">{artist.studio_address || t.artistProfile.notSet}</p>
               </div>
             </div>
           )}
@@ -426,7 +426,7 @@ const ArtistProfilePage = () => {
         {/* Reviews Section */}
         <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground">Reviews</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t.artistProfile.reviews}</h2>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Star className="w-4 h-4 fill-primary text-primary" />
               <span>{artist.rating?.toFixed(1) || "0.0"}</span>
@@ -443,8 +443,8 @@ const ArtistProfilePage = () => {
           ) : reviews.length === 0 ? (
             <div className="text-center py-8">
               <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No reviews yet</p>
-              <p className="text-sm text-muted-foreground mt-1">Complete bookings to receive reviews</p>
+              <p className="text-muted-foreground">{t.artistProfile.noReviews}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t.artistProfile.completeBookingsForReviews}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -491,14 +491,14 @@ const ArtistProfilePage = () => {
 
         {/* Account Info */}
         <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Account Info</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{t.artistProfile.accountInfo}</h2>
           <div className="space-y-3">
             <div>
-              <p className="text-sm text-muted-foreground">Name</p>
-              <p className="text-foreground">{profile?.full_name || "Not set"}</p>
+              <p className="text-sm text-muted-foreground">{t.artistProfile.name}</p>
+              <p className="text-foreground">{profile?.full_name || t.artistProfile.notSet}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Email</p>
+              <p className="text-sm text-muted-foreground">{t.artistProfile.email}</p>
               <p className="text-foreground">{profile?.email || user?.email}</p>
             </div>
             <div>

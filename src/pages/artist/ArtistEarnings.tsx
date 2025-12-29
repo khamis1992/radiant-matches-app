@@ -70,15 +70,15 @@ const ArtistEarnings = () => {
 
   if (!user || !artist) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-          <h1 className="text-xl font-bold text-foreground">Earnings</h1>
+          <h1 className="text-xl font-bold text-foreground">{t.earnings.title}</h1>
         </header>
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <Briefcase className="w-16 h-16 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">Not an Artist</h2>
-          <p className="text-muted-foreground mb-6">You don't have an artist profile yet</p>
-          <Button onClick={() => navigate("/home")}>Go Home</Button>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t.artistProfile.notAnArtist}</h2>
+          <p className="text-muted-foreground mb-6">{t.artistProfile.noArtistProfile}</p>
+          <Button onClick={() => navigate("/home")}>{t.artistProfile.goHome}</Button>
         </div>
         <BottomNavigation />
       </div>
