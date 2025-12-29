@@ -32,12 +32,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Search, Filter, Scissors, Edit2, Clock, Loader2 } from "lucide-react";
-import { format } from "date-fns";
-import { ar, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 const AdminServices = () => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const { services, isLoading, toggleServiceStatus, updateServicePrice, isUpdating } = useAdminServices();
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,7 +44,6 @@ const AdminServices = () => {
   const [editingService, setEditingService] = useState<{ id: string; price: number } | null>(null);
   const [newPrice, setNewPrice] = useState("");
 
-  // Get unique categories for filter
   const uniqueCategories = useMemo(() => {
     const categories = new Set<string>();
     services.forEach((service) => {
@@ -57,21 +54,15 @@ const AdminServices = () => {
 
   const filteredServices = useMemo(() => {
     return services.filter((service) => {
-      // Search filter
       const matchesSearch =
         service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         service.artist_profile?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         service.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Category filter
       const matchesCategory = categoryFilter === "all" || service.category === categoryFilter;
-      
-      // Status filter
       const matchesStatus =
         statusFilter === "all" ||
         (statusFilter === "active" && service.is_active) ||
         (statusFilter === "inactive" && !service.is_active);
-      
       return matchesSearch && matchesCategory && matchesStatus;
     });
   }, [services, searchQuery, categoryFilter, statusFilter]);
@@ -101,72 +92,67 @@ const AdminServices = () => {
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
-      <main className="mr-64 p-6">
+      <main className={cn("p-6", isRTL ? "mr-64" : "ml-64")}>
         <div className="max-w-6xl mx-auto space-y-6">
-          {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Scissors className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">إدارة الخدمات</h1>
+                <h1 className="text-2xl font-bold">{t.adminServices.title}</h1>
                 <p className="text-muted-foreground text-sm">
-                  {services.length} خدمة • {activeCount} نشطة
+                  {services.length} {t.adminServices.serviceCount} • {activeCount} {t.adminServices.active}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Filters */}
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Filter className="h-5 w-5" />
-                البحث والفلترة
+                {t.adminServices.searchAndFilter}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="relative">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", isRTL ? "right-3" : "left-3")} />
                   <Input
-                    placeholder="البحث في الخدمات..."
+                    placeholder={t.adminServices.searchPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pr-10"
+                    className={isRTL ? "pr-10" : "pl-10"}
                   />
                 </div>
                 
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="الفئة" />
+                    <SelectValue placeholder={t.adminServices.category} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">جميع الفئات</SelectItem>
+                    <SelectItem value="all">{t.adminServices.allCategories}</SelectItem>
                     {uniqueCategories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="الحالة" />
+                    <SelectValue placeholder={t.adminServices.status} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">جميع الحالات</SelectItem>
-                    <SelectItem value="active">نشطة</SelectItem>
-                    <SelectItem value="inactive">معطلة</SelectItem>
+                    <SelectItem value="all">{t.adminServices.allStatuses}</SelectItem>
+                    <SelectItem value="active">{t.adminServices.activeStatus}</SelectItem>
+                    <SelectItem value="inactive">{t.adminServices.inactiveStatus}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </CardContent>
           </Card>
 
-          {/* Services Table */}
           <Card>
             <CardContent className="p-0">
               {filteredServices.length === 0 ? (
@@ -174,24 +160,24 @@ const AdminServices = () => {
                   <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
                     <Scissors className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="font-medium text-lg mb-2">لا توجد خدمات</h3>
+                  <h3 className="font-medium text-lg mb-2">{t.adminServices.noServices}</h3>
                   <p className="text-muted-foreground text-sm max-w-sm">
                     {searchQuery || categoryFilter !== "all" || statusFilter !== "all"
-                      ? "لا توجد نتائج تطابق معايير البحث"
-                      : "ستظهر الخدمات هنا عند إضافتها"}
+                      ? t.adminServices.noResultsMessage
+                      : t.adminServices.servicesWillAppear}
                   </p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right">الخدمة</TableHead>
-                      <TableHead className="text-right">الفنانة</TableHead>
-                      <TableHead className="text-right w-28">الفئة</TableHead>
-                      <TableHead className="text-right w-24">السعر</TableHead>
-                      <TableHead className="text-right w-24">المدة</TableHead>
-                      <TableHead className="text-right w-24">الحالة</TableHead>
-                      <TableHead className="text-right w-24">إجراءات</TableHead>
+                      <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminServices.service}</TableHead>
+                      <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminServices.artist}</TableHead>
+                      <TableHead className={cn("w-28", isRTL ? "text-right" : "text-left")}>{t.adminServices.category}</TableHead>
+                      <TableHead className={cn("w-24", isRTL ? "text-right" : "text-left")}>{t.adminServices.price}</TableHead>
+                      <TableHead className={cn("w-24", isRTL ? "text-right" : "text-left")}>{t.adminServices.duration}</TableHead>
+                      <TableHead className={cn("w-24", isRTL ? "text-right" : "text-left")}>{t.adminServices.status}</TableHead>
+                      <TableHead className={cn("w-24", isRTL ? "text-right" : "text-left")}>{t.adminServices.actions}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -201,37 +187,25 @@ const AdminServices = () => {
                           <div>
                             <p className="font-medium">{service.name}</p>
                             {service.description && (
-                              <p className="text-sm text-muted-foreground truncate max-w-xs">
-                                {service.description}
-                              </p>
+                              <p className="text-sm text-muted-foreground truncate max-w-xs">{service.description}</p>
                             )}
                           </div>
                         </TableCell>
+                        <TableCell>{service.artist_profile?.full_name || t.adminServices.artist}</TableCell>
                         <TableCell>
-                          {service.artist_profile?.full_name || "فنانة"}
+                          {service.category ? <Badge variant="secondary">{service.category}</Badge> : "-"}
                         </TableCell>
-                        <TableCell>
-                          {service.category ? (
-                            <Badge variant="secondary">{service.category}</Badge>
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {service.price} ر.ق
-                        </TableCell>
+                        <TableCell className="font-medium">{service.price} {isRTL ? "ر.ق" : "QAR"}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <Clock className="h-4 w-4" />
-                            {service.duration_minutes} د
+                            {service.duration_minutes} {t.adminServices.min}
                           </div>
                         </TableCell>
                         <TableCell>
                           <Switch
                             checked={service.is_active || false}
-                            onCheckedChange={(checked) =>
-                              toggleServiceStatus({ serviceId: service.id, isActive: checked })
-                            }
+                            onCheckedChange={(checked) => toggleServiceStatus({ serviceId: service.id, isActive: checked })}
                             disabled={isUpdating}
                           />
                         </TableCell>
@@ -257,17 +231,14 @@ const AdminServices = () => {
         </div>
       </main>
 
-      {/* Edit Price Dialog */}
       <Dialog open={!!editingService} onOpenChange={() => setEditingService(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تعديل السعر</DialogTitle>
-            <DialogDescription>
-              أدخل السعر الجديد للخدمة
-            </DialogDescription>
+            <DialogTitle>{t.adminServices.editPrice}</DialogTitle>
+            <DialogDescription>{t.adminServices.enterNewPrice}</DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label htmlFor="price">السعر (ر.ق)</Label>
+            <Label htmlFor="price">{t.adminServices.priceLabel}</Label>
             <Input
               id="price"
               type="number"
@@ -279,12 +250,8 @@ const AdminServices = () => {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingService(null)}>
-              إلغاء
-            </Button>
-            <Button onClick={handlePriceUpdate} disabled={!newPrice || isUpdating}>
-              حفظ
-            </Button>
+            <Button variant="outline" onClick={() => setEditingService(null)}>{t.common.cancel}</Button>
+            <Button onClick={handlePriceUpdate} disabled={!newPrice || isUpdating}>{t.common.save}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

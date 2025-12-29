@@ -41,12 +41,12 @@ import { cn } from "@/lib/utils";
 const AdminReviews = () => {
   const { t, isRTL, language } = useLanguage();
   const { reviews, isLoading, deleteReview, isDeleting } = useAdminReviews();
+  const dateLocale = language === "ar" ? ar : enUS;
   
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
   const [artistFilter, setArtistFilter] = useState<string>("all");
 
-  // Get unique artists for filter
   const uniqueArtists = useMemo(() => {
     const artists = new Map<string, string>();
     reviews.forEach((review) => {
@@ -59,36 +59,26 @@ const AdminReviews = () => {
 
   const filteredReviews = useMemo(() => {
     return reviews.filter((review) => {
-      // Search filter
       const matchesSearch =
         review.comment?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         review.customer_profile?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         review.artist_profile?.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Rating filter
       const matchesRating = ratingFilter === "all" || review.rating === parseInt(ratingFilter);
-      
-      // Artist filter
       const matchesArtist = artistFilter === "all" || review.artist_id === artistFilter;
-      
       return matchesSearch && matchesRating && matchesArtist;
     });
   }, [reviews, searchQuery, ratingFilter, artistFilter]);
 
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex items-center gap-0.5">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`h-4 w-4 ${
-              star <= rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
-            }`}
-          />
-        ))}
-      </div>
-    );
-  };
+  const renderStars = (rating: number) => (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={`h-4 w-4 ${star <= rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
+        />
+      ))}
+    </div>
+  );
 
   const avgRating = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
@@ -111,65 +101,61 @@ const AdminReviews = () => {
       
       <main className={cn("p-6", isRTL ? "mr-64" : "ml-64")}>
         <div className="max-w-6xl mx-auto space-y-6">
-          {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Star className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">إدارة المراجعات</h1>
+                <h1 className="text-2xl font-bold">{t.adminReviews.title}</h1>
                 <p className="text-muted-foreground text-sm">
-                  {reviews.length} مراجعة • متوسط التقييم {avgRating}
+                  {reviews.length} {t.adminReviews.reviewCount} • {t.adminReviews.avgRating} {avgRating}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Filters */}
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Filter className="h-5 w-5" />
-                البحث والفلترة
+                {t.adminReviews.searchAndFilter}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="relative">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", isRTL ? "right-3" : "left-3")} />
                   <Input
-                    placeholder="البحث في المراجعات..."
+                    placeholder={t.adminReviews.searchPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pr-10"
+                    className={isRTL ? "pr-10" : "pl-10"}
                   />
                 </div>
                 
                 <Select value={ratingFilter} onValueChange={setRatingFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="التقييم" />
+                    <SelectValue placeholder={t.adminReviews.rating} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">جميع التقييمات</SelectItem>
-                    <SelectItem value="5">5 نجوم</SelectItem>
-                    <SelectItem value="4">4 نجوم</SelectItem>
-                    <SelectItem value="3">3 نجوم</SelectItem>
-                    <SelectItem value="2">2 نجمتان</SelectItem>
-                    <SelectItem value="1">نجمة واحدة</SelectItem>
+                    <SelectItem value="all">{t.adminReviews.allRatings}</SelectItem>
+                    <SelectItem value="5">5 {t.adminReviews.stars}</SelectItem>
+                    <SelectItem value="4">4 {t.adminReviews.stars}</SelectItem>
+                    <SelectItem value="3">3 {t.adminReviews.stars}</SelectItem>
+                    <SelectItem value="2">2 {t.adminReviews.stars}</SelectItem>
+                    <SelectItem value="1">1 {t.adminReviews.star}</SelectItem>
                   </SelectContent>
                 </Select>
                 
                 <Select value={artistFilter} onValueChange={setArtistFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="الفنانة" />
+                    <SelectValue placeholder={t.adminReviews.artistFilter} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">جميع الفنانات</SelectItem>
+                    <SelectItem value="all">{t.adminReviews.allArtists}</SelectItem>
                     {uniqueArtists.map(([id, name]) => (
-                      <SelectItem key={id} value={id}>
-                        {name}
-                      </SelectItem>
+                      <SelectItem key={id} value={id}>{name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -177,7 +163,6 @@ const AdminReviews = () => {
             </CardContent>
           </Card>
 
-          {/* Reviews Table */}
           <Card>
             <CardContent className="p-0">
               {filteredReviews.length === 0 ? (
@@ -185,23 +170,23 @@ const AdminReviews = () => {
                   <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
                     <Star className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="font-medium text-lg mb-2">لا توجد مراجعات</h3>
+                  <h3 className="font-medium text-lg mb-2">{t.adminReviews.noReviews}</h3>
                   <p className="text-muted-foreground text-sm max-w-sm">
                     {searchQuery || ratingFilter !== "all" || artistFilter !== "all"
-                      ? "لا توجد نتائج تطابق معايير البحث"
-                      : "ستظهر المراجعات هنا عند إضافتها"}
+                      ? t.adminReviews.noResultsMessage
+                      : t.adminReviews.reviewsWillAppear}
                   </p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right">العميل</TableHead>
-                      <TableHead className="text-right">الفنانة</TableHead>
-                      <TableHead className="text-right w-32">التقييم</TableHead>
-                      <TableHead className="text-right">التعليق</TableHead>
-                      <TableHead className="text-right w-40">التاريخ</TableHead>
-                      <TableHead className="text-right w-24">إجراءات</TableHead>
+                      <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminReviews.customer}</TableHead>
+                      <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminReviews.artist}</TableHead>
+                      <TableHead className={cn("w-32", isRTL ? "text-right" : "text-left")}>{t.adminReviews.rating}</TableHead>
+                      <TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminReviews.comment}</TableHead>
+                      <TableHead className={cn("w-40", isRTL ? "text-right" : "text-left")}>{t.adminReviews.date}</TableHead>
+                      <TableHead className={cn("w-24", isRTL ? "text-right" : "text-left")}>{t.adminReviews.actions}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -211,53 +196,36 @@ const AdminReviews = () => {
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                               <AvatarImage src={review.customer_profile?.avatar_url || ""} />
-                              <AvatarFallback>
-                                <User className="h-4 w-4" />
-                              </AvatarFallback>
+                              <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
                             </Avatar>
-                            <span className="font-medium">
-                              {review.customer_profile?.full_name || "عميل"}
-                            </span>
+                            <span className="font-medium">{review.customer_profile?.full_name || t.adminReviews.customer}</span>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          {review.artist_profile?.full_name || "فنانة"}
-                        </TableCell>
+                        <TableCell>{review.artist_profile?.full_name || t.adminReviews.artist}</TableCell>
                         <TableCell>{renderStars(review.rating)}</TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {review.comment || "-"}
-                        </TableCell>
+                        <TableCell className="max-w-xs truncate">{review.comment || "-"}</TableCell>
                         <TableCell className="text-muted-foreground">
-                          {format(new Date(review.created_at), "dd MMM yyyy", {
-                            locale: ar,
-                          })}
+                          {format(new Date(review.created_at), "dd MMM yyyy", { locale: dateLocale })}
                         </TableCell>
                         <TableCell>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-destructive hover:text-destructive"
-                                disabled={isDeleting}
-                              >
+                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={isDeleting}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>حذف المراجعة</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  هل أنت متأكد من حذف هذه المراجعة؟ لا يمكن التراجع عن هذا الإجراء.
-                                </AlertDialogDescription>
+                                <AlertDialogTitle>{t.adminReviews.deleteConfirmTitle}</AlertDialogTitle>
+                                <AlertDialogDescription>{t.adminReviews.deleteConfirmDesc}</AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => deleteReview(review.id)}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
-                                  حذف
+                                  {t.common.delete}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
