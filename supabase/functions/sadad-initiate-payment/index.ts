@@ -95,6 +95,12 @@ async function generateChecksumFromString(jsonStr: string, key: string): Promise
   return checksum;
 }
 
+// PHP's json_encode escapes forward slashes by default, which affects the checksum string.
+// SADAD docs for Web Checkout 2.1 use json_encode(), so we mimic that behavior here.
+function phpJsonEncode(value: unknown): string {
+  return JSON.stringify(value).replace(/\//g, "\\/");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -199,6 +205,7 @@ serve(async (req) => {
       SADAD_WEBCHECKOUT_PAGE_LANGUAGE: "ENG",
       CALLBACK_URL: callbackUrl,
       txnDate: txnDate,
+      VERSION: "1.1",
       // productdetail structure as per PHP documentation
       productdetail: [
         {
@@ -206,9 +213,9 @@ serve(async (req) => {
           itemname: serviceName,
           amount: amount,
           quantity: "1",
-          type: "line_item"
-        }
-      ]
+          type: "line_item",
+        },
+      ],
     };
 
     // Checksum generation (Web Checkout 2.1)
@@ -221,7 +228,7 @@ serve(async (req) => {
     };
 
     const checksumKey = secretKey + merchantId;
-    const jsonForChecksum = JSON.stringify(checksumData);
+    const jsonForChecksum = phpJsonEncode(checksumData);
 
     console.log("Checksum JSON:", jsonForChecksum);
     console.log("Checksum Key (first 10 chars):", checksumKey.substring(0, 10) + "...");
