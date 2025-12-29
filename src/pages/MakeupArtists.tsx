@@ -136,14 +136,16 @@ const MakeupArtists = () => {
     return categoryMap[category];
   };
 
-  // Update URL when category changes
+  // Update URL when category changes (preserve search param)
   const handleCategoryChange = (category: ServiceCategory | null) => {
     setSelectedCategory(category);
+    const newParams = new URLSearchParams(searchParams);
     if (category) {
-      setSearchParams({ category });
+      newParams.set("category", category);
     } else {
-      setSearchParams({});
+      newParams.delete("category");
     }
+    setSearchParams(newParams);
   };
 
   // Save search to history
