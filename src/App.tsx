@@ -49,6 +49,8 @@ import ArtistSignup from "./pages/ArtistSignup";
 import CompareArtists from "./pages/CompareArtists";
 import Referrals from "./pages/Referrals";
 import Wallet from "./pages/Wallet";
+import { InstallAppPrompt } from "./components/InstallAppPrompt";
+import { AnalyticsProvider } from "./hooks/useAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +61,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <NotificationPrompt />
+      <InstallAppPrompt />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Onboarding />} />
@@ -212,9 +215,25 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <AnalyticsTracker />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
+
+// Analytics tracker component (must be inside BrowserRouter)
+const AnalyticsTracker = () => {
+  const location = React.useMemo(() => window.location, []);
+  
+  React.useEffect(() => {
+    // Initialize analytics
+    import("./lib/analytics").then(({ initGA, trackPageView }) => {
+      initGA();
+      trackPageView(window.location.pathname);
+    });
+  }, []);
+  
+  return null;
+};
 
 export default App;

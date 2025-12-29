@@ -891,6 +891,43 @@ export const ar = {
     verify: "تحقق وتفعيل",
     invalidCode: "الرجاء إدخال رمز مكون من 6 أرقام",
   },
+
+  // Biometric Authentication
+  biometric: {
+    title: "تسجيل الدخول بالبصمة",
+    description: "استخدم بصمة الإصبع أو Face ID لتسجيل الدخول بسرعة",
+    enabled: "مفعّل",
+    disabled: "معطّل",
+    notSupported: "البصمة غير مدعومة",
+    notSupportedDesc: "جهازك لا يدعم المصادقة البيومترية.",
+    registeredDevices: "الأجهزة المسجلة",
+    addedOn: "تمت الإضافة",
+    lastUsed: "آخر استخدام",
+    addDevice: "إضافة جهاز آخر",
+    enableBiometric: "تفعيل تسجيل الدخول بالبصمة",
+    infoText: "بياناتك البيومترية لا تغادر جهازك. نحن نخزن مفتاحاً آمناً فقط.",
+    setupTitle: "إعداد تسجيل الدخول بالبصمة",
+    setupDesc: "استخدم بصمتك أو وجهك لتسجيل الدخول بسرعة.",
+    deviceName: "اسم الجهاز",
+    deviceNamePlaceholder: "مثل: iPhone 15, MacBook Pro",
+    deviceNameHelp: "أعطِ هذا الجهاز اسماً لتتعرف عليه لاحقاً.",
+    readyToSetup: "جاهز للإعداد",
+    setupInstructions: "عند النقر على الزر، سيطلب منك جهازك التحقق من هويتك.",
+    registering: "جاري التسجيل...",
+    register: "تسجيل البصمة",
+  },
+
+  // PWA
+  pwa: {
+    installTitle: "تثبيت Radiant Matches",
+    installDesc: "أضف التطبيق إلى شاشتك الرئيسية للوصول السريع والعمل بدون إنترنت.",
+    install: "تثبيت",
+    notNow: "ليس الآن",
+    updateAvailable: "تحديث متاح",
+    updateDesc: "إصدار جديد جاهز للتثبيت",
+    update: "تحديث",
+    offline: "أنت غير متصل بالإنترنت. بعض الميزات قد تكون غير متاحة.",
+  },
 };
 
 export type TranslationKeys = typeof ar;
