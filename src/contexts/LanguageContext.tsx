@@ -1,4 +1,7 @@
-// Language context for multi-language support
+/**
+ * Language context for multi-language support
+ * Provides translation and RTL support across the application
+ */
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { translations, Language, TranslationKeys, isRTL, languageNames } from "@/lib/translations";
 
