@@ -3,6 +3,7 @@ import { Settings, Heart, MessageCircle, HelpCircle, LogOut, ChevronRight, Chevr
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile, useProfileStats } from "@/hooks/useProfile";
+import { useWallet } from "@/hooks/useWallet";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentArtist } from "@/hooks/useArtistDashboard";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -26,6 +27,7 @@ const Profile = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: stats, isLoading: statsLoading } = useProfileStats();
+  const { balance, balanceLoading } = useWallet();
   const { data: artist } = useCurrentArtist();
   const { role } = useUserRole();
   const { t, isRTL } = useLanguage();
@@ -111,8 +113,33 @@ const Profile = () => {
         </div>
       </header>
 
+      {/* Wallet Balance */}
+      <div className="px-5 -mt-6 mb-3">
+        <button 
+          onClick={() => navigate("/wallet")}
+          className="w-full bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-4 shadow-md hover:opacity-90 transition-opacity"
+        >
+          <div className="flex items-center justify-between">
+            <div className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}>
+              <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                <Wallet className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div className={isRTL ? "text-right" : "text-left"}>
+                <p className="text-xs text-primary-foreground/80">{t.profile.wallet}</p>
+                {balanceLoading ? (
+                  <Skeleton className="h-6 w-20 bg-primary-foreground/20" />
+                ) : (
+                  <p className="text-xl font-bold text-primary-foreground">{balance} QAR</p>
+                )}
+              </div>
+            </div>
+            <ChevronIcon className="w-5 h-5 text-primary-foreground" />
+          </div>
+        </button>
+      </div>
+
       {/* Stats */}
-      <div className="px-5 -mt-6">
+      <div className="px-5">
         <div className="bg-card rounded-2xl border border-border p-4 shadow-md">
           <div className={`grid grid-cols-3 ${isRTL ? "divide-x-reverse" : ""} divide-x divide-border`}>
             <div className="text-center">
