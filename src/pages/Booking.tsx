@@ -606,9 +606,9 @@ const Booking = () => {
                 {/* Price */}
                 <div className="text-end flex-shrink-0">
                   <p className="text-lg font-bold text-primary">{formatQAR(actualServicePrice)}</p>
-                  {artistInfo?.rating && artistInfo.rating > 0 && (
+                  {artistInfo?.rating && artistInfo.rating > 0 && artistInfo.total_reviews && artistInfo.total_reviews > 0 && (
                     <p className="text-xs text-muted-foreground">
-                      {artistInfo.rating.toFixed(1)} ({artistInfo.total_reviews || 0})
+                      {artistInfo.rating.toFixed(1)} ({artistInfo.total_reviews})
                     </p>
                   )}
                 </div>
