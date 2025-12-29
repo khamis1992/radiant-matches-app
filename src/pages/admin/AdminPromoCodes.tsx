@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Navigate } from "react-router-dom";
 import { 
   usePromoCodes, 
@@ -50,11 +51,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2, Copy, Check } from "lucide-react";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const AdminPromoCodes = () => {
   const { role, loading: roleLoading } = useUserRole();
+  const { t, isRTL, language } = useLanguage();
   const { data: promoCodes, isLoading } = usePromoCodes();
   const createPromoCode = useCreatePromoCode();
   const deletePromoCode = useDeletePromoCode();

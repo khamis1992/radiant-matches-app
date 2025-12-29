@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useAdminServices } from "@/hooks/useAdminServices";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,9 +33,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Search, Filter, Scissors, Edit2, Clock, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const AdminServices = () => {
+  const { t, isRTL, language } = useLanguage();
   const { services, isLoading, toggleServiceStatus, updateServicePrice, isUpdating } = useAdminServices();
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,9 +88,9 @@ const AdminServices = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background" dir="rtl">
+      <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
         <AdminSidebar />
-        <main className="mr-64 p-6 flex items-center justify-center min-h-screen">
+        <main className={cn("p-6 flex items-center justify-center min-h-screen", isRTL ? "mr-64" : "ml-64")}>
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </main>
       </div>
@@ -95,7 +98,7 @@ const AdminServices = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
       <main className="mr-64 p-6">

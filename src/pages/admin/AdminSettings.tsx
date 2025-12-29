@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { usePlatformSettings, useUpdatePlatformSettings } from "@/hooks/useAdminSettings";
 import { Navigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,9 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Settings, Percent, Clock, Phone, Mail, Building } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const AdminSettings = () => {
   const { role, loading: roleLoading } = useUserRole();
+  const { t, isRTL } = useLanguage();
   const { data: settings, isLoading } = usePlatformSettings();
   const updateSettings = useUpdatePlatformSettings();
 
@@ -62,19 +65,19 @@ const AdminSettings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
 
-      <main className="mr-64 p-8">
+      <main className={cn("p-8", isRTL ? "mr-64" : "ml-64")}>
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
               <Settings className="h-8 w-8" />
-              إعدادات المنصة
+              {t.adminNav.settings}
             </h1>
             <p className="text-muted-foreground mt-1">
-              إدارة إعدادات المنصة العامة
+              {isRTL ? "إدارة إعدادات المنصة العامة" : "Manage platform settings"}
             </p>
           </div>
 

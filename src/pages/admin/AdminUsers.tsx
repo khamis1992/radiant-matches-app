@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useAdminUsers, useUpdateUserRole } from "@/hooks/useAdminUsers";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Navigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,19 +18,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, MoreVertical, Shield, Palette, Key, Eye, EyeOff, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 
 const roleLabels: Record<string, string> = { admin: "مدير", artist: "فنانة", customer: "عميل" };
 const roleColors: Record<string, string> = { admin: "bg-purple-100 text-purple-800", artist: "bg-pink-100 text-pink-800", customer: "bg-blue-100 text-blue-800" };
 
 const AdminUsers = () => {
   const { role, loading: roleLoading } = useUserRole();
+  const { t, isRTL, language } = useLanguage();
   const [search, setSearch] = useState("");
   const { data: users, isLoading } = useAdminUsers(search);
   const updateRole = useUpdateUserRole();
   const queryClient = useQueryClient();
+  const dateLocale = language === "ar" ? ar : enUS;
   
   const [passwordDialog, setPasswordDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
@@ -180,15 +184,15 @@ const AdminUsers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
-      <main className="mr-64 p-8">
+      <main className={cn("p-8", isRTL ? "mr-64" : "ml-64")}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <div><h1 className="text-3xl font-bold text-foreground">إدارة المستخدمين</h1><p className="text-muted-foreground mt-1">{users?.length || 0} مستخدم</p></div>
+            <div><h1 className="text-3xl font-bold text-foreground">{t.adminNav.users}</h1><p className="text-muted-foreground mt-1">{users?.length || 0} {isRTL ? "مستخدم" : "users"}</p></div>
             <div className="flex items-center gap-4">
-              <div className="relative w-72"><Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="البحث..." value={search} onChange={(e) => setSearch(e.target.value)} className="pr-10" /></div>
-              <Button onClick={() => setAddUserDialog(true)}><UserPlus className="h-4 w-4 ml-2" />إضافة مستخدم</Button>
+              <div className="relative w-72"><Search className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", isRTL ? "right-3" : "left-3")} /><Input placeholder={isRTL ? "البحث..." : "Search..."} value={search} onChange={(e) => setSearch(e.target.value)} className={isRTL ? "pr-10" : "pl-10"} /></div>
+              <Button onClick={() => setAddUserDialog(true)}><UserPlus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{isRTL ? "إضافة مستخدم" : "Add User"}</Button>
             </div>
           </div>
           <div className="bg-card rounded-xl border border-border">

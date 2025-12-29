@@ -4,6 +4,7 @@ import { StatsCard } from "@/components/admin/StatsCard";
 import { useAdminStats, useRecentBookings, useMonthlyRevenue } from "@/hooks/useAdminStats";
 import { useTopServices, useTopArtists, DateRange } from "@/hooks/useAdvancedReports";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Navigate } from "react-router-dom";
 import {
   Users,
@@ -48,7 +49,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { exportToCSV } from "@/lib/csvExport";
 import { exportTopServicesToPDF, exportTopArtistsToPDF } from "@/lib/pdfExport";
@@ -69,9 +70,12 @@ const statusLabels: Record<string, string> = {
 
 const AdminDashboard = () => {
   const { role, loading: roleLoading } = useUserRole();
+  const { t, isRTL, language } = useLanguage();
   const { data: stats, isLoading: statsLoading } = useAdminStats();
   const { data: recentBookings, isLoading: bookingsLoading } = useRecentBookings(5);
   const { data: monthlyRevenue, isLoading: revenueLoading } = useMonthlyRevenue();
+  
+  const dateLocale = language === "ar" ? ar : enUS;
 
   // Date range state for advanced reports
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -180,16 +184,16 @@ const AdminDashboard = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
 
-      <main className="mr-64 p-8">
+      <main className={cn("p-8", isRTL ? "mr-64" : "ml-64")}>
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">لوحة التحكم</h1>
+            <h1 className="text-3xl font-bold text-foreground">{t.adminNav.dashboard}</h1>
             <p className="text-muted-foreground mt-1">
-              مرحباً بك في لوحة إدارة المنصة
+              {isRTL ? "مرحباً بك في لوحة إدارة المنصة" : "Welcome to the platform admin panel"}
             </p>
           </div>
 

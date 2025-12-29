@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,7 +42,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink, Eye, CalendarIcon, Clock } from "lucide-react";
 import { useAdminBanners } from "@/hooks/useAdminBanners";
 import { format, isAfter, isBefore } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import {
   DndContext,
@@ -338,10 +339,12 @@ const AdminBanners = () => {
     }
   };
 
+  const { t, isRTL, language } = useLanguage();
+  
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
-      <main className="mr-64 p-6">
+      <main className={cn("p-6", isRTL ? "mr-64" : "ml-64")}>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">إدارة البنرات الإعلانية</h1>

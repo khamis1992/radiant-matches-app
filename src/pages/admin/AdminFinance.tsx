@@ -1,5 +1,6 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Navigate } from "react-router-dom";
 import { useAdminFinance, useTransactions, useArtistPayouts } from "@/hooks/useAdminFinance";
 import { StatsCard } from "@/components/admin/StatsCard";
@@ -26,7 +27,7 @@ import {
   FileDown,
 } from "lucide-react";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
 import {
   AreaChart,
   Area,
@@ -42,9 +43,11 @@ import {
 import { exportToCSV } from "@/lib/csvExport";
 import { exportTransactionsToPDF, exportArtistPayoutsToPDF } from "@/lib/pdfExport";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const AdminFinance = () => {
   const { role, loading: roleLoading } = useUserRole();
+  const { t, isRTL, language } = useLanguage();
   const { data: stats, isLoading: statsLoading } = useAdminFinance();
   const { data: transactions, isLoading: transactionsLoading } = useTransactions(20);
   const { data: artistPayouts, isLoading: payoutsLoading } = useArtistPayouts();
