@@ -1,20 +1,32 @@
+import { Loader2, Users } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 interface TypingIndicatorProps {
-  typingText: string;
+  typingUsers?: string[];
+  userNames?: Map<string, string>;
 }
 
-const TypingIndicator = ({ typingText }: TypingIndicatorProps) => {
+export const TypingIndicator = ({ typingUsers = [], userNames = new Map() }: TypingIndicatorProps) => {
+  const { t, isRTL } = useLanguage();
+
+  if (typingUsers.length === 0) return null;
+
+  const getTypingText = () => {
+    if (typingUsers.length === 0) return "";
+    if (typingUsers.length === 1) {
+      const userName = userNames.get(typingUsers[0]) || t.messages.someoneTyping;
+      return isRTL ? `${userName} ${t.messages.typingNow}` : `${t.messages.someoneTyping} ${userName}`;
+    }
+    if (typingUsers.length <= 3) {
+      return isRTL ? t.messages.multipleTyping : t.messages.typing;
+    }
+    return isRTL ? t.messages.multipleTyping : t.messages.typing;
+  };
+
   return (
-    <div className="flex justify-start">
-      <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-2.5 flex items-center gap-2">
-        <div className="flex gap-1">
-          <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:0ms]" />
-          <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:150ms]" />
-          <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:300ms]" />
-        </div>
-        <span className="text-xs text-muted-foreground">{typingText}</span>
-      </div>
+    <div className="flex items-center gap-2 text-sm text-muted-foreground py-2 px-4 bg-accent/50 rounded-lg animate-pulse">
+      <Loader2 className="w-4 h-4 animate-spin" />
+      <span>{getTypingText()}</span>
     </div>
   );
 };
-
-export default TypingIndicator;

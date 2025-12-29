@@ -22,6 +22,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDistanceToNow, format, isAfter, startOfToday } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUserRole } from "@/hooks/useUserRole";
+import HelpfulReviewButton from "@/components/HelpfulReviewButton";
+import ReportReviewDialog from "@/components/ReportReviewDialog";
+import ReviewReplyForm from "@/components/ReviewReplyForm";
 
 import artist1 from "@/assets/artist-1.jpg";
 
@@ -42,6 +47,12 @@ const ArtistProfile = () => {
   const { getOrCreateConversation } = useConversations();
   const { user } = useAuth();
   const { t, language } = useLanguage();
+  const { isArtist } = useUserRole();
+  const queryClient = useQueryClient();
+
+  // Review filtering and sorting
+  const [reviewFilter, setReviewFilter] = useState<"all" | "photos">("all");
+  const [reviewSort, setReviewSort] = useState<"newest" | "highest">("newest");
   
   // Filter to only show upcoming blocked dates
   const upcomingBlockedDates = blockedDates.filter(bd => 
@@ -462,22 +473,149 @@ const ArtistProfile = () => {
           </TabsContent>
 
           <TabsContent value="reviews" className="mt-4 space-y-3">
+            {/* Review Filters & Sorting */}
+            <div className="flex flex-wrap items-center gap-3 mb-4 pb-4 border-b border-border">
+              <span className="text-sm font-medium text-muted-foreground">{t.artist.filterBy}</span>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => setReviewFilter("all")}
+                  className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${reviewFilter === "all" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"}`}
+                >
+                  {t.artist.all}
+                </button>
+                <button
+                  onClick={() => setReviewFilter("photos")}
+                  className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${reviewFilter === "photos" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"}`}
+                >
+                  {t.artist.withPhotos}
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">{t.artist.sortReviews}</span>
+                <select
+                  value={reviewSort}
+                  onChange={(e) => setReviewSort(e.target.value as ReviewSort)}
+                  className="px-3 py-1.5 text-sm rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="newest">{t.artist.newest}</option>
+                  <option value="highest">{t.artist.highestRated}</option>
+                </select>
+              </div>
+            </div>
+
             {reviewsLoading ? (
               <>
                 {[1, 2].map((i) => (
                   <Skeleton key={i} className="h-32 w-full rounded-xl" />
                 ))}
               </>
-            ) : reviews && reviews.length > 0 ? (
-              reviews.map((review) => (
-                <ReviewCard
-                  key={review.id}
-                  name={review.customer_profile?.full_name || t.artist.anonymous}
-                  avatar={review.customer_profile?.avatar_url || artist1}
-                  rating={review.rating}
-                  date={formatDistanceToNow(new Date(review.created_at), { addSuffix: true, locale: dateLocale })}
-                  comment={review.comment || ""}
-                />
+            ) : filteredAndSortedReviews.length > 0 ? (
+              filteredAndSortedReviews.map((review) => (
+                <div key={review.id} className="border-b border-border pb-4 last:border-0">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={review.customer_profile?.avatar_url || ""} />
+                      <AvatarFallback>
+                        {review.customer_profile?.full_name?.charAt(0) || "C"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-medium text-foreground truncate">
+                          {review.customer_profile?.full_name || t.artist.anonymous}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3 h-3 ${
+                                i < review.rating
+                                  ? "fill-primary text-primary"
+                                  : "text-muted-foreground"
+                              }`}
+                            />
+                          ))}
+                          <HelpfulReviewButton 
+                            reviewId={review.id} 
+                            helpfulCount={review.helpful_count || 0}
+                            isCompact
+                          />
+                          <ReportReviewDialog 
+                            reviewId={review.id}
+                            trigger={
+                              <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                                <Flag className="w-4 h-4" />
+                              </button>
+                            }
+                            onReported={() => {
+                              toast.success(t.artist.reportSuccess);
+                              queryClient.invalidateQueries({ queryKey: ["artist-reviews", artistId] });
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(review.created_at), "MMM d, yyyy")}
+                      </p>
+                      {review.comment && (
+                        <p className="text-sm text-foreground mt-2">{review.comment}</p>
+                      )}
+                      
+                      {/* Review Photos */}
+                      {review.photos && review.photos.length > 0 && (
+                        <div className="flex gap-2 mt-2">
+                          {review.photos.map((photo, idx) => (
+                            <img
+                              key={idx}
+                              src={photo}
+                              alt={`Review photo ${idx + 1}`}
+                              className="w-20 h-20 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => {
+                                setLightboxIndex(0);
+                                setLightboxImages([{ url: photo, caption: '' }]);
+                                setLightboxOpen(true);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Artist Reply */}
+                      {isArtist && artist && artist.user_id === user?.id && (
+                        <ReviewReplyForm
+                          reviewId={review.id}
+                          artistId={artist.id}
+                          existingReplies={review.replies || []}
+                          onSuccess={() => {
+                            queryClient.invalidateQueries({ queryKey: ["artist-reviews", artistId] });
+                          }}
+                        />
+                      )}
+
+                      {/* Customer View Replies */}
+                      {(!isArtist || artist?.user_id !== user?.id) && review.replies && review.replies.length > 0 && (
+                        <div className="mt-3 space-y-2 ml-8 md:ml-12">
+                          {review.replies.map((reply: any) => (
+                            <div key={reply.id} className="bg-accent/50 p-3 rounded-lg">
+                              <div className="flex items-start gap-2">
+                                <div className="font-semibold text-primary text-sm">
+                                  Artist Reply
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(reply.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="text-sm text-foreground mt-1">
+                                {reply.reply}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               ))
             ) : (
               <p className="text-center text-muted-foreground py-4">

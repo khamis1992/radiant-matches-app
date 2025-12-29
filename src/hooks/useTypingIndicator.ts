@@ -1,76 +1,113 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
 export const useTypingIndicator = (conversationId: string | undefined) => {
   const { user } = useAuth();
-  const [isOtherTyping, setIsOtherTyping] = useState(false);
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingUsers = useState<Set<string>>(new Set());
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const channelRef = useRef<any>(null);
 
+  // Set self as typing
+  const startTyping = () => {
+    if (!user || !conversationId) return;
+
+    // Clear existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Set as typing
+    supabase
+      .from("typing_indicators")
+      .upsert({
+        conversation_id: conversationId,
+        user_id: user.id,
+        is_typing: true,
+        updated_at: new Date().toISOString(),
+      });
+
+    // Clear typing status after 3 seconds of inactivity
+    timeoutRef.current = setTimeout(() => {
+      stopTyping();
+    }, 3000);
+  };
+
+  const stopTyping = () => {
+    if (!user || !conversationId) return;
+
+    supabase
+      .from("typing_indicators")
+      .upsert({
+        conversation_id: conversationId,
+        user_id: user.id,
+        is_typing: false,
+        updated_at: new Date().toISOString(),
+      });
+  };
+
+  // Listen for typing indicators
   useEffect(() => {
     if (!conversationId || !user) return;
 
-    const channel = supabase.channel(`typing:${conversationId}`);
+    const channel = supabase
+      .channel(`typing-${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "typing_indicators",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const indicator = payload.new;
+          
+          // Ignore self
+          if (indicator.user_id === user.id) return;
+
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+            if (indicator.is_typing) {
+              setTypingUsers(prev => new Set(prev).add(indicator.user_id));
+            } else {
+              setTypingUsers(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(indicator.user_id);
+                return newSet;
+              });
+            }
+          } else if (payload.eventType === "DELETE") {
+            setTypingUsers(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(indicator.user_id);
+              return newSet;
+            });
+          }
+        }
+      )
+      .subscribe();
+
     channelRef.current = channel;
 
-    channel
-      .on("presence", { event: "sync" }, () => {
-        const state = channel.presenceState();
-        const typingUsers = Object.values(state)
-          .flat()
-          .filter((presence: any) => presence.user_id !== user.id && presence.is_typing);
-        
-        setIsOtherTyping(typingUsers.length > 0);
-      })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          await channel.track({
-            user_id: user.id,
-            is_typing: false,
-          });
-        }
-      });
-
     return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
       supabase.removeChannel(channel);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, [conversationId, user]);
 
-  const setTyping = useCallback(
-    async (isTyping: boolean) => {
-      if (!channelRef.current || !user) return;
-
-      // Clear existing timeout
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-
-      await channelRef.current.track({
-        user_id: user.id,
-        is_typing: isTyping,
-      });
-
-      // Auto-stop typing after 3 seconds of no activity
-      if (isTyping) {
-        typingTimeoutRef.current = setTimeout(async () => {
-          if (channelRef.current) {
-            await channelRef.current.track({
-              user_id: user.id,
-              is_typing: false,
-            });
-          }
-        }, 3000);
-      }
-    },
-    [user]
-  );
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopTyping();
+    };
+  }, []);
 
   return {
-    isOtherTyping,
-    setTyping,
+    typingUsers,
+    isTyping: typingUsers.size > 0,
+    startTyping,
+    stopTyping,
   };
 };
