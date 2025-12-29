@@ -33,7 +33,7 @@ export const useAnalytics = () => {
  * Analytics Provider Component
  * Wrap your app with this to enable analytics
  */
-export const AnalyticsProvider = ({ children }: { children: React.ReactNode }) => {
+export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useAnalytics();
   return <>{children}</>;
 };

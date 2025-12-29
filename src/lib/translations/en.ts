@@ -311,6 +311,20 @@ export const en = {
     selectCity: "Select a city",
     locationUpdated: "Location updated successfully",
     security: "Security",
+    // Working Hours
+    workingHours: "Working Hours",
+    workingHoursDesc: "Set your availability for each day",
+    workingHoursUpdated: "Working hours updated successfully",
+    workingHoursUpdateFailed: "Failed to update working hours",
+    sunday: "Sunday",
+    monday: "Monday",
+    tuesday: "Tuesday",
+    wednesday: "Wednesday",
+    thursday: "Thursday",
+    friday: "Friday",
+    saturday: "Saturday",
+    closed: "Closed",
+    to: "to",
   },
 
   // Security/2FA
