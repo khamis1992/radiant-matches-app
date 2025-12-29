@@ -1297,7 +1297,10 @@ export const en = {
 
   // Admin Finance
   adminFinance: {
-    title: "Finance Dashboard",
+    title: "Finance",
+    subtitle: "Track revenue, fees and payouts",
+
+    // Legacy keys (kept for compatibility)
     overview: "Overview",
     bookingsRevenue: "Bookings Revenue",
     withdrawals: "Withdrawals",
@@ -1310,6 +1313,60 @@ export const en = {
     withdrawalTrend: "Withdrawal Trend",
     topEarningArtists: "Top Earning Artists",
     lowPerformingArtists: "Low Performing Artists",
+
+    // Dashboard cards
+    platformFees: "Platform Fees",
+    artistPayouts: "Artist Payouts",
+    pendingPayouts: "Pending Payouts",
+
+    // Charts
+    monthlyRevenue: "Monthly Revenue",
+    revenueVsFees: "Revenue vs Fees",
+    revenue: "Revenue",
+    fees: "Fees",
+
+    // Tabs
+    recentTransactions: "Recent Transactions",
+    artistPayoutsTab: "Artist Payouts",
+
+    // Export
+    exportTransactionsCsv: "Export Transactions (CSV)",
+    exportTransactionsPdf: "Export Transactions (PDF)",
+    exportPayoutsCsv: "Export Payouts (CSV)",
+    exportPayoutsPdf: "Export Payouts (PDF)",
+    noTransactionsToExport: "No transactions to export",
+    noPayoutsToExport: "No payouts to export",
+    exportTransactionsSuccess: "Transactions exported successfully",
+    exportPayoutsSuccess: "Payouts exported successfully",
+    exportPdfSuccess: "PDF report exported",
+
+    // Table columns
+    colDate: "Date",
+    colType: "Type",
+    colArtist: "Artist",
+    colAmount: "Amount",
+    colFee: "Fee",
+    colNet: "Net",
+    colStatus: "Status",
+    colEmail: "Email",
+    colTransactionsCount: "Transactions",
+    colTotalFees: "Total Fees",
+    colTotalEarnings: "Total Earnings",
+
+    // Status labels
+    statusCompleted: "Completed",
+    statusPending: "Pending",
+    statusRefunded: "Refunded",
+
+    // Transaction type labels
+    typeBookingPayment: "Booking Payment",
+    typePlatformFee: "Platform Fee",
+    typeArtistPayout: "Artist Payout",
+    typeSubscription: "Subscription",
+
+    // Empty states
+    noTransactionsYet: "No transactions yet",
+    noPayoutsYet: "No artist payouts yet",
   },
 
   // Admin Bookings

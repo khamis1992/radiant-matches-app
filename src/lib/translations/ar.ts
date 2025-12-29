@@ -1320,7 +1320,10 @@ export const ar = {
 
   // Admin Finance
   adminFinance: {
-    title: "لوحة المالية",
+    title: "الإدارة المالية",
+    subtitle: "تتبع الإيرادات والعمولات والمدفوعات",
+
+    // Legacy keys (kept for compatibility)
     overview: "نظرة عامة",
     bookingsRevenue: "إيرادات الحجوزات",
     withdrawals: "السحوبات",
@@ -1333,6 +1336,60 @@ export const ar = {
     withdrawalTrend: "اتجاه السحوبات",
     topEarningArtists: "أعلى الفنانات ربحاً",
     lowPerformingArtists: "أقل الفنانات أداءً",
+
+    // Dashboard cards
+    platformFees: "عمولات المنصة",
+    artistPayouts: "مدفوعات الفنانين",
+    pendingPayouts: "مدفوعات معلقة",
+
+    // Charts
+    monthlyRevenue: "الإيرادات الشهرية",
+    revenueVsFees: "الإيرادات مقابل العمولات",
+    revenue: "الإيرادات",
+    fees: "العمولات",
+
+    // Tabs
+    recentTransactions: "المعاملات الأخيرة",
+    artistPayoutsTab: "مدفوعات الفنانين",
+
+    // Export
+    exportTransactionsCsv: "تصدير المعاملات (CSV)",
+    exportTransactionsPdf: "تصدير المعاملات (PDF)",
+    exportPayoutsCsv: "تصدير المدفوعات (CSV)",
+    exportPayoutsPdf: "تصدير المدفوعات (PDF)",
+    noTransactionsToExport: "لا توجد معاملات للتصدير",
+    noPayoutsToExport: "لا توجد مدفوعات للتصدير",
+    exportTransactionsSuccess: "تم تصدير المعاملات بنجاح",
+    exportPayoutsSuccess: "تم تصدير مدفوعات الفنانين بنجاح",
+    exportPdfSuccess: "تم تصدير التقرير بصيغة PDF",
+
+    // Table columns
+    colDate: "التاريخ",
+    colType: "النوع",
+    colArtist: "الفنان",
+    colAmount: "المبلغ",
+    colFee: "العمولة",
+    colNet: "الصافي",
+    colStatus: "الحالة",
+    colEmail: "البريد الإلكتروني",
+    colTransactionsCount: "عدد المعاملات",
+    colTotalFees: "إجمالي العمولات",
+    colTotalEarnings: "إجمالي الأرباح",
+
+    // Status labels
+    statusCompleted: "مكتمل",
+    statusPending: "قيد الانتظار",
+    statusRefunded: "مسترد",
+
+    // Transaction type labels
+    typeBookingPayment: "دفعة حجز",
+    typePlatformFee: "عمولة المنصة",
+    typeArtistPayout: "دفعة للفنان",
+    typeSubscription: "اشتراك",
+
+    // Empty states
+    noTransactionsYet: "لا توجد معاملات بعد",
+    noPayoutsYet: "لا توجد مدفوعات للفنانين بعد",
   },
 
   // Admin Bookings
