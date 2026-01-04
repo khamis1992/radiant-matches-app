@@ -232,8 +232,8 @@ const Cart = () => {
             <p className="text-muted-foreground mb-6">
               {language === "ar" ? "ابدأ التسوق لإضافة منتجات" : "Start shopping to add items to your cart"}
             </p>
-            <Button onClick={() => navigate("/home")} className="rounded-xl">
-              {language === "ar" ? "تصفح الفنانات" : "Browse Artists"}
+            <Button onClick={() => navigate("/orders")} className="rounded-xl">
+              {language === "ar" ? "طلباتي" : "My Orders"}
             </Button>
           </div>
         )}
