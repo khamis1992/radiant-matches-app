@@ -63,7 +63,7 @@ import Referrals from "./pages/Referrals";
 import Wallet from "./pages/Wallet";
 import { InstallAppPrompt } from "./components/InstallAppPrompt";
 import { AnalyticsProvider } from "./hooks/useAnalytics";
-import { FloatingCartButton } from "./components/FloatingCartButton";
+
 
 const queryClient = new QueryClient();
 
@@ -260,7 +260,6 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
         <AnalyticsTracker />
-        <FloatingCartButton />
       </BrowserRouter>
     </TooltipProvider>
   </LanguageProvider>
