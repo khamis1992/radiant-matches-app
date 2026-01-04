@@ -13,11 +13,15 @@ const config: CapacitorConfig = {
     // Build configuration for Android
     buildOptions: {
       signingType: 'apksigner'
-    }
+    },
+    // Enable safe area layouts for Android navigation bar
+    webContentsDebuggingEnabled: false
   },
   ios: {
     // Build configuration for iOS
-    scheme: 'Glam'
+    scheme: 'Glam',
+    // Configure iOS to handle safe areas properly
+    contentInset: 'always'
   },
   plugins: {
     // Camera plugin configuration

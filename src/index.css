@@ -157,13 +157,23 @@ All colors MUST be HSL.
   .touch-manipulation {
     touch-action: manipulation;
   }
-  
+
   .safe-area-top {
     padding-top: env(safe-area-inset-top);
   }
-  
+
+  /* Enhanced safe area for bottom navigation - supports both iOS and Android */
   .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
+    /* Minimum padding for Android navigation bar (usually 48-56px) */
+    padding-bottom: max(env(safe-area-inset-bottom), 16px);
+    /* Extra padding for Capacitor/Cordova webview */
+    padding-bottom: calc(max(env(safe-area-inset-bottom), 16px) + env(safe-area-inset-bottom, 0px));
+  }
+
+  @supports (padding-bottom: max(0px)) {
+    .safe-area-bottom {
+      padding-bottom: max(env(safe-area-inset-bottom), 16px);
+    }
   }
   
   /* Animation utilities */

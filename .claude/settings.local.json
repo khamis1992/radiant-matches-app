@@ -10,7 +10,11 @@
       "Bash(findstr:*)",
       "Bash(npm run cap:open:android:*)",
       "Bash(./gradlew assembleDebug:*)",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(dir:*)"
     ]
   }
 }

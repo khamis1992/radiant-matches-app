@@ -128,7 +128,7 @@ const BottomNavigation = () => {
   if (isCustomer) {
     return (
       <>
-        <nav className="fixed bottom-0 left-0 right-0 z-50 animate-slide-in-bottom">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 animate-slide-in-bottom safe-area-bottom">
           {/* زر البحث العائم في المنتصف */}
           <button
             onClick={() => setSearchOpen(true)}
@@ -224,7 +224,7 @@ const BottomNavigation = () => {
 
   // العرض العادي للفنان
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg animate-slide-in-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg animate-slide-in-bottom safe-area-bottom">
       <div className="flex items-center justify-around h-16 max-w-md mx-auto px-4">
         {navItems.map((item, index) => renderNavItem(item, index))}
       </div>

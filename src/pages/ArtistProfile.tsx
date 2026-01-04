@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate } from "react-router-dom";
-import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff, Camera, Briefcase, ChevronRight, Play, Sparkles, Check } from "lucide-react";
+import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff, Camera, Briefcase, ChevronRight, Play, Sparkles, Check, Grid3x3 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import BackButton from "@/components/BackButton";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -11,10 +11,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ServiceCard from "@/components/ServiceCard";
+import ImageLightbox from "@/components/ImageLightbox";
 
 import { useArtist } from "@/hooks/useArtists";
 import { useArtistServices } from "@/hooks/useServices";
 import { useArtistReviews } from "@/hooks/useReviews";
+import { useArtistPortfolio, PORTFOLIO_CATEGORIES } from "@/hooks/usePortfolio";
 
 import { useWorkingHours } from "@/hooks/useWorkingHours";
 import { useBlockedDates } from "@/hooks/useBlockedDates";
@@ -29,17 +31,22 @@ import HelpfulReviewButton from "@/components/HelpfulReviewButton";
 import artist1 from "@/assets/artist-1.jpg";
 
 type ReviewSort = "newest" | "highest";
+type ActiveTab = "services" | "reviews" | "gallery";
 
 const ArtistProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [showAllHours, setShowAllHours] = useState(false);
-  const [activeTab, setActiveTab] = useState<"services" | "reviews">("services");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("services");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [galleryFilter, setGalleryFilter] = useState<string>("all");
   const servicesSectionRef = useRef<HTMLDivElement | null>(null);
 
   const { data: artist, isLoading: artistLoading } = useArtist(id);
   const { data: services, isLoading: servicesLoading } = useArtistServices(id);
   const { data: reviews, isLoading: reviewsLoading } = useArtistReviews(id);
+  const { data: portfolioItems = [], isLoading: portfolioLoading } = useArtistPortfolio(artist?.id);
   
   const { data: workingHours = [], isLoading: workingHoursLoading } = useWorkingHours(artist?.id);
   const { data: blockedDates = [] } = useBlockedDates(artist?.id);
@@ -392,7 +399,7 @@ const ArtistProfile = () => {
 
       {/* Main Tabs */}
       <div ref={servicesSectionRef} className="px-5 mt-6">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "services" | "reviews")} className="w-full">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)} className="w-full">
           <TabsList className="w-full bg-muted/50 p-1.5 rounded-2xl h-auto">
             <TabsTrigger
               value="services"
@@ -407,6 +414,13 @@ const ArtistProfile = () => {
             >
               <Star className="w-4 h-4 me-1.5" />
               {t.artist.reviews}
+            </TabsTrigger>
+            <TabsTrigger
+              value="gallery"
+              className="flex-1 rounded-xl py-2.5 text-sm data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
+              <Grid3x3 className="w-4 h-4 me-1.5" />
+              {t.artist.gallery || "Gallery"}
             </TabsTrigger>
           </TabsList>
 
@@ -582,8 +596,125 @@ const ArtistProfile = () => {
               </div>
             )}
           </TabsContent>
+
+          {/* Gallery Tab */}
+          <TabsContent value="gallery" className="mt-4 space-y-4">
+            {/* Category Filter */}
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <Badge
+                variant={galleryFilter === "all" ? "default" : "outline"}
+                className="cursor-pointer whitespace-nowrap"
+                onClick={() => setGalleryFilter("all")}
+              >
+                {t.artist.all || "All"} {portfolioItems.length > 0 && `(${portfolioItems.length})`}
+              </Badge>
+              {PORTFOLIO_CATEGORIES.map((category) => {
+                const count = portfolioItems.filter(item => item.category === category).length;
+                if (count === 0) return null;
+                return (
+                  <Badge
+                    key={category}
+                    variant={galleryFilter === category ? "default" : "outline"}
+                    className="cursor-pointer whitespace-nowrap"
+                    onClick={() => setGalleryFilter(category)}
+                  >
+                    {category} ({count})
+                  </Badge>
+                );
+              })}
+            </div>
+
+            {/* Gallery Grid */}
+            {portfolioLoading ? (
+              <div className="grid grid-cols-3 gap-2">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <Skeleton key={i} className="aspect-square rounded-lg" />
+                ))}
+              </div>
+            ) : portfolioItems.length > 0 ? (
+              <>
+                {/* Filtered Items */}
+                {(() => {
+                  const filteredItems = galleryFilter === "all"
+                    ? portfolioItems
+                    : portfolioItems.filter(item => item.category === galleryFilter);
+
+                  if (filteredItems.length === 0) {
+                    return (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                          <Camera className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                        <p className="text-muted-foreground">
+                          {t.artist.noPortfolioInCategory || "No images in this category"}
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="grid grid-cols-3 gap-2">
+                      {filteredItems.map((item, index) => (
+                        <div
+                          key={item.id}
+                          className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
+                          onClick={() => {
+                            setLightboxIndex(portfolioItems.indexOf(item));
+                            setLightboxOpen(true);
+                          }}
+                        >
+                          <img
+                            src={item.image_url}
+                            alt={item.title || "Portfolio"}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          />
+                          {/* Featured Badge */}
+                          {item.is_featured && (
+                            <div className="absolute top-1 left-1/2 -translate-x-1/2">
+                              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                            </div>
+                          )}
+                          {/* Category Badge */}
+                          {item.category && (
+                            <div className="absolute bottom-1 left-1">
+                              <Badge className="text-[10px] px-1.5 py-0 bg-background/90">
+                                {item.category}
+                              </Badge>
+                            </div>
+                          )}
+                          {/* Hover Overlay */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                  <Camera className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground">
+                  {t.artist.noPortfolio || "No portfolio images yet"}
+                </p>
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </div>
+
+      {/* Lightbox for Gallery */}
+      <ImageLightbox
+        images={portfolioItems.map(item => ({
+          url: item.image_url,
+          title: item.title,
+          category: item.category,
+        }))}
+        initialIndex={lightboxIndex}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+      />
 
       <BottomNavigation />
     </div>
