@@ -404,80 +404,142 @@ const MakeupArtists = () => {
           {/* Horizontal scroll container with snap */}
           <div className="overflow-x-auto scrollbar-hide -mx-5 px-5">
             <div className="flex gap-3 min-w-max pb-1">
-              {/* All Categories - Special Card Design */}
+              {/* All Categories - Creative Mosaic Card */}
               <button
                 onClick={() => handleCategoryChange(null)}
-                className="relative flex-shrink-0 group"
+                className="relative flex-shrink-0 group perspective-1000"
               >
                 <div
                   className={cn(
-                    "relative w-28 h-20 rounded-2xl overflow-hidden transition-all duration-500 ease-out",
+                    "relative w-28 h-20 rounded-2xl overflow-hidden transition-all duration-500 ease-out transform-style-3d",
                     selectedCategory === null
-                      ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 shadow-xl shadow-primary/20"
-                      : "ring-1 ring-border/50 group-hover:ring-primary/40 group-hover:scale-[1.02]"
+                      ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 shadow-xl shadow-primary/30 rotate-y-0"
+                      : "ring-1 ring-border/50 group-hover:ring-primary/40 group-hover:scale-[1.02] group-hover:rotate-y-6"
                   )}
                 >
-                  {/* Animated Gradient Background */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-gold/10">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 via-transparent to-gold/30 animate-pulse" />
+                  {/* Animated Mosaic Background - Mini Grid of Categories */}
+                  <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-0.5 p-0.5">
+                    {/* Mini thumbnails with staggered animations */}
+                    {[
+                      { img: categoryMakeup, delay: '0s' },
+                      { img: categoryHairstyling, delay: '0.1s' },
+                      { img: categoryHenna, delay: '0.2s' },
+                      { img: categoryLashes, delay: '0.3s' },
+                      { img: categoryNails, delay: '0.4s' },
+                      { img: categoryBridal, delay: '0.5s' },
+                    ].map((cat, i) => (
+                      <div
+                        key={i}
+                        className="relative overflow-hidden rounded-sm bg-muted"
+                        style={{
+                          animation: selectedCategory === null
+                            ? `mosaic-pulse 2s ease-in-out infinite ${cat.delay}`
+                            : 'none',
+                        }}
+                      >
+                        <img
+                          src={cat.img}
+                          alt=""
+                          className={cn(
+                            "w-full h-full object-cover transition-transform duration-700",
+                            selectedCategory === null ? "scale-110" : "group-hover:scale-125"
+                          )}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
+                      </div>
+                    ))}
                   </div>
 
-                  {/* Decorative Grid Pattern */}
-                  <svg
-                    className="absolute inset-0 w-full h-full opacity-10"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <defs>
-                      <pattern id="grid" width="12" height="12" patternUnits="userSpaceOnUse">
-                        <path d="M 12 0 L 0 0 0 12" fill="none" stroke="currentColor" strokeWidth="0.5" />
-                      </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
-                  </svg>
+                  {/* Animated Shimmer Overlay */}
+                  {selectedCategory === null && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer-rotate" />
+                  )}
 
-                  {/* Sparkles Icon */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <Sparkles
+                  {/* Floating Particles (Selected) */}
+                  {selectedCategory === null && (
+                    <div className="absolute inset-0 pointer-events-none">
+                      {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div
+                          key={i}
+                          className="absolute w-1 h-1 rounded-full bg-gold/80 animate-float-particle"
+                          style={{
+                            left: `${10 + i * 15}%`,
+                            top: `${20 + (i % 3) * 25}%`,
+                            animationDelay: `${i * 0.2}s`,
+                            animationDuration: `${2 + (i % 2)}s`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Center Burst Effect (Selected) */}
+                  {selectedCategory === null && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="relative">
+                        {/* Outer ring */}
+                        <div className="absolute inset-0 -m-2 rounded-full border border-primary/40 animate-ping" style={{ animationDuration: '2s' }} />
+                        {/* Middle ring */}
+                        <div className="absolute inset-0 -m-1 rounded-full border border-gold/50 animate-ping" style={{ animationDelay: '0.5s', animationDuration: '2s' }} />
+                        {/* Center icon */}
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-gold flex items-center justify-center shadow-lg">
+                          <Sparkles className="w-4 h-4 text-white animate-spin-slow" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Gradient Overlay for Text Readability */}
+                  <div className={cn(
+                    "absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t transition-opacity duration-300",
+                    selectedCategory === null ? "from-black/80 via-black/50 to-transparent" : "from-black/90 via-black/60 to-transparent"
+                  )}>
+                    <div className="flex items-center justify-center gap-1">
+                      <span
+                        className={cn(
+                          "text-[10px] font-serif font-bold tracking-wider uppercase text-white drop-shadow-lg",
+                          selectedCategory === null && "animate-pulse"
+                        )}
+                      >
+                        {t.artistsListing.allCategories || "All"}
+                      </span>
+                      {selectedCategory === null && (
+                        <span className="text-gold text-xs animate-bounce" style={{ animationDelay: '0.5s' }}>✦</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Decorative Corner Frames */}
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="corner-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="rgb(217, 123, 140)" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="rgb(217, 123, 140)" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    {/* Top-left corner */}
+                    <path
+                      d="M 0 12 L 0 0 L 12 0"
+                      stroke="url(#corner-grad)"
+                      strokeWidth="2"
+                      fill="none"
                       className={cn(
-                        "w-6 h-6 transition-all duration-300",
-                        selectedCategory === null
-                          ? "text-primary scale-110 drop-shadow-lg"
-                          : "text-primary/60 group-hover:text-primary group-hover:scale-110"
+                        "transition-opacity duration-300",
+                        selectedCategory === null ? "opacity-100" : "opacity-40 group-hover:opacity-70"
                       )}
                     />
-                  </div>
-
-                  {/* Label Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 p-3">
-                    <span
+                    {/* Bottom-right corner */}
+                    <path
+                      d="M 116 20 L 128 20 L 128 8"
+                      stroke="url(#corner-grad)"
+                      strokeWidth="2"
+                      fill="none"
                       className={cn(
-                        "block text-[11px] font-serif font-semibold tracking-wide truncate text-center",
-                        selectedCategory === null
-                          ? "text-primary drop-shadow-lg"
-                          : "text-primary/70 drop-shadow-md"
+                        "transition-opacity duration-300",
+                        selectedCategory === null ? "opacity-100" : "opacity-40 group-hover:opacity-70"
                       )}
-                    >
-                      {t.artistsListing.allCategories || "All"}
-                    </span>
-                  </div>
-
-                  {/* Animated Corner Accent (Selected) */}
-                  {selectedCategory === null && (
-                    <>
-                      <div className="absolute top-2 right-2">
-                        <div className="relative">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-                          <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-primary" />
-                        </div>
-                      </div>
-                      <div className="absolute top-2 left-2">
-                        <div className="relative">
-                          <div className="w-1 h-1 rounded-full bg-gold animate-ping" style={{ animationDelay: '0.3s' }} />
-                          <div className="absolute inset-0 w-1 h-1 rounded-full bg-gold" />
-                        </div>
-                      </div>
-                    </>
-                  )}
+                    />
+                  </svg>
                 </div>
               </button>
 
