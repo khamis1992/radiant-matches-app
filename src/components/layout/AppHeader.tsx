@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, User, Settings, LogOut, LogIn, ChevronLeft, Search, Menu } from "lucide-react";
+import { Bell, User, LogOut, LogIn, ChevronLeft, Search, Menu } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -222,15 +222,6 @@ const AppHeader = ({
                         <User className="h-4 w-4 text-primary" />
                       </div>
                       <span className="font-medium">{t.userMenu.myProfile}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => navigate("/settings")}
-                      className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted me-3">
-                        <Settings className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <span className="font-medium">{t.userMenu.settings}</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-border/30 my-1" />
                     <DropdownMenuItem
