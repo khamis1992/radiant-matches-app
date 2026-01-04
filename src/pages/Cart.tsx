@@ -241,7 +241,7 @@ const Cart = () => {
 
       {/* Checkout Bar */}
       {cartItems.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background to-transparent pt-6 pb-28">
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background to-transparent pt-6 pb-36">
           <div className="mx-5 p-4 bg-card rounded-2xl border border-border/50 shadow-xl backdrop-blur-sm">
             {/* Order Summary */}
             <div className="space-y-2 mb-4">
