@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -145,9 +144,6 @@ const AppHeader = ({
 
           {/* Right side - Actions */}
           <div className="flex items-center gap-1.5">
-            {/* Language Switcher */}
-            <LanguageSwitcher />
-
             {/* Search Button */}
             {showSearch && (
               <button

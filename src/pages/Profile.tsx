@@ -1,5 +1,6 @@
 import BottomNavigation from "@/components/BottomNavigation";
-import { Settings, Heart, MessageCircle, HelpCircle, LogOut, ChevronRight, ChevronLeft, User, Briefcase, Shield, Gift, Wallet, Plus } from "lucide-react";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { Settings, Heart, MessageCircle, HelpCircle, LogOut, ChevronRight, ChevronLeft, User, Briefcase, Shield, Gift, Wallet, Plus, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile, useProfileStats } from "@/hooks/useProfile";
@@ -211,6 +212,17 @@ const Profile = () => {
 
       {/* Menu */}
       <div className="px-5 py-6">
+        {/* Language Switcher */}
+        <div className="bg-card rounded-2xl border border-border overflow-hidden mb-4">
+          <div className="w-full flex items-center gap-3 p-4">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Languages className="w-5 h-5 text-primary" />
+            </div>
+            <span className={`flex-1 ${isRTL ? "text-right" : "text-left"} font-medium text-foreground`}>{t.profile.language || "Language"}</span>
+            <LanguageSwitcher />
+          </div>
+        </div>
+
         <div className="bg-card rounded-2xl border border-border overflow-hidden">
           {menuItems.map((item, index) => (
             <button
