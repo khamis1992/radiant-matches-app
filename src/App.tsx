@@ -23,6 +23,7 @@ import ArtistProfilePage from "./pages/artist/ArtistProfilePage";
 import ArtistGallery from "./pages/artist/ArtistGallery";
 import ArtistNotifications from "./pages/artist/ArtistNotifications";
 import ArtistProducts from "./pages/artist/ArtistProducts";
+import ArtistProductForm from "./pages/artist/ArtistProductForm";
 import Booking from "./pages/Booking";
 import Bookings from "./pages/Bookings";
 import BookingDetails from "./pages/BookingDetails";
@@ -31,6 +32,10 @@ import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import Favorites from "./pages/Favorites";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Orders from "./pages/Orders";
+import OrderDetails from "./pages/OrderDetails";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 import HelpSupport from "./pages/HelpSupport";
@@ -57,6 +62,7 @@ import Referrals from "./pages/Referrals";
 import Wallet from "./pages/Wallet";
 import { InstallAppPrompt } from "./components/InstallAppPrompt";
 import { AnalyticsProvider } from "./hooks/useAnalytics";
+import { FloatingCartButton } from "./components/FloatingCartButton";
 
 const queryClient = new QueryClient();
 
@@ -202,6 +208,22 @@ const App = () => (
               </RoleGate>
             }
           />
+          <Route
+            path="/artist-products/new"
+            element={
+              <RoleGate allow={["artist"]} showLoading>
+                <ArtistProductForm />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/artist-products/:id/edit"
+            element={
+              <RoleGate allow={["artist"]} showLoading>
+                <ArtistProductForm />
+              </RoleGate>
+            }
+          />
 
           {/* Shared Routes (Customer + Artist) */}
           <Route path="/messages" element={<Messages />} />
@@ -210,6 +232,10 @@ const App = () => (
           <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/orders/:id" element={<OrderDetails />} />
+          <Route path="/orders" element={<Orders />} />
           <Route path="/help" element={<HelpSupport />} />
           <Route path="/payment-methods" element={<PaymentMethods />} />
           <Route path="/wallet" element={<Wallet />} />
@@ -232,6 +258,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
         <AnalyticsTracker />
+        <FloatingCartButton />
       </BrowserRouter>
     </TooltipProvider>
   </LanguageProvider>

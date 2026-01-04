@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, User, LogOut, LogIn, ChevronLeft, Search, Menu } from "lucide-react";
+import { Bell, User, LogOut, LogIn, ChevronLeft, Search, Menu, ShoppingBag } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUnreadNotificationsCount } from "@/hooks/useArtistNotifications";
+import { useCartItemCount } from "@/hooks/useShoppingCart";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
@@ -48,6 +49,7 @@ const AppHeader = ({
   const { data: profile } = useProfile();
   const { t } = useLanguage();
   const { data: unreadCount = 0 } = useUnreadNotificationsCount();
+  const { data: cartItemCount = 0 } = useCartItemCount();
 
   // Scroll state for transparent header
   const [isScrolled, setIsScrolled] = useState(false);
@@ -163,6 +165,19 @@ const AppHeader = ({
               {unreadCount > 0 && (
                 <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-primary-foreground bg-gradient-to-r from-primary to-primary/90 rounded-full shadow-lg animate-in zoom-in-50 duration-200">
                   {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Cart Button */}
+            <button
+              onClick={() => navigate("/cart")}
+              className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            >
+              <ShoppingBag className="w-5 h-5 text-foreground" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-primary-foreground bg-gradient-to-r from-gold to-gold/90 rounded-full shadow-lg animate-in zoom-in-50 duration-200">
+                  {cartItemCount > 99 ? '99+' : cartItemCount}
                 </span>
               )}
             </button>

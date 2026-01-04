@@ -15,7 +15,9 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(dir:*)",
-      "Skill(frontend-design)"
+      "Skill(frontend-design)",
+      "Skill(brainstorming)",
+      "Bash(taskkill:*)"
     ]
   }
 }

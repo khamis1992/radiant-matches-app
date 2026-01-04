@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate } from "react-router-dom";
-import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff, Camera, Briefcase, ChevronRight, Play, Sparkles, Check, Grid3x3 } from "lucide-react";
+import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff, Camera, Briefcase, ChevronRight, Play, Sparkles, Check, Grid3x3, ShoppingBag, Package } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import BackButton from "@/components/BackButton";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -17,6 +17,8 @@ import { useArtist } from "@/hooks/useArtists";
 import { useArtistServices } from "@/hooks/useServices";
 import { useArtistReviews } from "@/hooks/useReviews";
 import { useArtistPortfolio, PORTFOLIO_CATEGORIES } from "@/hooks/usePortfolio";
+import { useProducts } from "@/hooks/useProducts";
+import { useAddToCart } from "@/hooks/useShoppingCart";
 
 import { useWorkingHours } from "@/hooks/useWorkingHours";
 import { useBlockedDates } from "@/hooks/useBlockedDates";
@@ -31,7 +33,7 @@ import HelpfulReviewButton from "@/components/HelpfulReviewButton";
 import artist1 from "@/assets/artist-1.jpg";
 
 type ReviewSort = "newest" | "highest";
-type ActiveTab = "services" | "reviews" | "gallery";
+type ActiveTab = "services" | "reviews" | "gallery" | "market";
 
 const ArtistProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,6 +49,8 @@ const ArtistProfile = () => {
   const { data: services, isLoading: servicesLoading } = useArtistServices(id);
   const { data: reviews, isLoading: reviewsLoading } = useArtistReviews(id);
   const { data: portfolioItems = [], isLoading: portfolioLoading } = useArtistPortfolio(artist?.id);
+  const { data: products = [], isLoading: productsLoading } = useProducts(artist?.id);
+  const addToCart = useAddToCart();
   
   const { data: workingHours = [], isLoading: workingHoursLoading } = useWorkingHours(artist?.id);
   const { data: blockedDates = [] } = useBlockedDates(artist?.id);
@@ -422,6 +426,13 @@ const ArtistProfile = () => {
               <Grid3x3 className="w-4 h-4 me-1.5" />
               {t.artist.gallery || "Gallery"}
             </TabsTrigger>
+            <TabsTrigger
+              value="market"
+              className="flex-1 rounded-xl py-2.5 text-sm data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
+              <ShoppingBag className="w-4 h-4 me-1.5" />
+              Market
+            </TabsTrigger>
           </TabsList>
 
           {/* Services Tab */}
@@ -698,6 +709,126 @@ const ArtistProfile = () => {
                 <p className="text-muted-foreground">
                   {t.artist.noPortfolio || "No portfolio images yet"}
                 </p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Market Tab */}
+          <TabsContent value="market" className="mt-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{products.length} Products</span>
+            </div>
+
+            {productsLoading ? (
+              <div className="grid grid-cols-2 gap-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-48 w-full rounded-2xl" />
+                ))}
+              </div>
+            ) : products.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {products.map((product, index) => (
+                  <div
+                    key={product.id}
+                    className="bg-card rounded-2xl border border-border/50 overflow-hidden group hover:border-primary/30 transition-all duration-300 animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    {/* Product Image */}
+                    <div className="relative aspect-square overflow-hidden bg-muted">
+                      {product.images && product.images[0] ? (
+                        <img
+                          src={product.images[0]}
+                          alt={product.title}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Package className="w-12 h-12 text-muted-foreground/30" />
+                        </div>
+                      )}
+                      {/* Badges */}
+                      <div className="absolute top-2 left-2 flex gap-1">
+                        {product.is_featured && (
+                          <Badge className="text-[10px] px-2 py-0.5 bg-gold text-gold-foreground border-0">
+                            Featured
+                          </Badge>
+                        )}
+                        {product.compare_at_price && product.compare_at_price > product.price_qar && (
+                          <Badge className="text-[10px] px-2 py-0.5 bg-destructive text-destructive-foreground border-0">
+                            Sale
+                          </Badge>
+                        )}
+                      </div>
+                      {/* Product Type Badge */}
+                      <div className="absolute bottom-2 right-2">
+                        <Badge className="text-[10px] px-2 py-0.5 bg-background/90 backdrop-blur-sm">
+                          {product.product_type}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Product Info */}
+                    <div className="p-3">
+                      <h3 className="font-semibold text-foreground text-sm line-clamp-2 mb-2">
+                        {product.title}
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-primary">QAR {product.price_qar}</span>
+                          {product.compare_at_price && product.compare_at_price > product.price_qar && (
+                            <span className="text-xs text-muted-foreground line-through">
+                              QAR {product.compare_at_price}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Stock indicator for physical products */}
+                      {product.product_type === "physical" && (
+                        <div className="mt-2 flex items-center gap-1 text-xs">
+                          <span className={product.inventory_count > 0 ? "text-green-600" : "text-destructive"}>
+                            {product.inventory_count > 0 ? `${product.inventory_count} in stock` : "Out of stock"}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Add to Cart Button */}
+                      <Button
+                        size="sm"
+                        className="w-full mt-3 rounded-xl"
+                        disabled={product.product_type === "physical" && product.inventory_count === 0}
+                        onClick={() => {
+                          if (!user) {
+                            navigate("/auth");
+                            return;
+                          }
+                          addToCart.mutate(
+                            { productId: product.id, quantity: 1 },
+                            {
+                              onSuccess: () => {
+                                toast({ title: "Added to cart" });
+                              },
+                              onError: (error: any) => {
+                                toast({ title: error.message || "Failed to add to cart", variant: "destructive" });
+                              },
+                            }
+                          );
+                        }}
+                      >
+                        <ShoppingBag className="w-4 h-4 mr-1" />
+                        Add to Cart
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                  <ShoppingBag className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground">No products available yet</p>
+                <p className="text-xs text-muted-foreground mt-1">Check back soon for products from this artist</p>
               </div>
             )}
           </TabsContent>

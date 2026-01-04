@@ -16,6 +16,7 @@ import artist3 from "@/assets/artist-3.jpg";
 
 const menuItems = [
   { icon: Heart, labelKey: "favorites" as const, path: "/favorites" },
+  { icon: ShoppingBag, labelKey: "cart" as const, path: "/cart" },
   { icon: MessageCircle, labelKey: "messages" as const, path: "/messages" },
   { icon: Wallet, labelKey: "wallet" as const, path: "/wallet" },
   { icon: Gift, labelKey: "referrals" as const, path: "/referrals" },
