@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Check, Package, MapPin, Calendar, Clock, ChevronRight, Home, ShoppingBag, Sparkles } from "lucide-react";
+import BottomNavigation from "@/components/BottomNavigation";
 import { Button } from "@/components/ui/button";
 import { useOrderDetails } from "@/hooks/useOrderDetails";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -245,6 +246,7 @@ const OrderConfirmation = () => {
           </div>
         </div>
       </div>
+      <BottomNavigation />
     </div>
   );
 };
