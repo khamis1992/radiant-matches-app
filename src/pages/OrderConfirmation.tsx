@@ -216,24 +216,6 @@ const OrderConfirmation = () => {
             <ChevronRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
           </Button>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/home")}
-              className="h-12 rounded-xl font-medium gap-2"
-            >
-              <Home className="w-4 h-4" />
-              {language === "ar" ? "الرئيسية" : "Home"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/orders")}
-              className="h-12 rounded-xl font-medium gap-2"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              {language === "ar" ? "طلباتي" : "My Orders"}
-            </Button>
-          </div>
         </div>
 
         {/* Estimated Delivery */}
