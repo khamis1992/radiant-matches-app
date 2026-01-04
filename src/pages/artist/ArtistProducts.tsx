@@ -76,6 +76,9 @@ import {
   ProductInsert,
 } from "@/hooks/useArtistProducts";
 import { useProductOrders, useUpdateOrderStatus, useOrderStats } from "@/hooks/useProductOrders";
+import ImageCropper from "@/components/ImageCropper";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { compressImage } from "@/lib/imageCompression";
 
 const productTypes = [
   { value: "physical", labelEn: "Physical Product", labelAr: "منتج فيزيائي", icon: Package },
@@ -113,6 +116,11 @@ const ArtistProducts = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Image cropping state
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
 
   const [form, setForm] = useState<ProductInsert>({
     title: "",
@@ -171,19 +179,63 @@ const ArtistProducts = () => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    const file = files[0];
+    setOriginalFile(file);
+    
+    // Create preview URL for cropping
+    const previewUrl = URL.createObjectURL(file);
+    setImageToCrop(previewUrl);
+    setCropDialogOpen(true);
+    
+    // Reset input
+    e.target.value = "";
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    setCropDialogOpen(false);
+    setImageToCrop(null);
+    
     try {
-      const urls: string[] = [];
-      for (const file of Array.from(files)) {
-        const url = await uploadImage.mutateAsync(file);
-        urls.push(url);
-      }
+      // Convert blob to file
+      const fileName = originalFile?.name || "cropped-image.jpg";
+      const croppedFile = new File([croppedBlob], fileName, { type: "image/jpeg" });
+      
+      // Compress the cropped image
+      const compressedFile = await compressImage(croppedFile);
+      
+      // Upload
+      const url = await uploadImage.mutateAsync(compressedFile);
       setForm((prev) => ({
         ...prev,
-        images: [...(prev.images || []), ...urls],
+        images: [...(prev.images || []), url],
       }));
-      toast.success(isRTL ? "تم رفع الصور بنجاح" : "Images uploaded successfully");
+      toast.success(isRTL ? "تم رفع الصورة بنجاح" : "Image uploaded successfully");
     } catch (error) {
-      toast.error(isRTL ? "فشل في رفع الصور" : "Failed to upload images");
+      toast.error(isRTL ? "فشل في رفع الصورة" : "Failed to upload image");
+    } finally {
+      setOriginalFile(null);
+    }
+  };
+
+  const handleCropCancel = async () => {
+    setCropDialogOpen(false);
+    setImageToCrop(null);
+    
+    // Upload without cropping
+    if (originalFile) {
+      try {
+        const compressedFile = await compressImage(originalFile);
+        const url = await uploadImage.mutateAsync(compressedFile);
+        setForm((prev) => ({
+          ...prev,
+          images: [...(prev.images || []), url],
+        }));
+        toast.success(isRTL ? "تم رفع الصورة بنجاح" : "Image uploaded successfully");
+      } catch (error) {
+        toast.error(isRTL ? "فشل في رفع الصورة" : "Failed to upload image");
+      } finally {
+        setOriginalFile(null);
+      }
     }
   };
 
@@ -903,6 +955,24 @@ const ArtistProducts = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Image Crop Dialog */}
+      <Dialog open={cropDialogOpen} onOpenChange={setCropDialogOpen}>
+        <DialogContent className="max-w-lg" dir={isRTL ? "rtl" : "ltr"}>
+          <DialogHeader>
+            <DialogTitle>
+              {isRTL ? "اقتصاص الصورة" : "Crop Image"}
+            </DialogTitle>
+          </DialogHeader>
+          {imageToCrop && (
+            <ImageCropper
+              imageSrc={imageToCrop}
+              onCropComplete={handleCropComplete}
+              onCancel={handleCropCancel}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <BottomNavigation />
     </div>
