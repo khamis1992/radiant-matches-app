@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, User, Settings, LogOut, LogIn, ChevronLeft, Search, Sparkles } from "lucide-react";
+import { Bell, User, Settings, LogOut, LogIn, ChevronLeft, Search, Menu } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -21,6 +20,7 @@ import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 
+// TypeScript types for header props
 export type HeaderStyle = "modern" | "minimal" | "transparent" | "gradient";
 
 interface AppHeaderProps {
@@ -47,23 +47,24 @@ const AppHeader = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const { t, isRTL } = useLanguage();
+  const { t } = useLanguage();
   const { data: unreadCount = 0 } = useUnreadNotificationsCount();
 
+  // Scroll state for transparent header
   const [isScrolled, setIsScrolled] = useState(false);
-  const [headerHeight, setHeaderHeight] = useState(56);
   const headerRef = useRef<HTMLElement>(null);
 
+  // Handle scroll to update header state
   useEffect(() => {
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const shouldCompress = scrollY > 50;
-
-      setIsScrolled(shouldCompress);
-      setHeaderHeight(shouldCompress ? 48 : 56);
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -77,24 +78,24 @@ const AppHeader = ({
     }
   };
 
+  // Style-based classes
   const getHeaderClasses = useCallback(() => {
-    const baseClasses = "fixed top-0 left-0 right-0 z-50 safe-area-top transition-all duration-500";
+    const baseClasses = "sticky top-0 z-50 transition-all duration-300 safe-area-top";
 
     const styleClasses = {
       modern: cn(
-        "bg-white/80 backdrop-blur-xl border-b border-primary/10",
-        isScrolled && "bg-white/95 shadow-lg shadow-primary/5"
+        "bg-gradient-to-b from-background via-background/95 to-background/80 backdrop-blur-xl border-b border-border/30"
       ),
       minimal: cn(
-        "bg-background/90 backdrop-blur-md border-b border-border/30"
+        "bg-background/80 backdrop-blur-md border-b border-border/20"
       ),
       transparent: cn(
         isScrolled
-          ? "bg-background/95 backdrop-blur-xl border-b border-border/30 shadow-lg"
+          ? "bg-background/90 backdrop-blur-xl border-b border-border/30 shadow-lg"
           : "bg-transparent border-transparent"
       ),
       gradient: cn(
-        "bg-gradient-to-r from-rose-50/90 via-white/90 to-nude-50/90 backdrop-blur-xl border-b border-primary/15"
+        "bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 backdrop-blur-xl border-b border-primary/20"
       ),
     };
 
@@ -113,209 +114,156 @@ const AppHeader = ({
     <header
       ref={headerRef}
       className={cn(getHeaderClasses(), className)}
-      style={{ height: `${headerHeight}px` }}
     >
-      {/* Animated glow effect under header */}
-      <div
-        className={cn(
-          "absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm transition-opacity duration-500",
-          isScrolled ? "opacity-50" : "opacity-100"
-        )}
-      />
-
-      <div className="h-full px-4 flex items-center justify-between gap-3">
-        {/* Left side - Logo & Back */}
-        <div className="flex items-center gap-2 min-w-0">
-          {showBack && (
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center justify-center w-9 h-9 rounded-xl bg-muted/50 hover:bg-muted active:scale-95 transition-all duration-200"
-            >
-              <ChevronLeft className={cn("w-5 h-5 transition-transform duration-300", isRTL ? "rotate-180" : "")} />
-            </button>
-          )}
-
-          {showLogo && (
-            <div
-              className="relative group cursor-pointer"
-              onClick={() => navigate("/home")}
-            >
-              {/* Logo glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-gold/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-              <img
-                src={logo}
-                alt="Glam"
-                className={cn(
-                  "relative h-8 w-auto object-contain transition-all duration-300",
-                  isScrolled ? "h-7" : "h-8",
-                  "group-hover:scale-105"
-                )}
-              />
-            </div>
-          )}
-
-          {title && (
-            <h1 className={cn(
-              "font-semibold text-foreground truncate transition-all duration-300",
-              isScrolled ? "text-sm" : "text-base"
-            )}>
-              {title}
-            </h1>
-          )}
-        </div>
-
-        {/* Right side - Actions with asymmetric spacing */}
-        <div className="flex items-center gap-2">
-          {/* Language - minimal */}
-          <div className="relative">
-            <LanguageSwitcher />
+      <div className="px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          {/* Left side */}
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            {showBack && (
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center justify-center w-10 h-10 -ms-2 rounded-2xl bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
+                <ChevronLeft className="w-5 h-5 text-foreground" />
+              </button>
+            )}
+            {showLogo && (
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/home")}>
+                <img
+                  src={logo}
+                  alt="Glam"
+                  className="h-9 w-auto object-contain drop-shadow-sm transition-all duration-200 hover:scale-105"
+                />
+              </div>
+            )}
+            {title && (
+              <h1 className="text-lg font-semibold text-foreground truncate">
+                {title}
+              </h1>
+            )}
           </div>
 
-          {/* Notifications with orbital ring indicator */}
-          <button
-            onClick={() => navigate("/notifications")}
-            className={cn(
-              "relative flex items-center justify-center rounded-xl transition-all duration-200",
-              isScrolled ? "w-9 h-9" : "w-10 h-10"
+          {/* Right side - Actions */}
+          <div className="flex items-center gap-1.5">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
+            {/* Search Button */}
+            {showSearch && (
+              <button
+                onClick={handleSearch}
+                className="flex items-center justify-center w-10 h-10 rounded-2xl bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
+                <Search className="w-5 h-5 text-foreground" />
+              </button>
             )}
-          >
-            {unreadCount > 0 && (
-              <>
-                {/* Orbital ring animation */}
-                <div className="absolute inset-0 rounded-full border-2 border-primary/30 animate-ping" style={{ animationDuration: '2s' }} />
-                {/* Badge */}
-                <span className={cn(
-                  "absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-gradient-to-r from-primary to-primary/80 rounded-full shadow-lg shadow-primary/30",
-                  !isScrolled && "min-w-[20px] h-[20px] text-[11px]"
-                )}>
+
+            {/* Notification Button */}
+            <button
+              onClick={() => navigate("/notifications")}
+              className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            >
+              <Bell className="w-5 h-5 text-foreground" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-primary-foreground bg-gradient-to-r from-primary to-primary/90 rounded-full shadow-lg animate-in zoom-in-50 duration-200">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
-              </>
-            )}
-            <Bell className={cn(
-              "transition-all duration-200",
-              isScrolled ? "w-4 h-4" : "w-5 h-5"
-            )} />
-          </button>
+              )}
+            </button>
 
-          {/* Profile Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "relative flex items-center justify-center rounded-xl overflow-hidden transition-all duration-200",
-                  isScrolled ? "w-9 h-9" : "w-10 h-10"
-                )}
+            {/* Profile Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center justify-center w-10 h-10 rounded-2xl bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+                  <Avatar className="w-8 h-8 ring-2 ring-background shadow-sm transition-all duration-200 hover:ring-primary/30">
+                    <AvatarImage
+                      src={profile?.avatar_url || undefined}
+                      alt={profile?.full_name || "Profile"}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-xs font-semibold">
+                      {profile?.full_name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                sideOffset={12}
+                className="w-56 bg-card/95 backdrop-blur-xl border border-border/50 shadow-2xl rounded-2xl p-2 animate-in fade-in-0 zoom-in-95 duration-200"
               >
-                {/* Subtle gradient ring */}
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-primary/10 via-transparent to-gold/10" />
-
-                <Avatar className={cn(
-                  "relative ring-2 ring-background transition-all duration-200",
-                  isScrolled ? "w-6 h-6" : "w-7 h-7"
-                )}>
-                  <AvatarImage
-                    src={profile?.avatar_url || undefined}
-                    alt={profile?.full_name || "Profile"}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-gradient-to-br from-primary/30 to-primary/20 text-primary text-xs font-bold">
-                    {profile?.full_name?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              sideOffset={8}
-              className="w-52 bg-card/95 backdrop-blur-xl border border-border/50 shadow-2xl rounded-2xl overflow-hidden"
-            >
-              {user ? (
-                <>
-                  {/* User info - compact */}
-                  <div className="p-3 bg-gradient-to-br from-muted/60 to-muted/30">
-                    <div className="flex items-center gap-2.5">
-                      <Avatar className="w-9 h-9 ring-2 ring-primary/20">
-                        <AvatarImage src={profile?.avatar_url || undefined} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary/30 to-primary/20 text-primary text-xs font-bold">
-                          {profile?.full_name?.charAt(0) || "U"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground truncate">
-                          {profile?.full_name || t.userMenu.myProfile}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground truncate">
-                          {profile?.email || user.email}
-                        </p>
+                {user ? (
+                  <>
+                    {/* User Info Header - Premium Design */}
+                    <div className="px-3 py-3 mb-1 bg-gradient-to-br from-muted/50 to-transparent rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-10 h-10 ring-2 ring-primary/20">
+                          <AvatarImage src={profile?.avatar_url || undefined} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
+                            {profile?.full_name?.charAt(0) || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {profile?.full_name || t.userMenu.myProfile}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {profile?.email || user.email}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="p-1.5 space-y-0.5">
+                    <DropdownMenuSeparator className="bg-border/30 my-1" />
                     <DropdownMenuItem
                       onClick={() => navigate("/profile")}
-                      className="rounded-xl py-2.5 px-3 cursor-pointer"
+                      className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <User className="h-4 w-4 text-primary" />
-                        </div>
-                        <span className="text-sm font-medium">{t.userMenu.myProfile}</span>
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 me-3">
+                        <User className="h-4 w-4 text-primary" />
                       </div>
+                      <span className="font-medium">{t.userMenu.myProfile}</span>
                     </DropdownMenuItem>
-
                     <DropdownMenuItem
                       onClick={() => navigate("/settings")}
-                      className="rounded-xl py-2.5 px-3 cursor-pointer"
+                      className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-                          <Settings className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                        <span className="text-sm font-medium">{t.userMenu.settings}</span>
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted me-3">
+                        <Settings className="h-4 w-4 text-muted-foreground" />
                       </div>
+                      <span className="font-medium">{t.userMenu.settings}</span>
                     </DropdownMenuItem>
-
+                    <DropdownMenuSeparator className="bg-border/30 my-1" />
                     <DropdownMenuItem
                       onClick={handleLogout}
-                      className="rounded-xl py-2.5 px-3 cursor-pointer text-destructive"
+                      className="cursor-pointer rounded-xl py-3 px-3 text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors duration-150"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
-                          <LogOut className="h-4 w-4 text-destructive" />
-                        </div>
-                        <span className="text-sm font-medium">{t.userMenu.logout}</span>
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-destructive/10 me-3">
+                        <LogOut className="h-4 w-4 text-destructive" />
                       </div>
+                      <span className="font-medium">{t.userMenu.logout}</span>
                     </DropdownMenuItem>
-                  </div>
-                </>
-              ) : (
-                <div className="p-1.5">
+                  </>
+                ) : (
                   <DropdownMenuItem
                     onClick={() => navigate("/auth")}
-                    className="rounded-xl py-2.5 px-3 cursor-pointer"
+                    className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <LogIn className="h-4 w-4 text-primary" />
-                      </div>
-                      <span className="text-sm font-medium">{t.auth.login}</span>
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 me-3">
+                      <LogIn className="h-4 w-4 text-primary" />
                     </div>
+                    <span className="font-medium">{t.auth.login}</span>
                   </DropdownMenuItem>
-                </div>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
+        {children && (
+          <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
+            {children}
+          </div>
+        )}
       </div>
-
-      {children && (
-        <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
-          {children}
-        </div>
-      )}
     </header>
   );
 };
