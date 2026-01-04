@@ -15,10 +15,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { TrendingUp, TrendingDown, Briefcase, Star, Wallet, Clock, CheckCircle, XCircle, ArrowDownToLine } from "lucide-react";
+import { TrendingUp, TrendingDown, Briefcase, Star, Wallet, Clock, CheckCircle, XCircle, ArrowDownToLine, Package, ShoppingBag, Eye } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentArtist, useArtistBookings, useArtistEarnings } from "@/hooks/useArtistDashboard";
 import { useArtistWithdrawals, useCreateWithdrawal } from "@/hooks/useWithdrawals";
+import { useArtistProducts } from "@/hooks/useArtistProducts";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { formatQAR } from "@/lib/locale";
@@ -32,6 +33,7 @@ const ArtistEarnings = () => {
   const { data: bookings } = useArtistBookings();
   const { data: earnings, isLoading: earningsLoading } = useArtistEarnings();
   const { data: withdrawals = [] } = useArtistWithdrawals(artist?.id);
+  const { data: products = [], isLoading: productsLoading } = useArtistProducts();
   const createWithdrawal = useCreateWithdrawal();
   const { t, isRTL, language } = useLanguage();
 
@@ -218,6 +220,101 @@ const ArtistEarnings = () => {
                 </p>
               </div>
             </div>
+
+            {/* Products Stats */}
+            {!productsLoading && (
+              <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <ShoppingBag className="w-5 h-5 text-primary" />
+                    <h3 className="font-semibold text-foreground">
+                      {isRTL ? "متجر المنتجات" : "Products Store"}
+                    </h3>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate("/artist-products")}
+                  >
+                    <Eye className="w-4 h-4 me-1" />
+                    {isRTL ? "عرض" : "View"}
+                  </Button>
+                </div>
+                
+                <div className={`grid grid-cols-3 ${isRTL ? "divide-x-reverse" : ""} divide-x divide-border`}>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <Package className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">{products.length}</p>
+                    <p className="text-xs text-muted-foreground">{isRTL ? "إجمالي المنتجات" : "Total Products"}</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">
+                      {products.filter(p => p.is_active).length}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{isRTL ? "نشط" : "Active"}</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">
+                      {products.filter(p => p.is_featured).length}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{isRTL ? "مميز" : "Featured"}</p>
+                  </div>
+                </div>
+
+                {products.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {isRTL ? "إجمالي قيمة المنتجات" : "Total Products Value"}
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {formatQAR(products.reduce((sum, p) => sum + (p.is_active ? p.price_qar : 0), 0))}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm mt-2">
+                      <span className="text-muted-foreground">
+                        {isRTL ? "متوسط سعر المنتج" : "Average Product Price"}
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {formatQAR(products.length > 0 ? products.reduce((sum, p) => sum + p.price_qar, 0) / products.length : 0)}
+                      </span>
+                    </div>
+                    {products.some(p => p.product_type === "physical") && (
+                      <div className="flex items-center justify-between text-sm mt-2">
+                        <span className="text-muted-foreground">
+                          {isRTL ? "إجمالي المخزون" : "Total Inventory"}
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {products.filter(p => p.product_type === "physical").reduce((sum, p) => sum + p.inventory_count, 0)} {isRTL ? "قطعة" : "items"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {products.length === 0 && (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {isRTL ? "لم تضف أي منتجات بعد" : "No products added yet"}
+                    </p>
+                    <Button 
+                      size="sm" 
+                      onClick={() => navigate("/artist-products")}
+                    >
+                      {isRTL ? "إضافة منتج" : "Add Product"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Recent withdrawal requests */}
             {withdrawals.length > 0 && (
