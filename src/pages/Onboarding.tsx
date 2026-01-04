@@ -5,8 +5,8 @@ import { ChevronRight, ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { AppRole } from "@/hooks/useUserRole";
+import { SplashScreen } from "@/components/SplashScreen";
 import heroImage from "@/assets/hero-makeup.jpg";
-import logoImage from "@/assets/logo.png";
 
 const getSlides = (language: "en" | "ar") => {
   if (language === "ar") {
@@ -105,17 +105,7 @@ const Onboarding = () => {
   };
 
   if (showSplash) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-[hsl(350,45%,95%)] to-background">
-        <div className="animate-scale-in text-center">
-          <img 
-            src={logoImage} 
-            alt="Glam Beauty Marketplace" 
-            className="w-48 h-auto mx-auto"
-          />
-        </div>
-      </div>
-    );
+    return <SplashScreen onComplete={() => setShowSplash(false)} />;
   }
 
   return (
