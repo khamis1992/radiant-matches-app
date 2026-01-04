@@ -739,15 +739,27 @@ const ArtistProfile = () => {
                         <img
                           src={product.images[0]}
                           alt={product.title}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          className={`w-full h-full object-cover transition-transform group-hover:scale-105 ${
+                            product.product_type === "physical" && product.inventory_count === 0 ? "opacity-50 grayscale" : ""
+                          }`}
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
+                        <div className={`w-full h-full flex items-center justify-center ${
+                          product.product_type === "physical" && product.inventory_count === 0 ? "opacity-50" : ""
+                        }`}>
                           <Package className="w-12 h-12 text-muted-foreground/30" />
                         </div>
                       )}
+                      {/* Out of Stock Overlay */}
+                      {product.product_type === "physical" && product.inventory_count === 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[2px]">
+                          <Badge className="text-xs px-3 py-1 bg-destructive text-destructive-foreground border-0">
+                            {language === "ar" ? "نفذت الكمية" : "Out of Stock"}
+                          </Badge>
+                        </div>
+                      )}
                       {/* Badges */}
-                      <div className="absolute top-2 left-2 flex gap-1">
+                      <div className="absolute top-2 left-2 flex gap-1 flex-wrap">
                         {product.is_featured && (
                           <Badge className="text-[10px] px-2 py-0.5 bg-gold text-gold-foreground border-0">
                             Featured
@@ -756,6 +768,12 @@ const ArtistProfile = () => {
                         {product.compare_at_price && product.compare_at_price > product.price_qar && (
                           <Badge className="text-[10px] px-2 py-0.5 bg-destructive text-destructive-foreground border-0">
                             Sale
+                          </Badge>
+                        )}
+                        {/* Low stock warning badge */}
+                        {product.product_type === "physical" && product.inventory_count > 0 && product.inventory_count <= 5 && (
+                          <Badge className="text-[10px] px-2 py-0.5 bg-amber-500 text-white border-0">
+                            {language === "ar" ? `متبقي ${product.inventory_count} فقط` : `Only ${product.inventory_count} left`}
                           </Badge>
                         )}
                       </div>
@@ -782,15 +800,6 @@ const ArtistProfile = () => {
                           )}
                         </div>
                       </div>
-
-                      {/* Stock indicator for physical products */}
-                      {product.product_type === "physical" && (
-                        <div className="mt-2 flex items-center gap-1 text-xs">
-                          <span className={product.inventory_count > 0 ? "text-green-600" : "text-destructive"}>
-                            {product.inventory_count > 0 ? `${product.inventory_count} in stock` : "Out of stock"}
-                          </span>
-                        </div>
-                      )}
 
                       {/* Add to Cart Button */}
                       <Button
