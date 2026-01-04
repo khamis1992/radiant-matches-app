@@ -1,18 +1,20 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ShoppingBag } from "lucide-react";
-import { useCartItemCount } from "@/hooks/useShoppingCart";
-import { useAuth } from "@/hooks/useAuth";
+import { useUnifiedCart } from "@/hooks/useUnifiedCart";
 import { cn } from "@/lib/utils";
 
 export const FloatingCartButton = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { data: itemCount = 0 } = useCartItemCount();
+  const location = useLocation();
+  const { cartCount, isLoading } = useUnifiedCart();
 
-  if (!user) {
+  // Hide on cart and checkout pages
+  const hiddenPaths = ["/cart", "/checkout", "/order-confirmation", "/auth"];
+  if (hiddenPaths.some(path => location.pathname.startsWith(path))) {
     return null;
   }
 
+  // Show cart button with count (works for both guests and logged-in users)
   return (
     <button
       onClick={() => navigate("/cart")}
@@ -24,15 +26,15 @@ export const FloatingCartButton = () => {
         "hover:scale-105 active:scale-95",
         "transition-all duration-300",
         "animate-bounce-in",
-        itemCount > 0
-          ? "bg-gradient-to-br from-primary to-primary/80 shadow-primary/30 text-white"
+        cartCount > 0
+          ? "bg-gradient-to-br from-primary to-primary/80 shadow-primary/30 text-primary-foreground"
           : "bg-card border-2 border-border/50 text-muted-foreground"
       )}
     >
       <ShoppingBag className="w-6 h-6" />
-      {itemCount > 0 && (
-        <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] flex items-center justify-center text-[10px] font-bold bg-white text-primary rounded-full px-1 shadow-md animate-bounce-in">
-          {itemCount > 99 ? "99+" : itemCount}
+      {cartCount > 0 && (
+        <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] flex items-center justify-center text-[10px] font-bold bg-background text-primary rounded-full px-1 shadow-md border border-border animate-bounce-in">
+          {cartCount > 99 ? "99+" : cartCount}
         </span>
       )}
     </button>

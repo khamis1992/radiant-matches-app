@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useShoppingCart, useClearCart } from "@/hooks/useShoppingCart";
+import { useUnifiedCart } from "@/hooks/useUnifiedCart";
 import { useCreateOrder } from "@/hooks/useProductOrders";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -18,9 +18,8 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { data: profile } = useProfile();
-  const { data: cartItems = [], isLoading } = useShoppingCart();
+  const { cartItems, isLoading, clearCart } = useUnifiedCart();
   const createOrder = useCreateOrder();
-  const clearCart = useClearCart();
 
   // Load saved address from user metadata or use profile info
   const getInitialAddress = (): ShippingAddress => {
@@ -105,7 +104,7 @@ const Checkout = () => {
       }
 
       // Clear the cart after successful order
-      await clearCart.mutateAsync();
+      clearCart.mutate();
 
       // Navigate to order confirmation page
       navigate(`/order-confirmation?orderId=${order.id}`);
