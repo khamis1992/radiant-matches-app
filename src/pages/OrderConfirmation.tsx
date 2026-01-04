@@ -17,6 +17,38 @@ const OrderConfirmation = () => {
   const { data: order, isLoading } = useOrderDetails(orderId || "");
   const [showContent, setShowContent] = useState(false);
 
+  // SEO: title, description, canonical
+  useEffect(() => {
+    const title = language === "ar" ? "تأكيد الطلب" : "Order Confirmation";
+    document.title = `${title} | Glam`;
+
+    const description =
+      language === "ar"
+        ? "صفحة تأكيد الطلب تعرض ملخص الطلب وتفاصيل الشحن وتتبع الحالة."
+        : "Order confirmation page with order summary, shipping details, and tracking link.";
+
+    const meta =
+      document.querySelector('meta[name="description"]') ||
+      (() => {
+        const m = document.createElement("meta");
+        m.setAttribute("name", "description");
+        document.head.appendChild(m);
+        return m;
+      })();
+    meta.setAttribute("content", description);
+
+    const canonicalHref = `${window.location.origin}/order-confirmation`;
+    const canonical =
+      document.querySelector('link[rel="canonical"]') ||
+      (() => {
+        const l = document.createElement("link");
+        l.setAttribute("rel", "canonical");
+        document.head.appendChild(l);
+        return l;
+      })();
+    canonical.setAttribute("href", canonicalHref);
+  }, [language]);
+
   // Trigger confetti and animations on mount
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -55,13 +87,13 @@ const OrderConfirmation = () => {
         {/* Success Animation */}
         <div className={`text-center mb-8 transition-all duration-700 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <div className="relative inline-block mb-6">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-2xl shadow-green-500/30 animate-scale-in">
-              <Check className="w-12 h-12 text-white" strokeWidth={3} />
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-2xl shadow-primary/30 animate-scale-in">
+              <Check className="w-12 h-12 text-primary-foreground" strokeWidth={3} />
             </div>
             <div className="absolute -top-2 -right-2">
-              <Sparkles className="w-8 h-8 text-yellow-400 animate-pulse" />
+              <Sparkles className="w-8 h-8 text-primary animate-pulse" />
             </div>
-            <div className="absolute inset-0 w-24 h-24 rounded-full bg-green-400/20 animate-ping" />
+            <div className="absolute inset-0 w-24 h-24 rounded-full bg-primary/20 animate-ping" />
           </div>
 
           <h1 className="text-3xl font-bold text-foreground mb-3">
@@ -87,8 +119,8 @@ const OrderConfirmation = () => {
                   #{orderId?.slice(0, 8).toUpperCase()}
                 </p>
               </div>
-              <div className="px-3 py-1.5 bg-green-500/10 text-green-600 rounded-full text-sm font-medium flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 {language === "ar" ? "قيد المعالجة" : "Processing"}
               </div>
             </div>

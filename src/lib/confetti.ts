@@ -2,7 +2,13 @@
  * Simple confetti effect for celebrations
  */
 const confetti = () => {
-  const colors = ['#f472b6', '#c084fc', '#60a5fa', '#34d399', '#fbbf24'];
+  const colors = [
+    "hsl(var(--primary))",
+    "hsl(var(--accent))",
+    "hsl(var(--secondary))",
+    "hsl(var(--ring))",
+    "hsl(var(--muted-foreground))",
+  ];
   const confettiCount = 50;
 
   for (let i = 0; i < confettiCount; i++) {
