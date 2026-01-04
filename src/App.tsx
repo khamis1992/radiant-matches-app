@@ -36,6 +36,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
 import OrderDetails from "./pages/OrderDetails";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 import HelpSupport from "./pages/HelpSupport";
@@ -234,6 +235,7 @@ const App = () => (
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/orders/:id" element={<OrderDetails />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/help" element={<HelpSupport />} />
