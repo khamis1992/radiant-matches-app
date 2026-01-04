@@ -138,6 +138,33 @@ const EditProfile = () => {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <header className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-full hover:bg-muted transition-colors"
+            >
+              <BackIcon className="w-5 h-5 text-foreground" />
+            </button>
+            <h1 className="text-lg font-semibold text-foreground">
+              {t.profile.editProfile}
+            </h1>
+          </div>
+        </header>
+        <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
+          <User className="w-16 h-16 text-muted-foreground mb-4" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t.profile?.signInToView || "Sign in required"}</h2>
+          <p className="text-muted-foreground mb-6">{t.profile?.signInDesc || "Please sign in to edit your profile"}</p>
+          <Button onClick={() => navigate("/auth")}>{t.auth?.login || "Sign In"}</Button>
+        </div>
+        <BottomNavigation />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3">

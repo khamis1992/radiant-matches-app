@@ -72,6 +72,21 @@ const OrderDetails = () => {
   const { data: order, isLoading } = useOrderDetails(id || "");
   const updateStatus = useUpdateOrderStatus();
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-5">
+        <div className="text-center">
+          <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">Sign In Required</h2>
+          <p className="text-muted-foreground mb-6">Please sign in to view order details</p>
+          <Button onClick={() => navigate("/auth")} className="rounded-xl">
+            Sign In
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">

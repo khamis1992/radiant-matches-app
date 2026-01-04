@@ -4,8 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCustomerOrders } from "@/hooks/useProductOrders";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import type { OrderStatus } from "@/types/product";
+import AppHeader from "@/components/layout/AppHeader";
+import BottomNavigation from "@/components/BottomNavigation";
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; icon: any; color: string; bgColor: string }> = {
   pending: { label: "Pending", icon: Clock, color: "text-yellow-600", bgColor: "bg-yellow-500/10" },
@@ -17,7 +21,24 @@ const STATUS_CONFIG: Record<OrderStatus, { label: string; icon: any; color: stri
 
 const Orders = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { t } = useLanguage();
   const { data: orders = [], isLoading } = useCustomerOrders();
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <AppHeader title="My Orders" style="modern" />
+        <div className="flex flex-col items-center justify-center px-5 py-16">
+          <Package className="w-16 h-16 text-muted-foreground mb-4" />
+          <h2 className="text-lg font-semibold mb-2">{t.profile?.signInToView || "Sign in to view"}</h2>
+          <p className="text-muted-foreground text-center mb-4">{t.profile?.signInDesc || "Sign in to view your orders"}</p>
+          <Button onClick={() => navigate("/auth")}>{t.auth?.login || "Sign In"}</Button>
+        </div>
+        <BottomNavigation />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
