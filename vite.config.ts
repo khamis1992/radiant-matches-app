@@ -8,7 +8,16 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    // For Capacitor development, ensure proper CORS handling
+    cors: true,
+    strictPort: true,
+    watch: {
+      // For HMR to work with Capacitor
+      usePolling: true,
+    }
   },
+  // Configure base path for Capacitor
+  base: mode === 'production' ? '' : '/',
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
@@ -39,5 +48,31 @@ export default defineConfig(({ mode }) => ({
       "react/jsx-runtime",
       "react/jsx-dev-runtime",
     ],
+  },
+  build: {
+    // Ensure proper output directory for Capacitor
+    outDir: 'dist',
+    emptyOutDir: true,
+    // Generate source maps for debugging
+    sourcemap: mode === 'development',
+    // Optimize chunk splitting for mobile
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate vendor chunks for better caching
+          'react-vendor': ['react', 'react-dom'],
+          'radix-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          'supabase-vendor': ['@supabase/supabase-js'],
+        }
+      }
+    },
+    // Target modern browsers but ensure mobile compatibility
+    target: 'es2015',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+      }
+    }
   },
 }));

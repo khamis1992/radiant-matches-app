@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx cap init:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx cap add:*)",
+      "Bash(npm run cap:sync:android:*)",
+      "Bash(ipconfig:*)",
+      "Bash(findstr:*)",
+      "Bash(npm run cap:open:android:*)",
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(where:*)"
+    ]
+  }
+}
