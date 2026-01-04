@@ -84,6 +84,7 @@ export const ar = {
     notifications: "الإشعارات",
     markAllRead: "تحديد الكل كمقروء",
     noNotifications: "لا توجد إشعارات",
+    products: "المتجر",
   },
 
   // Messages
