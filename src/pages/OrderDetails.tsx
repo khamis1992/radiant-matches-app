@@ -25,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import type { OrderStatus } from "@/types/product";
 import AppHeader from "@/components/layout/AppHeader";
+import BottomNavigation from "@/components/BottomNavigation";
 
 const STATUS_CONFIG: Record<
   OrderStatus,
@@ -358,6 +359,7 @@ const OrderDetails = () => {
           </Button>
         </div>
       </div>
+      <BottomNavigation />
     </div>
   );
 };
