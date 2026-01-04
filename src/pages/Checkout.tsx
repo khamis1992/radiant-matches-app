@@ -41,8 +41,18 @@ const Checkout = () => {
   };
 
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>(getInitialAddress);
-
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Update shipping address when profile data loads
+  useEffect(() => {
+    if (profile) {
+      setShippingAddress(prev => ({
+        ...prev,
+        full_name: prev.full_name || profile.full_name || "",
+        phone: prev.phone || profile.phone || "",
+      }));
+    }
+  }, [profile]);
 
   const hasPhysicalProducts = cartItems.some((item) => item.product.product_type === "physical");
   const total = cartItems.reduce(

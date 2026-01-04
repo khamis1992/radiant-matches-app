@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { ProductOrder } from "@/types/product";
+import type { ProductOrder, ProductOrderItem, ShippingAddress } from "@/types/product";
 
 export const useOrderDetails = (orderId: string) => {
   return useQuery({
@@ -13,7 +13,13 @@ export const useOrderDetails = (orderId: string) => {
         .single();
 
       if (error) throw error;
-      return data as ProductOrder;
+      
+      return {
+        ...data,
+        items: data.items as unknown as ProductOrderItem[],
+        shipping_address: data.shipping_address as unknown as ShippingAddress | null,
+        status: data.status as ProductOrder['status'],
+      } as ProductOrder;
     },
     enabled: !!orderId,
   });
