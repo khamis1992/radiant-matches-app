@@ -18,7 +18,7 @@ import { useArtistServices } from "@/hooks/useServices";
 import { useArtistReviews } from "@/hooks/useReviews";
 import { useArtistPortfolio, PORTFOLIO_CATEGORIES } from "@/hooks/usePortfolio";
 import { useProducts } from "@/hooks/useProducts";
-import { useAddToCart } from "@/hooks/useShoppingCart";
+import { useUnifiedCart } from "@/hooks/useUnifiedCart";
 
 import { useWorkingHours } from "@/hooks/useWorkingHours";
 import { useBlockedDates } from "@/hooks/useBlockedDates";
@@ -50,7 +50,7 @@ const ArtistProfile = () => {
   const { data: reviews, isLoading: reviewsLoading } = useArtistReviews(id);
   const { data: portfolioItems = [], isLoading: portfolioLoading } = useArtistPortfolio(artist?.id);
   const { data: products = [], isLoading: productsLoading } = useProducts(artist?.id);
-  const addToCart = useAddToCart();
+  const { addToCart } = useUnifiedCart();
   
   const { data: workingHours = [], isLoading: workingHoursLoading } = useWorkingHours(artist?.id);
   const { data: blockedDates = [] } = useBlockedDates(artist?.id);
@@ -798,15 +798,16 @@ const ArtistProfile = () => {
                         className="w-full mt-3 rounded-xl"
                         disabled={product.product_type === "physical" && product.inventory_count === 0}
                         onClick={() => {
-                          if (!user) {
-                            navigate("/auth");
-                            return;
-                          }
                           addToCart.mutate(
                             { productId: product.id, quantity: 1 },
                             {
                               onSuccess: () => {
-                                toast({ title: "Added to cart" });
+                                toast({ 
+                                  title: language === "ar" ? "تمت الإضافة للسلة" : "Added to cart",
+                                  description: !user 
+                                    ? (language === "ar" ? "سجل دخولك لحفظ السلة" : "Sign in to save your cart")
+                                    : undefined
+                                });
                               },
                               onError: (error: any) => {
                                 toast({ title: error.message || "Failed to add to cart", variant: "destructive" });
@@ -816,7 +817,7 @@ const ArtistProfile = () => {
                         }}
                       >
                         <ShoppingBag className="w-4 h-4 mr-1" />
-                        Add to Cart
+                        {language === "ar" ? "أضف للسلة" : "Add to Cart"}
                       </Button>
                     </div>
                   </div>
