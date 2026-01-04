@@ -241,23 +241,48 @@ const Cart = () => {
 
       {/* Checkout Bar */}
       {cartItems.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-card border-t border-border/50 shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-muted-foreground">
-              {language === "ar" ? "المجموع الفرعي" : "Subtotal"}
-            </span>
-            <span className="text-xl font-bold text-foreground">QAR {subtotal.toFixed(2)}</span>
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background to-transparent pt-6 pb-20">
+          <div className="mx-5 p-4 bg-card rounded-2xl border border-border/50 shadow-xl backdrop-blur-sm">
+            {/* Order Summary */}
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {language === "ar" ? "المنتجات" : "Items"} ({cartItems.length})
+                </span>
+                <span className="text-foreground">QAR {subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {language === "ar" ? "التوصيل" : "Delivery"}
+                </span>
+                <span className="text-primary font-medium">
+                  {language === "ar" ? "يحدد عند الدفع" : "Calculated at checkout"}
+                </span>
+              </div>
+              <div className="h-px bg-border my-2" />
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-foreground">
+                  {language === "ar" ? "المجموع الفرعي" : "Subtotal"}
+                </span>
+                <div className="text-right">
+                  <span className="text-xl font-bold text-primary">QAR {subtotal.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Checkout Button */}
+            <Button
+              onClick={handleCheckout}
+              className="w-full h-12 rounded-xl font-semibold text-base gap-2 shadow-lg shadow-primary/20"
+              size="lg"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {isGuest 
+                ? (language === "ar" ? "سجل دخولك لإتمام الشراء" : "Sign In to Checkout")
+                : (language === "ar" ? "إتمام الشراء" : "Proceed to Checkout")}
+              <ArrowRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
+            </Button>
           </div>
-          <Button
-            onClick={handleCheckout}
-            className="w-full h-12 rounded-xl font-medium"
-            size="lg"
-          >
-            {isGuest 
-              ? (language === "ar" ? "سجل دخولك لإتمام الشراء" : "Sign In to Checkout")
-              : (language === "ar" ? "إتمام الشراء" : "Proceed to Checkout")}
-            <ArrowRight className={`w-5 h-5 ${isRTL ? 'mr-2 rotate-180' : 'ml-2'}`} />
-          </Button>
         </div>
       )}
 
