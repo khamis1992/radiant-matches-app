@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronLeft, Sparkles, Wand2, Shield, ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles, Wand2, Shield, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { AppRole } from "@/hooks/useUserRole";
@@ -13,43 +13,49 @@ const getSlides = (language: "en" | "ar") => {
   if (language === "ar") {
     return [
       {
+        number: "٠١",
         title: "اكتشفي",
-        highlight: "فنانات موهوبات",
-        description: "جدي فنانة المكياج المثالية لأي مناسبة بالقرب منك",
-        icon: Sparkles,
+        subtitle: "مواهبة فنانة المكياج",
+        description: "تصفحي مئات الفنانات الموهوبات واكتشفي الأسلوب المثالي لأي مناسبة",
+        gradient: "from-rose-400 to-pink-500",
       },
       {
+        number: "٠٢",
         title: "احجزي",
-        highlight: "فوراً",
-        description: "جدولي مواعيدك في ثوانٍ مع التوفر في الوقت الفعلي",
-        icon: Wand2,
+        subtitle: "في ثوانٍ",
+        description: "اختاري موعدك المفضل واحجزي فوراً مع نظام الحجز الفوري السريع",
+        gradient: "from-primary to-rose-400",
       },
       {
+        number: "٠٣",
         title: "ادفعي",
-        highlight: "بأمان",
-        description: "مدفوعات آمنة وتقييمات صادقة من عملاء موثوقين",
-        icon: Shield,
+        subtitle: "بثقة وأمان",
+        description: "مدفوعات مشفرة وتقييمات حقيقية من عملاء موثوقين",
+        gradient: "from-gold to-amber-400",
       },
     ];
   }
   return [
     {
+      number: "01",
       title: "Discover",
-      highlight: "Talented Artists",
-      description: "Find the perfect makeup artist for any occasion near you",
-      icon: Sparkles,
+      subtitle: "Talented Artists",
+      description: "Browse hundreds of skilled makeup artists and find your perfect style for any occasion",
+      gradient: "from-rose-400 to-pink-500",
     },
     {
+      number: "02",
       title: "Book",
-      highlight: "Instantly",
-      description: "Schedule appointments in seconds with real-time availability",
-      icon: Wand2,
+      subtitle: "In Seconds",
+      description: "Select your preferred time and book instantly with our quick and easy scheduling system",
+      gradient: "from-primary to-rose-400",
     },
     {
+      number: "03",
       title: "Pay",
-      highlight: "Securely",
-      description: "Secure payments and honest reviews from verified customers",
-      icon: Shield,
+      subtitle: "With Confidence",
+      description: "Secure encrypted payments and genuine reviews from verified customers",
+      gradient: "from-gold to-amber-400",
     },
   ];
 };
@@ -57,7 +63,7 @@ const getSlides = (language: "en" | "ar") => {
 const Onboarding = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<"left" | "right" | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
   const { language, isRTL } = useLanguage();
@@ -108,29 +114,29 @@ const Onboarding = () => {
   }
 
   const handleNext = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setTimeout(() => {
-      if (currentSlide < slides.length - 1) {
+    if (currentSlide < slides.length - 1) {
+      setSlideDirection("left");
+      setTimeout(() => {
         setCurrentSlide(currentSlide + 1);
-      } else {
-        navigate("/auth");
-      }
-      setIsAnimating(false);
-    }, 300);
+        setSlideDirection(null);
+      }, 300);
+    } else {
+      navigate("/auth");
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentSlide > 0) {
+      setSlideDirection("right");
+      setTimeout(() => {
+        setCurrentSlide(currentSlide - 1);
+        setSlideDirection(null);
+      }, 300);
+    }
   };
 
   const handleSkip = () => {
     navigate("/home");
-  };
-
-  const handleDotClick = (index: number) => {
-    if (isAnimating || index === currentSlide) return;
-    setIsAnimating(true);
-    setTimeout(() => {
-      setCurrentSlide(index);
-      setIsAnimating(false);
-    }, 300);
   };
 
   if (showSplash) {
@@ -138,234 +144,263 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
-      {/* Full-bleed hero image with overlay */}
-      <div className="fixed inset-0 z-0">
-        <img
-          src={heroImage}
-          alt="Background"
-          className={cn(
-            "w-full h-full object-cover transition-transform duration-700 ease-out",
-            isAnimating ? "scale-110" : "scale-100"
-          )}
-        />
-
-        {/* Dramatic gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/40 via-primary/20 to-background" />
-
-        {/* Diagonal accent overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-background/30 to-transparent" />
-
-        {/* Noise texture */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <svg className="w-full h-full">
-            <filter id="noise-onboard">
-              <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="4" />
-              <feColorMatrix type="saturate" values="0" />
-            </filter>
-            <rect width="100%" height="100%" filter="url(#noise-onboard)" />
-          </svg>
-        </div>
-      </div>
-
-      {/* Giant slide number watermark */}
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
-        <span
-          className="text-[40vw] font-serif font-bold text-white/5 leading-none transition-all duration-500"
-          style={{
-            transform: isAnimating ? "scale(0.95)" : "scale(1)",
-          }}
-        >
-          {String(currentSlide + 1).padStart(2, "0")}
-        </span>
-      </div>
-
-      {/* Floating cosmetic silhouettes */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Lipstick */}
-        <div className="absolute top-[20%] left-[10%] w-12 h-32 opacity-10 animate-float-slow">
-          <svg viewBox="0 0 48 128" fill="currentColor" className="text-primary">
-            <rect x="12" y="0" width="24" height="80" rx="12" />
-            <rect x="6" y="80" width="36" height="48" rx="8" />
-          </svg>
-        </div>
-
-        {/* Brush */}
-        <div className="absolute top-[30%] right-[15%] w-10 h-48 opacity-10 animate-float-slow" style={{ animationDelay: '1s' }}>
-          <svg viewBox="0 0 40 192" fill="currentColor" className="text-gold">
-            <rect x="14" y="120" width="12" height="72" rx="3" />
-            <ellipse cx="20" cy="60" rx="16" ry="52" />
-          </svg>
-        </div>
-
-        {/* Compact */}
-        <div className="absolute bottom-[25%] left-[20%] w-20 h-20 opacity-10 animate-float-slow" style={{ animationDelay: '2s' }}>
-          <svg viewBox="0 0 80 80" fill="currentColor" className="text-primary">
-            <circle cx="40" cy="40" r="35" />
-            <circle cx="40" cy="40" r="25" fill="white" />
-          </svg>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Top bar - Skip button */}
-        <div className="flex justify-between items-center p-6 safe-area-top">
-          {/* Logo */}
-          <div
-            className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg"
-            onClick={() => navigate("/home")}
-          >
-            <span className="font-serif text-xl font-bold text-white">G</span>
-          </div>
-
-          <button
-            onClick={handleSkip}
-            className="px-5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium hover:bg-white/20 transition-all"
-          >
-            {language === "ar" ? "تخطي" : "Skip"}
-          </button>
-        </div>
-
-        {/* Content area */}
-        <div className="flex-1 flex flex-col justify-end px-6 pb-8 safe-area-bottom">
-          {/* Slide content */}
-          <div
-            className={cn(
-              "transition-all duration-500 ease-out",
-              isAnimating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-            )}
-          >
-            {/* Icon */}
-            <div className="mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 backdrop-blur-md flex items-center justify-center shadow-2xl">
-                <currentSlideData.icon className="w-8 h-8 text-white" />
-              </div>
-            </div>
-
-            {/* Headline with highlight */}
-            <h1 className="font-serif text-5xl font-bold text-white leading-tight mb-3">
-              {currentSlideData.title}
-              <br />
-              <span className="text-gold">{currentSlideData.highlight}</span>
-            </h1>
-
-            {/* Description */}
-            <p className="text-white/80 text-lg leading-relaxed mb-8 max-w-md">
-              {currentSlideData.description}
-            </p>
-
-            {/* Custom progress indicator */}
-            <div className="flex items-center gap-4 mb-8">
-              <div className="flex-1 h-0.5 bg-white/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-primary to-gold rounded-full transition-all duration-500 ease-out"
-                  style={{ width: `${((currentSlide + 1) / slides.length) * 100}%` }}
-                />
-              </div>
-              <span className="text-white/60 text-sm font-medium tabular-nums">
-                {String(currentSlide + 1).padStart(2, "0")}/{slides.length}
-              </span>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div
-            className={cn(
-              "transition-all duration-500 delay-100",
-              isAnimating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-            )}
-          >
-            {currentSlide === slides.length - 1 ? (
-              <div className="space-y-3">
-                <Button
-                  size="lg"
-                  className="w-full h-14 bg-white text-primary hover:bg-white/90 rounded-2xl font-semibold text-base shadow-2xl"
-                  onClick={() => navigate("/auth")}
-                >
-                  {language === "ar" ? "إنشاء حساب" : "Create Account"}
-                  <ArrowRight className={cn("w-5 h-5", isRTL ? "rotate-180" : "")} />
-                </Button>
-
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="flex-1 h-14 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white hover:bg-white/20 rounded-2xl font-semibold text-base"
-                    onClick={() => navigate("/auth")}
-                  >
-                    {language === "ar" ? "تسجيل الدخول" : "Sign In"}
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    className="flex-1 h-14 bg-white/10 backdrop-blur-md text-white hover:bg-white/20 rounded-2xl font-medium text-base"
-                    onClick={handleSkip}
-                  >
-                    {language === "ar" ? "ضيف" : "Guest"}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex gap-3">
-                <Button
-                  size="lg"
-                  className="flex-1 h-14 bg-white text-primary hover:bg-white/90 rounded-2xl font-semibold text-base shadow-2xl"
-                  onClick={handleNext}
-                  disabled={isAnimating}
-                >
-                  {language === "ar" ? "التالي" : "Next"}
-                  <ArrowRight className={cn("w-5 h-5", isRTL ? "rotate-180" : "")} />
-                </Button>
-
-                {/* Dot indicators - clickable */}
-                <div className="flex items-center gap-2 px-4">
-                  {slides.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleDotClick(index)}
-                      disabled={isAnimating}
-                      className={cn(
-                        "transition-all duration-300 rounded-full",
-                        index === currentSlide
-                          ? "w-3 h-3 bg-white"
-                          : "w-2 h-2 bg-white/30 hover:bg-white/50"
-                      )}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Animated corner accent */}
-      <div className="fixed top-0 left-0 w-32 h-32 pointer-events-none">
-        <svg viewBox="0 0 128 128" className="w-full h-full">
-          <path
-            d="M 0 32 L 0 0 L 32 0"
-            stroke="white"
-            strokeWidth="2"
-            fill="none"
-            className="opacity-30"
-          />
+    <div className="min-h-screen bg-gradient-to-br from-rose-50/50 via-white to-pink-50/30 relative overflow-hidden">
+      {/* Animated background pattern */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="dots-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="1" fill="currentColor" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dots-pattern)" />
         </svg>
       </div>
 
+      {/* Floating gradient orbs */}
+      <div className="absolute top-20 right-0 w-64 h-64 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl animate-float-orb" />
+      <div className="absolute bottom-20 left-0 w-80 h-80 bg-gradient-to-tr from-gold/20 to-transparent rounded-full blur-3xl animate-float-orb" style={{ animationDelay: '2s' }} />
+
+      {/* Skip button */}
+      <button
+        onClick={handleSkip}
+        className="fixed top-6 right-6 z-50 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm border border-rose-100 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white transition-all shadow-sm"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
+      {/* Main content */}
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 py-12">
+        {/* Slide carousel */}
+        <div className="w-full max-w-sm relative">
+          {/* Slides container */}
+          <div className="overflow-hidden">
+            <div
+              className="flex transition-transform duration-500 ease-out"
+              style={{
+                transform: `translateX(${isRTL ? '' : '-'}${currentSlide * 100}%)`,
+              }}
+            >
+              {slides.map((slide, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    "w-full flex-shrink-0 px-3",
+                    slideDirection === "left" && index === currentSlide && "animate-slide-in-left",
+                    slideDirection === "right" && index === currentSlide && "animate-slide-in-right",
+                  )}
+                >
+                  {/* Card */}
+                  <div className="bg-white rounded-3xl shadow-2xl shadow-rose-100/50 border border-rose-100 overflow-hidden">
+                    {/* Image section */}
+                    <div className="relative h-64 overflow-hidden">
+                      <img
+                        src={heroImage}
+                        alt="Makeup Artist"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
+                      {/* Slide number badge */}
+                      <div className="absolute top-4 left-4">
+                        <span className="text-6xl font-serif font-bold text-white/20">{slide.number}</span>
+                      </div>
+
+                      {/* Floating icon */}
+                      <div className="absolute -bottom-6 right-6 w-14 h-14 rounded-2xl bg-gradient-to-br from-white to-rose-50 shadow-xl flex items-center justify-center border border-white/50">
+                        {index === 0 && <Sparkles className="w-7 h-7 text-primary" />}
+                        {index === 1 && <Wand2 className="w-7 h-7 text-primary" />}
+                        {index === 2 && <Shield className="w-7 h-7 text-gold" />}
+                      </div>
+                    </div>
+
+                    {/* Content section */}
+                    <div className="p-8 pt-10">
+                      {/* Tagline pill */}
+                      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-rose-100 to-pink-100 border border-rose-200 mb-5">
+                        <span className={cn(
+                          "w-2 h-2 rounded-full bg-gradient-to-r",
+                          slide.gradient
+                        )} />
+                        <span className="text-xs font-semibold text-rose-700 uppercase tracking-wider">
+                          {language === "ar" ? "مميزة" : "Feature"}
+                        </span>
+                      </div>
+
+                      {/* Title */}
+                      <h1 className="font-serif text-4xl font-bold text-foreground mb-2">
+                        {slide.title}
+                      </h1>
+
+                      {/* Subtitle with gradient */}
+                      <h2 className={cn(
+                        "text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r mb-4",
+                        slide.gradient
+                      )}>
+                        {slide.subtitle}
+                      </h2>
+
+                      {/* Description */}
+                      <p className="text-muted-foreground text-base leading-relaxed mb-6">
+                        {slide.description}
+                      </p>
+
+                      {/* Progress dots */}
+                      <div className="flex justify-center gap-2">
+                        {slides.map((_, dotIndex) => (
+                          <button
+                            key={dotIndex}
+                            onClick={() => {
+                              if (dotIndex > currentSlide) {
+                                setSlideDirection("left");
+                              } else if (dotIndex < currentSlide) {
+                                setSlideDirection("right");
+                              }
+                              setTimeout(() => {
+                                setCurrentSlide(dotIndex);
+                                setSlideDirection(null);
+                              }, 300);
+                            }}
+                            className={cn(
+                              "transition-all duration-300 rounded-full",
+                              dotIndex === currentSlide
+                                ? "w-8 h-2 bg-gradient-to-r from-primary to-gold"
+                                : "w-2 h-2 bg-rose-200 hover:bg-rose-300"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation buttons */}
+        <div className="w-full max-w-sm mt-8">
+          {currentSlide === slides.length - 1 ? (
+            <div className="space-y-3 animate-fade-in">
+              <Button
+                size="lg"
+                className="w-full h-14 bg-gradient-to-r from-primary to-rose-500 hover:from-primary/90 hover:to-rose-500/90 rounded-2xl font-semibold text-base shadow-lg shadow-primary/30"
+                onClick={() => navigate("/auth")}
+              >
+                {language === "ar" ? "إنشاء حساب" : "Create Account"}
+                <ArrowRight className={cn("w-5 h-5", isRTL ? "rotate-180" : "")} />
+              </Button>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="h-14 border-rose-200 text-rose-700 hover:bg-rose-50 rounded-2xl font-semibold"
+                  onClick={() => navigate("/auth")}
+                >
+                  {language === "ar" ? "تسجيل الدخول" : "Sign In"}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="h-14 text-muted-foreground hover:bg-rose-50 rounded-2xl font-medium"
+                  onClick={handleSkip}
+                >
+                  {language === "ar" ? "ضيف" : "Guest"}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="lg"
+                className={cn(
+                  "h-14 px-6 rounded-2xl font-semibold",
+                  currentSlide === 0 ? "invisible" : "border-rose-200 text-rose-700 hover:bg-rose-50"
+                )}
+                onClick={handlePrevious}
+                disabled={currentSlide === 0}
+              >
+                {language === "ar" ? "السابق" : "Previous"}
+              </Button>
+
+              <Button
+                size="lg"
+                className="flex-1 h-14 bg-gradient-to-r from-primary to-rose-500 hover:from-primary/90 hover:to-rose-500/90 rounded-2xl font-semibold shadow-lg shadow-primary/30"
+                onClick={handleNext}
+              >
+                {language === "ar" ? "التالي" : "Next"}
+                <ArrowRight className={cn("w-5 h-5", isRTL ? "rotate-180" : "")} />
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Brand mark */}
+        <div className="mt-12">
+          <span className="font-serif text-xl font-bold text-rose-300">Glam</span>
+        </div>
+      </div>
+
       <style>{`
-        @keyframes float-slow {
-          0%, 100% {
-            transform: translateY(0) rotate(0deg);
+        @keyframes slide-in-left {
+          from {
+            opacity: 0;
+            transform: translateX(30px);
           }
-          50% {
-            transform: translateY(-15px) rotate(3deg);
+          to {
+            opacity: 1;
+            transform: translateX(0);
           }
         }
 
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
+        @keyframes slide-in-right {
+          from {
+            opacity: 0;
+            transform: translateX(-30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes float-orb {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+          }
+          50% {
+            transform: translate(-20px, -30px) scale(1.05);
+          }
+        }
+
+        .animate-slide-in-left {
+          animation: slide-in-left 0.4s ease-out forwards;
+        }
+
+        .animate-slide-in-right {
+          animation: slide-in-right 0.4s ease-out forwards;
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out forwards;
+        }
+
+        .animate-float-orb {
+          animation: float-orb 8s ease-in-out infinite;
         }
       `}</style>
     </div>
