@@ -11,7 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const Cart = () => {
   const navigate = useNavigate();
   const { t, isRTL } = useLanguage();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data: cartItems = [], isLoading } = useShoppingCart();
   const removeFromCart = useRemoveFromCart();
   const updateCartItem = useUpdateCartItem();
@@ -47,9 +47,11 @@ const Cart = () => {
   );
 
   const handleCheckout = () => {
+    if (authLoading) return;
+
     if (!user) {
-      toast.error("Please log in to continue");
-      navigate("/auth");
+      toast.error(t.profile?.signInToView || "Please log in to continue");
+      navigate("/auth", { state: { from: "/checkout" } });
       return;
     }
     if (cartItems.length === 0) {
@@ -59,6 +61,29 @@ const Cart = () => {
     navigate("/checkout");
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-4 w-24 mt-2" />
+        </div>
+        <div className="px-5 py-6 space-y-4">
+          {[1, 2].map((i) => (
+            <div key={i} className="flex gap-4 p-4 bg-card rounded-2xl border border-border/50">
+              <Skeleton className="w-24 h-24 rounded-xl" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-8 w-24" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -66,9 +91,9 @@ const Cart = () => {
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
             <ShoppingBag className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h2 className="text-xl font-semibold mb-2">Sign In Required</h2>
-          <p className="text-muted-foreground mb-6">Please sign in to view your cart</p>
-          <Button onClick={() => navigate("/auth")}>Sign In</Button>
+          <h2 className="text-xl font-semibold mb-2">{t.profile?.signInToView || "Sign In Required"}</h2>
+          <p className="text-muted-foreground mb-6">{t.profile?.signInDesc || "Please sign in to view your cart"}</p>
+          <Button onClick={() => navigate("/auth", { state: { from: "/cart" } })}>{t.auth?.login || "Sign In"}</Button>
         </div>
       </div>
     );

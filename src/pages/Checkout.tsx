@@ -16,7 +16,7 @@ import type { ShippingAddress } from "@/types/product";
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data: profile } = useProfile();
   const { data: cartItems = [], isLoading } = useShoppingCart();
   const createOrder = useCreateOrder();
@@ -116,12 +116,28 @@ const Checkout = () => {
     }
   };
 
-  // Redirect to auth if not logged in
+  // Redirect to auth if not logged in (wait for auth to finish loading)
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
+    if (!authLoading && !user) {
+      navigate("/auth", { state: { from: "/checkout" } });
     }
-  }, [user, navigate]);
+  }, [authLoading, user, navigate]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
+          <Skeleton className="h-6 w-24 mb-4" />
+          <Skeleton className="h-8 w-40" />
+        </div>
+        <div className="px-5 py-6 space-y-4">
+          <Skeleton className="h-40 w-full rounded-2xl" />
+          <Skeleton className="h-56 w-full rounded-2xl" />
+          <Skeleton className="h-20 w-full rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return null;
