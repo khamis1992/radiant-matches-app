@@ -113,8 +113,14 @@ const Checkout = () => {
     }
   };
 
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth");
+    }
+  }, [user, navigate]);
+
   if (!user) {
-    navigate("/auth");
     return null;
   }
 
