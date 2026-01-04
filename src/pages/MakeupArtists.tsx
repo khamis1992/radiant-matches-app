@@ -23,6 +23,7 @@ import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import { ViewModeToggle, ViewMode } from "@/components/artists/ViewModeToggle";
 import { ArtistFiltersSheet, FilterState } from "@/components/artists/ArtistFiltersSheet";
 import { VoiceSearchButton } from "@/components/VoiceSearchButton";
+import { cn } from "@/lib/utils";
 
 // Category images
 import categoryMakeup from "@/assets/category-makeup.jpg";
@@ -398,33 +399,102 @@ const MakeupArtists = () => {
           )}
         </div>
 
-        {/* Category Filter */}
-        <div className="overflow-x-auto scrollbar-hide -mx-5 px-5 mb-4">
-          <div className="flex gap-4 min-w-max">
-            {SERVICE_CATEGORIES.map((category) => (
+        {/* Category Filter - Editorial Magazine Style */}
+        <div className="mb-5">
+          {/* Horizontal scroll container with snap */}
+          <div className="overflow-x-auto scrollbar-hide -mx-5 px-5">
+            <div className="flex gap-3 min-w-max pb-1">
+              {/* All / Reset Pill Button */}
               <button
-                key={category}
-                onClick={() => handleCategoryChange(selectedCategory === category ? null : category)}
-                className="flex flex-col items-center gap-1.5 group"
+                onClick={() => handleCategoryChange(null)}
+                className={cn(
+                  "relative flex-shrink-0 px-5 py-3 rounded-full overflow-hidden transition-all duration-300 group",
+                  selectedCategory === null
+                    ? "bg-gradient-to-r from-primary to-primary/90 shadow-lg shadow-primary/30 scale-105"
+                    : "bg-muted/80 border border-border/50 hover:border-primary/30"
+                )}
               >
-                <div className={`w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden transition-all ${
-                  selectedCategory === category 
-                    ? "ring-2 ring-primary ring-offset-2 ring-offset-background" 
-                    : "ring-1 ring-border group-hover:ring-primary/50"
-                }`}>
-                  <img
-                    src={categoryImages[category]}
-                    alt={getCategoryLabel(category)}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <span className={`text-xs md:text-sm max-w-16 md:max-w-20 lg:max-w-24 truncate text-center ${
-                  selectedCategory === category ? "text-primary font-medium" : "text-muted-foreground"
-                }`}>
-                  {getCategoryLabel(category)}
+                {selectedCategory === null && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                )}
+                <span className={cn(
+                  "text-sm font-serif font-medium relative z-10",
+                  selectedCategory === null ? "text-white" : "text-foreground/80"
+                )}>
+                  {t.artistsListing.allCategories || "All"}
                 </span>
               </button>
-            ))}
+
+              {/* Category Cards - Editorial Wide Format */}
+              {SERVICE_CATEGORIES.map((category, index) => {
+                const isSelected = selectedCategory === category;
+                return (
+                  <button
+                    key={category}
+                    onClick={() => handleCategoryChange(isSelected ? null : category)}
+                    className="relative flex-shrink-0 group"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    {/* Card Container - Landscape Format */}
+                    <div
+                      className={cn(
+                        "relative w-28 h-20 rounded-2xl overflow-hidden transition-all duration-500 ease-out",
+                        isSelected
+                          ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 shadow-xl shadow-primary/20"
+                          : "ring-1 ring-border/50 group-hover:ring-primary/40 group-hover:scale-[1.02]"
+                      )}
+                    >
+                      {/* Category Image */}
+                      <img
+                        src={categoryImages[category]}
+                        alt={getCategoryLabel(category)}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+
+                      {/* Gradient Overlay - Always visible for readability */}
+                      <div className={cn(
+                        "absolute inset-0 bg-gradient-to-t transition-opacity duration-300",
+                        isSelected
+                          ? "from-primary/90 via-primary/40 to-transparent"
+                          : "from-black/70 via-black/30 to-transparent"
+                      )} />
+
+                      {/* Selected Glow Effect */}
+                      {isSelected && (
+                        <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 via-transparent to-gold/30 animate-pulse" />
+                      )}
+
+                      {/* Category Label - Elegant Typography Overlay */}
+                      <div className="absolute inset-x-0 bottom-0 p-3">
+                        <span className={cn(
+                          "block text-[11px] font-serif font-semibold tracking-wide truncate text-center",
+                          isSelected ? "text-white drop-shadow-lg" : "text-white/90 drop-shadow-md"
+                        )}>
+                          {getCategoryLabel(category)}
+                        </span>
+                      </div>
+
+                      {/* Animated Corner Accent (Selected) */}
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Scroll Indicator - Shows more content */}
+          <div className="flex items-center justify-end mt-2 px-1">
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/70">
+              <span className="tracking-wider uppercase">{t.artistsListing.swipe || "Swipe"}</span>
+              <div className="flex gap-0.5">
+                <span className="w-1 h-1 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: '0s' }} />
+                <span className="w-1 h-1 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: '0.1s' }} />
+                <span className="w-1 h-1 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: '0.2s' }} />
+              </div>
+            </div>
           </div>
         </div>
 
