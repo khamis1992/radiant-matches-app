@@ -17,7 +17,8 @@
       "Bash(dir:*)",
       "Skill(frontend-design)",
       "Skill(brainstorming)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(npm run dev)"
     ]
   }
 }

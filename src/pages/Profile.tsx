@@ -1,6 +1,6 @@
 import BottomNavigation from "@/components/BottomNavigation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { Settings, Heart, MessageCircle, HelpCircle, LogOut, ChevronRight, ChevronLeft, User, Briefcase, Shield, Gift, Wallet, Plus, Languages } from "lucide-react";
+import { Settings, Heart, MessageCircle, HelpCircle, LogOut, ChevronRight, ChevronLeft, User, Briefcase, Shield, Gift, Wallet, Plus, Languages, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile, useProfileStats } from "@/hooks/useProfile";
