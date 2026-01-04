@@ -4,6 +4,7 @@ import CategoryCard from "@/components/CategoryCard";
 import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
 import AppHeader from "@/components/layout/AppHeader";
+import { HeroSection } from "@/components/HeroSection";
 import { useArtistsWithPricing } from "@/hooks/useArtistsWithPricing";
 import { useArtistsAvailability } from "@/hooks/useArtistAvailability";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -171,6 +172,9 @@ const Home = () => {
         showLogo={true}
         style="modern"
       />
+
+      {/* Editorial Hero Section */}
+      <HeroSection />
 
       {/* Categories */}
       <section className="px-5 py-6">

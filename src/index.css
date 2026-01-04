@@ -40,11 +40,14 @@ All colors MUST be HSL.
     --ring: 350 60% 65%;
 
     --radius: 1rem;
-    
+
     --gold: 42 65% 55%;
     --gold-foreground: 0 0% 100%;
     --nude: 25 25% 85%;
     --blush: 350 45% 88%;
+
+    /* Editorial Design Tokens */
+    --font-serif-display: 'Playfair Display', 'Merriweather', ui-serif, Georgia, serif;
 
     --sidebar-background: 0 0% 98%;
 
@@ -259,6 +262,69 @@ All colors MUST be HSL.
     100% {
       background-position: 200% 0;
     }
+  }
+
+  /* Editorial Hero Animations */
+  @keyframes pulse-slow {
+    0%, 100% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-20px) rotate(5deg);
+    }
+  }
+
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 8s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 0.5s;
+  }
+
+  .animation-delay-1000 {
+    animation-delay: 1s;
+  }
+
+  .animation-delay-1500 {
+    animation-delay: 1.5s;
+  }
+
+  .animation-delay-2500 {
+    animation-delay: 2.5s;
+  }
+
+  /* Serif font class for editorial feel */
+  .font-serif {
+    font-family: var(--font-serif-display);
   }
 }
 

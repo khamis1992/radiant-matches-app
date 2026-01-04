@@ -105,6 +105,12 @@ export const en = {
     topRatedArtists: "Top Rated Artists",
     noArtistsYet: "No artists available yet",
     searchPlaceholder: "Search for makeup artists...",
+    heroBadge: "Premium Beauty Services",
+    heroTitle1: "Discover Your",
+    heroTitle2: "Perfect Look",
+    heroSubtitle: "Book talented makeup artists for bridal, party, and special occasions. Verified reviews, instant booking.",
+    heroArtists: "500+ Artists",
+    heroRating: "4.9 Rating",
     promos: [
       { title: "Get 50% discount", subtitle: "with your first booking", button: "50% discount" },
       { title: "Bridal Package", subtitle: "Book now and get free trial", button: "Book Now" },

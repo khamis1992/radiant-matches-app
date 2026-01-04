@@ -110,6 +110,12 @@ export const ar = {
     topRatedArtists: "أعلى الفنانات تقييمًا",
     noArtistsYet: "لا توجد فنانات متاحة بعد",
     searchPlaceholder: "البحث عن فنانات مكياج...",
+    heroBadge: "خدمات جمالية مميزة",
+    heroTitle1: "اكتشفي جمالك",
+    heroTitle2: "المثالي",
+    heroSubtitle: "احجزي فنانات مكياج محترفات لعرائس، حفلات، ومناسبات خاصة. تقييمات موثقة، حجز فوري.",
+    heroArtists: "+500 فنانة",
+    heroRating: "تقييم 4.9",
     promos: [
       { title: "احصل على خصم 50%", subtitle: "مع أول حجز", button: "خصم 50%" },
       { title: "باقة العرائس", subtitle: "احجز الآن واحصل على تجربة مجانية", button: "احجز الآن" },
