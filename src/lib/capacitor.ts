@@ -204,11 +204,11 @@ export const hapticImpact = async (style: ImpactStyle = ImpactStyle.Medium) => {
 /**
  * Trigger haptic notification
  */
-export const hapticNotify = async (type: 'success' | 'warning' | 'error') => {
+export const hapticNotify = async (type: { type: unknown }) => {
   if (!isNative) return;
 
   try {
-    await Haptics.notification({ type });
+    await Haptics.notification(type as Parameters<typeof Haptics.notification>[0]);
   } catch (error) {
     console.warn('Failed to trigger haptic notification:', error);
   }

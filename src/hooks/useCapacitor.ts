@@ -88,16 +88,25 @@ export const useGeolocation = () => {
  */
 export const useHaptics = () => {
   const impact = useCallback(async (style: 'light' | 'medium' | 'heavy' = 'medium') => {
+    // Import ImpactStyle enum
+    const { ImpactStyle } = await import('@capacitor/haptics');
     const styleMap = {
-      light: 'Light' as const,
-      medium: 'Medium' as const,
-      heavy: 'Heavy' as const,
+      light: ImpactStyle.Light,
+      medium: ImpactStyle.Medium,
+      heavy: ImpactStyle.Heavy,
     };
     await hapticImpact(styleMap[style]);
   }, []);
 
   const notify = useCallback(async (type: 'success' | 'warning' | 'error') => {
-    await hapticNotify(type);
+    // Import NotificationType enum
+    const { NotificationType } = await import('@capacitor/haptics');
+    const typeMap = {
+      success: NotificationType.Success,
+      warning: NotificationType.Warning,
+      error: NotificationType.Error,
+    };
+    await hapticNotify({ type: typeMap[type] });
   }, []);
 
   return { impact, notify };

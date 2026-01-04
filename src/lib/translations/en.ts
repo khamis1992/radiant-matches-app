@@ -153,6 +153,8 @@ export const en = {
     artistLabel: "Artist",
     locationLabel: "Location",
     categoryLabel: "Category",
+    allCategories: "All Categories",
+    swipe: "Swipe to view more",
   },
 
   // Voice Search
@@ -237,6 +239,7 @@ export const en = {
     helpSupport: "Help & Support",
     logOut: "Log Out",
     signedOut: "Signed out successfully",
+    language: "Language",
   },
 
   // Edit Profile
@@ -584,6 +587,8 @@ export const en = {
     highestRated: "Highest Rated",
     withPhotos: "With Photos",
     sortReviews: "Sort Reviews",
+    gallery: "Gallery",
+    noPortfolioInCategory: "No images in this category",
   },
 
   // Favorites

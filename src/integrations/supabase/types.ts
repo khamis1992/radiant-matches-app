@@ -650,6 +650,115 @@ export type Database = {
           },
         ]
       }
+      product_orders: {
+        Row: {
+          artist_id: string
+          created_at: string | null
+          customer_id: string
+          id: string
+          items: Json
+          shipping_address: Json | null
+          status: string | null
+          total_qar: number
+          tracking_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string | null
+          customer_id: string
+          id?: string
+          items: Json
+          shipping_address?: Json | null
+          status?: string | null
+          total_qar: number
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string | null
+          customer_id?: string
+          id?: string
+          items?: Json
+          shipping_address?: Json | null
+          status?: string | null
+          total_qar?: number
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_orders_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          artist_id: string
+          category: string
+          compare_at_price: number | null
+          created_at: string | null
+          description: string | null
+          digital_content_url: string | null
+          id: string
+          images: Json | null
+          inventory_count: number | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          price_qar: number
+          product_type: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          artist_id: string
+          category: string
+          compare_at_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          digital_content_url?: string | null
+          id?: string
+          images?: Json | null
+          inventory_count?: number | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          price_qar?: number
+          product_type: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          artist_id?: string
+          category?: string
+          compare_at_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          digital_content_url?: string | null
+          id?: string
+          images?: Json | null
+          inventory_count?: number | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          price_qar?: number
+          product_type?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -891,6 +1000,38 @@ export type Database = {
             columns: ["artist_id"]
             isOneToOne: false
             referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_cart: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: string
+          quantity: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id: string
+          quantity?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: string
+          quantity?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_cart_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
