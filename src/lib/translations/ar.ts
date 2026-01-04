@@ -205,6 +205,7 @@ export const ar = {
     helpSupport: "المساعدة والدعم",
     logOut: "تسجيل الخروج",
     signedOut: "تم تسجيل الخروج بنجاح",
+    language: "اللغة",
   },
 
   // Edit Profile
@@ -474,6 +475,8 @@ export const ar = {
     highestRated: "الأعلى تقييمًا",
     withPhotos: "مع صور",
     sortReviews: "ترتيب التقييمات",
+    gallery: "المعرض",
+    noPortfolioInCategory: "لا توجد صور في هذه الفئة",
   },
 
   // Favorites
@@ -1256,6 +1259,8 @@ export const ar = {
     artistLabel: "فنانة",
     locationLabel: "موقع",
     categoryLabel: "فئة",
+    allCategories: "جميع الفئات",
+    swipe: "اسحب لعرض المزيد",
   },
 
   // Artist Signup
