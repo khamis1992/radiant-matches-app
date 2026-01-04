@@ -27,29 +27,82 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Verify Java installation
+        run: |
+          echo "Java version:"
+          java -version
+          echo "JAVA_HOME: $JAVA_HOME"
+
       - name: Install dependencies
-        run: npm ci
+        run: |
+          echo "Installing npm dependencies..."
+          npm ci
+          echo "Dependencies installed successfully"
 
       - name: Build web app
-        run: npm run build
+        run: |
+          echo "Building web app..."
+          npm run build
+          echo "Build completed"
+          ls -la dist/
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+      - name: Verify Capacitor installation
+        run: |
+          echo "Checking Capacitor installation..."
+          npx cap --version
+
+      - name: Check Android platform
+        run: |
+          echo "Checking Android platform..."
+          if [ -d "android" ]; then
+            echo "Android platform exists"
+            ls -la android/
+          else
+            echo "Android platform NOT found - will be created by sync"
+          fi
 
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: |
+          echo "Syncing Capacitor with Android..."
+          npx cap sync android --verbose
+          echo "Sync completed"
+
+      - name: Verify Android build files
+        run: |
+          echo "Checking Android build files..."
+          if [ -f "android/gradlew" ]; then
+            echo "Gradle wrapper found"
+            ls -la android/
+          else
+            echo "ERROR: Gradle wrapper not found!"
+            exit 1
+          fi
+
+      - name: Make Gradlew executable
+        run: |
+          echo "Making gradlew executable..."
+          cd android
+          chmod +x gradlew
+          ./gradlew --version
 
       - name: Build Debug APK
         run: |
+          echo "Building Debug APK..."
           cd android
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace
+          echo "Build completed"
+
+      - name: Verify APK was created
+        run: |
+          echo "Verifying APK..."
+          if [ -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
+            echo "APK found!"
+            ls -lh android/app/build/outputs/apk/debug/app-debug.apk
+          else
+            echo "ERROR: APK not found!"
+            find android -name "*.apk" || echo "No APK files found"
+            exit 1
+          fi
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -60,8 +113,9 @@ jobs:
 
       - name: Build Release APK (unsigned)
         run: |
+          echo "Building Release APK..."
           cd android
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
