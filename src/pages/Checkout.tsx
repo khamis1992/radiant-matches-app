@@ -91,7 +91,7 @@ const Checkout = () => {
         price: item.product.price_qar,
       }));
 
-      await createOrder.mutateAsync({
+      const order = await createOrder.mutateAsync({
         items: orderItems,
         total_qar: total,
         shipping_address: hasPhysicalProducts ? shippingAddress : null,
@@ -104,8 +104,11 @@ const Checkout = () => {
         });
       }
 
-      toast.success("Order placed successfully!");
-      navigate("/orders");
+      // Clear the cart after successful order
+      await clearCart.mutateAsync();
+
+      // Navigate to order confirmation page
+      navigate(`/order-confirmation?orderId=${order.id}`);
     } catch (error: any) {
       toast.error(error.message || "Failed to place order");
     } finally {
