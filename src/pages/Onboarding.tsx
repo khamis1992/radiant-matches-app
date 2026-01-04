@@ -1,42 +1,55 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, Sparkles, Wand2, Shield, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { AppRole } from "@/hooks/useUserRole";
 import { SplashScreen } from "@/components/SplashScreen";
 import heroImage from "@/assets/hero-makeup.jpg";
+import { cn } from "@/lib/utils";
 
 const getSlides = (language: "en" | "ar") => {
   if (language === "ar") {
     return [
       {
-        title: "اكتشفي فنانات موهوبات",
+        title: "اكتشفي",
+        highlight: "فنانات موهوبات",
         description: "جدي فنانة المكياج المثالية لأي مناسبة بالقرب منك",
+        icon: Sparkles,
       },
       {
-        title: "احجزي فوراً",
+        title: "احجزي",
+        highlight: "فوراً",
         description: "جدولي مواعيدك في ثوانٍ مع التوفر في الوقت الفعلي",
+        icon: Wand2,
       },
       {
-        title: "ادفعي بأمان",
+        title: "ادفعي",
+        highlight: "بأمان",
         description: "مدفوعات آمنة وتقييمات صادقة من عملاء موثوقين",
+        icon: Shield,
       },
     ];
   }
   return [
     {
-      title: "Discover Talented Artists",
+      title: "Discover",
+      highlight: "Talented Artists",
       description: "Find the perfect makeup artist for any occasion near you",
+      icon: Sparkles,
     },
     {
-      title: "Book Instantly",
+      title: "Book",
+      highlight: "Instantly",
       description: "Schedule appointments in seconds with real-time availability",
+      icon: Wand2,
     },
     {
-      title: "Pay Securely",
+      title: "Pay",
+      highlight: "Securely",
       description: "Secure payments and honest reviews from verified customers",
+      icon: Shield,
     },
   ];
 };
@@ -44,11 +57,13 @@ const getSlides = (language: "en" | "ar") => {
 const Onboarding = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
   const { language, isRTL } = useLanguage();
-  
+
   const slides = getSlides(language);
+  const currentSlideData = slides[currentSlide];
 
   useEffect(() => {
     const redirectByRole = async (userId: string) => {
@@ -93,15 +108,29 @@ const Onboarding = () => {
   }
 
   const handleNext = () => {
-    if (currentSlide < slides.length - 1) {
-      setCurrentSlide(currentSlide + 1);
-    } else {
-      navigate("/home");
-    }
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setTimeout(() => {
+      if (currentSlide < slides.length - 1) {
+        setCurrentSlide(currentSlide + 1);
+      } else {
+        navigate("/auth");
+      }
+      setIsAnimating(false);
+    }, 300);
   };
 
   const handleSkip = () => {
     navigate("/home");
+  };
+
+  const handleDotClick = (index: number) => {
+    if (isAnimating || index === currentSlide) return;
+    setIsAnimating(true);
+    setTimeout(() => {
+      setCurrentSlide(index);
+      setIsAnimating(false);
+    }, 300);
   };
 
   if (showSplash) {
@@ -109,102 +138,236 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Hero Image */}
-      <div className="relative h-[55vh] overflow-hidden">
+    <div className="min-h-screen bg-background overflow-hidden">
+      {/* Full-bleed hero image with overlay */}
+      <div className="fixed inset-0 z-0">
         <img
           src={heroImage}
-          alt="Makeup Artist"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 px-6 py-8 -mt-16 relative z-10">
-        <div className="animate-fade-in-up" key={currentSlide}>
-          <h2 className="text-3xl font-bold text-foreground leading-tight">
-            {slides[currentSlide].title}
-          </h2>
-          <p className="mt-3 text-muted-foreground text-lg">
-            {slides[currentSlide].description}
-          </p>
-        </div>
-
-        {/* Dots */}
-        <div className="flex gap-2 mt-8">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                index === currentSlide
-                  ? "w-8 bg-primary"
-                  : "w-2 bg-muted hover:bg-muted-foreground/30"
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Buttons */}
-        <div className="mt-auto pt-8 space-y-3">
-          {currentSlide === slides.length - 1 ? (
-            <>
-              <Button
-                size="lg"
-                className="w-full"
-                onClick={() => navigate("/auth")}
-              >
-                {language === "ar" ? "إنشاء حساب" : "Create Account"}
-                {isRTL ? (
-                  <ChevronLeft className="w-5 h-5 ms-1" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 ms-1" />
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full"
-                onClick={() => navigate("/auth")}
-              >
-                {language === "ar" ? "تسجيل الدخول" : "Sign In"}
-              </Button>
-              <Button
-                variant="ghost"
-                size="lg"
-                className="w-full text-muted-foreground"
-                onClick={() => navigate("/home")}
-              >
-                {language === "ar" ? "المتابعة كضيف" : "Continue as Guest"}
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                size="lg"
-                className="w-full"
-                onClick={handleNext}
-              >
-                {language === "ar" ? "التالي" : "Next"}
-                {isRTL ? (
-                  <ChevronLeft className="w-5 h-5 ms-1" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 ms-1" />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="lg"
-                className="w-full text-muted-foreground"
-                onClick={handleSkip}
-              >
-                {language === "ar" ? "تخطي" : "Skip"}
-              </Button>
-            </>
+          alt="Background"
+          className={cn(
+            "w-full h-full object-cover transition-transform duration-700 ease-out",
+            isAnimating ? "scale-110" : "scale-100"
           )}
+        />
+
+        {/* Dramatic gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/40 via-primary/20 to-background" />
+
+        {/* Diagonal accent overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-background/30 to-transparent" />
+
+        {/* Noise texture */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <svg className="w-full h-full">
+            <filter id="noise-onboard">
+              <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="4" />
+              <feColorMatrix type="saturate" values="0" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#noise-onboard)" />
+          </svg>
         </div>
       </div>
+
+      {/* Giant slide number watermark */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
+        <span
+          className="text-[40vw] font-serif font-bold text-white/5 leading-none transition-all duration-500"
+          style={{
+            transform: isAnimating ? "scale(0.95)" : "scale(1)",
+          }}
+        >
+          {String(currentSlide + 1).padStart(2, "0")}
+        </span>
+      </div>
+
+      {/* Floating cosmetic silhouettes */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Lipstick */}
+        <div className="absolute top-[20%] left-[10%] w-12 h-32 opacity-10 animate-float-slow">
+          <svg viewBox="0 0 48 128" fill="currentColor" className="text-primary">
+            <rect x="12" y="0" width="24" height="80" rx="12" />
+            <rect x="6" y="80" width="36" height="48" rx="8" />
+          </svg>
+        </div>
+
+        {/* Brush */}
+        <div className="absolute top-[30%] right-[15%] w-10 h-48 opacity-10 animate-float-slow" style={{ animationDelay: '1s' }}>
+          <svg viewBox="0 0 40 192" fill="currentColor" className="text-gold">
+            <rect x="14" y="120" width="12" height="72" rx="3" />
+            <ellipse cx="20" cy="60" rx="16" ry="52" />
+          </svg>
+        </div>
+
+        {/* Compact */}
+        <div className="absolute bottom-[25%] left-[20%] w-20 h-20 opacity-10 animate-float-slow" style={{ animationDelay: '2s' }}>
+          <svg viewBox="0 0 80 80" fill="currentColor" className="text-primary">
+            <circle cx="40" cy="40" r="35" />
+            <circle cx="40" cy="40" r="25" fill="white" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Top bar - Skip button */}
+        <div className="flex justify-between items-center p-6 safe-area-top">
+          {/* Logo */}
+          <div
+            className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg"
+            onClick={() => navigate("/home")}
+          >
+            <span className="font-serif text-xl font-bold text-white">G</span>
+          </div>
+
+          <button
+            onClick={handleSkip}
+            className="px-5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium hover:bg-white/20 transition-all"
+          >
+            {language === "ar" ? "تخطي" : "Skip"}
+          </button>
+        </div>
+
+        {/* Content area */}
+        <div className="flex-1 flex flex-col justify-end px-6 pb-8 safe-area-bottom">
+          {/* Slide content */}
+          <div
+            className={cn(
+              "transition-all duration-500 ease-out",
+              isAnimating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+            )}
+          >
+            {/* Icon */}
+            <div className="mb-6">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 backdrop-blur-md flex items-center justify-center shadow-2xl">
+                <currentSlideData.icon className="w-8 h-8 text-white" />
+              </div>
+            </div>
+
+            {/* Headline with highlight */}
+            <h1 className="font-serif text-5xl font-bold text-white leading-tight mb-3">
+              {currentSlideData.title}
+              <br />
+              <span className="text-gold">{currentSlideData.highlight}</span>
+            </h1>
+
+            {/* Description */}
+            <p className="text-white/80 text-lg leading-relaxed mb-8 max-w-md">
+              {currentSlideData.description}
+            </p>
+
+            {/* Custom progress indicator */}
+            <div className="flex items-center gap-4 mb-8">
+              <div className="flex-1 h-0.5 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-gold rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${((currentSlide + 1) / slides.length) * 100}%` }}
+                />
+              </div>
+              <span className="text-white/60 text-sm font-medium tabular-nums">
+                {String(currentSlide + 1).padStart(2, "0")}/{slides.length}
+              </span>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div
+            className={cn(
+              "transition-all duration-500 delay-100",
+              isAnimating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+            )}
+          >
+            {currentSlide === slides.length - 1 ? (
+              <div className="space-y-3">
+                <Button
+                  size="lg"
+                  className="w-full h-14 bg-white text-primary hover:bg-white/90 rounded-2xl font-semibold text-base shadow-2xl"
+                  onClick={() => navigate("/auth")}
+                >
+                  {language === "ar" ? "إنشاء حساب" : "Create Account"}
+                  <ArrowRight className={cn("w-5 h-5", isRTL ? "rotate-180" : "")} />
+                </Button>
+
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="flex-1 h-14 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white hover:bg-white/20 rounded-2xl font-semibold text-base"
+                    onClick={() => navigate("/auth")}
+                  >
+                    {language === "ar" ? "تسجيل الدخول" : "Sign In"}
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="lg"
+                    className="flex-1 h-14 bg-white/10 backdrop-blur-md text-white hover:bg-white/20 rounded-2xl font-medium text-base"
+                    onClick={handleSkip}
+                  >
+                    {language === "ar" ? "ضيف" : "Guest"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <Button
+                  size="lg"
+                  className="flex-1 h-14 bg-white text-primary hover:bg-white/90 rounded-2xl font-semibold text-base shadow-2xl"
+                  onClick={handleNext}
+                  disabled={isAnimating}
+                >
+                  {language === "ar" ? "التالي" : "Next"}
+                  <ArrowRight className={cn("w-5 h-5", isRTL ? "rotate-180" : "")} />
+                </Button>
+
+                {/* Dot indicators - clickable */}
+                <div className="flex items-center gap-2 px-4">
+                  {slides.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleDotClick(index)}
+                      disabled={isAnimating}
+                      className={cn(
+                        "transition-all duration-300 rounded-full",
+                        index === currentSlide
+                          ? "w-3 h-3 bg-white"
+                          : "w-2 h-2 bg-white/30 hover:bg-white/50"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Animated corner accent */}
+      <div className="fixed top-0 left-0 w-32 h-32 pointer-events-none">
+        <svg viewBox="0 0 128 128" className="w-full h-full">
+          <path
+            d="M 0 32 L 0 0 L 32 0"
+            stroke="white"
+            strokeWidth="2"
+            fill="none"
+            className="opacity-30"
+          />
+        </svg>
+      </div>
+
+      <style>{`
+        @keyframes float-slow {
+          0%, 100% {
+            transform: translateY(0) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-15px) rotate(3deg);
+          }
+        }
+
+        .animate-float-slow {
+          animation: float-slow 6s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };
