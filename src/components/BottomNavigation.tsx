@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, Calendar, User, LayoutDashboard, Palette, LucideIcon, Users, Heart, Images, Search, X, Gift } from "lucide-react";
+import { Home, Calendar, User, LayoutDashboard, Palette, LucideIcon, Users, Heart, Images, Search, X, Gift, ShoppingBag } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePendingBookingsCount } from "@/hooks/usePendingBookings";
@@ -43,6 +43,7 @@ const artistNavItems: NavItem[] = [
   { icon: Calendar, labelKey: "bookings", path: "/artist-bookings", badgeType: "bookings" },
   { icon: Images, labelKey: "gallery", path: "/artist-gallery" },
   { icon: Palette, labelKey: "services", path: "/artist-services" },
+  { icon: ShoppingBag, labelKey: "products", path: "/artist-products" },
 ];
 
 const BottomNavigation = () => {

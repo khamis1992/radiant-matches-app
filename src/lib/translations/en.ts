@@ -79,6 +79,7 @@ export const en = {
     profile: "Profile",
     settings: "Settings",
     logout: "Logout",
+    products: "Products",
   },
 
   // Messages
