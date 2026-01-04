@@ -2,9 +2,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
+import type { ProductOrder, OrderStatus } from "@/types/product";
 
-export type ProductOrder = Tables<"product_orders">;
+export type ProductOrderType = Tables<"product_orders">;
 export type ProductOrderUpdate = TablesUpdate<"product_orders">;
+
+// Export type for backward compatibility
+export type ProductOrder = Tables<"product_orders">;
 
 export const useProductOrders = () => {
   const { user } = useAuth();
@@ -68,4 +72,55 @@ export const useOrderStats = () => {
   };
 
   return stats;
+};
+
+export const useCustomerOrders = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["customer-orders", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from("product_orders")
+        .select("*")
+        .eq("customer_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as ProductOrder[];
+    },
+    enabled: !!user,
+  });
+};
+
+export const useCreateOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderData: {
+      items: Array<{ product_id: string; quantity: number; price_qar: number; product_name: string }>;
+      shipping_address: Record<string, string>;
+      total_qar: number;
+    }) => {
+      const { data, error } = await supabase
+        .from("product_orders")
+        .insert({
+          items: orderData.items,
+          shipping_address: orderData.shipping_address,
+          total_qar: orderData.total_qar,
+          status: "pending",
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customer-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["product-orders"] });
+    },
+  });
 };
