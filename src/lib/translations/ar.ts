@@ -77,7 +77,7 @@ export const ar = {
     dashboard: "لوحة التحكم",
     gallery: "المعرض",
     services: "الخدمات",
-    products: "المنتجات",
+    products: "المتجر",
     messages: "الرسائل",
     profile: "الملف الشخصي",
     settings: "الإعدادات",
@@ -85,7 +85,6 @@ export const ar = {
     notifications: "الإشعارات",
     markAllRead: "تحديد الكل كمقروء",
     noNotifications: "لا توجد إشعارات",
-    products: "المتجر",
   },
 
   // Messages

@@ -70,19 +70,19 @@ export const useArtistProducts = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // First get the artist profile
-      const { data: profile } = await supabase
-        .from("profiles")
+      // Get artist profile - user.id is the profile id
+      const { data: artist } = await supabase
+        .from("artists")
         .select("id")
         .eq("user_id", user.id)
         .single();
 
-      if (!profile) throw new Error("Profile not found");
+      if (!artist) throw new Error("Artist profile not found");
 
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .eq("artist_id", profile.id)
+        .eq("artist_id", artist.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -99,18 +99,18 @@ export const useCreateProduct = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data: profile } = await supabase
-        .from("profiles")
+      const { data: artist } = await supabase
+        .from("artists")
         .select("id")
         .eq("user_id", user.id)
         .single();
 
-      if (!profile) throw new Error("Profile not found");
+      if (!artist) throw new Error("Artist profile not found");
 
       const { data, error } = await supabase
         .from("products")
         .insert({
-          artist_id: profile.id,
+          artist_id: artist.id,
           ...input,
         })
         .select()

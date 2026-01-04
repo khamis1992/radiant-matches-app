@@ -89,12 +89,21 @@ export const useAddToCart = () => {
         `)
         .single();
 
-      // For upsert with quantity increment
+      // For upsert with quantity increment - fetch existing and update
       if (error && error.code === "23505") {
-        // Unique violation - update quantity
+        // Unique violation - get current quantity and update
+        const { data: existing } = await supabase
+          .from("shopping_cart")
+          .select("quantity")
+          .eq("user_id", user.id)
+          .eq("product_id", productId)
+          .single();
+        
+        const newQuantity = (existing?.quantity || 0) + quantity;
+        
         const { data: updated } = await supabase
           .from("shopping_cart")
-          .update({ quantity: supabase.raw(`quantity + ${quantity}`) })
+          .update({ quantity: newQuantity })
           .eq("user_id", user.id)
           .eq("product_id", productId)
           .select(`

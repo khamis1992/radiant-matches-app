@@ -156,7 +156,7 @@ const OrderDetails = () => {
         <div className="flex items-center justify-between mt-6">
           {STATUS_FLOW.filter((s) => s !== "cancelled").map((statusStep, index) => {
             const isCompleted = index <= currentStatusIndex;
-            const isCurrent = statusStep === order.status && order.status !== "cancelled";
+            const isCurrent = statusStep === order.status && order.status !== ("cancelled" as OrderStatus);
             const StepIcon = STATUS_CONFIG[statusStep].icon;
 
             return (
