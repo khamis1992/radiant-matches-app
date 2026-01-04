@@ -13,55 +13,49 @@ const getSlides = (language: "en" | "ar") => {
   if (language === "ar") {
     return [
       {
-        number: "١",
         title: "اكتشفي",
         subtitle: "الفنانين",
-        description: "مئات الفنانين الموهوبين في انتظارك",
-        accent: "روائع",
-        layout: "split-diagonal",
+        description: "مئات الفنانين الموهوبين ينتظرونك",
+        icon: "sparkles",
+        color: "from-rose-500 to-pink-600",
       },
       {
-        number: "٢",
         title: "احجزي",
-        subtitle: "فوري",
-        description: "حجز سريع وآمن في ثوانٍ",
-        accent: "سهل",
-        layout: "circle-focus",
+        subtitle: "فوراً",
+        description: "حجز سريع وآمن في ثوانٍ معدودة",
+        icon: "wand",
+        color: "from-primary to-rose-500",
       },
       {
-        number: "٣",
         title: "ادفعي",
         subtitle: "بأمان",
-        description: "مدفوعات محمية وموثوقة",
-        accent: "آمن",
-        layout: "split-reverse",
+        description: "مدفوعات محمية 100%",
+        icon: "shield",
+        color: "from-gold to-amber-500",
       },
     ];
   }
   return [
     {
-      number: "1",
       title: "Discover",
       subtitle: "Artists",
-      description: "Hundreds of talented artists await",
-      accent: "Amazing",
-      layout: "split-diagonal",
+      description: "Hundreds of talented artists await you",
+      icon: "sparkles",
+      color: "from-rose-500 to-pink-600",
     },
     {
-      number: "2",
       title: "Book",
       subtitle: "Instantly",
-      description: "Quick, secure booking in seconds",
-      accent: "Easy",
-      layout: "circle-focus",
+      description: "Quick, secure booking in mere seconds",
+      icon: "wand",
+      color: "from-primary to-rose-500",
     },
     {
-      number: "3",
       title: "Pay",
       subtitle: "Securely",
-      description: "Protected payments you can trust",
-      accent: "Safe",
-      layout: "split-reverse",
+      description: "100% protected payment transactions",
+      icon: "shield",
+      color: "from-gold to-amber-500",
     },
   ];
 };
@@ -69,12 +63,25 @@ const getSlides = (language: "en" | "ar") => {
 const Onboarding = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [particlePositions, setParticlePositions] = useState<Array<{ id: number; x: number; y: number; delay: number }>>([]);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
   const { language, isRTL } = useLanguage();
 
   const slides = getSlides(language);
   const currentSlideData = slides[currentSlide];
+
+  // Generate random particles
+  useEffect(() => {
+    const particles = Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      delay: Math.random() * 2,
+    }));
+    setParticlePositions(particles);
+  }, []);
 
   useEffect(() => {
     const redirectByRole = async (userId: string) => {
@@ -119,8 +126,13 @@ const Onboarding = () => {
   }
 
   const handleNext = () => {
+    if (isAnimating) return;
     if (currentSlide < slides.length - 1) {
-      setCurrentSlide(currentSlide + 1);
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentSlide(currentSlide + 1);
+        setIsAnimating(false);
+      }, 600);
     } else {
       navigate("/auth");
     }
@@ -135,290 +147,437 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white overflow-hidden relative">
+    <div className="min-h-screen bg-foreground overflow-hidden relative">
+      {/* Animated morphing blob background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Primary morphing blob */}
+        <div
+          className={cn(
+            "absolute w-96 h-96 rounded-full blur-3xl opacity-30 animate-morph-blob",
+            currentSlide === 0 && "bg-rose-500 top-20 -left-20",
+            currentSlide === 1 && "bg-primary top-40 -right-20",
+            currentSlide === 2 && "bg-gold bottom-20 -left-20"
+          )}
+          style={{
+            animationDuration: '8s',
+            animationDelay: `${currentSlide * 0.5}s`,
+          }}
+        />
+
+        {/* Secondary morphing blob */}
+        <div
+          className={cn(
+            "absolute w-80 h-80 rounded-full blur-3xl opacity-20 animate-morph-blob-reverse",
+            currentSlide === 0 && "bg-gold bottom-40 -right-10",
+            currentSlide === 1 && "bg-rose-500 bottom-20 -left-10",
+            currentSlide === 2 && "bg-primary top-20 -right-10"
+          )}
+          style={{
+            animationDuration: '10s',
+            animationDelay: `${currentSlide * 0.7}s`,
+          }}
+        />
+
+        {/* Tertiary morphing blob */}
+        <div
+          className="absolute w-64 h-64 rounded-full blur-3xl opacity-15 animate-morph-blob bg-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          style={{
+            animationDuration: '12s',
+          }}
+        />
+      </div>
+
+      {/* Floating particles */}
+      {particlePositions.map((particle) => (
+        <div
+          key={particle.id}
+          className="absolute w-2 h-2 rounded-full bg-white/20 animate-float-particle pointer-events-none"
+          style={{
+            left: `${particle.x}%`,
+            top: `${particle.y}%`,
+            animationDelay: `${particle.delay}s`,
+            animationDuration: `${4 + particle.delay * 2}s`,
+          }}
+        />
+      ))}
+
+      {/* Animated geometric shapes */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Rotating triangle */}
+        <svg
+          className="absolute top-20 right-10 w-24 h-24 animate-spin-slow opacity-10"
+          viewBox="0 0 100 100"
+        >
+          <polygon points="50,10 90,90 10,90" fill="white" />
+        </svg>
+
+        {/* Pulsing circle */}
+        <div
+          className="absolute bottom-32 left-10 w-16 h-16 rounded-full border-2 border-white/20 animate-pulse-slow"
+        />
+
+        {/* Rotating square */}
+        <div
+          className="absolute top-1/2 right-20 w-12 h-12 border-2 border-white/10 animate-spin-slow"
+          style={{ animationDirection: 'reverse', animationDuration: '15s' }}
+        />
+
+        {/* Floating ring */}
+        <div
+          className="absolute bottom-20 right-1/4 w-20 h-20 rounded-full border border-white/5 animate-ping"
+          style={{ animationDuration: '3s' }}
+        />
+      </div>
+
       {/* Skip button */}
       <button
         onClick={handleSkip}
-        className="fixed top-6 right-6 z-50 w-10 h-10 rounded-full bg-white border-2 border-foreground flex items-center justify-center hover:bg-foreground hover:text-white transition-all"
+        className="fixed top-6 right-6 z-50 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all hover:scale-110 active:scale-95"
       >
         <X className="w-5 h-5" />
       </button>
 
-      {/* Slide 1: Split Diagonal */}
-      {currentSlide === 0 && (
-        <div className="min-h-screen relative animate-fade-in">
-          {/* Diagonal split */}
-          <div className="absolute inset-0 flex">
-            {/* Left section - image */}
-            <div className="w-3/5 relative overflow-hidden">
-              <img
-                src={heroImage}
-                alt="Makeup"
-                className="w-full h-full object-cover"
+      {/* Main content */}
+      <div
+        className={cn(
+          "relative z-10 min-h-screen flex flex-col transition-all duration-700 ease-out",
+          isAnimating && "opacity-0 scale-95"
+        )}
+      >
+        {/* Top section with animated illustration */}
+        <div className="flex-1 flex items-center justify-center px-8 pt-16 pb-8">
+          <div className="relative w-full max-w-sm">
+            {/* Animated circular container */}
+            <div className="relative aspect-square">
+              {/* Outer animated rings */}
+              <div className="absolute inset-0 rounded-full border-2 border-white/10 animate-pulse-ring" />
+              <div
+                className="absolute inset-4 rounded-full border border-white/20 animate-spin-slow"
+                style={{ animationDuration: '20s' }}
               />
-              {/* Diagonal cut overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20" />
-            </div>
+              <div
+                className="absolute inset-8 rounded-full border-2 border-dashed border-white/30 animate-spin-slow"
+                style={{ animationDirection: 'reverse', animationDuration: '15s' }}
+              />
 
-            {/* Right section - content */}
-            <div className="w-2/5 bg-foreground text-white flex flex-col justify-center p-8 relative">
-              {/* Giant number */}
-              <div className="absolute top-8 right-8 text-[120px] font-bold text-white/5 leading-none">
-                {currentSlideData.number}
-              </div>
-
-              {/* Geometric accent */}
-              <div className="absolute -top-12 -left-12 w-32 h-32 bg-gold/30 rounded-full blur-2xl" />
-
-              {/* Content */}
-              <div className="relative z-10">
-                <div className="inline-block px-4 py-1 rounded-full bg-gold text-foreground text-sm font-bold mb-6">
-                  {currentSlideData.accent}
-                </div>
-
-                <h1 className="font-serif text-6xl font-bold leading-none mb-4">
-                  {currentSlideData.title}
-                </h1>
-
-                <h2 className="font-serif text-4xl text-gold mb-6">
-                  {currentSlideData.subtitle}
-                </h2>
-
-                <p className="text-white/70 text-lg mb-8">
-                  {currentSlideData.description}
-                </p>
-              </div>
-
-              {/* Geometric decoration */}
-              <div className="absolute bottom-8 left-8 w-16 h-16 border-2 border-gold/30 rotate-45" />
-            </div>
-
-            {/* Diagonal separator */}
-            <div
-              className="absolute top-0 bottom-0 w-4 bg-white"
-              style={{ left: '60%', transform: 'skewX(-5deg)' }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Slide 2: Circle Focus */}
-      {currentSlide === 1 && (
-        <div className="min-h-screen relative animate-fade-in">
-          {/* Background with pattern */}
-          <div className="absolute inset-0 bg-gradient-to-br from-rose-50 to-white">
-            {/* Geometric pattern */}
-            <svg className="absolute inset-0 w-full h-full opacity-10">
-              <defs>
-                <pattern id="triangles" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                  <polygon points="20,5 35,35 5,35" fill="currentColor" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#triangles)" />
-            </svg>
-          </div>
-
-          {/* Content */}
-          <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-8 py-24">
-            {/* Floating circle image */}
-            <div className="relative mb-12">
-              {/* Outer ring */}
-              <div className="absolute inset-0 -m-4 rounded-full border-4 border-primary/20" />
-              {/* Middle ring */}
-              <div className="absolute inset-0 -m-2 rounded-full border-2 border-gold/40" />
-              {/* Image circle */}
-              <div className="w-56 h-56 rounded-full overflow-hidden border-8 border-white shadow-2xl relative z-10">
+              {/* Morphing shape container */}
+              <div className="absolute inset-12 overflow-hidden rounded-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm">
+                {/* Image with parallax */}
                 <img
                   src={heroImage}
-                  alt="Makeup"
-                  className="w-full h-full object-cover"
+                  alt="Beauty"
+                  className={cn(
+                    "absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out",
+                    isAnimating ? "scale-110 rotate-3" : "scale-100 rotate-0"
+                  )}
+                  style={{
+                    animation: 'float-image 6s ease-in-out infinite',
+                  }}
                 />
-              </div>
-              {/* Floating badge */}
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-foreground text-white px-6 py-3 rounded-full shadow-xl">
-                <span className="text-4xl font-bold">{currentSlideData.number}</span>
-              </div>
-            </div>
 
-            {/* Text content */}
-            <div className="text-center max-w-sm">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-white text-sm font-bold mb-6">
-                <Wand2 className="w-4 h-4" />
-                {currentSlideData.accent}
-              </div>
+                {/* Gradient overlay */}
+                <div
+                  className={cn(
+                    "absolute inset-0 bg-gradient-to-br opacity-50 transition-colors duration-700",
+                    currentSlideData.color
+                  )}
+                />
 
-              <h1 className="font-serif text-5xl font-bold text-foreground mb-3">
-                {currentSlideData.title}
-              </h1>
-
-              <h2 className="font-serif text-3xl text-primary mb-6">
-                {currentSlideData.subtitle}
-              </h2>
-
-              <p className="text-muted-foreground text-lg">
-                {currentSlideData.description}
-              </p>
-            </div>
-
-            {/* Geometric decorations */}
-            <div className="absolute top-20 left-8 w-12 h-12 bg-primary/20 rotate-45" />
-            <div className="absolute bottom-32 right-12 w-8 h-8 bg-gold/30 rounded-full" />
-            <div className="absolute top-1/2 right-8 w-2 h-32 bg-foreground/10" />
-          </div>
-        </div>
-      )}
-
-      {/* Slide 3: Split Reverse */}
-      {currentSlide === 2 && (
-        <div className="min-h-screen relative animate-fade-in">
-          {/* Reverse diagonal split */}
-          <div className="absolute inset-0 flex">
-            {/* Left section - content */}
-            <div className="w-2/5 bg-gradient-to-br from-gold/20 to-gold/5 text-foreground flex flex-col justify-center p-8 relative">
-              {/* Giant number */}
-              <div className="absolute top-8 left-8 text-[120px] font-bold text-gold/10 leading-none">
-                {currentSlideData.number}
-              </div>
-
-              {/* Geometric accent */}
-              <div className="absolute -bottom-12 -right-12 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />
-
-              {/* Content */}
-              <div className="relative z-10">
-                <div className="inline-block px-4 py-1 rounded-full bg-foreground text-white text-sm font-bold mb-6">
-                  <Shield className="w-4 h-4 inline mr-2" />
-                  {currentSlideData.accent}
-                </div>
-
-                <h1 className="font-serif text-6xl font-bold leading-none mb-4">
-                  {currentSlideData.title}
-                </h1>
-
-                <h2 className="font-serif text-4xl text-primary mb-6">
-                  {currentSlideData.subtitle}
-                </h2>
-
-                <p className="text-foreground/70 text-lg mb-8">
-                  {currentSlideData.description}
-                </p>
-              </div>
-
-              {/* Geometric decoration */}
-              <div className="absolute bottom-8 right-8 w-20 h-20 border-4 border-primary/20" />
-            </div>
-
-            {/* Right section - image */}
-            <div className="w-3/5 relative overflow-hidden">
-              <img
-                src={heroImage}
-                alt="Makeup"
-                className="w-full h-full object-cover"
-              />
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-gold/10" />
-            </div>
-
-            {/* Diagonal separator */}
-            <div
-              className="absolute top-0 bottom-0 w-4 bg-white shadow-lg"
-              style={{ left: '40%', transform: 'skewX(5deg)' }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 z-50 bg-gradient-to-t from-white via-white to-transparent">
-        <div className="max-w-sm mx-auto">
-          {/* Geometric progress indicator */}
-          <div className="flex items-center justify-center gap-3 mb-6">
-            {slides.map((_, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "relative w-12 h-12 transition-all duration-300",
-                  index <= currentSlide ? "opacity-100" : "opacity-30"
-                )}
-              >
-                {/* Triangle shape */}
-                <svg viewBox="0 0 48 48" className="w-full h-full">
-                  <polygon
-                    points={index === currentSlide
-                      ? "24,4 44,44 4,44"
-                      : "24,12 40,40 8,40"
-                    }
-                    fill={index === currentSlide ? "currentColor" : "none"}
-                    stroke="currentColor"
-                    strokeWidth="2"
+                {/* Animated icon overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div
                     className={cn(
-                      "transition-all duration-300",
-                      index === currentSlide ? "text-primary" : "text-foreground/30"
+                      "w-24 h-24 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center transition-all duration-500",
+                      isAnimating ? "scale-0 rotate-180" : "scale-100 rotate-0"
                     )}
-                  />
-                </svg>
+                  >
+                    {currentSlideData.icon === "sparkles" && (
+                      <Sparkles className="w-12 h-12 text-white animate-pulse-slow" />
+                    )}
+                    {currentSlideData.icon === "wand" && (
+                      <Wand2 className="w-12 h-12 text-white animate-spin-slow" />
+                    )}
+                    {currentSlideData.icon === "shield" && (
+                      <Shield className="w-12 h-12 text-white animate-bounce-slow" />
+                    )}
+                  </div>
+                </div>
               </div>
-            ))}
-          </div>
 
-          {/* Buttons */}
-          {currentSlide === slides.length - 1 ? (
-            <div className="space-y-3">
-              <Button
-                size="lg"
-                className="w-full h-14 bg-foreground hover:bg-foreground/90 text-white rounded-none font-semibold text-base uppercase tracking-wider"
-                onClick={() => navigate("/auth")}
-              >
-                {language === "ar" ? "ابدأ" : "Get Started"}
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="h-14 border-2 border-foreground text-foreground hover:bg-foreground hover:text-white rounded-none font-semibold uppercase tracking-wider"
-                  onClick={() => navigate("/auth")}
-                >
-                  {language === "ar" ? "دخول" : "Sign In"}
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  className="h-14 text-muted-foreground hover:bg-foreground/5 rounded-none font-medium"
-                  onClick={handleSkip}
-                >
-                  {language === "ar" ? "ضيف" : "Guest"}
-                </Button>
+              {/* Orbiting dots */}
+              <div className="absolute inset-0">
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    className="absolute w-3 h-3 rounded-full bg-white/80 animate-orbit"
+                    style={{
+                      left: '50%',
+                      top: '50%',
+                      animationDelay: `${i * 0.5}s`,
+                      animationDuration: '8s',
+                      transformOrigin: `0 -140px`,
+                    }}
+                  />
+                ))}
               </div>
             </div>
-          ) : (
-            <Button
-              size="lg"
-              className="w-full h-14 bg-foreground hover:bg-foreground/90 text-white rounded-none font-semibold uppercase tracking-wider"
-              onClick={handleNext}
+          </div>
+        </div>
+
+        {/* Bottom section with content */}
+        <div className="px-8 pb-12 pt-4">
+          {/* Animated typography */}
+          <div className="max-w-sm mx-auto text-center">
+            {/* Slide indicator */}
+            <div className="flex items-center justify-center gap-2 mb-6">
+              {slides.map((_, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    "h-1 rounded-full transition-all duration-500 ease-out",
+                    index === currentSlide
+                      ? "w-12 bg-gradient-to-r from-white to-white/70"
+                      : index < currentSlide
+                      ? "w-3 bg-white/30"
+                      : "w-3 bg-white/10"
+                  )}
+                />
+              ))}
+            </div>
+
+            {/* Title with stagger animation */}
+            <h1
+              className={cn(
+                "font-serif text-5xl font-bold text-white leading-tight mb-2",
+                "animate-slide-up"
+              )}
+              style={{ animationDelay: '0.1s' }}
             >
-              {language === "ar" ? "التالي" : "Continue"}
-              <ChevronRight className="w-5 h-5" />
-            </Button>
-          )}
+              {currentSlideData.title}
+            </h1>
+
+            {/* Subtitle with gradient */}
+            <h2
+              className={cn(
+                "font-serif text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r mb-4",
+                currentSlideData.color,
+                "animate-slide-up"
+              )}
+              style={{ animationDelay: '0.2s' }}
+            >
+              {currentSlideData.subtitle}
+            </h2>
+
+            {/* Description */}
+            <p
+              className="text-white/70 text-lg leading-relaxed mb-8 animate-slide-up"
+              style={{ animationDelay: '0.3s' }}
+            >
+              {currentSlideData.description}
+            </p>
+
+            {/* Buttons */}
+            <div
+              className="space-y-3 animate-slide-up"
+              style={{ animationDelay: '0.4s' }}
+            >
+              {currentSlide === slides.length - 1 ? (
+                <>
+                  <Button
+                    size="lg"
+                    className="w-full h-14 bg-white text-foreground hover:bg-white/90 rounded-2xl font-semibold text-base shadow-2xl shadow-white/20 transition-all hover:scale-105 active:scale-95"
+                    onClick={() => navigate("/auth")}
+                  >
+                    {language === "ar" ? "ابدأ الآن" : "Get Started"}
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="h-14 border-2 border-white/30 text-white hover:bg-white/10 rounded-2xl font-semibold backdrop-blur-sm transition-all hover:scale-105 active:scale-95"
+                      onClick={() => navigate("/auth")}
+                    >
+                      {language === "ar" ? "تسجيل" : "Sign In"}
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="lg"
+                      className="h-14 text-white/70 hover:text-white hover:bg-white/10 rounded-2xl font-medium transition-all"
+                      onClick={handleSkip}
+                    >
+                      {language === "ar" ? "ضيف" : "Guest"}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <Button
+                  size="lg"
+                  className="w-full h-14 bg-gradient-to-r from-white to-white/90 text-foreground hover:from-white/90 hover:to-white/80 rounded-2xl font-semibold text-base shadow-2xl shadow-white/20 transition-all hover:scale-105 active:scale-95"
+                  onClick={handleNext}
+                  disabled={isAnimating}
+                >
+                  {language === "ar" ? "التالي" : "Continue"}
+                  <ChevronRight className="w-5 h-5" />
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Bottom gradient fade */}
+      <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-foreground via-foreground/80 to-transparent pointer-events-none" />
+
       <style>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: scale(0.98);
+        @keyframes morph-blob {
+          0%, 100% {
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            transform: rotate(0deg) scale(1);
           }
-          to {
-            opacity: 1;
-            transform: scale(1);
+          50% {
+            border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+            transform: rotate(180deg) scale(1.1);
           }
         }
 
-        .animate-fade-in {
-          animation: fade-in 0.5s ease-out forwards;
+        @keyframes morph-blob-reverse {
+          0%, 100% {
+            border-radius: 40% 60% 60% 40% / 60% 30% 70% 40%;
+            transform: rotate(0deg) scale(1);
+          }
+          50% {
+            border-radius: 60% 40% 30% 70% / 40% 60% 60% 30%;
+            transform: rotate(-180deg) scale(1.15);
+          }
+        }
+
+        @keyframes float-particle {
+          0%, 100% {
+            opacity: 0;
+            transform: translateY(0) translateX(0) scale(0);
+          }
+          10% {
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-100vh) translateX(50px) scale(1);
+          }
+        }
+
+        @keyframes spin-slow {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes pulse-slow {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.05);
+            opacity: 0.8;
+          }
+        }
+
+        @keyframes pulse-ring {
+          0% {
+            transform: scale(1);
+            opacity: 0.5;
+          }
+          50% {
+            transform: scale(1.05);
+            opacity: 0.3;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 0.5;
+          }
+        }
+
+        @keyframes float-image {
+          0%, 100% {
+            transform: translateY(0) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-10px) rotate(2deg);
+          }
+        }
+
+        @keyframes bounce-slow {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-8px);
+          }
+        }
+
+        @keyframes orbit {
+          0% {
+            transform: rotate(0deg) translateX(-140px) rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg) translateX(-140px) rotate(-360deg);
+          }
+        }
+
+        @keyframes slide-up {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-morph-blob {
+          animation: morph-blob 8s ease-in-out infinite;
+        }
+
+        .animate-morph-blob-reverse {
+          animation: morph-blob-reverse 10s ease-in-out infinite;
+        }
+
+        .animate-float-particle {
+          animation: float-particle linear infinite;
+        }
+
+        .animate-spin-slow {
+          animation: spin-slow linear infinite;
+        }
+
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
+        }
+
+        .animate-pulse-ring {
+          animation: pulse-ring 3s ease-in-out infinite;
+        }
+
+        .animate-bounce-slow {
+          animation: bounce-slow 2s ease-in-out infinite;
+        }
+
+        .animate-orbit {
+          animation: orbit 8s linear infinite;
+        }
+
+        .animate-slide-up {
+          animation: slide-up 0.6s ease-out forwards;
         }
       `}</style>
     </div>
