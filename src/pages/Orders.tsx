@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import type { OrderStatus } from "@/types/product";
-import AppHeader from "@/components/layout/AppHeader";
+import BackButton from "@/components/BackButton";
 import BottomNavigation from "@/components/BottomNavigation";
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; icon: any; color: string; bgColor: string }> = {
@@ -28,7 +28,10 @@ const Orders = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background pb-24">
-        <AppHeader title="My Orders" style="modern" />
+        <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
+          <BackButton />
+          <h1 className="text-2xl font-bold text-foreground mt-4">My Orders</h1>
+        </div>
         <div className="flex flex-col items-center justify-center px-5 py-16">
           <Package className="w-16 h-16 text-muted-foreground mb-4" />
           <h2 className="text-lg font-semibold mb-2">{t.profile?.signInToView || "Sign in to view"}</h2>
@@ -44,7 +47,8 @@ const Orders = () => {
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
-        <h1 className="text-2xl font-bold text-foreground">My Orders</h1>
+        <BackButton />
+        <h1 className="text-2xl font-bold text-foreground mt-4">My Orders</h1>
         <p className="text-sm text-muted-foreground mt-1">
           {orders.length} {orders.length === 1 ? "order" : "orders"}
         </p>
