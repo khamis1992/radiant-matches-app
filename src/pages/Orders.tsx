@@ -157,6 +157,7 @@ const Orders = () => {
           </div>
         )}
       </div>
+      <BottomNavigation />
     </div>
   );
 };
