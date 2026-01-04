@@ -6,8 +6,6 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   bundledWebRuntime: false,
   server: {
-    // For development with live reload - use your local IP
-    url: 'http://192.168.18.40:8080',
     cleartext: true,
     androidScheme: 'https'
   },
