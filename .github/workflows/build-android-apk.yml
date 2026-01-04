@@ -64,7 +64,7 @@ jobs:
       - name: Sync Capacitor
         run: |
           echo "Syncing Capacitor with Android..."
-          npx cap sync android --verbose
+          npx cap sync android
           echo "Sync completed"
 
       - name: Verify Android build files
