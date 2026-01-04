@@ -404,25 +404,81 @@ const MakeupArtists = () => {
           {/* Horizontal scroll container with snap */}
           <div className="overflow-x-auto scrollbar-hide -mx-5 px-5">
             <div className="flex gap-3 min-w-max pb-1">
-              {/* All / Reset Pill Button */}
+              {/* All Categories - Special Card Design */}
               <button
                 onClick={() => handleCategoryChange(null)}
-                className={cn(
-                  "relative flex-shrink-0 px-5 py-3 rounded-full overflow-hidden transition-all duration-300 group",
-                  selectedCategory === null
-                    ? "bg-gradient-to-r from-primary to-primary/90 shadow-lg shadow-primary/30 scale-105"
-                    : "bg-muted/80 border border-border/50 hover:border-primary/30"
-                )}
+                className="relative flex-shrink-0 group"
               >
-                {selectedCategory === null && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                )}
-                <span className={cn(
-                  "text-sm font-serif font-medium relative z-10",
-                  selectedCategory === null ? "text-white" : "text-foreground/80"
-                )}>
-                  {t.artistsListing.allCategories || "All"}
-                </span>
+                <div
+                  className={cn(
+                    "relative w-28 h-20 rounded-2xl overflow-hidden transition-all duration-500 ease-out",
+                    selectedCategory === null
+                      ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 shadow-xl shadow-primary/20"
+                      : "ring-1 ring-border/50 group-hover:ring-primary/40 group-hover:scale-[1.02]"
+                  )}
+                >
+                  {/* Animated Gradient Background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-gold/10">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 via-transparent to-gold/30 animate-pulse" />
+                  </div>
+
+                  {/* Decorative Grid Pattern */}
+                  <svg
+                    className="absolute inset-0 w-full h-full opacity-10"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <defs>
+                      <pattern id="grid" width="12" height="12" patternUnits="userSpaceOnUse">
+                        <path d="M 12 0 L 0 0 0 12" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                  </svg>
+
+                  {/* Sparkles Icon */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <Sparkles
+                      className={cn(
+                        "w-6 h-6 transition-all duration-300",
+                        selectedCategory === null
+                          ? "text-primary scale-110 drop-shadow-lg"
+                          : "text-primary/60 group-hover:text-primary group-hover:scale-110"
+                      )}
+                    />
+                  </div>
+
+                  {/* Label Overlay */}
+                  <div className="absolute inset-x-0 bottom-0 p-3">
+                    <span
+                      className={cn(
+                        "block text-[11px] font-serif font-semibold tracking-wide truncate text-center",
+                        selectedCategory === null
+                          ? "text-primary drop-shadow-lg"
+                          : "text-primary/70 drop-shadow-md"
+                      )}
+                    >
+                      {t.artistsListing.allCategories || "All"}
+                    </span>
+                  </div>
+
+                  {/* Animated Corner Accent (Selected) */}
+                  {selectedCategory === null && (
+                    <>
+                      <div className="absolute top-2 right-2">
+                        <div className="relative">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+                          <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-primary" />
+                        </div>
+                      </div>
+                      <div className="absolute top-2 left-2">
+                        <div className="relative">
+                          <div className="w-1 h-1 rounded-full bg-gold animate-ping" style={{ animationDelay: '0.3s' }} />
+                          <div className="absolute inset-0 w-1 h-1 rounded-full bg-gold" />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </button>
 
               {/* Category Cards - Editorial Wide Format */}
