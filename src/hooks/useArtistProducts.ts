@@ -165,11 +165,25 @@ export const useDeleteProduct = () => {
 
 // Upload product image
 export const useUploadProductImage = () => {
+  const { user } = useAuth();
+
   return useMutation({
     mutationFn: async (file: File) => {
+      if (!user?.id) throw new Error("Not authenticated");
+
+      // Get artist ID first - required for RLS policy
+      const { data: artist, error: artistError } = await supabase
+        .from("artists")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (artistError || !artist) throw new Error("Artist not found");
+
       const fileExt = file.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `products/${fileName}`;
+      // Use artist ID as folder name to match RLS policy
+      const filePath = `${artist.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("portfolio")
