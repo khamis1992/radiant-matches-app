@@ -119,7 +119,7 @@ export const ArtistTabBar = () => {
           ${mounted ? 'opacity-100' : 'opacity-0'}
           safe-area-bottom
         `}
-        style={{ height: '56px' }}
+        style={{ position: 'fixed', height: '56px' }}
       >
         <div className="relative h-full max-w-md mx-auto">
           {/* Navigation Items Container */}
