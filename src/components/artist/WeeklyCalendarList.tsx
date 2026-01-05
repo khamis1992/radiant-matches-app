@@ -150,7 +150,7 @@ export const WeeklyCalendarList = ({
           const dayIsToday = isToday(date);
           const isSelected = selectedDate ? isSameDay(date, selectedDate) : false;
           const hasBookings = dayBookings.length > 0;
-          const isPast = date < new Date().setHours(0, 0, 0, 0);
+          const isPast = date < new Date(new Date().setHours(0, 0, 0, 0));
 
           const dayName = format(date, "EEE", { locale });
           const dayNumber = format(date, "d");

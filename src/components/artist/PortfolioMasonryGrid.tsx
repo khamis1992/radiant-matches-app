@@ -17,6 +17,7 @@ interface PortfolioMasonryGridProps {
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
   onImageClick: (index: number) => void;
+  onUploadClick?: () => void;
   isLoading?: boolean;
 }
 
@@ -26,6 +27,7 @@ export const PortfolioMasonryGrid = ({
   selectedCategory,
   onCategoryChange,
   onImageClick,
+  onUploadClick,
   isLoading = false,
 }: PortfolioMasonryGridProps) => {
   const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
