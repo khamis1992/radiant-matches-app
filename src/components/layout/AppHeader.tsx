@@ -133,7 +133,7 @@ const AppHeader = ({
                 <img
                   src={logo}
                   alt="Glam"
-                  className="h-9 w-auto object-contain drop-shadow-sm transition-all duration-200 hover:scale-105"
+                  className="h-12 w-auto object-contain drop-shadow-sm transition-all duration-200 hover:scale-105"
                 />
               </div>
             )}
