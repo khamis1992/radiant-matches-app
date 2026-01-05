@@ -114,7 +114,7 @@ export const ArtistTabBar = () => {
       <nav
         className={`
           fixed left-0 right-0 bottom-0 z-50
-          bg-white border-t border-black/8
+          bg-card border-t border-border shadow-lg
           tab-slide-up
           ${mounted ? 'opacity-100' : 'opacity-0'}
           safe-area-bottom
