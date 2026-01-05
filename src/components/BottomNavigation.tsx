@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ArtistTabBar } from "@/components/artist/ArtistTabBar";
 
 interface NavItem {
   icon: LucideIcon;
@@ -223,7 +224,12 @@ const BottomNavigation = () => {
     );
   }
 
-  // العرض العادي للفنان
+  // العرض الجديد للفنان - Instagram-style Tab Bar
+  if (role === "artist" || isArtist) {
+    return <ArtistTabBar />;
+  }
+
+  // العرض العادي للفنان (backup)
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg animate-slide-in-bottom safe-area-bottom">
       <div className="flex items-center justify-around h-16 max-w-md mx-auto px-4">

@@ -18,7 +18,10 @@
       "Skill(frontend-design)",
       "Skill(brainstorming)",
       "Bash(taskkill:*)",
-      "Bash(npm run dev)"
+      "Bash(npm run dev)",
+      "Bash(netstat:*)",
+      "Bash(timeout:*)",
+      "Bash(powershell -Command \"Stop-Process -Id 16740 -Force; Start-Sleep -Seconds 2; npm run dev\")"
     ]
   }
 }

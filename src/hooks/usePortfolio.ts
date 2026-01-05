@@ -132,3 +132,6 @@ export const useDeletePortfolioItem = () => {
     },
   });
 };
+
+// Alias for backward compatibility
+export const usePortfolio = useArtistPortfolio;
