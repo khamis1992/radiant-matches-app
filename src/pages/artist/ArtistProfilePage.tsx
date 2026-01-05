@@ -114,10 +114,13 @@ const ArtistProfilePage = () => {
             is_available: artist.is_available,
             bio: artist.bio,
             experience_years: artist.experience_years,
+            studio_address: artist.studio_address,
           }}
           reviews={reviews}
           language={language}
           isRTL={isRTL}
+          onToggleAvailability={handleToggleAvailability}
+          onNavigate={navigate}
         />
       </div>
 
