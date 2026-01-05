@@ -151,7 +151,7 @@ const ArtistProfile = () => {
 
   if (artistLoading) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <Skeleton className="h-80 w-full" />
         <div className="px-5 -mt-20 relative z-10">
           <Skeleton className="h-40 w-full rounded-3xl" />

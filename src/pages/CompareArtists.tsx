@@ -180,7 +180,7 @@ const CompareArtists = () => {
 
   if (artistIds.length === 0) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <AppHeader title={t.compare.title} showBack style="modern" />
         <div className="flex flex-col items-center justify-center p-8 text-center">
           <p className="text-muted-foreground mb-4">{t.compare.noArtists}</p>
@@ -195,7 +195,7 @@ const CompareArtists = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <AppHeader title={t.compare.title} showBack style="modern" />
         <div className="px-5 py-6 space-y-4">
           {[1, 2].map((i) => (
@@ -208,7 +208,7 @@ const CompareArtists = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       <AppHeader title={t.compare.title} showBack style="modern" />
 
       <div className="px-5 py-6">

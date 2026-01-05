@@ -76,7 +76,7 @@ const Favorites = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-24">
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
         <AppHeader title={t.favorites.title} style="modern" />
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <div className="relative mb-6">
@@ -107,7 +107,7 @@ const Favorites = () => {
   const isLoading = favoritesLoading || artistsLoading;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
       {/* Header */}
       <AppHeader title={t.favorites.title} style="modern" />
 

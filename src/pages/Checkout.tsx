@@ -124,7 +124,7 @@ const Checkout = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
           <Skeleton className="h-6 w-24 mb-4" />
           <Skeleton className="h-8 w-40" />
@@ -143,7 +143,7 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
         <button

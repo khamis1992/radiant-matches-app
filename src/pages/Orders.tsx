@@ -27,7 +27,7 @@ const Orders = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
           <BackButton />
           <h1 className="text-2xl font-bold text-foreground mt-4">My Orders</h1>
@@ -44,7 +44,7 @@ const Orders = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
         <BackButton />

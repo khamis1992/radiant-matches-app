@@ -150,7 +150,7 @@ const OrderDetails = () => {
   const canCancel = isCustomer && order.status === "pending";
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       <AppHeader title="Order Details" showBack showLogo />
 
       {/* Status Header */}

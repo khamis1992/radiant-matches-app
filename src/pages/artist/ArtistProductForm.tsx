@@ -145,7 +145,7 @@ const ArtistProductForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
         <div className="flex items-center gap-3 mb-6">

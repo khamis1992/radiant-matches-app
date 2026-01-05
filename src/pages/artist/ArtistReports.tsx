@@ -32,7 +32,7 @@ const ArtistReports = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
+      <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
         <AppHeader title={t.artistReports.title} style="modern" />
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <BarChart3 className="w-16 h-16 text-muted-foreground mb-4" />
@@ -88,7 +88,7 @@ const ArtistReports = () => {
   const avgRevenue = earningsData?.avgRevenue || 0;
 
   return (
-    <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
       <AppHeader title={t.artistReports.title} style="modern" />
 
       <div className="px-5 py-6">

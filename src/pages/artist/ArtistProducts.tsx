@@ -336,7 +336,7 @@ const ArtistProducts = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
           <Skeleton className="h-6 w-40" />
         </header>
@@ -351,7 +351,7 @@ const ArtistProducts = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
         <div className="flex items-center justify-between">

@@ -89,7 +89,7 @@ const Wallet = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       <AppHeader title={t.wallet?.title || "Wallet"} showBack />
       
       <div className="px-4 py-4" dir={isRTL ? "rtl" : "ltr"}>
