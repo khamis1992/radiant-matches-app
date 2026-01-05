@@ -404,36 +404,60 @@ const ArtistProfile = () => {
       {/* Main Tabs */}
       <div ref={servicesSectionRef} className="px-5 mt-6">
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)} className="w-full">
-          <TabsList className="w-full bg-muted/50 p-1.5 rounded-2xl h-auto">
-            <TabsTrigger
-              value="services"
-              className="flex-1 rounded-xl py-2.5 text-sm data-[state=active]:bg-card data-[state=active]:shadow-sm"
-            >
-              <Briefcase className="w-4 h-4 me-1.5" />
-              {t.artist.servicesOffered}
-            </TabsTrigger>
-            <TabsTrigger
-              value="reviews"
-              className="flex-1 rounded-xl py-2.5 text-sm data-[state=active]:bg-card data-[state=active]:shadow-sm"
-            >
-              <Star className="w-4 h-4 me-1.5" />
-              {t.artist.reviews}
-            </TabsTrigger>
-            <TabsTrigger
-              value="gallery"
-              className="flex-1 rounded-xl py-2.5 text-sm data-[state=active]:bg-card data-[state=active]:shadow-sm"
-            >
-              <Grid3x3 className="w-4 h-4 me-1.5" />
-              {t.artist.gallery || "Gallery"}
-            </TabsTrigger>
-            <TabsTrigger
-              value="market"
-              className="flex-1 rounded-xl py-2.5 text-sm data-[state=active]:bg-card data-[state=active]:shadow-sm"
-            >
-              <ShoppingBag className="w-4 h-4 me-1.5" />
-              Market
-            </TabsTrigger>
-          </TabsList>
+          {/* Mobile-optimized scrollable tab bar */}
+          <div className="overflow-x-auto scrollbar-hide -mx-5 px-5">
+            <TabsList className="inline-flex gap-2 bg-transparent p-0 h-auto min-w-max">
+              <TabsTrigger
+                value="services"
+                className="flex items-center gap-2 px-4 py-3 rounded-full text-sm font-medium transition-all duration-200 
+                  data-[state=inactive]:bg-muted/60 data-[state=inactive]:text-muted-foreground
+                  data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md
+                  active:scale-95 touch-manipulation"
+              >
+                <Briefcase className="w-4 h-4" />
+                <span>{t.artist.servicesOffered}</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="reviews"
+                className="flex items-center gap-2 px-4 py-3 rounded-full text-sm font-medium transition-all duration-200 
+                  data-[state=inactive]:bg-muted/60 data-[state=inactive]:text-muted-foreground
+                  data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md
+                  active:scale-95 touch-manipulation"
+              >
+                <Star className="w-4 h-4" />
+                <span>{t.artist.reviews}</span>
+                {reviews && reviews.length > 0 && (
+                  <span className="text-xs opacity-80">({reviews.length})</span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="gallery"
+                className="flex items-center gap-2 px-4 py-3 rounded-full text-sm font-medium transition-all duration-200 
+                  data-[state=inactive]:bg-muted/60 data-[state=inactive]:text-muted-foreground
+                  data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md
+                  active:scale-95 touch-manipulation"
+              >
+                <Grid3x3 className="w-4 h-4" />
+                <span>{t.artist.gallery || "Gallery"}</span>
+                {portfolioItems.length > 0 && (
+                  <span className="text-xs opacity-80">({portfolioItems.length})</span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="market"
+                className="flex items-center gap-2 px-4 py-3 rounded-full text-sm font-medium transition-all duration-200 
+                  data-[state=inactive]:bg-muted/60 data-[state=inactive]:text-muted-foreground
+                  data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md
+                  active:scale-95 touch-manipulation"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>Market</span>
+                {products.length > 0 && (
+                  <span className="text-xs opacity-80">({products.length})</span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Services Tab */}
           <TabsContent value="services" className="mt-4 space-y-3">
