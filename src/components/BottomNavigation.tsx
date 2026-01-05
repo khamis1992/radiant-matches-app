@@ -130,7 +130,7 @@ const BottomNavigation = () => {
   if (isCustomer) {
     return (
       <>
-        <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom" style={{ position: 'fixed' }}>
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg safe-area-bottom" style={{ position: 'fixed' }}>
           {/* زر البحث العائم في المنتصف */}
           <button
             onClick={() => setSearchOpen(true)}
@@ -140,7 +140,7 @@ const BottomNavigation = () => {
           </button>
           
           {/* شريط التنقل */}
-          <div className="bg-card border-t border-border shadow-lg">
+          <div className="bg-card">
             <div className="flex items-center justify-between h-16 max-w-md mx-auto px-2">
               {/* العناصر اليسرى */}
               <div className="flex items-center gap-1">
