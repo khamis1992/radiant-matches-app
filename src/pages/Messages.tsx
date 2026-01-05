@@ -23,7 +23,7 @@ const Messages = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <AppHeader title={t.messages.title} />
         <div className="flex flex-col items-center justify-center px-5 py-16">
           <MessageSquare className="w-16 h-16 text-muted-foreground mb-4" />
@@ -37,7 +37,7 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       <AppHeader
         title={t.messages.title}
         style="modern"

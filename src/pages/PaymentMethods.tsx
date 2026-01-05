@@ -12,7 +12,7 @@ const PaymentMethods = () => {
   const BackIcon = isRTL ? ArrowRight : ArrowLeft;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       <header className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
           <button

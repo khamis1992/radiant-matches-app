@@ -44,7 +44,7 @@ const Profile = () => {
 
   if (authLoading || profileLoading) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <header className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-12 px-5">
           <Skeleton className="h-6 w-20 mb-6" />
           <div className="flex items-center gap-4">
@@ -62,7 +62,7 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <header className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-12 px-5">
           <h1 className="text-xl font-bold text-foreground mb-6">{t.nav.profile}</h1>
         </header>
@@ -80,7 +80,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       <header className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-12 px-5">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-bold text-foreground">{t.nav.profile}</h1>

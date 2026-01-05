@@ -397,7 +397,7 @@ const Bookings = () => {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-24">
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
         <AppHeader title={t.bookings.title} style="modern">
           <div className="flex gap-2 mt-4">
             <Skeleton className="h-12 flex-1 rounded-xl" />
@@ -418,7 +418,7 @@ const Bookings = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-24">
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
         <AppHeader title={t.bookings.title} style="modern" />
         <EmptyState type="login" language={language} />
         <BottomNavigation />
@@ -427,7 +427,7 @@ const Bookings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
       {/* Header */}
       <AppHeader title={t.bookings.title} style="modern">
         {/* Tabs */}

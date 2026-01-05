@@ -22,7 +22,7 @@ const Notifications = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-24 flex flex-col items-center justify-center px-5">
+      <div className="min-h-screen bg-background pb-32 flex flex-col items-center justify-center px-5">
         <MessageSquare className="w-16 h-16 text-muted-foreground mb-4" />
         <h2 className="text-lg font-semibold mb-2">{t.profile.signInToView}</h2>
         <p className="text-muted-foreground text-center mb-4">{t.profile.signInDesc}</p>
@@ -33,7 +33,7 @@ const Notifications = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
         <div className="flex items-center gap-3 mb-4">
           <BackButton />

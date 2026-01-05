@@ -84,7 +84,7 @@ const ArtistServices = () => {
 
   if (authLoading || artistLoading) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
           <Skeleton className="h-6 w-40" />
         </header>
@@ -98,7 +98,7 @@ const ArtistServices = () => {
 
   if (!user || !artist) {
     return (
-      <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
+      <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
           <h1 className="text-xl font-bold text-foreground">
             {t.artistServices.title}
@@ -200,7 +200,7 @@ const ArtistServices = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
       <ArtistHeader />
 
       <div className="px-4 py-4 space-y-4">

@@ -70,7 +70,7 @@ const Cart = () => {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
           <Skeleton className="h-8 w-40" />
           <Skeleton className="h-4 w-24 mt-2" />

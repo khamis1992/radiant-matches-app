@@ -298,7 +298,7 @@ const BookingDetails = () => {
 
   if (!booking) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
           <div className="flex items-center gap-3">
             <BackButton />
@@ -324,7 +324,7 @@ const BookingDetails = () => {
   const artistPhone = booking.artist?.profile?.phone;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
         <div className="flex items-center gap-3">

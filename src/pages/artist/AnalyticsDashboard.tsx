@@ -29,7 +29,7 @@ const AnalyticsDashboard = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <AppHeader title="Analytics" style="modern" />
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <TrendingUp className="w-16 h-16 text-muted-foreground mb-4" />
@@ -83,7 +83,7 @@ const AnalyticsDashboard = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-24">
+      <div className="min-h-screen bg-background pb-32">
         <AppHeader title="Analytics" style="modern" />
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <TrendingUp className="w-16 h-16 text-muted-foreground mb-4" />
@@ -97,7 +97,7 @@ const AnalyticsDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       <AppHeader title="Analytics" style="modern" />
 
       <div className="px-5 py-6">

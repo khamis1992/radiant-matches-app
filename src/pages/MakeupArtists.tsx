@@ -251,7 +251,7 @@ const MakeupArtists = () => {
   }, [artists, sortBy, debouncedSearchQuery, selectedCategory, showAvailableOnly, availabilityMap, filters]);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       {/* Header */}
       <AppHeader
         title={t.artistsListing.title}
