@@ -35,7 +35,7 @@ export interface ArtistBooking {
   customer_id: string;
   booking_date: string;
   booking_time: string;
-  status: string;
+  status: "pending" | "confirmed" | "completed" | "cancelled";
   total_price: number;
   location_type: string;
   location_address: string | null;

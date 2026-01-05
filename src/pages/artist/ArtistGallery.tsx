@@ -102,7 +102,8 @@ const ArtistGallery = () => {
     try {
       await updateItem.mutateAsync({
         id: item.id,
-        data: { is_featured: !item.is_featured },
+        artistId: item.artist_id,
+        is_featured: !item.is_featured,
       });
       toast.success(
         item.is_featured
@@ -130,11 +131,10 @@ const ArtistGallery = () => {
     try {
       await updateItem.mutateAsync({
         id: editingItem.id,
-        data: {
-          title: editForm.title || null,
-          category: editForm.category,
-          is_featured: editForm.is_featured,
-        },
+        artistId: editingItem.artist_id,
+        title: editForm.title || null,
+        category: editForm.category,
+        is_featured: editForm.is_featured,
       });
       toast.success(language === "ar" ? "تم التحديث" : "Updated successfully");
       setEditModalOpen(false);
