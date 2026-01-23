@@ -475,6 +475,21 @@ export const en = {
     noNotificationsDesc: "No new notifications yet",
   },
 
+  // Artist Notifications
+  artistNotifications: {
+    title: "Notifications",
+    unreadCount: "unread notification",
+    unreadCountPlural: "unread notifications",
+    markAllRead: "Mark all as read",
+    allMarkedAsRead: "All notifications marked as read",
+    notificationDeleted: "Notification deleted",
+    noNotifications: "No notifications",
+    noNotificationsDesc: "Notifications will appear here when you receive a new booking, message, or review",
+    notAnArtist: "Not an Artist",
+    noArtistProfile: "You don't have an artist profile yet",
+    goToHome: "Home",
+  },
+
   // Bookings
   bookings: {
     title: "My Bookings",

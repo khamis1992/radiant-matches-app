@@ -3,14 +3,14 @@ import BottomNavigation from "@/components/BottomNavigation";
 import ArtistHeader from "@/components/artist/ArtistHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { 
-  Bell, 
-  Calendar, 
-  MessageSquare, 
-  Star, 
-  CheckCheck, 
+import {
+  Bell,
+  Calendar,
+  MessageSquare,
+  Star,
+  CheckCheck,
   Trash2,
-  Briefcase 
+  Briefcase
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentArtist } from "@/hooks/useArtistDashboard";
@@ -34,7 +34,7 @@ const ArtistNotifications = () => {
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const deleteNotification = useDeleteNotification();
-  const { language, isRTL } = useLanguage();
+  const { language, isRTL, t } = useLanguage();
 
   const getNotificationIcon = (type: Notification["type"]) => {
     switch (type) {
@@ -90,9 +90,9 @@ const ArtistNotifications = () => {
   const handleMarkAllRead = async () => {
     try {
       await markAllRead.mutateAsync();
-      toast.success("تم تحديد جميع الإشعارات كمقروءة");
+      toast.success(t.artistNotifications.allMarkedAsRead);
     } catch {
-      toast.error("حدث خطأ");
+      toast.error(t.common.error);
     }
   };
 
@@ -100,9 +100,9 @@ const ArtistNotifications = () => {
     e.stopPropagation();
     try {
       await deleteNotification.mutateAsync(notificationId);
-      toast.success("تم حذف الإشعار");
+      toast.success(t.artistNotifications.notificationDeleted);
     } catch {
-      toast.error("حدث خطأ");
+      toast.error(t.common.error);
     }
   };
 
@@ -126,13 +126,13 @@ const ArtistNotifications = () => {
     return (
       <div className="min-h-screen bg-background pb-32">
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
-          <h1 className="text-xl font-bold text-foreground">الإشعارات</h1>
+          <h1 className="text-xl font-bold text-foreground">{t.artistNotifications.title}</h1>
         </header>
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <Briefcase className="w-16 h-16 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">لست فنانة</h2>
-          <p className="text-muted-foreground mb-6">ليس لديك ملف فنانة حتى الآن</p>
-          <Button onClick={() => navigate("/home")}>الصفحة الرئيسية</Button>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t.artistNotifications.notAnArtist}</h2>
+          <p className="text-muted-foreground mb-6">{t.artistNotifications.noArtistProfile}</p>
+          <Button onClick={() => navigate("/home")}>{t.artistNotifications.goToHome}</Button>
         </div>
         <BottomNavigation />
       </div>
@@ -148,10 +148,10 @@ const ArtistNotifications = () => {
       <div className="px-5 py-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-xl font-bold text-foreground">الإشعارات</h1>
+            <h1 className="text-xl font-bold text-foreground">{t.artistNotifications.title}</h1>
             {unreadCount > 0 && (
               <p className="text-sm text-muted-foreground">
-                {unreadCount} إشعار غير مقروء
+                {unreadCount} {unreadCount === 1 ? t.artistNotifications.unreadCount : t.artistNotifications.unreadCountPlural}
               </p>
             )}
           </div>
@@ -163,7 +163,7 @@ const ArtistNotifications = () => {
               disabled={markAllRead.isPending}
             >
               <CheckCheck className="w-4 h-4 mr-1" />
-              قراءة الكل
+              {t.artistNotifications.markAllRead}
             </Button>
           )}
         </div>
@@ -232,8 +232,8 @@ const ArtistNotifications = () => {
         ) : (
           <div className="text-center py-16 text-muted-foreground">
             <Bell className="w-16 h-16 mx-auto mb-4 opacity-30" />
-            <h3 className="text-lg font-medium text-foreground mb-1">لا توجد إشعارات</h3>
-            <p className="text-sm">ستظهر هنا الإشعارات عند وصول حجز جديد أو رسالة أو تقييم</p>
+            <h3 className="text-lg font-medium text-foreground mb-1">{t.artistNotifications.noNotifications}</h3>
+            <p className="text-sm">{t.artistNotifications.noNotificationsDesc}</p>
           </div>
         )}
       </div>

@@ -363,6 +363,21 @@ export const ar = {
     noNotificationsDesc: "لا توجد إشعارات جديدة",
   },
 
+  // Artist Notifications
+  artistNotifications: {
+    title: "الإشعارات",
+    unreadCount: "إشعار غير مقروء",
+    unreadCountPlural: "إشعارات غير مقروءة",
+    markAllRead: "قراءة الكل",
+    allMarkedAsRead: "تم تحديد جميع الإشعارات كمقروءة",
+    notificationDeleted: "تم حذف الإشعار",
+    noNotifications: "لا توجد إشعارات",
+    noNotificationsDesc: "ستظهر هنا الإشعارات عند وصول حجز جديد أو رسالة أو تقييم",
+    notAnArtist: "لست فنانة",
+    noArtistProfile: "ليس لديك ملف فنانة حتى الآن",
+    goToHome: "الصفحة الرئيسية",
+  },
+
   // Bookings
   bookings: {
     title: "حجوزاتي",

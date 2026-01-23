@@ -28,7 +28,7 @@ interface QuickAction {
 }
 
 const quickActions: QuickAction[] = [
-  { icon: CalendarPlus, label: "Add Booking", labelAr: "إضافة حجز", path: "/artist-bookings?new=true" },
+  { icon: CalendarPlus, label: "My Booking", labelAr: "حجوزاتي", path: "/artist-bookings?new=true" },
   { icon: Palette, label: "Add Service", labelAr: "إضافة خدمة", path: "/artist-services?new=true" },
   { icon: Camera, label: "Upload Photo", labelAr: "رفع صورة", path: "/artist-gallery?upload=true" },
   { icon: ShoppingBag, label: "Add Product", labelAr: "إضافة منتج", path: "/artist-products?new=true" },
