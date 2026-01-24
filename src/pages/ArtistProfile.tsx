@@ -451,7 +451,7 @@ const ArtistProfile = () => {
                   active:scale-95 touch-manipulation"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>Market</span>
+                <span>{t.artist.market || "Market"}</span>
                 {products.length > 0 && (
                   <span className="text-xs opacity-80">({products.length})</span>
                 )}
@@ -740,7 +740,7 @@ const ArtistProfile = () => {
           {/* Market Tab */}
           <TabsContent value="market" className="mt-4 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{products.length} Products</span>
+              <span className="text-sm text-muted-foreground">{products.length} {language === "ar" ? "منتجات" : "Products"}</span>
             </div>
 
             {productsLoading ? (
@@ -861,8 +861,10 @@ const ArtistProfile = () => {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                   <ShoppingBag className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <p className="text-muted-foreground">No products available yet</p>
-                <p className="text-xs text-muted-foreground mt-1">Check back soon for products from this artist</p>
+                <p className="text-muted-foreground">{t.artist.noProducts}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {language === "ar" ? "تحقق مرة أخرى قريباً" : "Check back soon for products from this artist"}
+                </p>
               </div>
             )}
           </TabsContent>

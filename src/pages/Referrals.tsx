@@ -365,15 +365,52 @@ const Referrals = () => {
     enabled: !!user?.id && activeTab === "history",
   });
 
-  // تأكيد إنشاء كود الإحالة
-  const handleCreateReferralCode = () => {
-    createReferralMutation.mutate();
+  const handleShare = async () => {
+    if (referralCode) {
+      const shareData = {
+        title: t.referral.shareTitle,
+        text: t.referral.shareText,
+        url: `${window.location.origin}/auth?ref=${referralCode}`,
+      };
+
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+        } else {
+          // Robust clipboard fallback
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+             await navigator.clipboard.writeText(shareData.url);
+             toast.success(t.common.linkCopied);
+          } else {
+             // Fallback for environments without navigator.clipboard (e.g. non-secure contexts)
+             const textArea = document.createElement("textarea");
+             textArea.value = shareData.url;
+             textArea.style.position = "fixed";
+             textArea.style.left = "-9999px";
+             document.body.appendChild(textArea);
+             textArea.select();
+             
+             try {
+               document.execCommand('copy');
+               toast.success(t.common.linkCopied);
+             } catch (err) {
+               console.error('Fallback: Oops, unable to copy', err);
+               toast.error(t.referral.copyFailed);
+             }
+             
+             document.body.removeChild(textArea);
+          }
+        }
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    }
   };
 
   if (!user) {
     return (
       <div className="min-h-screen bg-background pb-32">
-        <AppHeader title={t.referral.title} style="modern" />
+        <AppHeader title={t.referral.title} style="modern" showBack={true} />
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <Gift className="w-16 h-16 text-muted-foreground mb-4" />
           <h2 className="text-lg font-semibold mb-2">{t.profile.signInToView}</h2>
@@ -393,7 +430,7 @@ const Referrals = () => {
   return (
     <div className="min-h-screen bg-background pb-32">
       {/* Header */}
-      <AppHeader title={t.referral.title} style="modern" />
+      <AppHeader title={t.referral.title} style="modern" showBack={true} />
 
       <div className="px-5 py-6">
         {/* Stats */}
@@ -464,19 +501,11 @@ const Referrals = () => {
                 <h3 className="font-semibold text-foreground mb-4">
                   {t.referral.shareAndEarn}
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3">
                   <Button
                     variant="outline"
                     className="w-full justify-start"
-                    onClick={() => navigate("/makeup-artists")}
-                  >
-                    <Users className="w-4 h-4 mr-2" />
-                    {t.referral.inviteFriends}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => navigate("/messages")}
+                    onClick={handleShare}
                   >
                     <Share2 className="w-4 h-4 mr-2" />
                     {t.referral.shareInSocial}

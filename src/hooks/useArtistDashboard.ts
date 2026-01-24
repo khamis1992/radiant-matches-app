@@ -13,6 +13,7 @@ export interface ArtistProfile {
   portfolio_images: string[] | null;
   rating: number | null;
   total_reviews: number | null;
+  service_areas?: string[] | null;
 }
 
 export interface ArtistService {

@@ -65,6 +65,7 @@ export const ar = {
     copy: "نسخ",
     yes: "نعم",
     no: "لا",
+    map: "الخريطة",
   },
 
   // Navigation
@@ -453,6 +454,13 @@ export const ar = {
     bookingFailed: "فشل في إنشاء الحجز",
     payment: "الدفع",
     confirmBooking: "تأكيد الحجز",
+    selectFromMap: "اختر من الخريطة",
+    locationSelected: "تم تحديد الموقع",
+    dragToAdjust: "اسحب الدبوس للتعديل",
+    area: "المنطقة / الحي",
+    street: "الشارع",
+    building: "رقم المبنى",
+    addressDetails: "توجيهات إضافية",
   },
 
   // Artist
@@ -504,6 +512,8 @@ export const ar = {
     withPhotos: "مع صور",
     sortReviews: "ترتيب التقييمات",
     gallery: "المعرض",
+    market: "المتجر",
+    noProducts: "لا توجد منتجات متاحة بعد",
     noPortfolioInCategory: "لا توجد صور في هذه الفئة",
   },
 

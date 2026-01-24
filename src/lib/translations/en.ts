@@ -63,6 +63,7 @@ export const en = {
     copy: "Copy",
     yes: "Yes",
     no: "No",
+    map: "Map",
   },
 
   // Navigation
@@ -565,6 +566,13 @@ export const en = {
     bookingFailed: "Failed to create booking",
     payment: "Payment",
     confirmBooking: "Confirm Booking",
+    selectFromMap: "Select from Map",
+    locationSelected: "Location Selected",
+    dragToAdjust: "Drag pin to adjust",
+    area: "Area / Zone",
+    street: "Street",
+    building: "Building No",
+    addressDetails: "Additional Directions",
   },
 
   // Artist
@@ -616,6 +624,8 @@ export const en = {
     withPhotos: "With Photos",
     sortReviews: "Sort Reviews",
     gallery: "Gallery",
+    market: "Market",
+    noProducts: "No products available yet",
     noPortfolioInCategory: "No images in this category",
   },
 

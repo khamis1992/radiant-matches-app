@@ -22,6 +22,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import { ViewModeToggle, ViewMode } from "@/components/artists/ViewModeToggle";
 import { ArtistFiltersSheet, FilterState } from "@/components/artists/ArtistFiltersSheet";
+import { MapView } from "@/components/artists/MapView";
 import { VoiceSearchButton } from "@/components/VoiceSearchButton";
 import { cn } from "@/lib/utils";
 
@@ -87,6 +88,8 @@ const MakeupArtists = () => {
     : null;
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(initialCategory);
   
+  const showMap = searchParams.get("map") === "true";
+
   const { data: artists, isLoading } = useArtistsWithPricing();
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -252,12 +255,23 @@ const MakeupArtists = () => {
 
   return (
     <div className="min-h-screen bg-background pb-32">
+      {showMap && (
+        <MapView 
+          artists={filteredAndSortedArtists} 
+          onClose={() => {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete("map");
+            setSearchParams(newParams);
+          }} 
+        />
+      )}
       {/* Header */}
       <AppHeader
         title={t.artistsListing.title}
         showSearch={true}
         onSearchClick={() => {}}
         style="modern"
+        showBack={true}
       />
 
       <div className="px-5 py-6">

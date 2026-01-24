@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Star, MapPin, User, Clock, Calendar, MessageSquare, Phone, Settings, LogOut, ChevronRight, X, Info } from "lucide-react";
+import { Star, MapPin, User, Clock, Calendar, MessageSquare, Phone, Settings, LogOut, ChevronRight, X, Info, Map as MapIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,8 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
-
 import { BlockedDatesEditor } from "./BlockedDatesEditor";
+import { ServiceAreasEditor } from "./ServiceAreasEditor";
 
 interface ProfileSummaryProps {
   artist: {
@@ -24,6 +24,7 @@ interface ProfileSummaryProps {
     bio?: string;
     experience_years?: number;
     studio_address?: string;
+    service_areas?: string[];
   };
   reviews?: any[];
   language?: string;
@@ -55,6 +56,13 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
       icon: Clock,
       title: language === "ar" ? "ساعات العمل" : "Working Hours",
       badge: null,
+      color: "text-primary",
+    },
+    {
+      id: "service-areas",
+      icon: MapIcon,
+      title: language === "ar" ? "مناطق الخدمة" : "Service Areas",
+      badge: artist.service_areas && artist.service_areas.length > 0 ? artist.service_areas.length.toString() : null,
       color: "text-primary",
     },
     {
@@ -158,7 +166,7 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
         <p className="text-xs text-muted-foreground font-medium px-2">
           {language === "ar" ? "الملف الشخصي" : "PROFILE"}
         </p>
-        {actionCards.slice(0, 3).map((card) => (
+        {actionCards.slice(0, 4).map((card) => (
           <ActionCard
             key={card.id}
             card={card}
@@ -174,7 +182,7 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
         <p className="text-xs text-muted-foreground font-medium px-2">
           {language === "ar" ? "معلومات ومراجعات" : "INFO & REVIEWS"}
         </p>
-        {actionCards.slice(3, 4).map((card) => (
+        {actionCards.slice(4, 5).map((card) => (
           <ActionCard
             key={card.id}
             card={card}
@@ -190,7 +198,7 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
         <p className="text-xs text-muted-foreground font-medium px-2">
           {language === "ar" ? "الحساب" : "ACCOUNT"}
         </p>
-        {actionCards.slice(4).map((card) => (
+        {actionCards.slice(5).map((card) => (
           <ActionCard
             key={card.id}
             card={card}
@@ -223,6 +231,25 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
             <WorkingHoursEditor 
               artistId={artist.id} 
               onClose={() => setOpenDialog(null)} 
+            />
+          ) : (
+            <div className="py-8 text-center text-muted-foreground">
+              {language === "ar" ? "خطأ في تحميل البيانات" : "Error loading data"}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openDialog === "service-areas"} onOpenChange={(open) => setOpenDialog(open ? "service-areas" : null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{language === "ar" ? "مناطق الخدمة" : "Service Areas"}</DialogTitle>
+          </DialogHeader>
+          {artist.id ? (
+            <ServiceAreasEditor
+              artistId={artist.id}
+              initialAreas={artist.service_areas}
+              onClose={() => setOpenDialog(null)}
             />
           ) : (
             <div className="py-8 text-center text-muted-foreground">

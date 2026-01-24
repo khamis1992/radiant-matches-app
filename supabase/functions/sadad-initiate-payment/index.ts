@@ -205,7 +205,6 @@ serve(async (req) => {
       MOBILE_NO: mobileNo,
       SADAD_WEBCHECKOUT_PAGE_LANGUAGE: "ENG",
       CALLBACK_URL: callbackUrl,
-      RETURN_URL: returnUrl,
       txnDate: txnDate,
       VERSION: "1.1",
       // productdetail structure as per PHP documentation
@@ -221,12 +220,10 @@ serve(async (req) => {
     };
 
     // Checksum generation (Web Checkout 2.1)
-    // Based on SADAD PHP sample: the secretKey inside checksumData should be URL-encoded
-    // $sadad__checksum_data['secretKey'] = urlencode($secretKey);
-    // but the key used for encryption is: $secretKey . $merchantID (raw, not encoded)
+    // Based on SADAD PHP sample, the secretKey used in the array is the raw key.
     const checksumData = {
       postData: checksumArray,
-      secretKey: encodeURIComponent(secretKey),
+      secretKey: secretKey,
     };
 
     const checksumKey = secretKey + merchantId;
@@ -252,7 +249,6 @@ serve(async (req) => {
       MOBILE_NO: mobileNo,
       SADAD_WEBCHECKOUT_PAGE_LANGUAGE: "ENG",
       CALLBACK_URL: callbackUrl,
-      RETURN_URL: returnUrl,
       txnDate: txnDate,
       VERSION: "1.1",
       // productdetail will be formatted as productdetail[0][key] in the form

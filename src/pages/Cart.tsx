@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import BottomNavigation from "@/components/BottomNavigation";
+import BackButton from "@/components/BackButton";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -96,10 +97,13 @@ const Cart = () => {
     <div className="min-h-screen bg-background pb-32">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
-        <h1 className="text-2xl font-bold text-foreground mb-2">
-          {language === "ar" ? "سلة التسوق" : "Shopping Cart"}
-        </h1>
-        <p className="text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 mb-2">
+          <BackButton />
+          <h1 className="text-2xl font-bold text-foreground">
+            {language === "ar" ? "سلة التسوق" : "Shopping Cart"}
+          </h1>
+        </div>
+        <p className="text-sm text-muted-foreground ms-9 rtl:ms-0 rtl:me-9">
           {cartItems.length} {cartItems.length === 1 
             ? (language === "ar" ? "منتج" : "item") 
             : (language === "ar" ? "منتجات" : "items")}

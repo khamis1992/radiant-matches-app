@@ -4,12 +4,14 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { 
   Calendar as CalendarIcon, Clock, MapPin, CreditCard, Check, Loader2, Banknote, 
   AlertCircle, ChevronLeft, ChevronRight, Sparkles, Home, Building2, Sun, Sunset,
-  Star, Shield
+  Star, Shield, Navigation
 } from "lucide-react";
 
 // Calendar alias for JSX usage
 const Calendar = CalendarIcon;
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { formatQAR } from "@/lib/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -166,7 +168,15 @@ const FloatingArtistCard = ({
   </div>
 );
 
+import { LocationPicker } from "@/components/LocationPicker";
+
 const Booking = () => {
+  // ... existing hooks ...
+  
+  const [showMap, setShowMap] = useState(false);
+  const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
+
+  // ... existing code ...
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -181,7 +191,13 @@ const Booking = () => {
   
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<string>("artist_studio");
+  const [selectedLocation, setSelectedLocation] = useState<string>("client_home");
+  const [addressDetails, setAddressDetails] = useState({
+    area: "",
+    street: "",
+    building: "",
+    details: ""
+  });
   const [notes, setNotes] = useState("");
   const [step, setStep] = useState(1);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -337,6 +353,10 @@ const Booking = () => {
     if (!selectedTime) {
       newErrors.time = t.bookings.selectTimeError || "Please select a time";
     }
+
+    if (!addressDetails.area.trim()) {
+      newErrors.location = t.bookings.enterAddress || "Please enter address details";
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -370,6 +390,35 @@ const Booking = () => {
     return date;
   });
 
+  const handleCurrentLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      toast.error(t.settings?.locationNotAvailable || "Geolocation is not supported");
+      return;
+    }
+
+    toast.info(t.settings?.detectingLocation || "Detecting location...");
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoordinates({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        toast.success(t.settings?.locationDetected || "Location detected successfully");
+      },
+      (err) => {
+        console.error("Error getting location:", err);
+        let errorMessage = t.settings?.locationNotAvailable || "Unable to detect location";
+        if (err.code === 1) {
+          errorMessage = t.settings?.locationAccessDenied || "Location access denied";
+        }
+        toast.error(errorMessage);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  }, [t.settings]);
+
   const handleConfirmBooking = useCallback(async () => {
     if (!user) {
       toast.error("يرجى تسجيل الدخول أولاً");
@@ -393,8 +442,8 @@ const Booking = () => {
         service_id: serviceId,
         booking_date: selectedDate.toISOString().split("T")[0],
         booking_time: convertTimeToDbFormat(selectedTime),
-        location_type: selectedLocation as "artist_studio" | "client_home",
-        location_address: selectedLocation === "client_home" ? "Customer location" : artistInfo?.studio_address || undefined,
+        location_type: "client_home",
+        location_address: `Lat: ${coordinates?.lat || 0}, Lng: ${coordinates?.lng || 0} | Area: ${addressDetails.area}, Street: ${addressDetails.street}, Building: ${addressDetails.building}, Details: ${addressDetails.details}`,
         total_price: totalPrice,
         notes: notes || undefined,
       });
@@ -434,7 +483,7 @@ const Booking = () => {
         const standardFields = [
           "merchant_id", "ORDER_ID", "WEBSITE", "TXN_AMOUNT", "CUST_ID",
           "EMAIL", "MOBILE_NO", "SADAD_WEBCHECKOUT_PAGE_LANGUAGE",
-          "CALLBACK_URL", "RETURN_URL", "txnDate", "VERSION", "checksumhash",
+          "CALLBACK_URL", "txnDate", "VERSION", "checksumhash",
         ];
         
         standardFields.forEach((fieldName) => {
@@ -837,94 +886,115 @@ const Booking = () => {
                 <h2 className="font-semibold text-foreground">{t.bookings.selectLocation}</h2>
               </div>
               
-              <div className="space-y-3">
-                {/* Artist Studio Option */}
-                <button
-                  onClick={() => setSelectedLocation("artist_studio")}
-                  className={`
-                    w-full p-4 rounded-2xl border-2 text-start transition-all duration-300 
-                    ${selectedLocation === "artist_studio"
-                      ? "border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-lg"
-                      : "border-border bg-card hover:border-primary/40"
-                    }
-                  `}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`
-                      w-12 h-12 rounded-xl flex items-center justify-center transition-colors
-                      ${selectedLocation === "artist_studio"
-                        ? "bg-primary text-white"
-                        : "bg-muted text-muted-foreground"
-                      }
-                    `}>
-                      <Building2 className="w-6 h-6" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className={`font-semibold ${selectedLocation === "artist_studio" ? "text-primary" : "text-foreground"}`}>
-                          {t.bookings.artistStudio}
-                        </p>
-                        {selectedLocation === "artist_studio" && (
-                          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="w-4 h-4 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {t.bookings.visitArtistWorkspace}
+              <div className="space-y-4">
+                {/* Home Service Only */}
+                <div className="w-full p-4 rounded-2xl border-2 border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-lg flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center">
+                    <Home className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-primary">
+                        {t.bookings.atMyLocation}
                       </p>
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                          {language === "ar" ? "بدون رسوم إضافية" : "No extra fees"}
-                        </span>
+                      <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="w-4 h-4 text-white" />
                       </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {t.bookings.artistComesToYou}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                        +{formatQAR(90)} {language === "ar" ? "رسوم تنقل" : "travel fee"}
+                      </span>
                     </div>
                   </div>
-                </button>
+                </div>
 
-                {/* Home Service Option */}
-                <button
-                  onClick={() => setSelectedLocation("client_home")}
-                  className={`
-                    w-full p-4 rounded-2xl border-2 text-start transition-all duration-300 
-                    ${selectedLocation === "client_home"
-                      ? "border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-lg"
-                      : "border-border bg-card hover:border-primary/40"
-                    }
-                  `}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`
-                      w-12 h-12 rounded-xl flex items-center justify-center transition-colors
-                      ${selectedLocation === "client_home"
-                        ? "bg-primary text-white"
-                        : "bg-muted text-muted-foreground"
-                      }
-                    `}>
-                      <Home className="w-6 h-6" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className={`font-semibold ${selectedLocation === "client_home" ? "text-primary" : "text-foreground"}`}>
-                          {t.bookings.atMyLocation}
-                        </p>
-                        {selectedLocation === "client_home" && (
-                          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="w-4 h-4 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {t.bookings.artistComesToYou}
-                      </p>
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                          +{formatQAR(90)} {language === "ar" ? "رسوم تنقل" : "travel fee"}
-                        </span>
-                      </div>
+                {/* Address Form */}
+                <div className="space-y-4 pt-2">
+                  <div className="flex flex-wrap gap-2 justify-between items-center">
+                    <h3 className="font-medium text-foreground text-sm">{t.bookings.enterAddress}</h3>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleCurrentLocation}
+                        className="text-primary border-primary/20 hover:bg-primary/5 gap-2"
+                      >
+                        <Navigation className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">{t.settings?.useCurrentLocation || "Use Current Location"}</span>
+                        <span className="sm:hidden">{t.settings?.useCurrentLocation?.split(' ')[0] || "Location"}</span>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setShowMap(true)}
+                        className="text-primary border-primary/20 hover:bg-primary/5 gap-2"
+                      >
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">{t.bookings.selectFromMap || "Select from Map"}</span>
+                        <span className="sm:hidden">{t.common.map || "Map"}</span>
+                      </Button>
                     </div>
                   </div>
-                </button>
+
+                  {coordinates && (
+                    <div className="bg-primary/5 p-3 rounded-xl border border-primary/10 flex items-center gap-2">
+                      <Check className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-primary font-medium">
+                        {t.bookings.locationSelected || "Location Selected"}: {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="area">{t.bookings.area || "Area / Zone"}</Label>
+                    <Input 
+                      id="area" 
+                      value={addressDetails.area}
+                      onChange={(e) => setAddressDetails(prev => ({ ...prev, area: e.target.value }))}
+                      placeholder={language === "ar" ? "المنطقة / الحي" : "Area / Zone"}
+                      className={errors.location ? "border-destructive" : ""}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="street">{t.bookings.street || "Street"}</Label>
+                      <Input 
+                        id="street" 
+                        value={addressDetails.street}
+                        onChange={(e) => setAddressDetails(prev => ({ ...prev, street: e.target.value }))}
+                        placeholder={language === "ar" ? "الشارع" : "Street"}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="building">{t.bookings.building || "Building No"}</Label>
+                      <Input 
+                        id="building" 
+                        value={addressDetails.building}
+                        onChange={(e) => setAddressDetails(prev => ({ ...prev, building: e.target.value }))}
+                        placeholder={language === "ar" ? "رقم المبنى" : "Building No"}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="details">{t.bookings.addressDetails || "Additional Directions"}</Label>
+                    <Input 
+                      id="details" 
+                      value={addressDetails.details}
+                      onChange={(e) => setAddressDetails(prev => ({ ...prev, details: e.target.value }))}
+                      placeholder={language === "ar" ? "توجيهات إضافية..." : "Near landmark, etc..."}
+                    />
+                  </div>
+                  
+                  {errors.location && (
+                    <p className="text-sm text-destructive mt-1">{errors.location}</p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1029,19 +1099,17 @@ const Booking = () => {
               <div className="bg-card rounded-2xl p-4 shadow-sm border border-border/50 hover:border-primary/30 transition-all duration-300">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                    {selectedLocation === "client_home" ? (
-                      <Home className="w-6 h-6 text-primary" />
-                    ) : (
-                      <Building2 className="w-6 h-6 text-primary" />
-                    )}
+                    <Home className="w-6 h-6 text-primary" />
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{t.bookings.location}</p>
                     <p className="text-base font-semibold text-foreground mt-0.5">
-                      {selectedLocation === "client_home" ? t.bookings.yourLocation : t.bookings.artistStudio}
+                      {t.bookings.atMyLocation}
                     </p>
-                    {selectedLocation === "artist_studio" && artistInfo?.studio_address && (
-                      <p className="text-sm text-muted-foreground">{artistInfo.studio_address}</p>
+                    {addressDetails.area && (
+                      <p className="text-sm text-muted-foreground truncate">
+                        {addressDetails.area} {addressDetails.street ? `, ${addressDetails.street}` : ''}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -1154,6 +1222,19 @@ const Booking = () => {
           </div>
         )}
       </div>
+
+      {showMap && (
+        <LocationPicker 
+          onClose={() => setShowMap(false)}
+          onLocationSelect={(lat, lng) => {
+            setCoordinates({ lat, lng });
+            // Optionally try to reverse geocode roughly or just mark as selected
+            // We'll rely on the user filling the text fields for precise address
+          }}
+          initialLat={coordinates?.lat}
+          initialLng={coordinates?.lng}
+        />
+      )}
 
       {/* Payment Processing Overlay */}
       {paymentState.isProcessing && (

@@ -11,6 +11,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import BackButton from "@/components/BackButton";
 
 import artist3 from "@/assets/artist-3.jpg";
 
@@ -64,7 +65,10 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-background pb-32">
         <header className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-12 px-5">
-          <h1 className="text-xl font-bold text-foreground mb-6">{t.nav.profile}</h1>
+          <div className="flex items-center gap-3 mb-6">
+            <BackButton />
+            <h1 className="text-xl font-bold text-foreground">{t.nav.profile}</h1>
+          </div>
         </header>
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <User className="w-16 h-16 text-muted-foreground mb-4" />
@@ -83,7 +87,10 @@ const Profile = () => {
     <div className="min-h-screen bg-background pb-32">
       <header className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-12 px-5">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-foreground">{t.nav.profile}</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-xl font-bold text-foreground">{t.nav.profile}</h1>
+          </div>
           <button 
             onClick={() => navigate("/settings")}
             className="p-2 rounded-full hover:bg-card transition-colors"

@@ -77,7 +77,7 @@ const Favorites = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
-        <AppHeader title={t.favorites.title} style="modern" />
+        <AppHeader title={t.favorites.title} style="modern" showBack={true} />
         <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
           <div className="relative mb-6">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full blur-2xl" />
@@ -109,7 +109,7 @@ const Favorites = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
       {/* Header */}
-      <AppHeader title={t.favorites.title} style="modern" />
+      <AppHeader title={t.favorites.title} style="modern" showBack={true} />
 
       <div className="px-5 py-6">
         {/* Search Bar */}

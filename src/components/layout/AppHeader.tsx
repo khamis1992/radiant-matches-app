@@ -206,33 +206,28 @@ const AppHeader = ({
                 {user ? (
                   <>
                     {/* User Info Header - Premium Design */}
-                    <div className="px-3 py-3 mb-1 bg-gradient-to-br from-muted/50 to-transparent rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-10 h-10 ring-2 ring-primary/20">
-                          <AvatarImage src={profile?.avatar_url || undefined} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
-                            {profile?.full_name?.charAt(0) || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">
-                            {profile?.full_name || t.userMenu.myProfile}
-                          </p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {profile?.email || user.email}
-                          </p>
+                    <DropdownMenuItem 
+                      className="p-0 mb-1 focus:bg-transparent cursor-pointer" 
+                      onClick={() => navigate("/profile")}
+                    >
+                      <div className="w-full px-3 py-3 bg-gradient-to-br from-muted/50 to-transparent rounded-xl hover:bg-muted/80 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-10 h-10 ring-2 ring-primary/20">
+                            <AvatarImage src={profile?.avatar_url || undefined} />
+                            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
+                              {profile?.full_name?.charAt(0) || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0 text-start">
+                            <p className="text-sm font-semibold text-foreground truncate">
+                              {profile?.full_name || t.userMenu.myProfile}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {profile?.email || user.email}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <DropdownMenuSeparator className="bg-border/30 my-1" />
-                    <DropdownMenuItem
-                      onClick={() => navigate("/profile")}
-                      className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 me-3">
-                        <User className="h-4 w-4 text-primary" />
-                      </div>
-                      <span className="font-medium">{t.userMenu.myProfile}</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-border/30 my-1" />
                     <DropdownMenuItem

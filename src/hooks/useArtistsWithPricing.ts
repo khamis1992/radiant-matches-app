@@ -5,6 +5,7 @@ import { Artist } from "./useArtists";
 export interface ArtistWithPricing extends Artist {
   min_price?: number | null;
   portfolio_previews?: string[];
+  service_areas?: string[] | null;
 }
 
 export const useArtistsWithPricing = () => {

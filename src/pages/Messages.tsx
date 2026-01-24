@@ -24,7 +24,7 @@ const Messages = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background pb-32">
-        <AppHeader title={t.messages.title} />
+        <AppHeader title={t.messages.title} showBack={true} />
         <div className="flex flex-col items-center justify-center px-5 py-16">
           <MessageSquare className="w-16 h-16 text-muted-foreground mb-4" />
           <h2 className="text-lg font-semibold mb-2">{t.profile.signInToView}</h2>
@@ -41,6 +41,7 @@ const Messages = () => {
       <AppHeader
         title={t.messages.title}
         style="modern"
+        showBack={true}
       >
         <div className="relative mt-4">
           <Search className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
