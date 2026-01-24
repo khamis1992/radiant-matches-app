@@ -15,9 +15,9 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { TrendingUp, TrendingDown, Briefcase, Star, Wallet, Clock, CheckCircle, XCircle, ArrowDownToLine, Package, ShoppingBag, Eye } from "lucide-react";
+import { TrendingUp, TrendingDown, Briefcase, Star, Wallet, Clock, CheckCircle, XCircle, ArrowDownToLine, Package, ShoppingBag, Eye, Check, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useCurrentArtist, useArtistBookings, useArtistEarnings } from "@/hooks/useArtistDashboard";
+import { useCurrentArtist, useArtistBookings, useArtistEarnings, useUpdateBookingStatus } from "@/hooks/useArtistDashboard";
 import { useArtistWithdrawals, useCreateWithdrawal } from "@/hooks/useWithdrawals";
 import { useArtistProducts } from "@/hooks/useArtistProducts";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -25,6 +25,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { formatQAR } from "@/lib/locale";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
+import { toast } from "sonner";
 
 const ArtistEarnings = () => {
   const navigate = useNavigate();
@@ -35,13 +36,17 @@ const ArtistEarnings = () => {
   const { data: withdrawals = [] } = useArtistWithdrawals(artist?.id);
   const { data: products = [], isLoading: productsLoading } = useArtistProducts();
   const createWithdrawal = useCreateWithdrawal();
+  const updateBookingStatus = useUpdateBookingStatus();
   const { t, isRTL, language } = useLanguage();
 
-  const { upcoming = [] } = bookings || {};
+  const { upcoming = [], past = [] } = bookings || {};
   const dateLocale = language === "ar" ? ar : enUS;
 
   // حالة Dialog السحب
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
+  const [earningsDetailsOpen, setEarningsDetailsOpen] = useState(false);
+  const [pendingEarningsDetailsOpen, setPendingEarningsDetailsOpen] = useState(false);
+  const [upcomingDetailsOpen, setUpcomingDetailsOpen] = useState(false);
   const [withdrawForm, setWithdrawForm] = useState({
     amount: "",
     bank_name: "",
@@ -86,6 +91,20 @@ const ArtistEarnings = () => {
       </div>
     );
   }
+
+  const handleBookingAction = async (bookingId: string, status: "confirmed" | "cancelled" | "completed") => {
+    try {
+      await updateBookingStatus.mutateAsync({ bookingId, status });
+      const messages: Record<string, string> = {
+        confirmed: language === "ar" ? "تم تأكيد الحجز" : "Booking confirmed",
+        cancelled: language === "ar" ? "تم إلغاء الحجز" : "Booking declined",
+        completed: language === "ar" ? "تم إكمال الحجز" : "Booking completed",
+      };
+      toast.success(messages[status]);
+    } catch {
+      toast.error(language === "ar" ? "فشل تحديث الحالة" : "Failed to update status");
+    }
+  };
 
   const handleWithdrawSubmit = async () => {
     const amount = parseFloat(withdrawForm.amount);
@@ -145,8 +164,14 @@ const ArtistEarnings = () => {
       <div className="px-5 py-4">
         <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
           <div className={`grid grid-cols-3 ${isRTL ? "divide-x-reverse" : ""} divide-x divide-border`}>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">{upcoming.length}</p>
+            <div 
+              className="text-center cursor-pointer hover:bg-muted/10 transition-colors rounded p-1"
+              onClick={() => setUpcomingDetailsOpen(true)}
+            >
+              <div className="flex items-center justify-center gap-1">
+                <p className="text-2xl font-bold text-foreground">{upcoming.length}</p>
+                <Eye className="w-3 h-3 text-muted-foreground opacity-50" />
+              </div>
               <p className="text-xs text-muted-foreground mt-1">{t.earnings.upcoming}</p>
             </div>
             <div className="text-center">
@@ -201,8 +226,14 @@ const ArtistEarnings = () => {
 
             {/* Revenue Stats */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-                <p className="text-sm text-muted-foreground">{t.earnings.totalEarnings}</p>
+              <div 
+                className="bg-card rounded-2xl border border-border p-4 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => setEarningsDetailsOpen(true)}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">{t.earnings.totalEarnings}</p>
+                  <Eye className="w-4 h-4 text-muted-foreground opacity-50" />
+                </div>
                 <p className="text-2xl font-bold text-foreground mt-1">
                   {formatQAR(earnings?.totalEarnings || 0)}
                 </p>
@@ -210,8 +241,14 @@ const ArtistEarnings = () => {
                   {earnings?.completedBookings || 0} {t.earnings.completedBookings}
                 </p>
               </div>
-              <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-                <p className="text-sm text-muted-foreground">{t.earnings.pendingEarnings}</p>
+              <div 
+                className="bg-card rounded-2xl border border-border p-4 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => setPendingEarningsDetailsOpen(true)}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">{t.earnings.pendingEarnings}</p>
+                  <Eye className="w-4 h-4 text-muted-foreground opacity-50" />
+                </div>
                 <p className="text-2xl font-bold text-primary mt-1">
                   {formatQAR(earnings?.pendingEarnings || 0)}
                 </p>
@@ -452,92 +489,170 @@ const ArtistEarnings = () => {
 
       {/* Withdrawal Request Dialog */}
       <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
-        <DialogContent className="sm:max-w-md" dir={isRTL ? "rtl" : "ltr"}>
+        {/* ... content ... */}
+      </Dialog>
+
+      {/* Earnings Details Dialog */}
+      <Dialog open={earningsDetailsOpen} onOpenChange={setEarningsDetailsOpen}>
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ArrowDownToLine className="h-5 w-5" />
-              {t.earnings.requestWithdrawal}
-            </DialogTitle>
+            <DialogTitle>{t.earnings.totalEarnings}</DialogTitle>
             <DialogDescription>
-              {t.earnings.availableBalance}: {formatQAR(availableBalance)}
+              {isRTL ? "تفاصيل الحجوزات المكتملة" : "Completed bookings details"}
             </DialogDescription>
           </DialogHeader>
-
           <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="amount">{t.earnings.amount}</Label>
-              <Input
-                id="amount"
-                type="number"
-                placeholder="0.00"
-                value={withdrawForm.amount}
-                onChange={(e) => setWithdrawForm({ ...withdrawForm, amount: e.target.value })}
-                max={availableBalance}
-                dir="ltr"
-              />
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setWithdrawForm({ ...withdrawForm, amount: availableBalance.toString() })}
-              >
-                {t.earnings.withdrawAll}
-              </Button>
-            </div>
+            {past.filter(b => b.status === "completed").length > 0 ? (
+              <div className="space-y-3">
+                {past.filter(b => b.status === "completed").map((booking) => (
+                  <div key={booking.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-sm">{booking.service?.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {format(new Date(booking.booking_date), "d MMM yyyy", { locale: dateLocale })}
+                        {" • "}
+                        {booking.customer?.full_name || (isRTL ? "عميل" : "Customer")}
+                      </p>
+                    </div>
+                    <span className="font-semibold text-primary">{formatQAR(booking.total_price)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>{t.earnings.noEarningsYet}</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
-            <div className="space-y-2">
-              <Label htmlFor="bank_name">{t.earnings.bankName}</Label>
-              <Input
-                id="bank_name"
-                placeholder={t.earnings.bankNamePlaceholder}
-                value={withdrawForm.bank_name}
-                onChange={(e) => setWithdrawForm({ ...withdrawForm, bank_name: e.target.value })}
-              />
-            </div>
+      {/* Pending Earnings Details Dialog */}
+      <Dialog open={pendingEarningsDetailsOpen} onOpenChange={setPendingEarningsDetailsOpen}>
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
+          <DialogHeader>
+            <DialogTitle>{t.earnings.pendingEarnings}</DialogTitle>
+            <DialogDescription>
+              {isRTL ? "تفاصيل الحجوزات المؤكدة (المعلقة)" : "Pending (confirmed) bookings details"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            {[...upcoming, ...past].filter(b => b.status === "confirmed").length > 0 ? (
+              <div className="space-y-3">
+                {[...upcoming, ...past].filter(b => b.status === "confirmed").map((booking) => (
+                  <div key={booking.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-sm">{booking.service?.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {format(new Date(booking.booking_date), "d MMM yyyy", { locale: dateLocale })}
+                        {" • "}
+                        {booking.customer?.full_name || (isRTL ? "عميل" : "Customer")}
+                      </p>
+                    </div>
+                    <span className="font-semibold text-primary">{formatQAR(booking.total_price)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>{isRTL ? "لا توجد أرباح معلقة" : "No pending earnings"}</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
-            <div className="space-y-2">
-              <Label htmlFor="account_number">{t.earnings.accountNumber}</Label>
-              <Input
-                id="account_number"
-                placeholder={t.earnings.accountNumberPlaceholder}
-                value={withdrawForm.account_number}
-                onChange={(e) => setWithdrawForm({ ...withdrawForm, account_number: e.target.value })}
-                dir="ltr"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="account_holder_name">{t.earnings.accountHolderName}</Label>
-              <Input
-                id="account_holder_name"
-                placeholder={t.earnings.accountHolderPlaceholder}
-                value={withdrawForm.account_holder_name}
-                onChange={(e) => setWithdrawForm({ ...withdrawForm, account_holder_name: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">{t.earnings.notes}</Label>
-              <Textarea
-                id="notes"
-                placeholder={t.earnings.notesPlaceholder}
-                value={withdrawForm.notes}
-                onChange={(e) => setWithdrawForm({ ...withdrawForm, notes: e.target.value })}
-                rows={2}
-              />
-            </div>
-
-            <Button 
-              onClick={handleWithdrawSubmit}
-              disabled={createWithdrawal.isPending || !withdrawForm.amount || !withdrawForm.bank_name || !withdrawForm.account_number || !withdrawForm.account_holder_name}
-              className="w-full"
-            >
-              {createWithdrawal.isPending ? t.earnings.submitting : t.earnings.submitWithdrawal}
-            </Button>
-
-            <p className="text-xs text-muted-foreground text-center">
-              {t.earnings.reviewTime}
-            </p>
+      {/* Upcoming Bookings Details Dialog */}
+      <Dialog open={upcomingDetailsOpen} onOpenChange={setUpcomingDetailsOpen}>
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
+          <DialogHeader>
+            <DialogTitle>{t.earnings.upcoming}</DialogTitle>
+            <DialogDescription>
+              {isRTL ? "إدارة الحجوزات القادمة" : "Manage upcoming bookings"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            {upcoming.length > 0 ? (
+              <div className="space-y-3">
+                {upcoming.map((booking) => (
+                  <div key={booking.id} className="p-3 bg-muted/50 rounded-lg border border-border/50">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-medium text-sm">{booking.service?.name}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {format(new Date(booking.booking_date), "d MMM yyyy", { locale: dateLocale })}
+                          {" • "}
+                          {booking.booking_time}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {booking.customer?.full_name || (isRTL ? "عميل" : "Customer")}
+                        </p>
+                      </div>
+                      <Badge variant={booking.status === "confirmed" ? "default" : "secondary"} className={booking.status === "confirmed" ? "bg-green-500 hover:bg-green-600" : "bg-yellow-500 hover:bg-yellow-600"}>
+                        {booking.status === "confirmed" 
+                          ? (isRTL ? "مؤكد" : "Confirmed")
+                          : (isRTL ? "قيد الانتظار" : "Pending")
+                        }
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex gap-2 mt-3 pt-2 border-t border-border/50">
+                      {booking.status === "pending" && (
+                        <>
+                          <Button 
+                            size="sm" 
+                            className="flex-1 h-8 bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => handleBookingAction(booking.id, "confirmed")}
+                            disabled={updateBookingStatus.isPending}
+                          >
+                            <Check className="w-3 h-3 mr-1" />
+                            {isRTL ? "قبول" : "Accept"}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            className="flex-1 h-8"
+                            onClick={() => handleBookingAction(booking.id, "cancelled")}
+                            disabled={updateBookingStatus.isPending}
+                          >
+                            <X className="w-3 h-3 mr-1" />
+                            {isRTL ? "رفض" : "Decline"}
+                          </Button>
+                        </>
+                      )}
+                      
+                      {booking.status === "confirmed" && (
+                        <>
+                          <Button 
+                             size="sm"
+                             className="flex-1 h-8 bg-primary hover:bg-primary/90"
+                             onClick={() => handleBookingAction(booking.id, "completed")}
+                             disabled={updateBookingStatus.isPending}
+                          >
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            {isRTL ? "إكمال" : "Complete"}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="flex-1 h-8 text-destructive hover:bg-destructive/10 border-destructive/20"
+                            onClick={() => handleBookingAction(booking.id, "cancelled")}
+                            disabled={updateBookingStatus.isPending}
+                          >
+                            <X className="w-3 h-3 mr-1" />
+                            {isRTL ? "إلغاء" : "Cancel"}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>{isRTL ? "لا توجد حجوزات قادمة" : "No upcoming bookings"}</p>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

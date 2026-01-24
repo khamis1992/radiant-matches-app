@@ -1,12 +1,13 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import ArtistHeader from "@/components/artist/ArtistHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Briefcase, X } from "lucide-react";
+import { Briefcase, X, Plus } from "lucide-react";
 import { PortfolioMasonryGrid } from "@/components/artist/PortfolioMasonryGrid";
 import { PortfolioImageViewer } from "@/components/artist/PortfolioImageViewer";
+import PortfolioUpload from "@/components/PortfolioUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentArtist } from "@/hooks/useArtistDashboard";
 import { usePortfolio, useDeletePortfolioItem, useUpdatePortfolioItem, PORTFOLIO_CATEGORIES } from "@/hooks/usePortfolio";
@@ -21,9 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const ArtistGallery = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { data: artist, isLoading: artistLoading } = useCurrentArtist();
   const { data: portfolio = [], isLoading: portfolioLoading } = usePortfolio(artist?.id);
@@ -36,12 +39,22 @@ const ArtistGallery = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [editForm, setEditForm] = useState({
     title: "",
     category: "",
     is_featured: false,
   });
+
+  useEffect(() => {
+    if (searchParams.get("upload") === "true") {
+      setUploadModalOpen(true);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("upload");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   // Get categories with "All" option
   const categories = ["All", ...PORTFOLIO_CATEGORIES];
@@ -169,6 +182,10 @@ const ArtistGallery = () => {
           <h2 className="text-lg font-semibold text-foreground">
             {language === "ar" ? "المعرض" : "Portfolio"}
           </h2>
+          <Button onClick={() => setUploadModalOpen(true)} size="sm" className="gap-2">
+            <Plus className="w-4 h-4" />
+            {language === "ar" ? "إضافة صورة" : "Add Photo"}
+          </Button>
         </div>
 
         {/* Masonry Grid */}
@@ -178,6 +195,7 @@ const ArtistGallery = () => {
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
           onImageClick={handleImageClick}
+          onUploadClick={() => setUploadModalOpen(true)}
           isLoading={portfolioLoading}
         />
       </div>
@@ -281,6 +299,15 @@ const ArtistGallery = () => {
           </div>
         </div>
       )}
+
+      {/* Upload Modal */}
+      <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
+        <DialogContent className="max-w-4xl h-[90vh] overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
+          <div className="py-4">
+            {artist && <PortfolioUpload artistId={artist.id} />}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <BottomNavigation />
     </div>

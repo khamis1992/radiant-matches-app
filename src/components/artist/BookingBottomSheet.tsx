@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Clock, MapPin, IndianRupee, Check, X as XIcon, User } from "lucide-react";
+import { X, Clock, MapPin, Banknote, Check, X as XIcon, User } from "lucide-react";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -180,7 +180,7 @@ export const BookingBottomSheet = ({
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <IndianRupee className="w-4 h-4 shrink-0" />
+                      <Banknote className="w-4 h-4 shrink-0" />
                       <span>QAR {booking.total_price}</span>
                     </div>
                   </div>

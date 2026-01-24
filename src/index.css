@@ -200,6 +200,16 @@ All colors MUST be HSL.
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: contain;
+    overflow-x: hidden;
+  }
+
+  html {
+    overflow-x: hidden;
+  }
+
+  /* Ensure body is always scrollable */
+  body:not([data-scroll-locked="true"]) {
+    overflow-y: auto;
   }
   
   /* Better focus styles */

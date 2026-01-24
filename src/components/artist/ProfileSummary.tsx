@@ -8,8 +8,13 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+import { WorkingHoursEditor } from "./WorkingHoursEditor";
+
+import { BlockedDatesEditor } from "./BlockedDatesEditor";
+
 interface ProfileSummaryProps {
   artist: {
+    id?: string;
     full_name?: string;
     avatar_url?: string;
     rating?: number;
@@ -67,13 +72,6 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
       color: "text-primary",
     },
     {
-      id: "phone-location",
-      icon: Phone,
-      title: language === "ar" ? "الهاتف والموقع" : "Phone & Location",
-      badge: null,
-      color: "text-primary",
-    },
-    {
       id: "account",
       icon: Settings,
       title: language === "ar" ? "إعدادات الحساب" : "Account Settings",
@@ -82,12 +80,22 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
     },
   ];
 
+  const handleCardClick = (id: string) => {
+    if (id === "edit-profile") {
+      navigate("/edit-profile");
+    } else if (id === "account") {
+      navigate("/settings");
+    } else {
+      setOpenDialog(id);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Profile Header Card */}
       <div
         className="bg-card rounded-2xl border border-border p-4 shadow-sm active:scale-[0.99] transition-transform cursor-pointer"
-        onClick={() => navigate("/profile-preview")}
+        onClick={() => artist.id && navigate(`/artist/${artist.id}`)}
       >
         <div className="flex items-start gap-4">
           <Avatar className="w-20 h-20 border-4 border-primary/20">
@@ -156,7 +164,7 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
             card={card}
             language={language}
             isRTL={isRTL}
-            onDialogOpen={setOpenDialog}
+            onDialogOpen={handleCardClick}
           />
         ))}
       </div>
@@ -166,13 +174,13 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
         <p className="text-xs text-muted-foreground font-medium px-2">
           {language === "ar" ? "معلومات ومراجعات" : "INFO & REVIEWS"}
         </p>
-        {actionCards.slice(3, 6).map((card) => (
+        {actionCards.slice(3, 4).map((card) => (
           <ActionCard
             key={card.id}
             card={card}
             language={language}
             isRTL={isRTL}
-            onDialogOpen={setOpenDialog}
+            onDialogOpen={handleCardClick}
           />
         ))}
       </div>
@@ -182,13 +190,13 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
         <p className="text-xs text-muted-foreground font-medium px-2">
           {language === "ar" ? "الحساب" : "ACCOUNT"}
         </p>
-        {actionCards.slice(6).map((card) => (
+        {actionCards.slice(4).map((card) => (
           <ActionCard
             key={card.id}
             card={card}
             language={language}
             isRTL={isRTL}
-            onDialogOpen={setOpenDialog}
+            onDialogOpen={handleCardClick}
           />
         ))}
         <div
@@ -206,69 +214,21 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
       </div>
 
       {/* Dialogs */}
-      <Dialog open={openDialog === "edit-profile"} onOpenChange={(open) => setOpenDialog(open ? "edit-profile" : null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{language === "ar" ? "تعديل الملف الشخصي" : "Edit Profile"}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              {language === "ar" ? "تحرير معلومات الملف الشخصي الأساسية" : "Edit basic profile information"}
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <span className="text-sm font-medium">{language === "ar" ? "الاسم" : "Name"}</span>
-                <span className="text-sm text-muted-foreground">{artist.full_name || "-"}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <span className="text-sm font-medium">{language === "ar" ? "الموقع" : "Location"}</span>
-                <span className="text-sm text-muted-foreground">{artist.location || "-"}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <span className="text-sm font-medium">{language === "ar" ? "سنوات الخبرة" : "Experience"}</span>
-                <span className="text-sm text-muted-foreground">{artist.experience_years || 0} {language === "ar" ? "سنوات" : "years"}</span>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              setOpenDialog(null);
-              navigate("/edit-profile");
-            }}
-            className="w-full py-2 bg-primary text-primary-foreground rounded-lg font-medium"
-          >
-            {language === "ar" ? "تحرير المزيد" : "Edit More"}
-          </button>
-        </DialogContent>
-      </Dialog>
-
       <Dialog open={openDialog === "schedule"} onOpenChange={(open) => setOpenDialog(open ? "schedule" : null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{language === "ar" ? "ساعات العمل" : "Working Hours"}</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              {language === "ar" ? "إدارة ساعات العمل الأسبوعية" : "Manage weekly working hours"}
-            </p>
-            <div className="space-y-2">
-              {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((day) => (
-                <div key={day} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <span className="text-sm font-medium">{day}</span>
-                  <span className="text-sm text-muted-foreground">9:00 AM - 6:00 PM</span>
-                </div>
-              ))}
+          {artist.id ? (
+            <WorkingHoursEditor 
+              artistId={artist.id} 
+              onClose={() => setOpenDialog(null)} 
+            />
+          ) : (
+            <div className="py-8 text-center text-muted-foreground">
+              {language === "ar" ? "خطأ في تحميل البيانات" : "Error loading data"}
             </div>
-          </div>
-          <button
-            onClick={() => {
-              setOpenDialog(null);
-              toast.info(language === "ar" ? "قريباً" : "Coming soon");
-            }}
-            className="w-full py-2 bg-primary text-primary-foreground rounded-lg font-medium"
-          >
-            {language === "ar" ? "تعديل الساعات" : "Edit Hours"}
-          </button>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -277,24 +237,16 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
           <DialogHeader>
             <DialogTitle>{language === "ar" ? "التواريخ المحجوبة" : "Blocked Dates"}</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              {language === "ar" ? "إدارة التواريخ غير المتاحة للحجوزات" : "Manage unavailable dates for bookings"}
-            </p>
-            <div className="text-center py-8 bg-muted rounded-lg">
-              <Calendar className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{language === "ar" ? "لا توجد تواريخ محجوبة" : "No blocked dates"}</p>
+          {artist.id ? (
+            <BlockedDatesEditor 
+              artistId={artist.id} 
+              onClose={() => setOpenDialog(null)}
+            />
+          ) : (
+            <div className="py-8 text-center text-muted-foreground">
+              {language === "ar" ? "خطأ في تحميل البيانات" : "Error loading data"}
             </div>
-          </div>
-          <button
-            onClick={() => {
-              setOpenDialog(null);
-              toast.info(language === "ar" ? "قريباً" : "Coming soon");
-            }}
-            className="w-full py-2 bg-primary text-primary-foreground rounded-lg font-medium"
-          >
-            {language === "ar" ? "إضافة تاريخ" : "Add Date"}
-          </button>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -333,80 +285,6 @@ export const ProfileSummary = ({ artist, reviews = [], language = "en", isRTL = 
               </div>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={openDialog === "phone-location"} onOpenChange={(open) => setOpenDialog(open ? "phone-location" : null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{language === "ar" ? "الهاتف والموقع" : "Phone & Location"}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              {language === "ar" ? "معلومات الاتصال وعنوان الاستوديو" : "Contact info and studio address"}
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-                <Phone className="w-5 h-5 text-primary mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium">{language === "ar" ? "الهاتف" : "Phone"}</p>
-                  <p className="text-sm text-muted-foreground">+974 XXXX XXXX</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-                <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium">{language === "ar" ? "العنوان" : "Address"}</p>
-                  <p className="text-sm text-muted-foreground">{artist.studio_address || (artist.location || "-")}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              setOpenDialog(null);
-              toast.info(language === "ar" ? "قريباً" : "Coming soon");
-            }}
-            className="w-full py-2 bg-primary text-primary-foreground rounded-lg font-medium"
-          >
-            {language === "ar" ? "تعديل" : "Edit"}
-          </button>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={openDialog === "account"} onOpenChange={(open) => setOpenDialog(open ? "account" : null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{language === "ar" ? "إعدادات الحساب" : "Account Settings"}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              {language === "ar" ? "إدارة إعدادات الحساب والخصوصية" : "Manage account and privacy settings"}
-            </p>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <span className="text-sm font-medium">{language === "ar" ? "الإشعارات" : "Notifications"}</span>
-                <Info className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <span className="text-sm font-medium">{language === "ar" ? "الخصوصية" : "Privacy"}</span>
-                <Info className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <span className="text-sm font-medium">{language === "ar" ? "اللغة" : "Language"}</span>
-                <span className="text-sm text-muted-foreground">{language === "ar" ? "العربية" : "English"}</span>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              setOpenDialog(null);
-              toast.info(language === "ar" ? "قريباً" : "Coming soon");
-            }}
-            className="w-full py-2 bg-primary text-primary-foreground rounded-lg font-medium"
-          >
-            {language === "ar" ? "المزيد من الإعدادات" : "More Settings"}
-          </button>
         </DialogContent>
       </Dialog>
     </div>

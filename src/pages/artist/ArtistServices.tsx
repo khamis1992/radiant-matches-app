@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import ArtistHeader from "@/components/artist/ArtistHeader";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,6 +43,7 @@ interface ServiceForm {
 
 const ArtistServices = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { data: artist, isLoading: artistLoading } = useCurrentArtist();
   const { data: services, isLoading: servicesLoading } = useArtistServices();
@@ -65,6 +66,42 @@ const ArtistServices = () => {
     category: "",
     is_active: true,
   });
+
+  // Check for ?new=true query parameter to auto-open add modal
+  // This must be before any conditional returns to follow React's rules of hooks
+  useEffect(() => {
+    const shouldOpenModal = searchParams.get('new') === 'true';
+    if (shouldOpenModal && !authLoading && !artistLoading && user && artist) {
+      setIsAddModalOpen(true);
+      // Remove the parameter from URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('new');
+      navigate(`/artist-services${newSearchParams.toString() ? '?' + newSearchParams.toString() : ''}`, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, artistLoading, user, artist]);
+
+  // Ensure body scroll is enabled when modal closes
+  useEffect(() => {
+    return () => {
+      // Re-enable scrolling when component unmounts
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+    };
+  }, []);
+
+  // Lock/unlock body scroll when modal opens/closes
+  useEffect(() => {
+    if (isAddModalOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+  }, [isAddModalOpen]);
 
   // Filter services by search
   const filteredServices = services
@@ -254,8 +291,33 @@ const ArtistServices = () => {
 
       {/* Add/Edit Service Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end">
-          <div className="w-full max-h-[90vh] bg-background rounded-t-3xl overflow-hidden animate-slide-in-bottom">
+        <>
+          <style>{`
+            @keyframes slide-in-bottom {
+              from {
+                transform: translateY(100%);
+              }
+              to {
+                transform: translateY(0);
+              }
+            }
+            @keyframes fade-in {
+              from {
+                opacity: 0;
+              }
+              to {
+                opacity: 1;
+              }
+            }
+            .animate-slide-in-bottom {
+              animation: slide-in-bottom 0.3s ease-out forwards;
+            }
+            .animate-fade-in {
+              animation: fade-in 0.2s ease-out forwards;
+            }
+          `}</style>
+          <div className="fixed inset-0 z-[60] bg-black/50 flex items-end" onClick={() => setIsAddModalOpen(false)}>
+            <div className="w-full max-h-[calc(100vh-2rem)] bg-background rounded-t-3xl overflow-hidden animate-slide-in-bottom flex flex-col" onClick={(e) => e.stopPropagation()}>
             {/* Modal Header */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-border">
               <button
@@ -288,7 +350,7 @@ const ArtistServices = () => {
             </div>
 
             {/* Modal Content */}
-            <div className="p-4 overflow-y-auto" style={{ maxHeight: "calc(90vh - 140px)" }}>
+            <div className="p-4 overflow-y-auto flex-1">
               {currentStep === 1 && (
                 <div className="space-y-4 animate-fade-in">
                   <div>
@@ -429,7 +491,7 @@ const ArtistServices = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center gap-3 p-4 border-t border-border">
+            <div className="flex items-center gap-3 p-4 border-t border-border safe-area-bottom">
               {currentStep > 1 && (
                 <Button
                   variant="outline"
@@ -459,6 +521,7 @@ const ArtistServices = () => {
             </div>
           </div>
         </div>
+        </>
       )}
 
       <BottomNavigation />

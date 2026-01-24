@@ -106,6 +106,7 @@ const ArtistProfilePage = () => {
         {/* Profile Summary */}
         <ProfileSummary
           artist={{
+            id: artist.id,
             full_name: profile?.full_name || "",
             avatar_url: profile?.avatar_url,
             rating: artist.rating,

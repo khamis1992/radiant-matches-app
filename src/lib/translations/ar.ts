@@ -376,6 +376,17 @@ export const ar = {
     notAnArtist: "لست فنانة",
     noArtistProfile: "ليس لديك ملف فنانة حتى الآن",
     goToHome: "الصفحة الرئيسية",
+    // Notification messages
+    newBooking: "حجز جديد",
+    newBookingDesc: "لقد استلمت طلب حجز جديد",
+    newMessage: "رسالة جديدة",
+    newMessageDesc: "لقد استلمت رسالة جديدة",
+    newReview: "تقييم جديد",
+    newReviewDesc: "لقد استلمت تقييماً جديداً",
+    bookingConfirmed: "تم تأكيد الحجز",
+    bookingConfirmedDesc: "تم تأكيد حجزك",
+    bookingCancelled: "تم إلغاء الحجز",
+    bookingCancelledDesc: "تم إلغاء حجز",
   },
 
   // Bookings

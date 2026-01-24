@@ -488,6 +488,17 @@ export const en = {
     notAnArtist: "Not an Artist",
     noArtistProfile: "You don't have an artist profile yet",
     goToHome: "Home",
+    // Notification messages
+    newBooking: "New Booking",
+    newBookingDesc: "You have received a new booking request",
+    newMessage: "New Message",
+    newMessageDesc: "You have received a new message",
+    newReview: "New Review",
+    newReviewDesc: "You have received a new review",
+    bookingConfirmed: "Booking Confirmed",
+    bookingConfirmedDesc: "Your booking has been confirmed",
+    bookingCancelled: "Booking Cancelled",
+    bookingCancelledDesc: "A booking has been cancelled",
   },
 
   // Bookings

@@ -36,6 +36,53 @@ const ArtistNotifications = () => {
   const deleteNotification = useDeleteNotification();
   const { language, isRTL, t } = useLanguage();
 
+  // Map notification title/body to translations
+  const getNotificationTitle = (notification: Notification) => {
+    const data = notification.data as Record<string, string> | undefined;
+
+    // Map based on notification type and data
+    if (notification.type === "booking") {
+      if (data?.status === "confirmed") {
+        return t.artistNotifications.bookingConfirmed;
+      }
+      if (data?.status === "cancelled") {
+        return t.artistNotifications.bookingCancelled;
+      }
+      return t.artistNotifications.newBooking;
+    }
+    if (notification.type === "message") {
+      return t.artistNotifications.newMessage;
+    }
+    if (notification.type === "review") {
+      return t.artistNotifications.newReview;
+    }
+    // Fallback to database value if no match
+    return notification.title;
+  };
+
+  const getNotificationBody = (notification: Notification) => {
+    const data = notification.data as Record<string, string> | undefined;
+
+    // Map based on notification type and data
+    if (notification.type === "booking") {
+      if (data?.status === "confirmed") {
+        return t.artistNotifications.bookingConfirmedDesc;
+      }
+      if (data?.status === "cancelled") {
+        return t.artistNotifications.bookingCancelledDesc;
+      }
+      return t.artistNotifications.newBookingDesc;
+    }
+    if (notification.type === "message") {
+      return t.artistNotifications.newMessageDesc;
+    }
+    if (notification.type === "review") {
+      return t.artistNotifications.newReviewDesc;
+    }
+    // Fallback to database value if no match
+    return notification.body;
+  };
+
   const getNotificationIcon = (type: Notification["type"]) => {
     switch (type) {
       case "booking":
@@ -177,10 +224,10 @@ const ArtistNotifications = () => {
         ) : notifications && notifications.length > 0 ? (
           <div className="space-y-3">
             {notifications.map((notification) => (
-              <button
+              <div
                 key={notification.id}
                 onClick={() => handleNotificationClick(notification)}
-                className={`w-full text-${isRTL ? "right" : "left"} bg-card rounded-2xl border border-border p-4 shadow-sm transition-all hover:shadow-md ${
+                className={`w-full text-${isRTL ? "right" : "left"} bg-card rounded-2xl border border-border p-4 shadow-sm transition-all hover:shadow-md cursor-pointer ${
                   !notification.is_read ? "border-primary/30 bg-primary/5" : ""
                 }`}
               >
@@ -200,11 +247,11 @@ const ArtistNotifications = () => {
                             !notification.is_read ? "text-primary" : ""
                           }`}
                         >
-                          {notification.title}
+                          {getNotificationTitle(notification)}
                         </h3>
-                        {notification.body && (
+                        {getNotificationBody(notification) && (
                           <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
-                            {notification.body}
+                            {getNotificationBody(notification)}
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground mt-1">
@@ -226,7 +273,7 @@ const ArtistNotifications = () => {
                     <div className="w-2.5 h-2.5 rounded-full bg-primary shrink-0 mt-1" />
                   )}
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         ) : (

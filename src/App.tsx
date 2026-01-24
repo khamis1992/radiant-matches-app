@@ -102,7 +102,7 @@ const App = () => (
           <Route
             path="/artist/:id"
             element={
-              <RoleGate allow={["customer"]} showLoading>
+              <RoleGate allow={["customer", "artist"]} showLoading>
                 <ArtistProfile />
               </RoleGate>
             }
