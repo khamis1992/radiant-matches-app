@@ -61,6 +61,7 @@ import ArtistSignup from "./pages/ArtistSignup";
 import CompareArtists from "./pages/CompareArtists";
 import Referrals from "./pages/Referrals";
 import Wallet from "./pages/Wallet";
+import Logout from "./pages/Logout";
 import { InstallAppPrompt } from "./components/InstallAppPrompt";
 import { AnalyticsProvider } from "./hooks/useAnalytics";
 
@@ -241,6 +242,7 @@ const App = () => (
           <Route path="/help" element={<HelpSupport />} />
           <Route path="/payment-methods" element={<PaymentMethods />} />
           <Route path="/wallet" element={<Wallet />} />
+          <Route path="/logout" element={<Logout />} />
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />
