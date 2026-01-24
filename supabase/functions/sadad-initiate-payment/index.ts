@@ -190,8 +190,8 @@ serve(async (req) => {
       })
       .eq("id", booking_id);
 
-    // Get registered domain from environment or use default
-    const registeredDomain = Deno.env.get("SADAD_WEBSITE_DOMAIN") || "radiant-matches-app.lovable.app";
+    // Get registered domain from environment or use default (updated for Vercel deployment)
+    const registeredDomain = Deno.env.get("SADAD_WEBSITE_DOMAIN") || "radiant-matches-app.vercel.app";
 
     // Build checksum array matching PHP structure exactly
     // Following: https://developer.sadad.qa/ Web Checkout 2.1
