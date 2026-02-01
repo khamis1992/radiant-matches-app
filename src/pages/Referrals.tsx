@@ -424,7 +424,7 @@ const Referrals = () => {
 
   // إنشاء كود تلقائياً إذا لم يوجد
   if (!codeLoading && !referralCode && !createReferralMutation.isPending) {
-    handleCreateReferralCode();
+    createReferralMutation.mutate();
   }
 
   return (

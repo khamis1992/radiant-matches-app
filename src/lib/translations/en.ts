@@ -573,6 +573,7 @@ export const en = {
     street: "Street",
     building: "Building No",
     addressDetails: "Additional Directions",
+    enterAddress: "Please enter address details",
   },
 
   // Artist
