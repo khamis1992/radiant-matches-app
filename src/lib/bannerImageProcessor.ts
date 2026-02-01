@@ -1,14 +1,19 @@
 /**
  * Banner image processor - automatically adjusts images to the correct banner dimensions
  * Uses AI to intelligently extend images to fill the banner space
- * Target banner aspect ratio: 16:9 (1920x1080 or similar)
+ * Target banner aspect ratio: 14:5 (matches the app's promotions banner slot)
  */
 
 import { supabase } from "@/integrations/supabase/client";
 
-const BANNER_ASPECT_RATIO = 16 / 9;
-const TARGET_WIDTH = 1920;
-const TARGET_HEIGHT = 1080;
+// Promotions banner slot on Home is a wide card; we normalize to this ratio.
+// 14:5 = 2.8
+const BANNER_ASPECT_RATIO = 14 / 5;
+// Keep dimensions reasonably large and divisible; used for canvas normalization.
+const TARGET_WIDTH = 1792;
+const TARGET_HEIGHT = 640;
+
+const TARGET_ASPECT_RATIO_LABEL = "14:5";
 
 interface ProcessedImage {
   file: File;
@@ -54,7 +59,8 @@ export const processBannerImageWithAI = async (file: File): Promise<ProcessedIma
     const { data, error } = await supabase.functions.invoke("extend-banner-image", {
       body: {
         imageBase64: base64,
-        aspectRatio: "16:9",
+        // Must match the actual banner slot aspect ratio in the UI
+        aspectRatio: TARGET_ASPECT_RATIO_LABEL,
       },
     });
 
@@ -68,15 +74,14 @@ export const processBannerImageWithAI = async (file: File): Promise<ProcessedIma
     }
 
     // Convert the AI-generated base64 back to a File
-    const processedFile = base64ToFile(
+    const aiFile = base64ToFile(
       data.imageUrl,
       file.name.replace(/\.[^/.]+$/, "_extended.jpg")
     );
 
-    return {
-      file: processedFile,
-      previewUrl: data.imageUrl,
-    };
+    // IMPORTANT: AI can return slightly-off dimensions.
+    // Normalize the output to the exact banner aspect ratio and export a JPG.
+    return await processBannerImageSmooth(aiFile);
   } catch (error) {
     console.error("AI image processing failed:", error);
     // Fallback to traditional processing
