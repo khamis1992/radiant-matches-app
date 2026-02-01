@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, CreditCard, Package, Check, ArrowLeft } from "lucide-react";
+import { MapPin, CreditCard, Package, Check, ArrowLeft, Loader2, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,12 +14,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { ShippingAddress } from "@/types/product";
 
+// Qatar cities list
+const qatarCities = [
+  "Doha", "Al Wakrah", "Al Khor", "Al Rayyan", "Umm Salal", 
+  "Al Daayen", "Al Shamal", "Al Shahaniya", "Lusail", "Mesaieed", "Dukhan"
+];
+
 const Checkout = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { data: profile } = useProfile();
   const { cartItems, isLoading, clearCart } = useUnifiedCart();
   const createOrder = useCreateOrder();
+  const [isLocating, setIsLocating] = useState(false);
 
   // Load saved address from user metadata or use profile info
   const getInitialAddress = (): ShippingAddress => {
@@ -53,15 +60,101 @@ const Checkout = () => {
     }
   }, [profile]);
 
+  const handleAddressChange = (field: keyof ShippingAddress, value: string) => {
+    setShippingAddress({ ...shippingAddress, [field]: value });
+  };
+
+  // Auto-detect location using Geolocation API
+  const detectLocation = useCallback(async () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        try {
+          // Use Nominatim (OpenStreetMap) for reverse geocoding - free and no API key needed
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+            {
+              headers: {
+                "Accept-Language": "en",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch address");
+          }
+
+          const data = await response.json();
+          const address = data.address;
+
+          // Find the closest matching Qatar city
+          const detectedCity = address.city || address.town || address.village || address.suburb || "";
+          const matchedCity = qatarCities.find(
+            (city) => detectedCity.toLowerCase().includes(city.toLowerCase()) ||
+                      city.toLowerCase().includes(detectedCity.toLowerCase())
+          ) || detectedCity;
+
+          // Build address line from components
+          const addressParts = [
+            address.road,
+            address.house_number,
+            address.building,
+            address.neighbourhood,
+          ].filter(Boolean);
+
+          setShippingAddress((prev) => ({
+            ...prev,
+            address_line1: addressParts.join(", ") || prev.address_line1,
+            address_line2: address.suburb || address.neighbourhood || prev.address_line2,
+            city: matchedCity || prev.city,
+            postal_code: address.postcode || prev.postal_code,
+          }));
+
+          toast.success("Location detected successfully!");
+        } catch (error) {
+          console.error("Reverse geocoding error:", error);
+          toast.error("Could not get address details. Please enter manually.");
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        setIsLocating(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error("Location access denied. Please enable location permissions.");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error("Location information unavailable.");
+            break;
+          case error.TIMEOUT:
+            toast.error("Location request timed out. Please try again.");
+            break;
+          default:
+            toast.error("An error occurred while getting location.");
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    );
+  }, []);
+
   const hasPhysicalProducts = cartItems.some((item) => item.product.product_type === "physical");
   const total = cartItems.reduce(
     (sum, item) => sum + item.quantity * item.product.price_qar,
     0
   );
-
-  const handleAddressChange = (field: keyof ShippingAddress, value: string) => {
-    setShippingAddress({ ...shippingAddress, [field]: value });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,9 +305,31 @@ const Checkout = () => {
         {/* Shipping Address (only for physical products) */}
         {hasPhysicalProducts && (
           <div className="bg-card rounded-2xl border border-border/50 p-4">
-            <div className="flex items-center gap-2 mb-4">
-              <MapPin className="w-5 h-5 text-primary" />
-              <h2 className="font-semibold text-foreground">Shipping Address</h2>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-primary" />
+                <h2 className="font-semibold text-foreground">Shipping Address</h2>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={detectLocation}
+                disabled={isLocating}
+                className="gap-2 rounded-xl"
+              >
+                {isLocating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Detecting...
+                  </>
+                ) : (
+                  <>
+                    <Navigation className="w-4 h-4" />
+                    Auto-detect
+                  </>
+                )}
+              </Button>
             </div>
 
             <div className="space-y-4">
