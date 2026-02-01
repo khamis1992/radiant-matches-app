@@ -1,0 +1,112 @@
+# Fastlane Configuration for iOS
+# This file contains the fastlane configuration
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build iOS app for development"
+  lane :build_development do
+    # Build the web assets
+    sh("npm run build")
+    
+    # Sync Capacitor
+    sh("npx cap sync ios")
+    
+    # Install pods
+    cocoapods(
+      podfile: "./ios/App/Podfile"
+    )
+    
+    # Build the app
+    gym(
+      workspace: "ios/App/App.xcworkspace",
+      scheme: "Glam",
+      configuration: "Release",
+      export_method: "development",
+      output_directory: "./build",
+      output_name: "Glam-Development.ipa"
+    )
+  end
+
+  desc "Build iOS app for Ad Hoc distribution"
+  lane :build_adhoc do
+    # Build the web assets
+    sh("npm run build")
+    
+    # Sync Capacitor
+    sh("npx cap sync ios")
+    
+    # Install pods
+    cocoapods(
+      podfile: "./ios/App/Podfile"
+    )
+    
+    # Build the app
+    gym(
+      workspace: "ios/App/App.xcworkspace",
+      scheme: "Glam",
+      configuration: "Release",
+      export_method: "ad-hoc",
+      output_directory: "./build",
+      output_name: "Glam-AdHoc.ipa"
+    )
+  end
+
+  desc "Build iOS app for App Store"
+  lane :build_appstore do
+    # Build the web assets
+    sh("npm run build")
+    
+    # Sync Capacitor
+    sh("npx cap sync ios")
+    
+    # Install pods
+    cocoapods(
+      podfile: "./ios/App/Podfile"
+    )
+    
+    # Build the app
+    gym(
+      workspace: "ios/App/App.xcworkspace",
+      scheme: "Glam",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "./build",
+      output_name: "Glam-AppStore.ipa"
+    )
+  end
+
+  desc "Upload to TestFlight"
+  lane :upload_testflight do
+    # Get the IPA path
+    ipa_path = "./build/Glam-AppStore.ipa"
+    
+    # Upload to TestFlight
+    upload_to_testflight(
+      ipa: ipa_path,
+      skip_waiting_for_build_processing: true,
+      notify_external_testers: false
+    )
+  end
+
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    build_appstore
+    upload_testflight
+  end
+
+  desc "Full deployment to App Store"
+  lane :deploy do
+    build_appstore
+    upload_to_app_store(
+      ipa: "./build/Glam-AppStore.ipa",
+      skip_metadata: false,
+      skip_screenshots: false,
+      submit_for_review: false,
+      automatic_release: false
+    )
+  end
+end

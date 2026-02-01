@@ -1,0 +1,149 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Type'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - adhoc
+          - appstore
+
+env:
+  NODE_VERSION: '20'
+  RUBY_VERSION: '3.2'
+  XCODE_VERSION: '15.0'
+  SCHEME: 'Glam'
+  WORKSPACE: 'ios/App/App.xcworkspace'
+  PROJECT: 'ios/App/App.xcodeproj'
+
+jobs:
+  build-ios:
+    runs-on: macos-14
+    timeout-minutes: 45
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        
+    - name: Build Web Assets
+      run: |
+        npm run build
+        
+    - name: Sync Capacitor iOS
+      run: |
+        npx cap sync ios
+        
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ env.RUBY_VERSION }}
+        bundler-cache: true
+        
+    - name: Install Fastlane
+      run: |
+        gem install fastlane
+        
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: ${{ env.XCODE_VERSION }}
+        
+    - name: Install CocoaPods
+      run: |
+        cd ios/App && pod install
+        
+    - name: Setup Keychain
+      env:
+        KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+      run: |
+        security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+        security set-keychain-settings -t 3600 -u build.keychain
+        
+    - name: Install Certificate
+      env:
+        CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+        CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+      run: |
+        echo "$CERTIFICATE_P12" | base64 --decode > certificate.p12
+        security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+        
+    - name: Install Provisioning Profile
+      env:
+        PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
+      run: |
+        echo "$PROVISIONING_PROFILE" | base64 --decode > Glam.mobileprovision
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        cp Glam.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+        
+    - name: Build IPA
+      run: |
+        cd ios/App
+        xcodebuild -workspace App.xcworkspace \
+          -scheme ${{ env.SCHEME }} \
+          -configuration Release \
+          -sdk iphoneos \
+          -derivedDataPath DerivedData \
+          -archivePath ${{ env.SCHEME }}.xcarchive \
+          clean archive \
+          CODE_SIGN_IDENTITY="iPhone Distribution" \
+          PROVISIONING_PROFILE_SPECIFIER="Glam Distribution" \
+          DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }}
+          
+    - name: Export IPA
+      run: |
+        cd ios/App
+        xcodebuild -exportArchive \
+          -archivePath ${{ env.SCHEME }}.xcarchive \
+          -exportPath ${{ github.workspace }}/build \
+          -exportOptionsPlist ${{ github.workspace }}/exportOptions.plist
+          
+    - name: Upload IPA Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Glam-iOS-${{ github.run_number }}
+        path: build/*.ipa
+        retention-days: 30
+        
+    - name: Upload to TestFlight (Optional)
+      if: github.ref == 'refs/heads/main' && github.event.inputs.build_type == 'appstore'
+      env:
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        xcrun altool --upload-app \
+          --type ios \
+          --file build/Glam.ipa \
+          --username "$APPLE_ID" \
+          --password "$APP_SPECIFIC_PASSWORD" \
+          --asc-provider "$TEAM_ID"
+          
+    - name: Cleanup
+      if: always()
+      run: |
+        security delete-keychain build.keychain || true
+        rm -f certificate.p12 Glam.mobileprovision
+        
