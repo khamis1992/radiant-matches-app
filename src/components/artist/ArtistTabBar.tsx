@@ -17,7 +17,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { icon: LayoutDashboard, label: "Dashboard", labelAr: "الرئيسية", path: "/artist-dashboard", hasBadge: false },
   { icon: Calendar, label: "Bookings", labelAr: "الحجوزات", path: "/artist-bookings", hasBadge: true },
-  { icon: BarChart3, label: "Analytics", labelAr: "التحليلات", path: "/artist-analytics", hasBadge: false },
+  { icon: Images, label: "Gallery", labelAr: "المعرض", path: "/artist-gallery", hasBadge: false },
   { icon: ShoppingBag, label: "Products", labelAr: "المنتجات", path: "/artist-products", hasBadge: false },
 ];
 
