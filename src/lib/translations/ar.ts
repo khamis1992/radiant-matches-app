@@ -354,6 +354,33 @@ export const ar = {
     invalidCode: "يرجى إدخال رمز من 6 أرقام",
   },
 
+  // Biometric Authentication
+  biometric: {
+    title: "تسجيل الدخول بالبصمة",
+    description: "استخدم البصمة أو Face ID لتسجيل الدخول بسرعة",
+    enabled: "مفعّل",
+    disabled: "معطّل",
+    notSupported: "البصمة غير مدعومة",
+    notSupportedDesc: "جهازك لا يدعم المصادقة بالبصمة.",
+    registeredDevices: "الأجهزة المسجلة",
+    addedOn: "أُضيف في",
+    lastUsed: "آخر استخدام",
+    addDevice: "إضافة جهاز آخر",
+    enableBiometric: "تفعيل البصمة",
+    infoText: "بيانات البصمة لا تغادر جهازك أبداً. نحن نخزن مفتاحاً آمناً فقط.",
+    setupTitle: "إعداد تسجيل الدخول بالبصمة",
+    setupDesc: "استخدم بصمتك أو وجهك لتسجيل الدخول بسرعة إلى حسابك.",
+    deviceName: "اسم الجهاز",
+    deviceNamePlaceholder: "مثال: iPhone 15، MacBook Pro",
+    deviceNameHelp: "أعطِ هذا الجهاز اسماً لتتعرف عليه لاحقاً.",
+    readyToSetup: "جاهز للإعداد",
+    setupInstructions: "عند الضغط على الزر، سيطلب جهازك التحقق من هويتك.",
+    registering: "جاري التسجيل...",
+    register: "تسجيل البصمة",
+    loginWithBiometric: "تسجيل الدخول بالبصمة",
+    rememberMe: "تذكرني",
+  },
+
   // Notifications
   notifications: {
     title: "الإشعارات",
@@ -1171,32 +1198,6 @@ export const ar = {
     addFunds: "إضافة رصيد",
     selectAmount: "اختر مبلغ أو أدخل قيمة مخصصة",
     customAmount: "مبلغ مخصص",
-  },
-
-
-  // Biometric Authentication
-  biometric: {
-    title: "تسجيل الدخول بالبصمة",
-    description: "استخدم بصمة الإصبع أو Face ID لتسجيل الدخول بسرعة",
-    enabled: "مفعّل",
-    disabled: "معطّل",
-    notSupported: "البصمة غير مدعومة",
-    notSupportedDesc: "جهازك لا يدعم المصادقة البيومترية.",
-    registeredDevices: "الأجهزة المسجلة",
-    addedOn: "تمت الإضافة",
-    lastUsed: "آخر استخدام",
-    addDevice: "إضافة جهاز آخر",
-    enableBiometric: "تفعيل تسجيل الدخول بالبصمة",
-    infoText: "بياناتك البيومترية لا تغادر جهازك. نحن نخزن مفتاحاً آمناً فقط.",
-    setupTitle: "إعداد تسجيل الدخول بالبصمة",
-    setupDesc: "استخدم بصمتك أو وجهك لتسجيل الدخول بسرعة.",
-    deviceName: "اسم الجهاز",
-    deviceNamePlaceholder: "مثل: iPhone 15, MacBook Pro",
-    deviceNameHelp: "أعطِ هذا الجهاز اسماً لتتعرف عليه لاحقاً.",
-    readyToSetup: "جاهز للإعداد",
-    setupInstructions: "عند النقر على الزر، سيطلب منك جهازك التحقق من هويتك.",
-    registering: "جاري التسجيل...",
-    register: "تسجيل البصمة",
   },
 
   // PWA
