@@ -1,29 +1,31 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 const Logout = () => {
-  const navigate = useNavigate();
-  const { language } = useLanguage();
-
   useEffect(() => {
     const handleLogout = async () => {
-      try {
-        await supabase.auth.signOut();
-        toast.success(language === "ar" ? "تم تسجيل الخروج بنجاح" : "Logged out successfully");
-        // Force a hard reload to clear any cached states
-        window.location.href = "/auth";
-      } catch (error) {
-        console.error("Logout error:", error);
-        toast.error(language === "ar" ? "فشل تسجيل الخروج" : "Failed to log out");
-        navigate("/auth");
+      // Use local scope to ensure cleanup works
+      await supabase.auth.signOut({ scope: 'local' });
+      
+      // Clear all supabase auth tokens from localStorage
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+          keysToRemove.push(key);
+        }
       }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
+      // Clear session storage
+      sessionStorage.clear();
+      
+      // Force full page reload to /auth to clear all React state
+      window.location.replace("/auth");
     };
 
     handleLogout();
-  }, [navigate, language]);
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
