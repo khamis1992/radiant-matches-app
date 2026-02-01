@@ -44,6 +44,14 @@ interface MapViewProps {
 export const MapView = ({ artists, onClose }: MapViewProps) => {
   const { t, language } = useLanguage();
   const [selectedArea, setSelectedArea] = useState<string>("all");
+
+  // Lock body scroll when component mounts
+  React.useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
   
   // Generate deterministic coordinates
   const pins = useMemo(() => {

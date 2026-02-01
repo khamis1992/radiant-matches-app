@@ -48,6 +48,16 @@ export const PortfolioImageViewer = ({
   const currentItem = items[currentIndex];
   const isRTL = language === "ar";
 
+  // Lock body scroll when viewer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   // Auto-hide overlays after 3 seconds
   useEffect(() => {
     if (isOpen) {

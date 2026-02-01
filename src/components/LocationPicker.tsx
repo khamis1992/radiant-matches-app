@@ -56,6 +56,14 @@ export const LocationPicker = ({ onLocationSelect, onClose, initialLat, initialL
   const [position, setPosition] = useState<[number, number] | null>(
     initialLat && initialLng ? [initialLat, initialLng] : [25.2854, 51.5310]
   );
+
+  // Lock body scroll when component mounts
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
   
   const handleCurrentLocation = () => {
     if (!navigator.geolocation) {

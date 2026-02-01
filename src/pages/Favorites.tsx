@@ -19,14 +19,17 @@ import { Input } from "@/components/ui/input";
 
 const Favorites = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { favorites, isLoading: favoritesLoading } = useFavorites();
   const { t, isRTL } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
 
   useSwipeBack();
 
-  const artistFavorites = favorites.filter((f) => f.item_type === "artist");
+  // Filter to get only artist favorites
+  const artistFavorites = useMemo(() => {
+    return favorites.filter((f) => f.item_type === "artist");
+  }, [favorites]);
 
   // Fetch favorite artists with details
   const { data: favoriteArtists = [], isLoading: artistsLoading } = useQuery({
@@ -74,6 +77,25 @@ const Favorites = () => {
     );
   }, [favoriteArtists, searchQuery]);
 
+  // NOW we can do conditional returns after all hooks are called
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
+        <AppHeader title={t.favorites.title} style="modern" showBack={true} />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+            <p className="text-sm text-muted-foreground">{t.common.loading}</p>
+          </div>
+        </div>
+        <BottomNavigation />
+      </div>
+    );
+  }
+
+  // If user is not logged in
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">

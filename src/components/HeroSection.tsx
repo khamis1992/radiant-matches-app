@@ -102,7 +102,7 @@ export const HeroSection = () => {
                   onClick={() => navigate('/makeup-artists')}
                   className="w-full h-12 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-md active:scale-[0.98] transition-all"
                >
-                  {t.common?.bookNow || (isRTL ? "حجز الآن" : "Book Now")}
+                  {isRTL ? "حجز الآن" : "Book Now"}
                </Button>
                <Button 
                   variant="outline" 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { ChevronLeft, ChevronRight, X, Pencil, Check, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -43,6 +44,16 @@ const ImageLightbox = ({
   const initialPinchDistance = useRef<number | null>(null);
   const lastScale = useRef(1);
   const minSwipeDistance = 50;
+
+  // Lock body scroll when lightbox is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
@@ -184,6 +195,12 @@ const ImageLightbox = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-background/95 backdrop-blur-xl border-none overflow-hidden">
+        <VisuallyHidden>
+          <DialogTitle>{currentImage.title || "Image viewer"}</DialogTitle>
+          <DialogDescription>
+            {`Image ${currentIndex + 1} of ${images.length}`}
+          </DialogDescription>
+        </VisuallyHidden>
         {/* Close Button */}
         <button
           onClick={() => onOpenChange(false)}
