@@ -21,6 +21,7 @@ interface Banner {
   text_position: string;
   text_alignment: string;
   overlay_opacity: number;
+  image_scale: number;
 }
 
 interface CreateBannerData {
@@ -39,6 +40,7 @@ interface CreateBannerData {
   text_position?: string;
   text_alignment?: string;
   overlay_opacity?: number;
+  image_scale?: number;
 }
 
 interface UpdateBannerData extends Partial<CreateBannerData> {

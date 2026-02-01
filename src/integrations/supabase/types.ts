@@ -210,6 +210,7 @@ export type Database = {
           created_at: string
           display_order: number
           id: string
+          image_scale: number
           image_url: string
           is_active: boolean
           link_url: string | null
@@ -230,6 +231,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: string
+          image_scale?: number
           image_url: string
           is_active?: boolean
           link_url?: string | null
@@ -250,6 +252,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: string
+          image_scale?: number
           image_url?: string
           is_active?: boolean
           link_url?: string | null
