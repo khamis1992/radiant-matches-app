@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { TrendingUp, TrendingDown, Briefcase, Star, Wallet, Clock, CheckCircle, XCircle, ArrowDownToLine, Package, ShoppingBag, Eye, Check, X } from "lucide-react";
+import { TrendingUp, TrendingDown, Briefcase, Star, Wallet, Clock, CheckCircle, XCircle, ArrowDownToLine, Package, ShoppingBag, Eye, Check, X, BarChart3, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentArtist, useArtistBookings, useArtistEarnings, useUpdateBookingStatus } from "@/hooks/useArtistDashboard";
 import { useArtistWithdrawals, useCreateWithdrawal } from "@/hooks/useWithdrawals";
@@ -416,6 +416,23 @@ const ArtistEarnings = () => {
                 </div>
               </div>
             </div>
+
+            {/* Analytics Link Button */}
+            <button
+              onClick={() => navigate("/artist-analytics")}
+              className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl border border-primary/20 hover:border-primary/40 hover:shadow-md transition-all duration-200 active:scale-[0.98] group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-primary" />
+                </div>
+                <div className={isRTL ? "text-right" : "text-left"}>
+                  <p className="font-semibold text-foreground">{isRTL ? "التقارير والتحليلات" : "Reports & Analytics"}</p>
+                  <p className="text-xs text-muted-foreground">{isRTL ? "عرض تفاصيل الأداء" : "View detailed performance"}</p>
+                </div>
+              </div>
+              <ChevronRight className={`w-5 h-5 text-primary group-hover:translate-x-1 transition-transform ${isRTL ? "rotate-180 group-hover:-translate-x-1" : ""}`} />
+            </button>
 
             {/* Earnings Chart */}
             {earnings && earnings.monthlyTrend.length > 0 && (
