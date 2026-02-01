@@ -951,6 +951,35 @@ export type Database = {
         }
         Relationships: []
       }
+      review_helpful_votes: {
+        Row: {
+          created_at: string
+          id: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_helpful_votes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           artist_id: string
@@ -958,6 +987,7 @@ export type Database = {
           comment: string | null
           created_at: string
           customer_id: string
+          helpful_count: number
           id: string
           photos: string[] | null
           rating: number
@@ -968,6 +998,7 @@ export type Database = {
           comment?: string | null
           created_at?: string
           customer_id: string
+          helpful_count?: number
           id?: string
           photos?: string[] | null
           rating: number
@@ -978,6 +1009,7 @@ export type Database = {
           comment?: string | null
           created_at?: string
           customer_id?: string
+          helpful_count?: number
           id?: string
           photos?: string[] | null
           rating?: number
