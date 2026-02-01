@@ -441,17 +441,6 @@ const ArtistAnalytics = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3 mt-6">
-          <Button variant="outline" className="w-full h-auto py-3 flex-col gap-1.5" onClick={() => navigate("/artist-bookings")}>
-            <Calendar className="w-5 h-5" />
-            <span className="text-xs">{isRTL ? "عرض الحجوزات" : "Bookings"}</span>
-          </Button>
-          <Button variant="outline" className="w-full h-auto py-3 flex-col gap-1.5" onClick={() => navigate("/artist-services")}>
-            <Star className="w-5 h-5" />
-            <span className="text-xs">{isRTL ? "إدارة الخدمات" : "Services"}</span>
-          </Button>
-        </div>
       </div>
 
       <ArtistTabBar />
