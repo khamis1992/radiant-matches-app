@@ -25,7 +25,24 @@ export const useAuth = () => {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      // Try global signout first
+      await supabase.auth.signOut({ scope: 'global' });
+    } catch (error) {
+      console.log('Global signout failed, trying local signout:', error);
+      try {
+        // If global fails (e.g., session not found), do local signout
+        await supabase.auth.signOut({ scope: 'local' });
+      } catch (localError) {
+        console.log('Local signout also failed:', localError);
+      }
+    }
+    
+    // Always clear local state regardless of server response
+    setUser(null);
+    
+    // Clear any cached session data
+    localStorage.removeItem('supabase.auth.token');
   };
 
   return { user, loading, signOut };
