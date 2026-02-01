@@ -1,7 +1,10 @@
 /**
  * Banner image processor - automatically adjusts images to the correct banner dimensions
+ * Uses AI to intelligently extend images to fill the banner space
  * Target banner aspect ratio: 16:9 (1920x1080 or similar)
  */
+
+import { supabase } from "@/integrations/supabase/client";
 
 const BANNER_ASPECT_RATIO = 16 / 9;
 const TARGET_WIDTH = 1920;
@@ -13,98 +16,76 @@ interface ProcessedImage {
 }
 
 /**
- * Processes a banner image to fit the correct dimensions
- * - If image is too wide: adds padding top/bottom with blurred background
- * - If image is too tall: adds padding left/right with blurred background
- * - Maintains original image quality while filling the banner space
+ * Convert a File to base64 string
  */
-export const processBannerImage = async (file: File): Promise<ProcessedImage> => {
+const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    img.onload = () => {
-      if (!ctx) {
-        reject(new Error("Could not get canvas context"));
-        return;
-      }
-
-      const imgAspectRatio = img.width / img.height;
-      
-      // Set canvas to target dimensions
-      canvas.width = TARGET_WIDTH;
-      canvas.height = TARGET_HEIGHT;
-
-      // Create blurred background layer
-      ctx.filter = "blur(30px)";
-      
-      if (imgAspectRatio > BANNER_ASPECT_RATIO) {
-        // Image is wider than banner - scale by height and center horizontally
-        const scale = TARGET_HEIGHT / img.height;
-        const scaledWidth = img.width * scale;
-        const x = (TARGET_WIDTH - scaledWidth) / 2;
-        ctx.drawImage(img, x, 0, scaledWidth, TARGET_HEIGHT);
-      } else {
-        // Image is taller than banner - scale by width and center vertically
-        const scale = TARGET_WIDTH / img.width;
-        const scaledHeight = img.height * scale;
-        const y = (TARGET_HEIGHT - scaledHeight) / 2;
-        ctx.drawImage(img, 0, y, TARGET_WIDTH, scaledHeight);
-      }
-
-      // Reset filter and draw the main image on top
-      ctx.filter = "none";
-      
-      // Add a semi-transparent overlay to blend the background
-      ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-      ctx.fillRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
-
-      // Draw the main image centered with proper aspect ratio
-      if (imgAspectRatio > BANNER_ASPECT_RATIO) {
-        // Image is wider - fit by width, center vertically
-        const scale = TARGET_WIDTH / img.width;
-        const scaledHeight = img.height * scale;
-        const y = (TARGET_HEIGHT - scaledHeight) / 2;
-        ctx.drawImage(img, 0, y, TARGET_WIDTH, scaledHeight);
-      } else {
-        // Image is taller - fit by height, center horizontally
-        const scale = TARGET_HEIGHT / img.height;
-        const scaledWidth = img.width * scale;
-        const x = (TARGET_WIDTH - scaledWidth) / 2;
-        ctx.drawImage(img, x, 0, scaledWidth, TARGET_HEIGHT);
-      }
-
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("Could not process image"));
-            return;
-          }
-
-          const processedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
-            type: "image/jpeg",
-            lastModified: Date.now(),
-          });
-
-          const previewUrl = URL.createObjectURL(blob);
-          resolve({ file: processedFile, previewUrl });
-        },
-        "image/jpeg",
-        0.92
-      );
-    };
-
-    img.onerror = () => {
-      reject(new Error("Could not load image"));
-    };
-
-    img.src = URL.createObjectURL(file);
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
 };
 
 /**
- * Smart banner image processor with edge extension
+ * Convert base64 to File
+ */
+const base64ToFile = (base64: string, filename: string): File => {
+  const arr = base64.split(",");
+  const mime = arr[0].match(/:(.*?);/)?.[1] || "image/jpeg";
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+};
+
+/**
+ * Use AI to intelligently extend the image to the correct banner dimensions
+ */
+export const processBannerImageWithAI = async (file: File): Promise<ProcessedImage> => {
+  try {
+    // Convert file to base64
+    const base64 = await fileToBase64(file);
+    
+    // Call the edge function to process with AI
+    const { data, error } = await supabase.functions.invoke("extend-banner-image", {
+      body: {
+        imageBase64: base64,
+        aspectRatio: "16:9",
+      },
+    });
+
+    if (error) {
+      console.error("AI processing error:", error);
+      throw new Error(error.message || "Failed to process image with AI");
+    }
+
+    if (!data?.imageUrl) {
+      throw new Error("No processed image returned from AI");
+    }
+
+    // Convert the AI-generated base64 back to a File
+    const processedFile = base64ToFile(
+      data.imageUrl,
+      file.name.replace(/\.[^/.]+$/, "_extended.jpg")
+    );
+
+    return {
+      file: processedFile,
+      previewUrl: data.imageUrl,
+    };
+  } catch (error) {
+    console.error("AI image processing failed:", error);
+    // Fallback to traditional processing
+    return processBannerImageSmooth(file);
+  }
+};
+
+/**
+ * Smart banner image processor with edge extension (fallback method)
  * Creates a seamless extended background using edge colors
  */
 export const processBannerImageSmooth = async (file: File): Promise<ProcessedImage> => {
@@ -127,7 +108,6 @@ export const processBannerImageSmooth = async (file: File): Promise<ProcessedIma
       // First, fill with a gradient based on edge colors
       if (imgAspectRatio > BANNER_ASPECT_RATIO) {
         // Wider image - need to fill top and bottom
-        // Sample colors from top and bottom edges
         const tempCanvas = document.createElement("canvas");
         const tempCtx = tempCanvas.getContext("2d");
         if (tempCtx) {
