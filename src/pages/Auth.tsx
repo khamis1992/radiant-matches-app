@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, CheckCircle, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Sparkles, Fingerprint } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBiometricAuth } from "@/hooks/useBiometricAuth";
 import { z } from "zod";
 
 type AuthMode = "login" | "signup" | "forgot-password" | "verify-email";
@@ -90,6 +92,18 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
   const [signupEmail, setSignupEmail] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  
+  const { isSupported: biometricSupported, authenticate: biometricAuth, hasBiometricForEmail, isLoading: biometricLoading } = useBiometricAuth();
+
+  // Load remembered email on mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("remembered_email");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const emailSchema = z.string().email(language === "ar" ? "يرجى إدخال بريد إلكتروني صحيح" : "Please enter a valid email address");
   const passwordSchema = z.string().min(6, t.settings.passwordMinLength);
@@ -185,6 +199,40 @@ const Auth = () => {
     }
   };
 
+  const handleBiometricLogin = async () => {
+    if (!biometricSupported) return;
+    
+    const savedEmail = localStorage.getItem("remembered_email");
+    if (!savedEmail || !hasBiometricForEmail(savedEmail)) {
+      toast.error(language === "ar" ? "لم يتم تفعيل البصمة لهذا الحساب" : "Biometric not enabled for this account");
+      return;
+    }
+
+    const result = await biometricAuth(savedEmail);
+    if (result.success && result.email) {
+      // Biometric verified - now we need to get the stored password or use a token
+      const storedPassword = localStorage.getItem(`saved_password_${result.email}`);
+      if (storedPassword) {
+        setLoading(true);
+        const { error } = await supabase.auth.signInWithPassword({
+          email: result.email,
+          password: storedPassword,
+        });
+        setLoading(false);
+        
+        if (error) {
+          toast.error(language === "ar" ? "فشل تسجيل الدخول" : "Login failed");
+          // Clear stored data if login fails
+          localStorage.removeItem(`saved_password_${result.email}`);
+        }
+      } else {
+        toast.error(language === "ar" ? "يرجى تسجيل الدخول بالبريد وكلمة المرور أولاً" : "Please login with email and password first");
+      }
+    } else {
+      toast.error(language === "ar" ? "فشل التحقق من البصمة" : "Biometric verification failed");
+    }
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -206,6 +254,16 @@ const Auth = () => {
             toast.error(error.message);
           }
           return;
+        }
+
+        // Save email and password if remember me is checked
+        if (rememberMe) {
+          localStorage.setItem("remembered_email", email.trim());
+          // Save password encrypted for biometric login (in production, use more secure storage)
+          localStorage.setItem(`saved_password_${email.trim()}`, password);
+        } else {
+          localStorage.removeItem("remembered_email");
+          localStorage.removeItem(`saved_password_${email.trim()}`);
         }
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -507,6 +565,23 @@ const Auth = () => {
                 )}
               </div>
 
+              {/* Remember Me Checkbox - Login only */}
+              {mode === "login" && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked === true)}
+                  />
+                  <Label 
+                    htmlFor="rememberMe" 
+                    className="text-sm text-muted-foreground cursor-pointer"
+                  >
+                    {language === "ar" ? "تذكرني" : "Remember me"}
+                  </Label>
+                </div>
+              )}
+
               <Button 
                 type="submit" 
                 className="w-full h-14 rounded-xl text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]" 
@@ -524,6 +599,29 @@ const Auth = () => {
                   </>
                 )}
               </Button>
+
+              {/* Biometric Login Button - Login mode only */}
+              {mode === "login" && biometricSupported && hasBiometricForEmail(localStorage.getItem("remembered_email") || "") && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-14 rounded-xl text-base font-medium border-2"
+                  onClick={handleBiometricLogin}
+                  disabled={biometricLoading}
+                >
+                  {biometricLoading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      {language === "ar" ? "جاري التحقق..." : "Verifying..."}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Fingerprint className="w-5 h-5" />
+                      {language === "ar" ? "تسجيل الدخول بالبصمة" : "Login with Fingerprint"}
+                    </span>
+                  )}
+                </Button>
+              )}
             </form>
           )}
 

@@ -15,14 +15,17 @@ import {
 } from "@/components/ui/dialog";
 import { useBiometricAuth } from "@/hooks/useBiometricAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 /**
  * Biometric Settings Component
  * Allows users to register and manage biometric authentication (fingerprint/Face ID)
  */
 export const BiometricSettings = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { user } = useAuth();
   const {
     isSupported,
     isEnabled,
@@ -30,6 +33,7 @@ export const BiometricSettings = () => {
     credentials,
     registerCredential,
     removeCredential,
+    saveCredentialLocally,
   } = useBiometricAuth();
 
   const [showRegisterDialog, setShowRegisterDialog] = useState(false);
@@ -41,8 +45,19 @@ export const BiometricSettings = () => {
     const success = await registerCredential(deviceName || "My Device");
     setIsRegistering(false);
     if (success) {
+      // Save credential info locally for biometric login
+      if (user?.email) {
+        // Get the latest credential
+        const latestCredential = credentials[credentials.length - 1];
+        if (latestCredential) {
+          saveCredentialLocally(user.email, latestCredential.credential_id);
+        }
+        toast.success(language === "ar" ? "تم تفعيل البصمة بنجاح!" : "Biometric enabled successfully!");
+      }
       setShowRegisterDialog(false);
       setDeviceName("");
+    } else {
+      toast.error(language === "ar" ? "فشل تفعيل البصمة" : "Failed to enable biometric");
     }
   };
 
