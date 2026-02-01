@@ -839,7 +839,7 @@ const AdminBanners = () => {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!formData.title || (!imagePreview && !imageFile) || isUploading}
+              disabled={(!imagePreview && !imageFile) || isUploading}
             >
               {isUploading ? t.common.saving : editingBanner ? t.common.update : t.common.add}
             </Button>
