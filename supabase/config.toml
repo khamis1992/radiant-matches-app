@@ -1,5 +1,8 @@
 project_id = "besjfzlgtssriqpluzgn"
 
+[functions.create-demo-artist]
+verify_jwt = false
+
 [functions.complete-artist-signup]
 verify_jwt = true
 
