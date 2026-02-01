@@ -22,7 +22,7 @@ type ReportPeriod = "7days" | "30days" | "90days" | "all";
 
 const ArtistAnalytics = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { t, language, isRTL } = useLanguage();
   const dateLocale = language === "ar" ? ar : enUS;
 
@@ -165,6 +165,23 @@ const ArtistAnalytics = () => {
     "90days": isRTL ? "آخر 90 يوم" : "Last 90 Days",
     "all": isRTL ? "كل الوقت" : "All Time",
   };
+
+  // Show loading state while auth is being determined
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
+        <AppHeader title={isRTL ? "التقارير والتحليلات" : "Reports & Analytics"} style="modern" />
+        <div className="px-4 py-4">
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-28 rounded-xl" />
+            ))}
+          </div>
+        </div>
+        <ArtistTabBar />
+      </div>
+    );
+  }
 
   // Conditional return AFTER all hooks have been called
   if (!user) {
