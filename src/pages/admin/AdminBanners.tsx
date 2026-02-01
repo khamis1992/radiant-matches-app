@@ -314,7 +314,7 @@ const AdminBanners = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title) return;
+    // Title is now optional, only image is required
 
     setIsUploading(true);
     try {
@@ -488,7 +488,7 @@ const AdminBanners = () => {
               <div className="space-y-4">
                 {/* Basic Info */}
                 <div className="space-y-2">
-                  <Label htmlFor="title">{t.adminBanners.titleRequired}</Label>
+                  <Label htmlFor="title">{t.adminBanners.bannerTitle}</Label>
                   <Input
                     id="title"
                     value={formData.title}
