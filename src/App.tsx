@@ -24,6 +24,7 @@ import ArtistGallery from "./pages/artist/ArtistGallery";
 import ArtistNotifications from "./pages/artist/ArtistNotifications";
 import ArtistProducts from "./pages/artist/ArtistProducts";
 import ArtistProductForm from "./pages/artist/ArtistProductForm";
+import ArtistAnalytics from "./pages/artist/ArtistAnalytics";
 import Booking from "./pages/Booking";
 import Bookings from "./pages/Bookings";
 import BookingDetails from "./pages/BookingDetails";
@@ -215,6 +216,14 @@ const App = () => (
             element={
               <RoleGate allow={["artist"]} showLoading>
                 <ArtistProductForm />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/artist-analytics"
+            element={
+              <RoleGate allow={["artist"]} showLoading>
+                <ArtistAnalytics />
               </RoleGate>
             }
           />

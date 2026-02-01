@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { LayoutDashboard, Calendar, Images, ShoppingBag, Plus, CalendarPlus, Palette, Camera, X } from "lucide-react";
+import { LayoutDashboard, Calendar, Images, ShoppingBag, Plus, CalendarPlus, Palette, Camera, X, BarChart3 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { usePendingBookingsCount } from "@/hooks/usePendingBookings";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -8,16 +8,17 @@ import { cn } from "@/lib/utils";
 
 interface NavItem {
   icon: typeof LayoutDashboard;
-  labelKey: keyof typeof import("@/lib/translations/en").en.nav;
+  label: string;
+  labelAr: string;
   path: string;
   hasBadge: boolean;
 }
 
 const navItems: NavItem[] = [
-  { icon: LayoutDashboard, labelKey: "dashboard", path: "/artist-dashboard", hasBadge: false },
-  { icon: Calendar, labelKey: "bookings", path: "/artist-bookings", hasBadge: true },
-  { icon: Images, labelKey: "gallery", path: "/artist-gallery", hasBadge: false },
-  { icon: ShoppingBag, labelKey: "products", path: "/artist-products", hasBadge: false },
+  { icon: LayoutDashboard, label: "Dashboard", labelAr: "الرئيسية", path: "/artist-dashboard", hasBadge: false },
+  { icon: Calendar, label: "Bookings", labelAr: "الحجوزات", path: "/artist-bookings", hasBadge: true },
+  { icon: BarChart3, label: "Analytics", labelAr: "التحليلات", path: "/artist-analytics", hasBadge: false },
+  { icon: ShoppingBag, label: "Products", labelAr: "المنتجات", path: "/artist-products", hasBadge: false },
 ];
 
 interface QuickAction {
@@ -174,7 +175,7 @@ export const ArtistTabBar = () => {
                       )}
                       style={{ color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))' }}
                     >
-                      {t.nav[item.labelKey]}
+                      {isRTL ? item.labelAr : item.label}
                     </span>
                   </Link>
                 );
@@ -215,7 +216,7 @@ export const ArtistTabBar = () => {
                       )}
                       style={{ color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))' }}
                     >
-                      {t.nav[item.labelKey]}
+                      {isRTL ? item.labelAr : item.label}
                     </span>
                   </Link>
                 );
