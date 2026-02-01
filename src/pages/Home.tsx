@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import CategoryCard from "@/components/CategoryCard";
 import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
@@ -43,12 +43,46 @@ const getCategoryTranslations = (t: ReturnType<typeof useLanguage>["t"]) => [
 const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) => {
   const { data: banners = [], isLoading } = useActiveBanners();
   const { t } = useLanguage();
+  const [maxHeight, setMaxHeight] = useState<number>(0);
+  const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
+
+  // Calculate the max height from all loaded images
+  useEffect(() => {
+    if (banners.length === 0) return;
+    
+    const calculateMaxHeight = () => {
+      let tallest = 0;
+      imageRefs.current.forEach((img) => {
+        if (img && img.complete && img.naturalHeight > 0) {
+          // Calculate display height based on container width
+          const containerWidth = img.parentElement?.clientWidth || img.clientWidth;
+          const aspectRatio = img.naturalWidth / img.naturalHeight;
+          const displayHeight = containerWidth / aspectRatio;
+          if (displayHeight > tallest) {
+            tallest = displayHeight;
+          }
+        }
+      });
+      if (tallest > 0) {
+        setMaxHeight(tallest);
+      }
+    };
+
+    // Run after images load
+    const timeoutId = setTimeout(calculateMaxHeight, 100);
+    window.addEventListener('resize', calculateMaxHeight);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', calculateMaxHeight);
+    };
+  }, [banners]);
 
   // Fallback to static promos if no banners
   if (isLoading) {
     return (
       <section className="px-5 pb-6">
-        <Skeleton className="w-full rounded-2xl aspect-[14/5]" />
+        <Skeleton className="w-full rounded-2xl h-40" />
       </section>
     );
   }
@@ -64,16 +98,17 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
           <CarouselContent>
             {t.home.promos.map((promo, index) => (
               <CarouselItem key={index}>
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 aspect-[14/5]">
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5">
                   <img 
                     src={promoBanner1} 
                     alt={promo.title} 
-                    className="absolute inset-0 w-full h-full object-cover opacity-50"
+                    className="w-full h-auto object-contain"
                   />
-                  <div className="relative z-10 p-5 flex items-center justify-between h-full">
+                  <div className="absolute inset-0 bg-black/30" />
+                  <div className="absolute inset-0 p-5 flex items-center justify-between">
                     <div className="space-y-1">
-                      <h3 className="text-lg font-bold text-foreground">{promo.title}</h3>
-                      <p className="text-sm text-muted-foreground">{promo.subtitle}</p>
+                      <h3 className="text-lg font-bold text-white">{promo.title}</h3>
+                      <p className="text-sm text-white/90">{promo.subtitle}</p>
                     </div>
                     <button 
                       onClick={() => navigate("/makeup-artists")}
@@ -99,30 +134,52 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
         className="w-full"
       >
         <CarouselContent>
-          {banners.map((banner) => (
+          {banners.map((banner, index) => (
             <CarouselItem key={banner.id}>
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 aspect-[14/5]">
+              <div 
+                className="relative overflow-hidden rounded-2xl bg-muted flex items-center justify-center"
+                style={{ minHeight: maxHeight > 0 ? maxHeight : 'auto' }}
+              >
+                {/* Dynamic image that maintains its aspect ratio */}
                 <img
+                  ref={(el) => {
+                    imageRefs.current[index] = el;
+                  }}
                   src={banner.image_url}
                   alt={banner.title || t.adminBanners.banner || "Banner"}
-                  className={`absolute inset-0 w-full h-full transition-transform duration-200 ${
-                    banner.image_fit === "contain" ? "object-contain" : "object-cover"
-                  }`}
+                  className="w-full h-auto object-contain"
                   style={{
                     transform: `scale(${(banner.image_scale ?? 100) / 100})`,
                     transformOrigin: "center center",
+                  }}
+                  onLoad={() => {
+                    // Recalculate max height when an image loads
+                    let tallest = 0;
+                    imageRefs.current.forEach((img) => {
+                      if (img && img.complete && img.naturalHeight > 0) {
+                        const containerWidth = img.parentElement?.clientWidth || img.clientWidth;
+                        const aspectRatio = img.naturalWidth / img.naturalHeight;
+                        const displayHeight = containerWidth / aspectRatio;
+                        if (displayHeight > tallest) {
+                          tallest = displayHeight;
+                        }
+                      }
+                    });
+                    if (tallest > 0) {
+                      setMaxHeight(tallest);
+                    }
                   }}
                 />
 
                 {/* Overlay */}
                 <div
-                  className="absolute inset-0 bg-black"
+                  className="absolute inset-0 bg-black pointer-events-none"
                   style={{ opacity: (banner.overlay_opacity ?? 50) / 100 }}
                 />
 
                 {/* Content */}
                 <div
-                  className={`relative z-10 p-5 flex flex-col h-full ${
+                  className={`absolute inset-0 p-5 flex flex-col ${
                     banner.text_position === "center"
                       ? "justify-center"
                       : banner.text_position === "end"

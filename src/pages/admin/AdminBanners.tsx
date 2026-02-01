@@ -48,12 +48,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink, Eye, CalendarIcon, Clock, Wand2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink, Eye, CalendarIcon, Clock } from "lucide-react";
 import { useAdminBanners } from "@/hooks/useAdminBanners";
 import { format, isAfter, isBefore } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { processBannerImageWithAI, processBannerImageSmooth, getImageDimensions, needsProcessing } from "@/lib/bannerImageProcessor";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -243,7 +242,6 @@ const AdminBanners = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
-  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [showProcessingOption, setShowProcessingOption] = useState(false);
 
   const sensors = useSensors(
@@ -267,85 +265,16 @@ const AdminBanners = () => {
     }
   };
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      try {
-        // Check if image needs processing
-        const dimensions = await getImageDimensions(file);
-        const needsAdjustment = needsProcessing(dimensions.width, dimensions.height);
-        
-        if (needsAdjustment) {
-          // Automatically process the image
-          setIsProcessingImage(true);
-          toast.info(isRTL ? "جاري ضبط الصورة بالذكاء الاصطناعي..." : "AI is adjusting your image...");
-          
-          try {
-            // Try AI-powered processing first
-            const processed = await processBannerImageWithAI(file);
-            setImageFile(processed.file);
-            setImagePreview(processed.previewUrl);
-            toast.success(isRTL ? "تم ضبط الصورة بنجاح باستخدام AI!" : "Image adjusted successfully with AI!");
-          } catch (aiError) {
-            console.error("AI processing failed, trying fallback:", aiError);
-            toast.info(isRTL ? "جاري استخدام الطريقة البديلة..." : "Using fallback method...");
-            
-            try {
-              // Fallback to gradient-based processing
-              const processed = await processBannerImageSmooth(file);
-              setImageFile(processed.file);
-              setImagePreview(processed.previewUrl);
-              toast.success(isRTL ? "تم ضبط الصورة!" : "Image adjusted!");
-            } catch (fallbackError) {
-              // Final fallback to original
-              setImageFile(file);
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-              };
-              reader.readAsDataURL(file);
-              toast.error(isRTL ? "فشل في ضبط الصورة، تم استخدام الأصلية" : "Failed to adjust image, using original");
-            }
-          } finally {
-            setIsProcessingImage(false);
-          }
-        } else {
-          // Image is already correct aspect ratio
-          setImageFile(file);
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            setImagePreview(reader.result as string);
-          };
-          reader.readAsDataURL(file);
-        }
-      } catch (error) {
-        // Fallback to simple preview
-        setImageFile(file);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreview(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-  };
-
-  const handleReprocessImage = async () => {
-    if (!imageFile) return;
-    
-    setIsProcessingImage(true);
-    toast.info(isRTL ? "جاري إعادة ضبط الصورة بالذكاء الاصطناعي..." : "Re-processing image with AI...");
-    
-    try {
-      const processed = await processBannerImageWithAI(imageFile);
-      setImageFile(processed.file);
-      setImagePreview(processed.previewUrl);
-      toast.success(isRTL ? "تم ضبط الصورة بنجاح باستخدام AI!" : "Image adjusted successfully with AI!");
-    } catch (error) {
-      console.error("AI reprocessing failed:", error);
-      toast.error(isRTL ? "فشل في ضبط الصورة بالـ AI" : "Failed to adjust image with AI");
-    } finally {
-      setIsProcessingImage(false);
+      // No processing - use image as-is for dynamic display
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -616,42 +545,16 @@ const AdminBanners = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="image">{t.adminBanners.bannerImage}</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      disabled={isProcessingImage}
-                      className="flex-1"
-                    />
-                    {imageFile && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={handleReprocessImage}
-                        disabled={isProcessingImage}
-                        title={isRTL ? "إعادة ضبط الصورة" : "Re-adjust image"}
-                      >
-                        {isProcessingImage ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Wand2 className="h-4 w-4" />
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                  {isProcessingImage && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-2">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      {isRTL ? "جاري ضبط الصورة بالذكاء الاصطناعي..." : "AI is adjusting your image..."}
-                    </p>
-                  )}
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
                   <p className="text-xs text-muted-foreground">
                     {isRTL 
-                      ? "🤖 يتم توسيع الصورة وإكمالها تلقائياً باستخدام AI لتناسب أبعاد البنر (16:9)" 
-                      : "🤖 Images are automatically extended with AI to fit banner dimensions (16:9)"}
+                      ? "📐 يتم عرض الصورة بمقاسها الأصلي - لا يتم قصها أو تعديلها" 
+                      : "📐 Image is displayed at its original aspect ratio - no cropping or modification"}
                   </p>
                 </div>
 
@@ -883,66 +786,66 @@ const AdminBanners = () => {
                   <Eye className="h-4 w-4" />
                   <span>{t.common.view} {t.adminBanners.banner}</span>
                 </div>
-                <div className="relative overflow-hidden rounded-2xl border min-h-[120px] bg-muted">
+                <div className="relative overflow-hidden rounded-2xl border bg-muted">
                   {imagePreview ? (
-                    <img 
-                      src={imagePreview} 
-                      alt="Preview" 
-                      className={cn(
-                        "absolute inset-0 w-full h-full transition-transform duration-200",
-                        formData.image_fit === "cover" ? "object-cover" : "object-contain"
-                      )}
-                      style={{ 
-                        transform: `scale(${formData.image_scale / 100})`,
-                        transformOrigin: 'center center'
-                      }}
-                    />
+                    <>
+                      {/* Dynamic image that maintains aspect ratio */}
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="w-full h-auto object-contain transition-transform duration-200"
+                        style={{ 
+                          transform: `scale(${formData.image_scale / 100})`,
+                          transformOrigin: 'center center'
+                        }}
+                      />
+                      {/* Overlay */}
+                      <div 
+                        className="absolute inset-0 bg-black pointer-events-none"
+                        style={{ opacity: formData.overlay_opacity / 100 }}
+                      />
+                      {/* Content */}
+                      <div 
+                        className={cn(
+                          "absolute inset-0 p-5 flex flex-col",
+                          formData.text_position === "start" && "justify-start",
+                          formData.text_position === "center" && "justify-center",
+                          formData.text_position === "end" && "justify-end",
+                          formData.text_alignment === "start" && "items-start text-start",
+                          formData.text_alignment === "center" && "items-center text-center",
+                          formData.text_alignment === "end" && "items-end text-end"
+                        )}
+                      >
+                        <div className="space-y-2">
+                          {formData.show_title && (
+                            <h3 className="text-xl font-bold text-white drop-shadow-lg">
+                              {formData.title || t.adminBanners.bannerTitle}
+                            </h3>
+                          )}
+                          {formData.show_subtitle && formData.subtitle && (
+                            <p className="text-sm text-white/90 drop-shadow">
+                              {formData.subtitle}
+                            </p>
+                          )}
+                          {formData.show_button && formData.button_text && (
+                            <button 
+                              className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
+                              disabled
+                            >
+                              {formData.button_text}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </>
                   ) : (
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
+                    <div className="min-h-[120px] bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
                       <Image className="h-8 w-8 text-muted-foreground" />
                     </div>
                   )}
-                  {/* Overlay */}
-                  <div 
-                    className="absolute inset-0 bg-black"
-                    style={{ opacity: formData.overlay_opacity / 100 }}
-                  />
-                  {/* Content */}
-                  <div 
-                    className={cn(
-                      "relative z-10 p-5 flex flex-col min-h-[120px]",
-                      formData.text_position === "start" && "justify-start",
-                      formData.text_position === "center" && "justify-center",
-                      formData.text_position === "end" && "justify-end",
-                      formData.text_alignment === "start" && "items-start text-start",
-                      formData.text_alignment === "center" && "items-center text-center",
-                      formData.text_alignment === "end" && "items-end text-end"
-                    )}
-                  >
-                    <div className="space-y-2">
-                      {formData.show_title && (
-                        <h3 className="text-xl font-bold text-white drop-shadow-lg">
-                          {formData.title || t.adminBanners.bannerTitle}
-                        </h3>
-                      )}
-                      {formData.show_subtitle && formData.subtitle && (
-                        <p className="text-sm text-white/90 drop-shadow">
-                          {formData.subtitle}
-                        </p>
-                      )}
-                      {formData.show_button && formData.button_text && (
-                        <button 
-                          className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
-                          disabled
-                        >
-                          {formData.button_text}
-                        </button>
-                      )}
-                    </div>
-                  </div>
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
-                  {isRTL ? "هذه معاينة تقريبية لشكل البنر في الصفحة الرئيسية" : "This is an approximate preview of the banner on the homepage"}
+                  {isRTL ? "📐 الصورة تظهر بمقاسها الأصلي - البنر ديناميكي" : "📐 Image displayed at original aspect ratio - dynamic banner"}
                 </p>
               </div>
             </div>
