@@ -53,7 +53,6 @@ import { useAdminBanners } from "@/hooks/useAdminBanners";
 import { format, isAfter, isBefore } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import {
   DndContext,
   closestCenter,
@@ -242,7 +241,6 @@ const AdminBanners = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
-  const [showProcessingOption, setShowProcessingOption] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -268,7 +266,6 @@ const AdminBanners = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // No processing - use image as-is for dynamic display
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -407,19 +404,10 @@ const AdminBanners = () => {
             <h1 className="text-2xl font-bold text-foreground">{t.adminBanners.title}</h1>
             <p className="text-muted-foreground">{t.adminBanners.subtitle}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => window.open("/", "_blank")}
-            >
-              <ExternalLink className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-              {t.adminBanners.previewOnHomepage || "معاينة في الصفحة الرئيسية"}
-            </Button>
-            <Button onClick={() => handleOpenDialog()}>
-              <Plus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-              {t.adminBanners.addBanner}
-            </Button>
-          </div>
+          <Button onClick={() => handleOpenDialog()}>
+            <Plus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+            {t.adminBanners.addBanner}
+          </Button>
         </div>
 
         <Card>
@@ -551,11 +539,6 @@ const AdminBanners = () => {
                     accept="image/*"
                     onChange={handleImageChange}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {isRTL 
-                      ? "📐 يتم عرض الصورة بمقاسها الأصلي - لا يتم قصها أو تعديلها" 
-                      : "📐 Image is displayed at its original aspect ratio - no cropping or modification"}
-                  </p>
                 </div>
 
                 {/* Customization Controls */}
@@ -786,66 +769,66 @@ const AdminBanners = () => {
                   <Eye className="h-4 w-4" />
                   <span>{t.common.view} {t.adminBanners.banner}</span>
                 </div>
-                <div className="relative overflow-hidden rounded-2xl border bg-muted">
+                <div className="relative overflow-hidden rounded-2xl border min-h-[120px] bg-muted">
                   {imagePreview ? (
-                    <>
-                      {/* Dynamic image that maintains aspect ratio */}
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
-                        className="w-full h-auto object-contain transition-transform duration-200"
-                        style={{ 
-                          transform: `scale(${formData.image_scale / 100})`,
-                          transformOrigin: 'center center'
-                        }}
-                      />
-                      {/* Overlay */}
-                      <div 
-                        className="absolute inset-0 bg-black pointer-events-none"
-                        style={{ opacity: formData.overlay_opacity / 100 }}
-                      />
-                      {/* Content */}
-                      <div 
-                        className={cn(
-                          "absolute inset-0 p-5 flex flex-col",
-                          formData.text_position === "start" && "justify-start",
-                          formData.text_position === "center" && "justify-center",
-                          formData.text_position === "end" && "justify-end",
-                          formData.text_alignment === "start" && "items-start text-start",
-                          formData.text_alignment === "center" && "items-center text-center",
-                          formData.text_alignment === "end" && "items-end text-end"
-                        )}
-                      >
-                        <div className="space-y-2">
-                          {formData.show_title && (
-                            <h3 className="text-xl font-bold text-white drop-shadow-lg">
-                              {formData.title || t.adminBanners.bannerTitle}
-                            </h3>
-                          )}
-                          {formData.show_subtitle && formData.subtitle && (
-                            <p className="text-sm text-white/90 drop-shadow">
-                              {formData.subtitle}
-                            </p>
-                          )}
-                          {formData.show_button && formData.button_text && (
-                            <button 
-                              className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
-                              disabled
-                            >
-                              {formData.button_text}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </>
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className={cn(
+                        "absolute inset-0 w-full h-full transition-transform duration-200",
+                        formData.image_fit === "cover" ? "object-cover" : "object-contain"
+                      )}
+                      style={{ 
+                        transform: `scale(${formData.image_scale / 100})`,
+                        transformOrigin: 'center center'
+                      }}
+                    />
                   ) : (
-                    <div className="min-h-[120px] bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
                       <Image className="h-8 w-8 text-muted-foreground" />
                     </div>
                   )}
+                  {/* Overlay */}
+                  <div 
+                    className="absolute inset-0 bg-black"
+                    style={{ opacity: formData.overlay_opacity / 100 }}
+                  />
+                  {/* Content */}
+                  <div 
+                    className={cn(
+                      "relative z-10 p-5 flex flex-col min-h-[120px]",
+                      formData.text_position === "start" && "justify-start",
+                      formData.text_position === "center" && "justify-center",
+                      formData.text_position === "end" && "justify-end",
+                      formData.text_alignment === "start" && "items-start text-start",
+                      formData.text_alignment === "center" && "items-center text-center",
+                      formData.text_alignment === "end" && "items-end text-end"
+                    )}
+                  >
+                    <div className="space-y-2">
+                      {formData.show_title && (
+                        <h3 className="text-xl font-bold text-white drop-shadow-lg">
+                          {formData.title || t.adminBanners.bannerTitle}
+                        </h3>
+                      )}
+                      {formData.show_subtitle && formData.subtitle && (
+                        <p className="text-sm text-white/90 drop-shadow">
+                          {formData.subtitle}
+                        </p>
+                      )}
+                      {formData.show_button && formData.button_text && (
+                        <button 
+                          className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
+                          disabled
+                        >
+                          {formData.button_text}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
-                  {isRTL ? "📐 الصورة تظهر بمقاسها الأصلي - البنر ديناميكي" : "📐 Image displayed at original aspect ratio - dynamic banner"}
+                  {isRTL ? "هذه معاينة تقريبية لشكل البنر في الصفحة الرئيسية" : "This is an approximate preview of the banner on the homepage"}
                 </p>
               </div>
             </div>

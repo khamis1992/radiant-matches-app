@@ -1158,7 +1158,6 @@ export const en = {
     bannerCreated: "Banner created",
     bannerUpdated: "Banner updated",
     bannerDeleted: "Banner deleted",
-    previewOnHomepage: "Preview on Homepage",
   },
 
   // Admin Notifications

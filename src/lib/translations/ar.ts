@@ -1052,7 +1052,6 @@ export const ar = {
     bannerCreated: "تم إنشاء البنر",
     bannerUpdated: "تم تحديث البنر",
     bannerDeleted: "تم حذف البنر",
-    previewOnHomepage: "معاينة في الصفحة الرئيسية",
   },
 
   // Admin Notifications
