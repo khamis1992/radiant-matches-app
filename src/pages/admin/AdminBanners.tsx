@@ -5,7 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -70,6 +79,12 @@ interface BannerFormData {
   image_url: string;
   valid_from: Date | undefined;
   valid_until: Date | undefined;
+  show_title: boolean;
+  show_subtitle: boolean;
+  show_button: boolean;
+  text_position: string;
+  text_alignment: string;
+  overlay_opacity: number;
 }
 
 const initialFormData: BannerFormData = {
@@ -80,6 +95,12 @@ const initialFormData: BannerFormData = {
   image_url: "",
   valid_from: undefined,
   valid_until: undefined,
+  show_title: true,
+  show_subtitle: true,
+  show_button: true,
+  text_position: "start",
+  text_alignment: "start",
+  overlay_opacity: 50,
 };
 
 interface BannerData {
@@ -93,6 +114,14 @@ interface BannerData {
   display_order: number;
   valid_from: string | null;
   valid_until: string | null;
+  created_at: string;
+  updated_at: string;
+  show_title: boolean;
+  show_subtitle: boolean;
+  show_button: boolean;
+  text_position: string;
+  text_alignment: string;
+  overlay_opacity: number;
 }
 
 interface SortableRowProps {
@@ -251,6 +280,12 @@ const AdminBanners = () => {
         image_url: banner.image_url,
         valid_from: banner.valid_from ? new Date(banner.valid_from) : undefined,
         valid_until: banner.valid_until ? new Date(banner.valid_until) : undefined,
+        show_title: banner.show_title ?? true,
+        show_subtitle: banner.show_subtitle ?? true,
+        show_button: banner.show_button ?? true,
+        text_position: banner.text_position || "start",
+        text_alignment: banner.text_alignment || "start",
+        overlay_opacity: banner.overlay_opacity ?? 50,
       });
       setImagePreview(banner.image_url);
     } else {
@@ -294,6 +329,12 @@ const AdminBanners = () => {
         image_url: imageUrl,
         valid_from: formData.valid_from?.toISOString(),
         valid_until: formData.valid_until?.toISOString() || null,
+        show_title: formData.show_title,
+        show_subtitle: formData.show_subtitle,
+        show_button: formData.show_button,
+        text_position: formData.text_position,
+        text_alignment: formData.text_alignment,
+        overlay_opacity: formData.overlay_opacity,
       };
 
       if (editingBanner) {
@@ -425,197 +466,311 @@ const AdminBanners = () => {
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[700px]" dir={isRTL ? "rtl" : "ltr"}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-hidden" dir={isRTL ? "rtl" : "ltr"}>
           <DialogHeader>
             <DialogTitle>
               {editingBanner ? t.adminBanners.editBanner : t.adminBanners.addNewBanner}
             </DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-            {/* Form Fields */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">{t.adminBanners.titleRequired}</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, title: e.target.value }))
-                  }
-                  placeholder={t.adminBanners.titlePlaceholder}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="subtitle">{t.adminBanners.subtitleLabel}</Label>
-                <Input
-                  id="subtitle"
-                  value={formData.subtitle}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, subtitle: e.target.value }))
-                  }
-                  placeholder={t.adminBanners.subtitlePlaceholder}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="button_text">{t.adminBanners.buttonText}</Label>
-                <Input
-                  id="button_text"
-                  value={formData.button_text}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, button_text: e.target.value }))
-                  }
-                  placeholder={t.adminBanners.buttonTextPlaceholder}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="link_url">{t.adminBanners.linkUrl}</Label>
-                <Input
-                  id="link_url"
-                  value={formData.link_url}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, link_url: e.target.value }))
-                  }
-                  placeholder={t.adminBanners.linkUrlPlaceholder}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="image">{t.adminBanners.bannerImage}</Label>
-                <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-              </div>
-
-              {/* Scheduling */}
-              <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Clock className="h-4 w-4" />
-                  <span>{t.adminBanners.scheduling}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs">{t.adminBanners.startDate}</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start font-normal h-9 text-xs",
-                            !formData.valid_from && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className={cn("h-3 w-3", isRTL ? "ml-2" : "mr-2")} />
-                          {formData.valid_from
-                            ? format(formData.valid_from, "d MMM yyyy", { locale: dateLocale })
-                            : t.adminBanners.selectDate}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={formData.valid_from}
-                          onSelect={(date) =>
-                            setFormData((prev) => ({ ...prev, valid_from: date }))
-                          }
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">{t.adminBanners.endDate}</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start font-normal h-9 text-xs",
-                            !formData.valid_until && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className={cn("h-3 w-3", isRTL ? "ml-2" : "mr-2")} />
-                          {formData.valid_until
-                            ? format(formData.valid_until, "d MMM yyyy", { locale: dateLocale })
-                            : t.common.notAvailable}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={formData.valid_until}
-                          onSelect={(date) =>
-                            setFormData((prev) => ({ ...prev, valid_until: date }))
-                          }
-                          disabled={(date) =>
-                            formData.valid_from ? isBefore(date, formData.valid_from) : false
-                          }
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-                {formData.valid_until && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs h-7"
-                    onClick={() => setFormData((prev) => ({ ...prev, valid_until: undefined }))}
-                  >
-                    {t.common.remove} {t.adminBanners.endDate}
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Live Preview */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Eye className="h-4 w-4" />
-                <span>{t.common.view} {t.adminBanners.banner}</span>
-              </div>
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 border">
-                {imagePreview ? (
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
-                    className="absolute inset-0 w-full h-full object-cover opacity-50"
+          <ScrollArea className="max-h-[calc(90vh-140px)]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 px-1">
+              {/* Form Fields */}
+              <div className="space-y-4">
+                {/* Basic Info */}
+                <div className="space-y-2">
+                  <Label htmlFor="title">{t.adminBanners.titleRequired}</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, title: e.target.value }))
+                    }
+                    placeholder={t.adminBanners.titlePlaceholder}
                   />
-                ) : (
-                  <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                    <Image className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="subtitle">{t.adminBanners.subtitleLabel}</Label>
+                  <Input
+                    id="subtitle"
+                    value={formData.subtitle}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, subtitle: e.target.value }))
+                    }
+                    placeholder={t.adminBanners.subtitlePlaceholder}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="button_text">{t.adminBanners.buttonText}</Label>
+                  <Input
+                    id="button_text"
+                    value={formData.button_text}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, button_text: e.target.value }))
+                    }
+                    placeholder={t.adminBanners.buttonTextPlaceholder}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="link_url">{t.adminBanners.linkUrl}</Label>
+                  <Input
+                    id="link_url"
+                    value={formData.link_url}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, link_url: e.target.value }))
+                    }
+                    placeholder={t.adminBanners.linkUrlPlaceholder}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="image">{t.adminBanners.bannerImage}</Label>
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                </div>
+
+                {/* Customization Controls */}
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                  <h4 className="font-medium text-sm">{isRTL ? "تخصيص العناصر" : "Element Customization"}</h4>
+                  
+                  {/* Show/Hide Toggles */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "إظهار العنوان" : "Show Title"}</Label>
+                      <Switch
+                        checked={formData.show_title}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({ ...prev, show_title: checked }))
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "إظهار العنوان الفرعي" : "Show Subtitle"}</Label>
+                      <Switch
+                        checked={formData.show_subtitle}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({ ...prev, show_subtitle: checked }))
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "إظهار الزر" : "Show Button"}</Label>
+                      <Switch
+                        checked={formData.show_button}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({ ...prev, show_button: checked }))
+                        }
+                      />
+                    </div>
                   </div>
-                )}
-                <div className="relative z-10 p-5 flex items-center justify-between min-h-[120px]">
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-foreground">
-                      {formData.title || t.adminBanners.bannerTitle}
-                    </h3>
-                    {(formData.subtitle || !formData.title) && (
-                      <p className="text-sm text-muted-foreground">
-                        {formData.subtitle || t.adminBanners.subtitleLabel}
-                      </p>
-                    )}
-                  </div>
-                  {(formData.button_text || !formData.title) && (
-                    <button 
-                      className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
-                      disabled
+
+                  {/* Text Position */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">{isRTL ? "موقع النص" : "Text Position"}</Label>
+                    <Select
+                      value={formData.text_position}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, text_position: value }))
+                      }
                     >
-                      {formData.button_text || t.adminBanners.buttonText}
-                    </button>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="start">{isRTL ? "أعلى" : "Top"}</SelectItem>
+                        <SelectItem value="center">{isRTL ? "وسط" : "Center"}</SelectItem>
+                        <SelectItem value="end">{isRTL ? "أسفل" : "Bottom"}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Text Alignment */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">{isRTL ? "محاذاة النص" : "Text Alignment"}</Label>
+                    <Select
+                      value={formData.text_alignment}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, text_alignment: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="start">{isRTL ? "يمين" : "Left"}</SelectItem>
+                        <SelectItem value="center">{isRTL ? "وسط" : "Center"}</SelectItem>
+                        <SelectItem value="end">{isRTL ? "يسار" : "Right"}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Overlay Opacity */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "شفافية الخلفية" : "Overlay Opacity"}</Label>
+                      <span className="text-xs text-muted-foreground">{formData.overlay_opacity}%</span>
+                    </div>
+                    <Slider
+                      value={[formData.overlay_opacity]}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, overlay_opacity: value[0] }))
+                      }
+                      min={0}
+                      max={100}
+                      step={5}
+                    />
+                  </div>
+                </div>
+
+                {/* Scheduling */}
+                <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Clock className="h-4 w-4" />
+                    <span>{t.adminBanners.scheduling}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">{t.adminBanners.startDate}</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start font-normal h-9 text-xs",
+                              !formData.valid_from && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className={cn("h-3 w-3", isRTL ? "ml-2" : "mr-2")} />
+                            {formData.valid_from
+                              ? format(formData.valid_from, "d MMM yyyy", { locale: dateLocale })
+                              : t.adminBanners.selectDate}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={formData.valid_from}
+                            onSelect={(date) =>
+                              setFormData((prev) => ({ ...prev, valid_from: date }))
+                            }
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">{t.adminBanners.endDate}</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start font-normal h-9 text-xs",
+                              !formData.valid_until && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className={cn("h-3 w-3", isRTL ? "ml-2" : "mr-2")} />
+                            {formData.valid_until
+                              ? format(formData.valid_until, "d MMM yyyy", { locale: dateLocale })
+                              : t.common.notAvailable}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={formData.valid_until}
+                            onSelect={(date) =>
+                              setFormData((prev) => ({ ...prev, valid_until: date }))
+                            }
+                            disabled={(date) =>
+                              formData.valid_from ? isBefore(date, formData.valid_from) : false
+                            }
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                  {formData.valid_until && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-7"
+                      onClick={() => setFormData((prev) => ({ ...prev, valid_until: undefined }))}
+                    >
+                      {t.common.remove} {t.adminBanners.endDate}
+                    </Button>
                   )}
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground text-center">
-                {isRTL ? "هذه معاينة تقريبية لشكل البنر في الصفحة الرئيسية" : "This is an approximate preview of the banner on the homepage"}
-              </p>
+
+              {/* Live Preview */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Eye className="h-4 w-4" />
+                  <span>{t.common.view} {t.adminBanners.banner}</span>
+                </div>
+                <div className="relative overflow-hidden rounded-2xl border min-h-[200px]">
+                  {imagePreview ? (
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
+                      <Image className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
+                  {/* Overlay */}
+                  <div 
+                    className="absolute inset-0 bg-black"
+                    style={{ opacity: formData.overlay_opacity / 100 }}
+                  />
+                  {/* Content */}
+                  <div 
+                    className={cn(
+                      "relative z-10 p-5 flex flex-col min-h-[200px]",
+                      formData.text_position === "start" && "justify-start",
+                      formData.text_position === "center" && "justify-center",
+                      formData.text_position === "end" && "justify-end",
+                      formData.text_alignment === "start" && "items-start text-start",
+                      formData.text_alignment === "center" && "items-center text-center",
+                      formData.text_alignment === "end" && "items-end text-end"
+                    )}
+                  >
+                    <div className="space-y-2">
+                      {formData.show_title && (
+                        <h3 className="text-xl font-bold text-white drop-shadow-lg">
+                          {formData.title || t.adminBanners.bannerTitle}
+                        </h3>
+                      )}
+                      {formData.show_subtitle && formData.subtitle && (
+                        <p className="text-sm text-white/90 drop-shadow">
+                          {formData.subtitle}
+                        </p>
+                      )}
+                      {formData.show_button && formData.button_text && (
+                        <button 
+                          className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
+                          disabled
+                        >
+                          {formData.button_text}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  {isRTL ? "هذه معاينة تقريبية لشكل البنر في الصفحة الرئيسية" : "This is an approximate preview of the banner on the homepage"}
+                </p>
+              </div>
             </div>
-          </div>
+          </ScrollArea>
           <DialogFooter>
             <Button variant="outline" onClick={handleCloseDialog}>
               {t.common.cancel}
