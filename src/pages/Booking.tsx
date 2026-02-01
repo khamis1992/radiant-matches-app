@@ -354,13 +354,14 @@ const Booking = () => {
       newErrors.time = t.bookings.selectTimeError || "Please select a time";
     }
 
-    if (!addressDetails.area.trim()) {
+    // Only validate address if location type is client_home
+    if (selectedLocation === "client_home" && !addressDetails.area.trim()) {
       newErrors.location = t.bookings.enterAddress || "Please enter address details";
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [selectedDate, selectedTime, t.bookings]);
+  }, [selectedDate, selectedTime, selectedLocation, addressDetails.area, t.bookings]);
 
   const handleNextStep = useCallback(() => {
     if (step < 3) {
