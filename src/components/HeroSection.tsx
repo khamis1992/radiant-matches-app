@@ -41,35 +41,41 @@ export const HeroSection = () => {
         <div className="absolute inset-0 flex flex-col justify-end px-5 pb-8 md:px-8 md:pb-12 max-w-screen-xl mx-auto w-full">
            
            {/* Animated Text Content */}
-           <div className={`space-y-3 transition-all duration-500 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+           <div className={`space-y-4 transition-all duration-500 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               
               {/* Badge Pill */}
-              <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 w-fit">
-                 <Sparkles className="w-3 h-3 text-yellow-300 fill-yellow-300" />
-                 <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-amber-300/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-amber-200/20 w-fit">
+                 <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
+                 <span className={`text-[11px] font-semibold text-amber-100 uppercase tracking-[0.15em] ${isRTL ? 'font-[Tajawal]' : ''}`}>
                     {t.home.heroBadge || "Premium"}
                  </span>
               </div>
 
-              {/* Big Title */}
-              <h1 className="text-3xl font-bold text-white leading-tight md:text-5xl">
-                 {t.home.heroTitle1 || "Find Your"} <br/>
-                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-white">
-                    {t.home.heroTitle2 || "Perfect Artist"}
+              {/* Big Title - Editorial Style */}
+              <h1 className={`leading-[1.1] md:leading-[1.05] ${isRTL ? 'font-[Tajawal] text-4xl md:text-6xl font-extrabold' : 'font-[Playfair_Display] text-4xl md:text-5xl font-semibold italic'}`}>
+                 <span className="text-white drop-shadow-lg">
+                    {t.home.heroTitle1 || "Discover Your"}
+                 </span>
+                 <br/>
+                 <span className="bg-gradient-to-r from-amber-200 via-rose-200 to-white bg-clip-text text-transparent drop-shadow-lg">
+                    {t.home.heroTitle2 || "Perfect Look"}
                  </span>
               </h1>
               
               {/* Native-style Stats Row */}
-              <div className="flex items-center gap-3 pt-1">
-                 <div className="flex -space-x-2">
+              <div className="flex items-center gap-4 pt-2">
+                 <div className="flex -space-x-2.5">
                     {[1, 2, 3].map(i => (
-                       <div key={i} className="w-6 h-6 rounded-full border border-white bg-gray-300 overflow-hidden">
+                       <div key={i} className="w-7 h-7 rounded-full border-2 border-white/80 bg-gray-300 overflow-hidden shadow-md">
                           <img src={`https://i.pravatar.cc/100?img=${i + 15}`} alt="Artist" className="w-full h-full object-cover" />
                        </div>
                     ))}
                  </div>
-                 <div className="text-white/90 text-xs font-medium">
-                    <span className="font-bold">4.9</span> (2k+ Reviews)
+                 <div className="flex items-center gap-1.5">
+                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    <span className={`text-white/95 text-sm font-medium ${isRTL ? 'font-[Tajawal]' : ''}`}>
+                       <span className="font-bold">4.9</span> {isRTL ? "(2000+ تقييم)" : "(2k+ Reviews)"}
+                    </span>
                  </div>
               </div>
            </div>
