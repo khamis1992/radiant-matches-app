@@ -29,21 +29,6 @@ const ArtistAnalytics = () => {
   const [period, setPeriod] = useState<ReportPeriod>("30days");
   const [activeTab, setActiveTab] = useState("overview");
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
-        <AppHeader title={t.artistReports?.title || "Analytics"} style="modern" />
-        <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
-          <BarChart3 className="w-16 h-16 text-muted-foreground mb-4" />
-          <h2 className="text-lg font-semibold mb-2">{t.artistReports?.signIn || "Sign In"}</h2>
-          <p className="text-muted-foreground text-center mb-4">{t.artistReports?.signInToView || "Please sign in to view analytics"}</p>
-          <Button onClick={() => navigate("/auth")}>{t.artistReports?.signIn || "Sign In"}</Button>
-        </div>
-        <ArtistTabBar />
-      </div>
-    );
-  }
-
   const getStartDate = () => {
     const now = new Date();
     if (period === "7days") return subDays(now, 7);
@@ -52,7 +37,7 @@ const ArtistAnalytics = () => {
     return new Date(2020, 0, 1); // All time
   };
 
-  // Fetch earnings data
+  // Fetch earnings data - ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   const { data: earningsData, isLoading: earningsLoading } = useQuery({
     queryKey: ["artist-analytics-earnings", user?.id, period],
     queryFn: async () => {
@@ -180,6 +165,22 @@ const ArtistAnalytics = () => {
     "90days": isRTL ? "آخر 90 يوم" : "Last 90 Days",
     "all": isRTL ? "كل الوقت" : "All Time",
   };
+
+  // Conditional return AFTER all hooks have been called
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
+        <AppHeader title={t.artistReports?.title || "Analytics"} style="modern" />
+        <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
+          <BarChart3 className="w-16 h-16 text-muted-foreground mb-4" />
+          <h2 className="text-lg font-semibold mb-2">{t.artistReports?.signIn || "Sign In"}</h2>
+          <p className="text-muted-foreground text-center mb-4">{t.artistReports?.signInToView || "Please sign in to view analytics"}</p>
+          <Button onClick={() => navigate("/auth")}>{t.artistReports?.signIn || "Sign In"}</Button>
+        </div>
+        <ArtistTabBar />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
