@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glam App Banners</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        
+        .banner {
+            width: 800px;
+            height: 300px;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        
+        /* Banner 1: Discount */
+        .banner-1 {
+            background: linear-gradient(135deg, #e11d48 0%, #ec4899 50%, #be185d 100%);
+        }
+        
+        .banner-1::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        
+        .banner-1 .glow-1 {
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 250px;
+            height: 250px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            filter: blur(60px);
+        }
+        
+        .banner-1 .glow-2 {
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            width: 200px;
+            height: 200px;
+            background: rgba(251, 191, 36, 0.2);
+            border-radius: 50%;
+            filter: blur(50px);
+        }
+        
+        .banner-1 .content {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 60px;
+        }
+        
+        .banner-1 .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .banner-1 .badge span {
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .banner-1 h2 {
+            color: white;
+            font-size: 64px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .banner-1 p {
+            color: rgba(255,255,255,0.95);
+            font-size: 22px;
+            font-weight: 500;
+        }
+        
+        .banner-1 .cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            color: #e11d48;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .banner-1 .icon {
+            position: absolute;
+            right: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 140px;
+            height: 140px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            border: 2px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .banner-1 .icon svg {
+            width: 70px;
+            height: 70px;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        /* Banner 2: Bridal */
+        .banner-2 {
+            background: linear-gradient(135deg, #fef3c7 0%, #ffedd5 50%, #fce7f3 100%);
+        }
+        
+        .banner-2 .glow-1 {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            background: rgba(251, 191, 36, 0.25);
+            border-radius: 50%;
+            filter: blur(80px);
+        }
+        
+        .banner-2 .glow-2 {
+            position: absolute;
+            bottom: -80px;
+            left: -80px;
+            width: 300px;
+            height: 300px;
+            background: rgba(244, 114, 182, 0.2);
+            border-radius: 50%;
+            filter: blur(60px);
+        }
+        
+        .banner-2 .content {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 60px;
+            gap: 40px;
+        }
+        
+        .banner-2 .icon-box {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.4);
+        }
+        
+        .banner-2 .icon-box svg {
+            width: 60px;
+            height: 60px;
+            color: white;
+        }
+        
+        .banner-2 .text-content {
+            flex: 1;
+        }
+        
+        .banner-2 .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(251, 191, 36, 0.2);
+            padding: 8px 16px;
+            border-radius: 50px;
+            margin-bottom: 16px;
+        }
+        
+        .banner-2 .badge span {
+            color: #92400e;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .banner-2 h2 {
+            color: #1f2937;
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+        
+        .banner-2 p {
+            color: #6b7280;
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        
+        .banner-2 .tags {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .banner-2 .tag {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .banner-2 .tag-1 {
+            background: rgba(251, 191, 36, 0.2);
+            color: #92400e;
+        }
+        
+        .banner-2 .tag-2 {
+            background: rgba(244, 114, 182, 0.15);
+            color: #be185d;
+        }
+        
+        .banner-2 .arrow {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .banner-2 .arrow svg {
+            width: 24px;
+            height: 24px;
+            color: #f59e0b;
+        }
+        
+        /* Banner 3: Quick Book */
+        .banner-3 {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%);
+        }
+        
+        .banner-3::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        
+        .banner-3 .glow-1 {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: rgba(236, 72, 153, 0.15);
+            border-radius: 50%;
+            filter: blur(100px);
+        }
+        
+        .banner-3 .glow-2 {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 300px;
+            height: 300px;
+            background: rgba(251, 191, 36, 0.15);
+            border-radius: 50%;
+            filter: blur(80px);
+        }
+        
+        .banner-3 .content {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 60px;
+            justify-content: space-between;
+        }
+        
+        .banner-3 .text-content {
+            flex: 1;
+        }
+        
+        .banner-3 .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(236, 72, 153, 0.2);
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            padding: 8px 16px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+        }
+        
+        .banner-3 .badge .pulse {
+            width: 8px;
+            height: 8px;
+            background: #ec4899;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+        }
+        
+        .banner-3 .badge span {
+            color: #ec4899;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .banner-3 h2 {
+            color: white;
+            font-size: 52px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .banner-3 h2 svg {
+            width: 40px;
+            height: 40px;
+            color: #fbbf24;
+            fill: #fbbf24;
+        }
+        
+        .banner-3 p {
+            color: rgba(255,255,255,0.6);
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 30px;
+        }
+        
+        .banner-3 .stats {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .banner-3 .stat {
+            text-align: center;
+        }
+        
+        .banner-3 .stat-value {
+            display: block;
+            color: white;
+            font-size: 32px;
+            font-weight: 800;
+        }
+        
+        .banner-3 .stat-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .banner-3 .stat:nth-child(2) .stat-value {
+            color: #ec4899;
+        }
+        
+        .banner-3 .stat:nth-child(3) .stat-value {
+            color: #fbbf24;
+        }
+        
+        .banner-3 .divider {
+            width: 1px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .banner-3 .cta {
+            background: #ec4899;
+            color: white;
+            padding: 18px 36px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 10px 40px rgba(236, 72, 153, 0.4);
+        }
+        
+        .banner-3 .bottom-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ec4899, #fbbf24, #ec4899);
+        }
+        
+        .instructions {
+            margin-top: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .instructions h3 {
+            color: #1f2937;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        .instructions ol {
+            color: #4b5563;
+            font-size: 16px;
+            line-height: 1.8;
+            padding-left: 24px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .instructions code {
+            background: #f3f4f6;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Banner 1: 20% OFF Discount -->
+    <div class="banner banner-1" id="banner1">
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+        <div class="content">
+            <div>
+                <div class="badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span>Limited Offer</span>
+                </div>
+                <h2>20% OFF</h2>
+                <p>On your first booking</p>
+                <div class="cta">
+                    Book Now
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                </div>
+            </div>
+            <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="19" y1="5" x2="5" y2="19"></line>
+                    <circle cx="6.5" cy="6.5" r="2.5"></circle>
+                    <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner 2: Bridal Makeup -->
+    <div class="banner banner-2" id="banner2">
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+        <div class="content">
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                </svg>
+            </div>
+            <div class="text-content">
+                <div class="badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span>Premium</span>
+                </div>
+                <h2>Bridal Makeup</h2>
+                <p>Look perfect on your special day</p>
+                <div class="tags">
+                    <span class="tag tag-1">Professional Artists</span>
+                    <span class="tag tag-2">Home Service</span>
+                </div>
+            </div>
+            <div class="arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner 3: Quick Book -->
+    <div class="banner banner-3" id="banner3">
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+        <div class="content">
+            <div class="text-content">
+                <div class="badge">
+                    <div class="pulse"></div>
+                    <span>Express</span>
+                </div>
+                <h2>
+                    Quick Book
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </h2>
+                <p>Same-day appointments available</p>
+                <div class="stats">
+                    <div class="stat">
+                        <span class="stat-value">50+</span>
+                        <span class="stat-label">Artists</span>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="stat">
+                        <span class="stat-value">24h</span>
+                        <span class="stat-label">Available</span>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="stat">
+                        <span class="stat-value">4.9</span>
+                        <span class="stat-label">Rating</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cta">Book Now</div>
+        </div>
+        <div class="bottom-line"></div>
+    </div>
+
+    <div class="instructions">
+        <h3>How to use these banners:</h3>
+        <ol>
+            <li><strong>Screenshot each banner</strong> - Right-click on each banner and select "Save image as" (or use screenshot tool)</li>
+            <li><strong>Go to Admin Panel</strong> - Navigate to Admin → Settings → Banners</li>
+            <li><strong>Upload Images</strong> - Click "Add Banner" and upload each image</li>
+            <li><strong>Configure Settings:</strong>
+                <ul style="margin-top: 8px; margin-left: 20px;">
+                    <li>Banner 1 (Discount): Title="20% OFF", Subtitle="On your first booking", Button="Book Now", Link="/offers"</li>
+                    <li>Banner 2 (Bridal): Title="Bridal Makeup", Subtitle="Look perfect on your special day", Button="Explore", Link="/bridal"</li>
+                    <li>Banner 3 (Quick): Title="Quick Book", Subtitle="Same-day appointments available", Button="Book Now", Link="/quick-book"</li>
+                </ul>
+            </li>
+            <li><strong>Set Active Dates</strong> - Choose when each banner should be displayed</li>
+            <li><strong>Save and Activate</strong> - Enable the banners</li>
+        </ol>
+    </div>
+
+    <script>
+        // Optional: Auto-save banners as images
+        function downloadBanner(bannerId, filename) {
+            const banner = document.getElementById(bannerId);
+            // Note: In a real implementation, you would use html2canvas or similar
+            // For now, users should screenshot manually
+        }
+        
+        // Add click handlers for download
+        document.querySelectorAll('.banner').forEach((banner, index) => {
+            banner.addEventListener('click', () => {
+                alert(`Right-click this banner and select "Save image as" or use screenshot tool to save banner-${index + 1}.png`);
+            });
+            banner.style.cursor = 'pointer';
+        });
+    </script>
+</body>
+</html>
