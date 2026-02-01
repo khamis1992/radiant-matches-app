@@ -461,6 +461,7 @@ export const ar = {
     street: "الشارع",
     building: "رقم المبنى",
     addressDetails: "توجيهات إضافية",
+    enterAddress: "يرجى إدخال تفاصيل العنوان",
   },
 
   // Artist
