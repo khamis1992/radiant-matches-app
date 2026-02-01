@@ -85,6 +85,7 @@ interface BannerFormData {
   text_position: string;
   text_alignment: string;
   overlay_opacity: number;
+  image_scale: number;
 }
 
 const initialFormData: BannerFormData = {
@@ -101,6 +102,7 @@ const initialFormData: BannerFormData = {
   text_position: "start",
   text_alignment: "start",
   overlay_opacity: 50,
+  image_scale: 100,
 };
 
 interface BannerData {
@@ -122,6 +124,7 @@ interface BannerData {
   text_position: string;
   text_alignment: string;
   overlay_opacity: number;
+  image_scale: number;
 }
 
 interface SortableRowProps {
@@ -286,6 +289,7 @@ const AdminBanners = () => {
         text_position: banner.text_position || "start",
         text_alignment: banner.text_alignment || "start",
         overlay_opacity: banner.overlay_opacity ?? 50,
+        image_scale: banner.image_scale ?? 100,
       });
       setImagePreview(banner.image_url);
     } else {
@@ -335,6 +339,7 @@ const AdminBanners = () => {
         text_position: formData.text_position,
         text_alignment: formData.text_alignment,
         overlay_opacity: formData.overlay_opacity,
+        image_scale: formData.image_scale,
       };
 
       if (editingBanner) {
@@ -622,6 +627,28 @@ const AdminBanners = () => {
                       step={5}
                     />
                   </div>
+
+                  {/* Image Scale/Zoom */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "حجم الصورة (تكبير/تصغير)" : "Image Scale (Zoom)"}</Label>
+                      <span className="text-xs text-muted-foreground">{formData.image_scale}%</span>
+                    </div>
+                    <Slider
+                      value={[formData.image_scale]}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, image_scale: value[0] }))
+                      }
+                      min={50}
+                      max={200}
+                      step={5}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {isRTL 
+                        ? "50% = تصغير الصورة لإظهارها كاملة، 200% = تكبير الصورة" 
+                        : "50% = shrink image to show full, 200% = zoom in"}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Scheduling */}
@@ -719,7 +746,11 @@ const AdminBanners = () => {
                     <img 
                       src={imagePreview} 
                       alt="Preview" 
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-200"
+                      style={{ 
+                        transform: `scale(${formData.image_scale / 100})`,
+                        transformOrigin: 'center center'
+                      }}
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
