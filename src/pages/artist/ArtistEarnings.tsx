@@ -373,8 +373,14 @@ const ArtistEarnings = () => {
               </div>
             )}
 
-            {/* Monthly Comparison */}
-            <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+            {/* Monthly Comparison - Clickable to Analytics */}
+            <div 
+              className="bg-card rounded-2xl border border-border p-4 shadow-sm cursor-pointer hover:shadow-md hover:border-primary/30 transition-all duration-200 active:scale-[0.98]"
+              onClick={() => navigate("/artist-analytics")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && navigate("/artist-analytics")}
+            >
               <h3 className="font-semibold text-foreground mb-3">{t.earnings.thisMonth}</h3>
               <div className="flex items-end justify-between">
                 <div>
