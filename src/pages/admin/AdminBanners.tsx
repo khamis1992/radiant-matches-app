@@ -48,11 +48,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink, Eye, CalendarIcon, Clock } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink, Eye, CalendarIcon, Clock, Wand2, Loader2 } from "lucide-react";
 import { useAdminBanners } from "@/hooks/useAdminBanners";
 import { format, isAfter, isBefore } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { processBannerImageSmooth, getImageDimensions, needsProcessing } from "@/lib/bannerImageProcessor";
+import { toast } from "sonner";
 import {
   DndContext,
   closestCenter,
@@ -241,6 +243,8 @@ const AdminBanners = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [showProcessingOption, setShowProcessingOption] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -263,15 +267,72 @@ const AdminBanners = () => {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Check if image needs processing
+        const dimensions = await getImageDimensions(file);
+        const needsAdjustment = needsProcessing(dimensions.width, dimensions.height);
+        
+        if (needsAdjustment) {
+          // Automatically process the image
+          setIsProcessingImage(true);
+          toast.info(isRTL ? "جاري ضبط الصورة تلقائياً..." : "Auto-adjusting image...");
+          
+          try {
+            const processed = await processBannerImageSmooth(file);
+            setImageFile(processed.file);
+            setImagePreview(processed.previewUrl);
+            toast.success(isRTL ? "تم ضبط الصورة بنجاح!" : "Image adjusted successfully!");
+          } catch (error) {
+            // Fallback to original if processing fails
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+            toast.error(isRTL ? "فشل في ضبط الصورة، تم استخدام الأصلية" : "Failed to adjust image, using original");
+          } finally {
+            setIsProcessingImage(false);
+          }
+        } else {
+          // Image is already correct aspect ratio
+          setImageFile(file);
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setImagePreview(reader.result as string);
+          };
+          reader.readAsDataURL(file);
+        }
+      } catch (error) {
+        // Fallback to simple preview
+        setImageFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  const handleReprocessImage = async () => {
+    if (!imageFile) return;
+    
+    setIsProcessingImage(true);
+    toast.info(isRTL ? "جاري إعادة ضبط الصورة..." : "Re-processing image...");
+    
+    try {
+      const processed = await processBannerImageSmooth(imageFile);
+      setImageFile(processed.file);
+      setImagePreview(processed.previewUrl);
+      toast.success(isRTL ? "تم ضبط الصورة بنجاح!" : "Image adjusted successfully!");
+    } catch (error) {
+      toast.error(isRTL ? "فشل في ضبط الصورة" : "Failed to adjust image");
+    } finally {
+      setIsProcessingImage(false);
     }
   };
 
@@ -542,12 +603,43 @@ const AdminBanners = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="image">{t.adminBanners.bannerImage}</Label>
-                  <Input
-                    id="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      disabled={isProcessingImage}
+                      className="flex-1"
+                    />
+                    {imageFile && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={handleReprocessImage}
+                        disabled={isProcessingImage}
+                        title={isRTL ? "إعادة ضبط الصورة" : "Re-adjust image"}
+                      >
+                        {isProcessingImage ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                  {isProcessingImage && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      {isRTL ? "جاري ضبط الصورة تلقائياً بنسبة 16:9..." : "Auto-adjusting image to 16:9 ratio..."}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {isRTL 
+                      ? "💡 يتم ضبط الصورة تلقائياً لتناسب أبعاد البنر (16:9)" 
+                      : "💡 Images are automatically adjusted to fit banner dimensions (16:9)"}
+                  </p>
                 </div>
 
                 {/* Customization Controls */}
