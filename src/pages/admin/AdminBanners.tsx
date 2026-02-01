@@ -53,7 +53,7 @@ import { useAdminBanners } from "@/hooks/useAdminBanners";
 import { format, isAfter, isBefore } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { processBannerImageSmooth, getImageDimensions, needsProcessing } from "@/lib/bannerImageProcessor";
+import { processBannerImageWithAI, processBannerImageSmooth, getImageDimensions, needsProcessing } from "@/lib/bannerImageProcessor";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -278,22 +278,34 @@ const AdminBanners = () => {
         if (needsAdjustment) {
           // Automatically process the image
           setIsProcessingImage(true);
-          toast.info(isRTL ? "جاري ضبط الصورة تلقائياً..." : "Auto-adjusting image...");
+          toast.info(isRTL ? "جاري ضبط الصورة بالذكاء الاصطناعي..." : "AI is adjusting your image...");
           
           try {
-            const processed = await processBannerImageSmooth(file);
+            // Try AI-powered processing first
+            const processed = await processBannerImageWithAI(file);
             setImageFile(processed.file);
             setImagePreview(processed.previewUrl);
-            toast.success(isRTL ? "تم ضبط الصورة بنجاح!" : "Image adjusted successfully!");
-          } catch (error) {
-            // Fallback to original if processing fails
-            setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-            toast.error(isRTL ? "فشل في ضبط الصورة، تم استخدام الأصلية" : "Failed to adjust image, using original");
+            toast.success(isRTL ? "تم ضبط الصورة بنجاح باستخدام AI!" : "Image adjusted successfully with AI!");
+          } catch (aiError) {
+            console.error("AI processing failed, trying fallback:", aiError);
+            toast.info(isRTL ? "جاري استخدام الطريقة البديلة..." : "Using fallback method...");
+            
+            try {
+              // Fallback to gradient-based processing
+              const processed = await processBannerImageSmooth(file);
+              setImageFile(processed.file);
+              setImagePreview(processed.previewUrl);
+              toast.success(isRTL ? "تم ضبط الصورة!" : "Image adjusted!");
+            } catch (fallbackError) {
+              // Final fallback to original
+              setImageFile(file);
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+              };
+              reader.readAsDataURL(file);
+              toast.error(isRTL ? "فشل في ضبط الصورة، تم استخدام الأصلية" : "Failed to adjust image, using original");
+            }
           } finally {
             setIsProcessingImage(false);
           }
@@ -322,15 +334,16 @@ const AdminBanners = () => {
     if (!imageFile) return;
     
     setIsProcessingImage(true);
-    toast.info(isRTL ? "جاري إعادة ضبط الصورة..." : "Re-processing image...");
+    toast.info(isRTL ? "جاري إعادة ضبط الصورة بالذكاء الاصطناعي..." : "Re-processing image with AI...");
     
     try {
-      const processed = await processBannerImageSmooth(imageFile);
+      const processed = await processBannerImageWithAI(imageFile);
       setImageFile(processed.file);
       setImagePreview(processed.previewUrl);
-      toast.success(isRTL ? "تم ضبط الصورة بنجاح!" : "Image adjusted successfully!");
+      toast.success(isRTL ? "تم ضبط الصورة بنجاح باستخدام AI!" : "Image adjusted successfully with AI!");
     } catch (error) {
-      toast.error(isRTL ? "فشل في ضبط الصورة" : "Failed to adjust image");
+      console.error("AI reprocessing failed:", error);
+      toast.error(isRTL ? "فشل في ضبط الصورة بالـ AI" : "Failed to adjust image with AI");
     } finally {
       setIsProcessingImage(false);
     }
@@ -632,13 +645,13 @@ const AdminBanners = () => {
                   {isProcessingImage && (
                     <p className="text-xs text-muted-foreground flex items-center gap-2">
                       <Loader2 className="h-3 w-3 animate-spin" />
-                      {isRTL ? "جاري ضبط الصورة تلقائياً بنسبة 16:9..." : "Auto-adjusting image to 16:9 ratio..."}
+                      {isRTL ? "جاري ضبط الصورة بالذكاء الاصطناعي..." : "AI is adjusting your image..."}
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground">
                     {isRTL 
-                      ? "💡 يتم ضبط الصورة تلقائياً لتناسب أبعاد البنر (16:9)" 
-                      : "💡 Images are automatically adjusted to fit banner dimensions (16:9)"}
+                      ? "🤖 يتم توسيع الصورة وإكمالها تلقائياً باستخدام AI لتناسب أبعاد البنر (16:9)" 
+                      : "🤖 Images are automatically extended with AI to fit banner dimensions (16:9)"}
                   </p>
                 </div>
 
