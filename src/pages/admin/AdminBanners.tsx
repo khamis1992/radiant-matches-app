@@ -404,10 +404,19 @@ const AdminBanners = () => {
             <h1 className="text-2xl font-bold text-foreground">{t.adminBanners.title}</h1>
             <p className="text-muted-foreground">{t.adminBanners.subtitle}</p>
           </div>
-          <Button onClick={() => handleOpenDialog()}>
-            <Plus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-            {t.adminBanners.addBanner}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => window.open("/", "_blank")}
+            >
+              <ExternalLink className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+              {t.adminBanners.previewOnHomepage || "معاينة في الصفحة الرئيسية"}
+            </Button>
+            <Button onClick={() => handleOpenDialog()}>
+              <Plus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+              {t.adminBanners.addBanner}
+            </Button>
+          </div>
         </div>
 
         <Card>
