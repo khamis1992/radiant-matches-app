@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glam Banners with Images</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        
+        .banner {
+            width: 800px;
+            height: 320px;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        
+        /* Banner 1: First Order Discount */
+        .banner-1 {
+            background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%);
+        }
+        
+        .banner-1 .image-section {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=600&h=400&fit=crop') center/cover;
+        }
+        
+        .banner-1 .image-section::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, #fce7f3 0%, transparent 40%);
+        }
+        
+        .banner-1 .content {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            width: 55%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 50px;
+        }
+        
+        .banner-1 .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #be185d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: fit-content;
+            margin-bottom: 20px;
+        }
+        
+        .banner-1 h2 {
+            color: #831843;
+            font-size: 52px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        
+        .banner-1 p {
+            color: #9d174d;
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .banner-1 .sub-text {
+            color: #be185d;
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 24px;
+        }
+        
+        .banner-1 .cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #be185d;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            width: fit-content;
+            box-shadow: 0 10px 30px rgba(190, 24, 93, 0.3);
+        }
+        
+        /* Banner 2: Bridal Collection */
+        .banner-2 {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+        
+        .banner-2 .image-section {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 45%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1595956553060-8a9304130773?w=600&h=400&fit=crop') center/cover;
+        }
+        
+        .banner-2 .image-section::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to left, #fffbeb 0%, transparent 50%);
+        }
+        
+        .banner-2 .content {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            width: 60%;
+            margin-left: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 50px;
+            text-align: right;
+        }
+        
+        .banner-2 .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #d97706;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: fit-content;
+            margin-left: auto;
+            margin-bottom: 20px;
+        }
+        
+        .banner-2 h2 {
+            color: #92400e;
+            font-size: 44px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+        
+        .banner-2 p {
+            color: #b45309;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        
+        .banner-2 .features {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-bottom: 24px;
+        }
+        
+        .banner-2 .feature {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(217, 119, 6, 0.15);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #92400e;
+        }
+        
+        .banner-2 .cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #d97706;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            width: fit-content;
+            margin-left: auto;
+            box-shadow: 0 10px 30px rgba(217, 119, 6, 0.3);
+        }
+        
+        /* Banner 3: Express Booking */
+        .banner-3 {
+            background: #1f2937;
+        }
+        
+        .banner-3 .image-section {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 55%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=600&h=400&fit=crop') center/cover;
+            opacity: 0.9;
+        }
+        
+        .banner-3 .image-section::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, #1f2937 0%, rgba(31, 41, 55, 0.8) 30%, transparent 60%);
+        }
+        
+        .banner-3 .content {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 50px;
+        }
+        
+        .banner-3 .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ec4899;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: fit-content;
+            margin-bottom: 20px;
+        }
+        
+        .banner-3 h2 {
+            color: white;
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+        
+        .banner-3 p {
+            color: rgba(255,255,255,0.7);
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+        
+        .banner-3 .stats {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+        
+        .banner-3 .stat {
+            text-align: center;
+        }
+        
+        .banner-3 .stat-value {
+            display: block;
+            color: #ec4899;
+            font-size: 28px;
+            font-weight: 800;
+        }
+        
+        .banner-3 .stat-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .banner-3 .cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #ec4899;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            width: fit-content;
+            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.3);
+        }
+        
+        .instructions {
+            margin-top: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .instructions h3 {
+            color: #1f2937;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        .instructions ol {
+            color: #4b5563;
+            font-size: 16px;
+            line-height: 1.8;
+            padding-left: 24px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .instructions strong {
+            color: #be185d;
+        }
+        
+        .note {
+            background: #fef3c7;
+            border-left: 4px solid #d97706;
+            padding: 16px 20px;
+            margin-top: 20px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .note p {
+            color: #92400e;
+            font-size: 14px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Banner 1: First Order Discount with Makeup Image -->
+    <div class="banner banner-1" id="banner1">
+        <div class="image-section"></div>
+        <div class="content">
+            <div class="badge">Welcome Offer</div>
+            <h2>20% OFF</h2>
+            <p>Your First Booking</p>
+            <p class="sub-text">Discover top beauty artists near you</p>
+            <div class="cta">Book Now →</div>
+        </div>
+    </div>
+
+    <!-- Banner 2: Bridal Collection with Bride Image -->
+    <div class="banner banner-2" id="banner2">
+        <div class="image-section"></div>
+        <div class="content">
+            <div class="badge">Premium Service</div>
+            <h2>Bridal<br>Collection</h2>
+            <p>Look stunning on your special day</p>
+            <div class="features">
+                <div class="feature">✓ Expert Artists</div>
+                <div class="feature">✓ Home Service</div>
+            </div>
+            <div class="cta">Explore →</div>
+        </div>
+    </div>
+
+    <!-- Banner 3: Express Booking with Professional Image -->
+    <div class="banner banner-3" id="banner3">
+        <div class="image-section"></div>
+        <div class="content">
+            <div class="badge">Express</div>
+            <h2>Quick<br>Booking</h2>
+            <p>Same-day appointments available</p>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-value">50+</span>
+                    <span class="stat-label">Artists</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">24h</span>
+                    <span class="stat-label">Service</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">4.9</span>
+                    <span class="stat-label">Rating</span>
+                </div>
+            </div>
+            <div class="cta">Book Now →</div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h3>How to Export These Banners:</h3>
+        <ol>
+            <li><strong>Open this file in browser</strong> - Double-click the file or open with browser</li>
+            <li><strong>Wait for images to load</strong> - The images are from Unsplash and will load automatically</li>
+            <li><strong>Take screenshot of each banner:</strong>
+                <ul style="margin-top: 8px; margin-left: 20px;">
+                    <li><strong>Windows:</strong> Use Snipping Tool (Win+Shift+S) and select each banner</li>
+                    <li><strong>Mac:</strong> Press Cmd+Shift+4 and drag to select</li>
+                    <li><strong>Browser:</strong> Press F12 → Elements tab → Right-click banner div → "Capture node screenshot"</li>
+                </ul>
+            </li>
+            <li><strong>Save as PNG:</strong> Save each with names:
+                <ul style="margin-top: 8px; margin-left: 20px;">
+                    <li><code>banner-1-first-order.png</code></li>
+                    <li><code>banner-2-bridal.png</code></li>
+                    <li><code>banner-3-express.png</code></li>
+                </ul>
+            </li>
+            <li><strong>Upload to Admin Panel:</strong> Go to Admin → Settings → Banners and upload each image</li>
+        </ol>
+        
+        <div class="note">
+            <p><strong>Tip:</strong> The images used are high-quality photos from Unsplash showing real makeup artists and brides. You can replace them with your own images by editing the CSS background URLs.</p>
+        </div>
+    </div>
+
+    <script>
+        // Add click handlers to show save instructions
+        document.querySelectorAll('.banner').forEach((banner, index) => {
+            banner.addEventListener('click', () => {
+                alert(`Banner ${index + 1}: Use screenshot tool to save this banner as PNG`);
+            });
+            banner.style.cursor = 'pointer';
+        });
+    </script>
+</body>
+</html>

@@ -1,135 +1,222 @@
-# Glam App Banners
+# Glam App Banners with Images
 
-## 3 Professional Banners Ready for Upload
+## 3 Professional Banners with Real Photos
 
-### 📁 Files Included
-- `banners-preview.html` - Interactive preview of all 3 banners
-- `banner-1-philosophy.md` - Design philosophy document
+### 📸 Banner Designs with Images
 
-### 🎨 Banner Designs
+All banners now include **real photos** from Unsplash showing:
+- Professional makeup artists at work
+- Beautiful bridal makeup
+- Beauty and elegance
 
-#### Banner 1: Discount Banner (20% OFF)
+### 🎨 Banner 1: First Order Discount
+- **Image**: Professional makeup artist applying makeup
 - **Colors**: Rose/Pink gradient
-- **Style**: Bold, energetic, promotional
-- **Best for**: First-time user offers
-- **Dimensions**: 800x300px
+- **Text**: "20% OFF - Your First Booking"
+- **Style**: Welcoming, promotional
 
-#### Banner 2: Bridal Services
-- **Colors**: Amber/Gold with soft pastels
+### 🎨 Banner 2: Bridal Collection  
+- **Image**: Beautiful bride with makeup
+- **Colors**: Amber/Gold gradient
+- **Text**: "Bridal Collection"
 - **Style**: Elegant, premium, feminine
-- **Best for**: Bridal makeup services
-- **Dimensions**: 800x300px
 
-#### Banner 3: Quick Book
-- **Colors**: Dark mode with neon accents
-- **Style**: Modern, tech-focused, dynamic
-- **Best for**: Express booking service
-- **Dimensions**: 800x300px
+### 🎨 Banner 3: Express Booking
+- **Image**: Professional makeup tools/artist
+- **Colors**: Dark theme with pink accents
+- **Text**: "Quick Booking"
+- **Style**: Modern, professional, trustworthy
 
-### 📸 How to Export
+---
 
-1. **Open the preview file**:
-   ```bash
-   open public/banners/banners-preview.html
-   # or
-   start public/banners/banners-preview.html
-   ```
+## 📱 How to Export Banners
 
-2. **Screenshot each banner**:
-   - Windows: Use Snipping Tool or Snip & Sketch
-   - Mac: Press Cmd+Shift+4
-   - Or use browser dev tools (F12 → Elements → Right-click → Capture node screenshot)
+### Step 1: Open the HTML File
+```bash
+# Navigate to the banners folder
+cd public/banners
 
-3. **Save as PNG** with names:
-   - `banner-1-discount.png`
-   - `banner-2-bridal.png`
-   - `banner-3-quickbook.png`
+# Open in browser
+open banners-with-images.html
+# or on Windows:
+start banners-with-images.html
+```
 
-### 🚀 Upload to Admin Panel
+### Step 2: Wait for Images to Load
+The images are loaded from Unsplash (high-quality stock photos). Make sure you have internet connection and wait for images to fully load.
 
-1. Go to **Admin Dashboard** → **Settings** → **Banners**
-2. Click **"Add Banner"**
-3. Upload each image and configure:
+### Step 3: Screenshot Each Banner
 
-| Banner | Title | Subtitle | Button Text | Link URL |
-|--------|-------|----------|-------------|----------|
-| 1 | 20% OFF | On your first booking | Book Now | /offers |
-| 2 | Bridal Makeup | Look perfect on your special day | Explore | /bridal |
-| 3 | Quick Book | Same-day appointments available | Book Now | /quick-book |
+#### Option A: Browser DevTools (Recommended)
+1. Press `F12` to open Developer Tools
+2. Click the element picker (top-left icon)
+3. Click on the banner you want to capture
+4. Right-click on the HTML element in the Elements panel
+5. Select "Capture node screenshot"
+6. Save as PNG
 
-4. Set **Valid From** and **Valid Until** dates
-5. Enable the banners
-6. Save changes
+#### Option B: Snipping Tool
+**Windows:**
+- Press `Win + Shift + S`
+- Drag to select the banner area
+- Save the screenshot
 
-### 📝 Admin Panel Settings
+**Mac:**
+- Press `Cmd + Shift + 4`
+- Drag to select the banner area
+- Screenshot saves to desktop
+
+### Step 4: Save with Proper Names
+Save each banner as:
+- `banner-1-first-order.png`
+- `banner-2-bridal.png`  
+- `banner-3-express.png`
+
+---
+
+## 🚀 Upload to Admin Panel
+
+1. **Login to Admin Dashboard**
+   - Go to `/admin`
+   - Login with admin credentials
+
+2. **Navigate to Banners**
+   - Admin → Settings → Banners
+
+3. **Add Each Banner**
+   Click "Add Banner" for each:
+
+   **Banner 1 (Discount):**
+   - Title: `20% OFF`
+   - Subtitle: `Your First Booking`
+   - Button Text: `Book Now`
+   - Link URL: `/offers` or `/makeup-artists`
+   - Upload: `banner-1-first-order.png`
+   - Valid From: Today
+   - Valid Until: 3 months from now
+   
+   **Banner 2 (Bridal):**
+   - Title: `Bridal Collection`
+   - Subtitle: `Look stunning on your special day`
+   - Button Text: `Explore`
+   - Link URL: `/makeup-artists?category=Bridal`
+   - Upload: `banner-2-bridal.png`
+   - Valid From: Today
+   - Valid Until: 1 year from now
+   
+   **Banner 3 (Express):**
+   - Title: `Quick Booking`
+   - Subtitle: `Same-day appointments available`
+   - Button Text: `Book Now`
+   - Link URL: `/makeup-artists`
+   - Upload: `banner-3-express.png`
+   - Valid From: Today
+   - Valid Until: No expiry
+
+4. **Enable and Save**
+   - Toggle "Active" to ON for each banner
+   - Click "Save" or "Update"
+
+---
+
+## 🖼️ Banner Specifications
+
+| Spec | Value |
+|------|-------|
+| **Dimensions** | 800x320px |
+| **Format** | PNG (recommended) |
+| **Style** | Modern, clean, with real photos |
+| **Colors** | Match app theme (Rose, Gold, Dark) |
+| **Text** | Bold, readable, minimal |
+
+---
+
+## 🎨 Design Features
+
+Each banner includes:
+- ✅ **Real professional photos** - High-quality Unsplash images
+- ✅ **Gradient overlays** - Smooth color transitions
+- ✅ **Clear typography** - Bold, readable text
+- ✅ **Call-to-action buttons** - Prominent CTAs
+- ✅ **App color scheme** - Matches Glam brand colors
+- ✅ **Mobile-optimized** - Works on all screen sizes
+
+---
+
+## 📝 Admin Panel Configuration
 
 ```json
 {
-  "banner1": {
-    "title": "20% OFF",
-    "subtitle": "On your first booking",
-    "button_text": "Book Now",
-    "link_url": "/offers",
-    "is_active": true
-  },
-  "banner2": {
-    "title": "Bridal Makeup",
-    "subtitle": "Look perfect on your special day",
-    "button_text": "Explore",
-    "link_url": "/bridal",
-    "is_active": true
-  },
-  "banner3": {
-    "title": "Quick Book",
-    "subtitle": "Same-day appointments available",
-    "button_text": "Book Now",
-    "link_url": "/quick-book",
-    "is_active": true
-  }
+  "banners": [
+    {
+      "id": "banner-1",
+      "title": "20% OFF",
+      "subtitle": "Your First Booking",
+      "button_text": "Book Now",
+      "link_url": "/offers",
+      "image": "banner-1-first-order.png",
+      "is_active": true,
+      "display_order": 1
+    },
+    {
+      "id": "banner-2", 
+      "title": "Bridal Collection",
+      "subtitle": "Look stunning on your special day",
+      "button_text": "Explore",
+      "link_url": "/bridal",
+      "image": "banner-2-bridal.png",
+      "is_active": true,
+      "display_order": 2
+    },
+    {
+      "id": "banner-3",
+      "title": "Quick Booking", 
+      "subtitle": "Same-day appointments available",
+      "button_text": "Book Now",
+      "link_url": "/quick-book",
+      "image": "banner-3-express.png",
+      "is_active": true,
+      "display_order": 3
+    }
+  ]
 }
-```
-
-### ✨ Design Features
-
-All banners include:
-- **Responsive design** - Works on mobile and desktop
-- **App colors** - Uses primary (rose), gold, and dark theme
-- **Professional typography** - Bold, readable fonts
-- **Visual hierarchy** - Clear CTAs and messaging
-- **Modern effects** - Gradients, glows, and animations
-- **High contrast** - Accessible and eye-catching
-
-### 🎯 Recommended Usage
-
-- **Banner 1**: Show to new users (first visit)
-- **Banner 2**: Show during wedding season
-- **Banner 3**: Always show for quick conversions
-
-### 📱 Mobile Optimization
-
-The banners are designed at 800x300px but work perfectly when scaled down to:
-- Mobile: 375x140px
-- Tablet: 768x280px
-- Desktop: Full width
-
-### 🎨 Color Palette Used
-
-```css
-/* Primary Colors */
---primary: hsl(350 60% 65%);      /* Rose */
---gold: hsl(42 65% 55%);          /* Amber/Gold */
---background: hsl(30 25% 97%);    /* Cream */
-
-/* Banner 1 Specifics */
---banner1-gradient: linear-gradient(135deg, #e11d48, #ec4899, #be185d);
-
-/* Banner 2 Specifics */
---banner2-gradient: linear-gradient(135deg, #fef3c7, #ffedd5, #fce7f3);
-
-/* Banner 3 Specifics */
---banner3-gradient: linear-gradient(135deg, #111827, #1f2937, #111827);
 ```
 
 ---
 
-**Note**: These banners were designed specifically for the Glam beauty app using the app's official color palette.
+## 🔄 Replacing Images
+
+To use your own images:
+
+1. **Find new images** on Unsplash, Pexels, or your own photos
+2. **Edit the HTML file**:
+   ```css
+   .banner-1 .image-section {
+       background: url('YOUR_IMAGE_URL') center/cover;
+   }
+   ```
+3. **Reload the page** and take new screenshots
+4. **Upload to admin panel**
+
+**Recommended image types:**
+- Makeup artists working
+- Before/after makeup shots
+- Bridal makeup close-ups
+- Beauty products
+- Happy customers
+
+---
+
+## ✨ Notes
+
+- Images are loaded from Unsplash CDN (free, high-quality)
+- Banners are designed at 800x320px for optimal quality
+- You can adjust colors in the CSS to match your brand
+- All text is customizable in the Admin panel
+- The HTML file is just for preview/export - not for production use
+
+---
+
+**Created for:** Glam Beauty App  
+**Format:** HTML Preview with Image Export  
+**Last Updated:** 2024
