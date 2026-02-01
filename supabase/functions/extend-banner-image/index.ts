@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { imageBase64, aspectRatio = "16:9" } = await req.json();
+    const { imageBase64, aspectRatio = "14:5" } = await req.json();
 
     if (!imageBase64) {
       return new Response(
@@ -30,11 +30,14 @@ Deno.serve(async (req) => {
     }
 
     // Use AI to extend/outpaint the image to the correct aspect ratio
-    const prompt = `Extend and outpaint this image to fill a ${aspectRatio} aspect ratio banner. 
-    Seamlessly extend the background, colors, and any patterns to create a complete banner image.
-    Keep the main content centered and preserve all existing elements.
-    The extension should look natural and consistent with the original image style.
-    Make sure the entire original image is visible and the extensions blend perfectly.`;
+    const prompt = `Extend and outpaint this image to fill a ${aspectRatio} wide promotional banner.
+Rules:
+- Keep the entire original image visible (do NOT crop or cut off text/logos).
+- Add new content only around the edges to reach the target ratio.
+- Seamlessly extend the background, colors, gradients, and patterns.
+- Keep the main subject centered and preserve all existing elements.
+- The extension must look natural and consistent with the original style.
+- Output should be a single complete banner image.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

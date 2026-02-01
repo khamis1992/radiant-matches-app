@@ -48,7 +48,7 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
   if (isLoading) {
     return (
       <section className="px-5 pb-6">
-        <Skeleton className="h-[120px] w-full rounded-2xl" />
+        <Skeleton className="w-full rounded-2xl aspect-[14/5]" />
       </section>
     );
   }
@@ -64,13 +64,13 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
           <CarouselContent>
             {t.home.promos.map((promo, index) => (
               <CarouselItem key={index}>
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5">
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 aspect-[14/5]">
                   <img 
                     src={promoBanner1} 
                     alt={promo.title} 
                     className="absolute inset-0 w-full h-full object-cover opacity-50"
                   />
-                  <div className="relative z-10 p-5 flex items-center justify-between min-h-[100px]">
+                  <div className="relative z-10 p-5 flex items-center justify-between h-full">
                     <div className="space-y-1">
                       <h3 className="text-lg font-bold text-foreground">{promo.title}</h3>
                       <p className="text-sm text-muted-foreground">{promo.subtitle}</p>
@@ -101,7 +101,7 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
         <CarouselContent>
           {banners.map((banner) => (
             <CarouselItem key={banner.id}>
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 aspect-[14/5]">
                 <img
                   src={banner.image_url}
                   alt={banner.title || t.adminBanners.banner || "Banner"}
@@ -122,7 +122,7 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
 
                 {/* Content */}
                 <div
-                  className={`relative z-10 p-5 flex flex-col min-h-[120px] ${
+                  className={`relative z-10 p-5 flex flex-col h-full ${
                     banner.text_position === "center"
                       ? "justify-center"
                       : banner.text_position === "end"
