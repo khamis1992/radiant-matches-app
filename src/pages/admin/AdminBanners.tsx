@@ -86,6 +86,7 @@ interface BannerFormData {
   text_alignment: string;
   overlay_opacity: number;
   image_scale: number;
+  image_fit: string;
 }
 
 const initialFormData: BannerFormData = {
@@ -103,6 +104,7 @@ const initialFormData: BannerFormData = {
   text_alignment: "start",
   overlay_opacity: 50,
   image_scale: 100,
+  image_fit: "cover",
 };
 
 interface BannerData {
@@ -125,6 +127,7 @@ interface BannerData {
   text_alignment: string;
   overlay_opacity: number;
   image_scale: number;
+  image_fit: string;
 }
 
 interface SortableRowProps {
@@ -290,6 +293,7 @@ const AdminBanners = () => {
         text_alignment: banner.text_alignment || "start",
         overlay_opacity: banner.overlay_opacity ?? 50,
         image_scale: banner.image_scale ?? 100,
+        image_fit: banner.image_fit || "cover",
       });
       setImagePreview(banner.image_url);
     } else {
@@ -340,6 +344,7 @@ const AdminBanners = () => {
         text_alignment: formData.text_alignment,
         overlay_opacity: formData.overlay_opacity,
         image_scale: formData.image_scale,
+        image_fit: formData.image_fit,
       };
 
       if (editingBanner) {
@@ -628,6 +633,29 @@ const AdminBanners = () => {
                     />
                   </div>
 
+                  {/* Image Fit Mode */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">{isRTL ? "طريقة عرض الصورة" : "Image Fit Mode"}</Label>
+                    <Select
+                      value={formData.image_fit}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, image_fit: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cover">
+                          {isRTL ? "ملء البانر (قد يتم قص الصورة)" : "Fill Banner (may crop)"}
+                        </SelectItem>
+                        <SelectItem value="contain">
+                          {isRTL ? "إظهار الصورة كاملة" : "Show Full Image"}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   {/* Image Scale/Zoom */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -645,8 +673,8 @@ const AdminBanners = () => {
                     />
                     <p className="text-xs text-muted-foreground">
                       {isRTL 
-                        ? "50% = تصغير الصورة لإظهارها كاملة، 200% = تكبير الصورة" 
-                        : "50% = shrink image to show full, 200% = zoom in"}
+                        ? "استخدم هذا للتحكم بحجم الصورة بعد اختيار طريقة العرض" 
+                        : "Use this to adjust image size after choosing fit mode"}
                     </p>
                   </div>
                 </div>
@@ -741,12 +769,15 @@ const AdminBanners = () => {
                   <Eye className="h-4 w-4" />
                   <span>{t.common.view} {t.adminBanners.banner}</span>
                 </div>
-                <div className="relative overflow-hidden rounded-2xl border min-h-[200px]">
+                <div className="relative overflow-hidden rounded-2xl border min-h-[200px] bg-muted">
                   {imagePreview ? (
                     <img 
                       src={imagePreview} 
                       alt="Preview" 
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-200"
+                      className={cn(
+                        "absolute inset-0 w-full h-full transition-transform duration-200",
+                        formData.image_fit === "cover" ? "object-cover" : "object-contain"
+                      )}
                       style={{ 
                         transform: `scale(${formData.image_scale / 100})`,
                         transformOrigin: 'center center'
