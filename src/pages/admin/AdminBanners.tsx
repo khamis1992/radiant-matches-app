@@ -87,6 +87,7 @@ interface BannerFormData {
   overlay_opacity: number;
   image_scale: number;
   image_fit: string;
+  banner_height: number;
 }
 
 const initialFormData: BannerFormData = {
@@ -105,6 +106,7 @@ const initialFormData: BannerFormData = {
   overlay_opacity: 50,
   image_scale: 100,
   image_fit: "cover",
+  banner_height: 160,
 };
 
 interface BannerData {
@@ -128,6 +130,7 @@ interface BannerData {
   overlay_opacity: number;
   image_scale: number;
   image_fit: string;
+  banner_height: number;
 }
 
 interface SortableRowProps {
@@ -294,6 +297,7 @@ const AdminBanners = () => {
         overlay_opacity: banner.overlay_opacity ?? 50,
         image_scale: banner.image_scale ?? 100,
         image_fit: banner.image_fit || "cover",
+        banner_height: banner.banner_height ?? 160,
       });
       setImagePreview(banner.image_url);
     } else {
@@ -345,6 +349,7 @@ const AdminBanners = () => {
         overlay_opacity: formData.overlay_opacity,
         image_scale: formData.image_scale,
         image_fit: formData.image_fit,
+        banner_height: formData.banner_height,
       };
 
       if (editingBanner) {
@@ -539,6 +544,11 @@ const AdminBanners = () => {
                     accept="image/*"
                     onChange={handleImageChange}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    {isRTL 
+                      ? "الأبعاد المثالية: 1200×400 بكسل (نسبة 3:1) أو 1200×600 بكسل (نسبة 2:1) للحصول على أفضل جودة"
+                      : "Recommended dimensions: 1200×400px (3:1 ratio) or 1200×600px (2:1 ratio) for best quality"}
+                  </p>
                 </div>
 
                 {/* Customization Controls */}
@@ -677,6 +687,28 @@ const AdminBanners = () => {
                         : "Use this to adjust image size after choosing fit mode"}
                     </p>
                   </div>
+
+                  {/* Banner Height */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "ارتفاع البانر" : "Banner Height"}</Label>
+                      <span className="text-xs text-muted-foreground">{formData.banner_height}px</span>
+                    </div>
+                    <Slider
+                      value={[formData.banner_height]}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, banner_height: value[0] }))
+                      }
+                      min={80}
+                      max={400}
+                      step={10}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {isRTL 
+                        ? "الارتفاع الموصى به: 120-200 بكسل للهاتف، 200-400 للويب" 
+                        : "Recommended: 120-200px for mobile, 200-400px for web"}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Scheduling */}
@@ -769,7 +801,10 @@ const AdminBanners = () => {
                   <Eye className="h-4 w-4" />
                   <span>{t.common.view} {t.adminBanners.banner}</span>
                 </div>
-                <div className="relative overflow-hidden rounded-2xl border min-h-[120px] bg-muted">
+                <div 
+                  className="relative overflow-hidden rounded-2xl border bg-muted"
+                  style={{ minHeight: `${formData.banner_height}px` }}
+                >
                   {imagePreview ? (
                     <img 
                       src={imagePreview} 
@@ -796,7 +831,7 @@ const AdminBanners = () => {
                   {/* Content */}
                   <div 
                     className={cn(
-                      "relative z-10 p-5 flex flex-col min-h-[120px]",
+                      "relative z-10 p-5 flex flex-col",
                       formData.text_position === "start" && "justify-start",
                       formData.text_position === "center" && "justify-center",
                       formData.text_position === "end" && "justify-end",
@@ -804,6 +839,7 @@ const AdminBanners = () => {
                       formData.text_alignment === "center" && "items-center text-center",
                       formData.text_alignment === "end" && "items-end text-end"
                     )}
+                    style={{ minHeight: `${formData.banner_height}px` }}
                   >
                     <div className="space-y-2">
                       {formData.show_title && (

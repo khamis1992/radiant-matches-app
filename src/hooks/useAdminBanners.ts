@@ -23,6 +23,7 @@ interface Banner {
   overlay_opacity: number;
   image_scale: number;
   image_fit: string;
+  banner_height: number;
 }
 
 interface CreateBannerData {
@@ -43,6 +44,7 @@ interface CreateBannerData {
   overlay_opacity?: number;
   image_scale?: number;
   image_fit?: string;
+  banner_height?: number;
 }
 
 interface UpdateBannerData extends Partial<CreateBannerData> {

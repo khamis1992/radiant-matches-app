@@ -206,6 +206,7 @@ export type Database = {
       }
       banners: {
         Row: {
+          banner_height: number
           button_text: string | null
           created_at: string
           display_order: number
@@ -228,6 +229,7 @@ export type Database = {
           valid_until: string | null
         }
         Insert: {
+          banner_height?: number
           button_text?: string | null
           created_at?: string
           display_order?: number
@@ -250,6 +252,7 @@ export type Database = {
           valid_until?: string | null
         }
         Update: {
+          banner_height?: number
           button_text?: string | null
           created_at?: string
           display_order?: number
