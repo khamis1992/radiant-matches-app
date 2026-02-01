@@ -60,7 +60,8 @@ export const AdminSidebar = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/auth");
+    // Force navigation and page reload to clear all cached states
+    window.location.href = "/auth";
   };
 
   const getNotificationIcon = (type: string) => {
