@@ -102,26 +102,60 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
           {banners.map((banner) => (
             <CarouselItem key={banner.id}>
               <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5">
-                <img 
-                  src={banner.image_url} 
-                  alt={banner.title} 
-                  className="absolute inset-0 w-full h-full object-cover opacity-50"
+                <img
+                  src={banner.image_url}
+                  alt={banner.title || t.adminBanners.banner || "Banner"}
+                  className={`absolute inset-0 w-full h-full transition-transform duration-200 ${
+                    banner.image_fit === "contain" ? "object-contain" : "object-cover"
+                  }`}
+                  style={{
+                    transform: `scale(${(banner.image_scale ?? 100) / 100})`,
+                    transformOrigin: "center center",
+                  }}
                 />
-                <div className="relative z-10 p-5 flex items-center justify-between min-h-[100px]">
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-foreground">{banner.title}</h3>
-                    {banner.subtitle && (
-                      <p className="text-sm text-muted-foreground">{banner.subtitle}</p>
+
+                {/* Overlay */}
+                <div
+                  className="absolute inset-0 bg-black"
+                  style={{ opacity: (banner.overlay_opacity ?? 50) / 100 }}
+                />
+
+                {/* Content */}
+                <div
+                  className={`relative z-10 p-5 flex flex-col min-h-[120px] ${
+                    banner.text_position === "center"
+                      ? "justify-center"
+                      : banner.text_position === "end"
+                        ? "justify-end"
+                        : "justify-start"
+                  } ${
+                    banner.text_alignment === "center"
+                      ? "items-center text-center"
+                      : banner.text_alignment === "end"
+                        ? "items-end text-end"
+                        : "items-start text-start"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    {banner.show_title && banner.title && (
+                      <h3 className="text-lg font-bold text-white drop-shadow">
+                        {banner.title}
+                      </h3>
+                    )}
+                    {banner.show_subtitle && banner.subtitle && (
+                      <p className="text-sm text-white/90 drop-shadow">
+                        {banner.subtitle}
+                      </p>
+                    )}
+                    {banner.show_button && banner.button_text && (
+                      <button
+                        onClick={() => navigate(banner.link_url || "/makeup-artists")}
+                        className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-primary/90 transition-colors"
+                      >
+                        {banner.button_text}
+                      </button>
                     )}
                   </div>
-                  {banner.button_text && (
-                    <button 
-                      onClick={() => navigate(banner.link_url || "/makeup-artists")}
-                      className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-primary/90 transition-colors"
-                    >
-                      {banner.button_text}
-                    </button>
-                  )}
                 </div>
               </div>
             </CarouselItem>

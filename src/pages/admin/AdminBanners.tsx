@@ -769,7 +769,7 @@ const AdminBanners = () => {
                   <Eye className="h-4 w-4" />
                   <span>{t.common.view} {t.adminBanners.banner}</span>
                 </div>
-                <div className="relative overflow-hidden rounded-2xl border min-h-[200px] bg-muted">
+                <div className="relative overflow-hidden rounded-2xl border min-h-[120px] bg-muted">
                   {imagePreview ? (
                     <img 
                       src={imagePreview} 
@@ -796,7 +796,7 @@ const AdminBanners = () => {
                   {/* Content */}
                   <div 
                     className={cn(
-                      "relative z-10 p-5 flex flex-col min-h-[200px]",
+                      "relative z-10 p-5 flex flex-col min-h-[120px]",
                       formData.text_position === "start" && "justify-start",
                       formData.text_position === "center" && "justify-center",
                       formData.text_position === "end" && "justify-end",
