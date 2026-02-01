@@ -15,6 +15,12 @@ interface Banner {
   valid_until: string | null;
   created_at: string;
   updated_at: string;
+  show_title: boolean;
+  show_subtitle: boolean;
+  show_button: boolean;
+  text_position: string;
+  text_alignment: string;
+  overlay_opacity: number;
 }
 
 interface CreateBannerData {
@@ -27,6 +33,12 @@ interface CreateBannerData {
   display_order?: number;
   valid_from?: string;
   valid_until?: string | null;
+  show_title?: boolean;
+  show_subtitle?: boolean;
+  show_button?: boolean;
+  text_position?: string;
+  text_alignment?: string;
+  overlay_opacity?: number;
 }
 
 interface UpdateBannerData extends Partial<CreateBannerData> {

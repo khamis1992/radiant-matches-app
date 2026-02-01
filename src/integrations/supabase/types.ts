@@ -213,7 +213,13 @@ export type Database = {
           image_url: string
           is_active: boolean
           link_url: string | null
+          overlay_opacity: number
+          show_button: boolean
+          show_subtitle: boolean
+          show_title: boolean
           subtitle: string | null
+          text_alignment: string
+          text_position: string
           title: string
           updated_at: string
           valid_from: string | null
@@ -227,7 +233,13 @@ export type Database = {
           image_url: string
           is_active?: boolean
           link_url?: string | null
+          overlay_opacity?: number
+          show_button?: boolean
+          show_subtitle?: boolean
+          show_title?: boolean
           subtitle?: string | null
+          text_alignment?: string
+          text_position?: string
           title: string
           updated_at?: string
           valid_from?: string | null
@@ -241,7 +253,13 @@ export type Database = {
           image_url?: string
           is_active?: boolean
           link_url?: string | null
+          overlay_opacity?: number
+          show_button?: boolean
+          show_subtitle?: boolean
+          show_title?: boolean
           subtitle?: string | null
+          text_alignment?: string
+          text_position?: string
           title?: string
           updated_at?: string
           valid_from?: string | null
