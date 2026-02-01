@@ -25,24 +25,25 @@ export const useAuth = () => {
   }, []);
 
   const signOut = async () => {
-    try {
-      // Try global signout first
-      await supabase.auth.signOut({ scope: 'global' });
-    } catch (error) {
-      console.log('Global signout failed, trying local signout:', error);
-      try {
-        // If global fails (e.g., session not found), do local signout
-        await supabase.auth.signOut({ scope: 'local' });
-      } catch (localError) {
-        console.log('Local signout also failed:', localError);
-      }
-    }
-    
-    // Always clear local state regardless of server response
+    // Clear local state first
     setUser(null);
     
-    // Clear any cached session data
-    localStorage.removeItem('supabase.auth.token');
+    // Use local scope to ensure client-side cleanup works even if server session is gone
+    await supabase.auth.signOut({ scope: 'local' });
+    
+    // Clear all supabase auth tokens from localStorage
+    // Supabase uses key pattern: sb-<project-ref>-auth-token
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    // Also clear session storage
+    sessionStorage.clear();
   };
 
   return { user, loading, signOut };
