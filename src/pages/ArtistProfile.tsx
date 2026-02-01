@@ -836,10 +836,18 @@ const ArtistProfile = () => {
                             {
                               onSuccess: () => {
                                 toast({ 
-                                  title: language === "ar" ? "تمت الإضافة للسلة" : "Added to cart",
-                                  description: !user 
-                                    ? (language === "ar" ? "سجل دخولك لحفظ السلة" : "Sign in to save your cart")
-                                    : undefined
+                                  title: language === "ar" ? "تمت الإضافة للسلة ✓" : "Added to cart ✓",
+                                  description: product.title,
+                                  action: (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      onClick={() => navigate("/cart")}
+                                      className="shrink-0"
+                                    >
+                                      {language === "ar" ? "عرض السلة" : "View Cart"}
+                                    </Button>
+                                  ),
                                 });
                               },
                               onError: (error: any) => {
