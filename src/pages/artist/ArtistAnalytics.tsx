@@ -209,68 +209,76 @@ const ArtistAnalytics = () => {
           </Select>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards - Premium Design */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500/20 to-green-500/10 rounded-xl flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-green-600" />
+          {/* Revenue Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 shadow-sm">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+            <CardContent className="p-4 relative">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-11 h-11 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center shadow-sm">
+                  <DollarSign className="w-5 h-5 text-primary" />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">{isRTL ? "إجمالي الإيرادات" : "Total Revenue"}</p>
+              <p className="text-xs text-muted-foreground font-medium">{isRTL ? "إجمالي الإيرادات" : "Total Revenue"}</p>
               {earningsLoading ? (
                 <Skeleton className="h-7 w-24 mt-1" />
               ) : (
-                <p className="text-xl font-bold text-green-600">{formatQAR(totalRevenue)}</p>
+                <p className="text-xl font-bold text-primary mt-0.5">{formatQAR(totalRevenue)}</p>
               )}
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-500/10 rounded-xl flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-blue-600" />
+          {/* Bookings Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-gold/5 via-gold/10 to-gold/5 shadow-sm">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-gold/20 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+            <CardContent className="p-4 relative">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-11 h-11 bg-gradient-to-br from-gold/20 to-gold/10 rounded-2xl flex items-center justify-center shadow-sm">
+                  <Calendar className="w-5 h-5 text-gold" />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">{isRTL ? "إجمالي الحجوزات" : "Total Bookings"}</p>
+              <p className="text-xs text-muted-foreground font-medium">{isRTL ? "إجمالي الحجوزات" : "Total Bookings"}</p>
               {earningsLoading ? (
                 <Skeleton className="h-7 w-16 mt-1" />
               ) : (
-                <p className="text-xl font-bold text-blue-600">{totalBookings}</p>
+                <p className="text-xl font-bold text-gold mt-0.5">{totalBookings}</p>
               )}
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-purple-500/10 rounded-xl flex items-center justify-center">
-                  <Star className="w-5 h-5 text-purple-600" />
+          {/* Average Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blush/30 via-blush/50 to-blush/30 shadow-sm">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+            <CardContent className="p-4 relative">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-11 h-11 bg-gradient-to-br from-primary/15 to-blush/50 rounded-2xl flex items-center justify-center shadow-sm">
+                  <Star className="w-5 h-5 text-primary" />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">{isRTL ? "متوسط الحجز" : "Avg. Booking"}</p>
+              <p className="text-xs text-muted-foreground font-medium">{isRTL ? "متوسط الحجز" : "Avg. Booking"}</p>
               {earningsLoading ? (
                 <Skeleton className="h-7 w-20 mt-1" />
               ) : (
-                <p className="text-xl font-bold text-purple-600">{formatQAR(avgRevenue)}</p>
+                <p className="text-xl font-bold text-foreground mt-0.5">{formatQAR(avgRevenue)}</p>
               )}
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-orange-500/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-500/20 to-orange-500/10 rounded-xl flex items-center justify-center">
-                  <Users className="w-5 h-5 text-orange-600" />
+          {/* Customers Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-nude/50 via-secondary/50 to-nude/30 shadow-sm">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-gold/15 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+            <CardContent className="p-4 relative">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-11 h-11 bg-gradient-to-br from-gold/15 to-nude/50 rounded-2xl flex items-center justify-center shadow-sm">
+                  <Users className="w-5 h-5 text-gold" />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">{isRTL ? "العملاء" : "Customers"}</p>
+              <p className="text-xs text-muted-foreground font-medium">{isRTL ? "العملاء" : "Customers"}</p>
               {customersLoading ? (
                 <Skeleton className="h-7 w-16 mt-1" />
               ) : (
-                <p className="text-xl font-bold text-orange-600">{customerStats?.total || 0}</p>
+                <p className="text-xl font-bold text-foreground mt-0.5">{customerStats?.total || 0}</p>
               )}
             </CardContent>
           </Card>
@@ -390,30 +398,30 @@ const ArtistAnalytics = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-blue-500/10 rounded-xl">
+                    <div className="flex items-center justify-between p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl border border-primary/10">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
-                          <Users className="w-5 h-5 text-blue-600" />
+                        <div className="w-11 h-11 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center">
+                          <Users className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                           <p className="text-sm font-medium">{isRTL ? "إجمالي العملاء" : "Total Customers"}</p>
                           <p className="text-xs text-muted-foreground">{isRTL ? "عملاء فريدون" : "Unique customers"}</p>
                         </div>
                       </div>
-                      <span className="text-2xl font-bold text-blue-600">{customerStats?.total || 0}</span>
+                      <span className="text-2xl font-bold text-primary">{customerStats?.total || 0}</span>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-green-500/10 rounded-xl">
+                    <div className="flex items-center justify-between p-4 bg-gradient-to-br from-gold/5 to-gold/10 rounded-2xl border border-gold/10">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
-                          <TrendingUp className="w-5 h-5 text-green-600" />
+                        <div className="w-11 h-11 bg-gradient-to-br from-gold/20 to-gold/10 rounded-2xl flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-gold" />
                         </div>
                         <div>
                           <p className="text-sm font-medium">{isRTL ? "عملاء متكررون" : "Returning Customers"}</p>
                           <p className="text-xs text-muted-foreground">{isRTL ? "أكثر من حجز واحد" : "More than 1 booking"}</p>
                         </div>
                       </div>
-                      <span className="text-2xl font-bold text-green-600">{customerStats?.returning || 0}</span>
+                      <span className="text-2xl font-bold text-gold">{customerStats?.returning || 0}</span>
                     </div>
 
                     {customerStats && customerStats.total > 0 && (
