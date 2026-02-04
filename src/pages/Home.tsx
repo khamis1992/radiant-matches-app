@@ -108,12 +108,13 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
                 <img
                   src={banner.image_url}
                   alt={banner.title || t.adminBanners.banner || "Banner"}
-                  className={`absolute inset-0 w-full h-full transition-transform duration-200 ${
+                  className={`absolute inset-0 w-full h-full transition-all duration-200 ${
                     banner.image_fit === "contain" ? "object-contain" : "object-cover"
                   }`}
                   style={{
                     transform: `scale(${(banner.image_scale ?? 100) / 100})`,
-                    transformOrigin: "center center",
+                    transformOrigin: `${banner.position_x ?? 50}% ${banner.position_y ?? 50}%`,
+                    objectPosition: `${banner.position_x ?? 50}% ${banner.position_y ?? 50}%`,
                   }}
                 />
 
