@@ -1150,6 +1150,7 @@ export const en = {
     search: "Search banners...",
     banner: "Banner",
     title_: "Title",
+    preview: "Preview",
     link: "Link",
     status: "Status",
     order: "Order",

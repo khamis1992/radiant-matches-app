@@ -1071,6 +1071,7 @@ export const ar = {
     search: "البحث في البنرات...",
     banner: "البنر",
     title_: "العنوان",
+    preview: "معاينة",
     link: "الرابط",
     status: "الحالة",
     order: "الترتيب",
