@@ -788,6 +788,61 @@ const AdminBanners = () => {
                         : "Recommended: 120-200px for mobile, 200-400px for web"}
                     </p>
                   </div>
+
+                  {/* Image Position Controls */}
+                  <div className="space-y-3 border-t pt-4">
+                    <h5 className="text-sm font-medium">{isRTL ? "موضع الصورة (نقطة التركيز)" : "Image Position (Focus Point)"}</h5>
+                    
+                    {/* Position X */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">{isRTL ? "الموضع الأفقي" : "Horizontal Position"}</Label>
+                        <span className="text-xs text-muted-foreground">{formData.position_x}%</span>
+                      </div>
+                      <Slider
+                        value={[formData.position_x]}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, position_x: value[0] }))
+                        }
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                      <div className="flex justify-between text-[10px] text-muted-foreground">
+                        <span>{isRTL ? "يسار" : "Left"}</span>
+                        <span>{isRTL ? "وسط" : "Center"}</span>
+                        <span>{isRTL ? "يمين" : "Right"}</span>
+                      </div>
+                    </div>
+
+                    {/* Position Y */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">{isRTL ? "الموضع العمودي" : "Vertical Position"}</Label>
+                        <span className="text-xs text-muted-foreground">{formData.position_y}%</span>
+                      </div>
+                      <Slider
+                        value={[formData.position_y]}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, position_y: value[0] }))
+                        }
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                      <div className="flex justify-between text-[10px] text-muted-foreground">
+                        <span>{isRTL ? "أعلى" : "Top"}</span>
+                        <span>{isRTL ? "وسط" : "Center"}</span>
+                        <span>{isRTL ? "أسفل" : "Bottom"}</span>
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground">
+                      {isRTL 
+                        ? "يحدد نقطة التركيز في الصورة عند القص. مفيد لإظهار جزء معين من الصورة" 
+                        : "Defines the focus point when image is cropped. Useful for showing a specific part of the image"}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Scheduling */}
