@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import { useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -48,23 +48,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink, Eye, CalendarIcon, Clock, Layout, Palette, Info } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink, Eye, CalendarIcon, Clock } from "lucide-react";
 import { useAdminBanners } from "@/hooks/useAdminBanners";
 import { format, isAfter, isBefore } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   DndContext,
   closestCenter,
@@ -239,198 +227,6 @@ const SortableRow = ({ banner, onEdit, onDelete, onToggle, getScheduleStatus, t,
   );
 };
 
-// Banner Preview Component
-interface BannerPreviewProps {
-  formData: BannerFormData;
-  imagePreview: string;
-  mobilePreview: boolean;
-  isRTL: boolean;
-  t: any;
-  onPositionChange?: (x: number, y: number) => void;
-  onMobilePreviewChange?: (value: boolean) => void;
-}
-
-const BannerPreview = ({ formData, imagePreview, mobilePreview, isRTL, t, onPositionChange, onMobilePreviewChange }: BannerPreviewProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!imagePreview || !containerRef.current || !onPositionChange) return;
-    
-    e.preventDefault();
-    setIsDragging(true);
-    
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
-    onPositionChange(Math.max(0, Math.min(100, x)), Math.max(0, Math.min(100, y)));
-  };
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging || !containerRef.current || !onPositionChange) return;
-    
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
-    onPositionChange(Math.max(0, Math.min(100, x)), Math.max(0, Math.min(100, y)));
-  }, [isDragging, onPositionChange]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm font-medium">
-          <Eye className="h-4 w-4 text-primary" />
-          <span>{t.adminBanners.preview}</span>
-        </div>
-        <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
-          <span className={`text-xs px-2 py-1 rounded transition-all ${!mobilePreview ? 'bg-background shadow-sm' : ''}`}>
-            {isRTL ? "سطح المكتب" : "Desktop"}
-          </span>
-          <Switch
-            checked={mobilePreview}
-            onCheckedChange={onMobilePreviewChange}
-            className="data-[state=checked]:bg-primary"
-          />
-          <span className={`text-xs px-2 py-1 rounded transition-all ${mobilePreview ? 'bg-background shadow-sm' : ''}`}>
-            {isRTL ? "الجوال" : "Mobile"}
-          </span>
-        </div>
-      </div>
-      
-      <div 
-        ref={containerRef}
-        className={cn(
-          "relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-muted mx-auto transition-all duration-300 shadow-lg select-none",
-          imagePreview && onPositionChange && "cursor-grab active:cursor-grabbing",
-          isDragging && "cursor-grabbing"
-        )}
-        style={{ minHeight: `${formData.banner_height}px` }}
-        onMouseDown={handleMouseDown}
-      >
-        {/* Grid Overlay for Positioning */}
-        <div className="absolute inset-0 z-20 pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
-          <div className="w-full h-full grid grid-cols-3 grid-rows-3">
-            {[...Array(9)].map((_, i) => (
-              <div key={i} className="border border-white/20" />
-            ))}
-          </div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 border-2 border-white/50 rounded-full" />
-        </div>
-        
-        {imagePreview ? (
-          <img 
-            src={imagePreview} 
-            alt="Preview" 
-            className="absolute inset-0 w-full h-full object-cover transition-all duration-200 pointer-events-none"
-            style={{ 
-              transform: `scale(${formData.image_scale / 100})`,
-              objectPosition: `${formData.position_x}% ${formData.position_y}%`,
-            }}
-            draggable={false}
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
-            <Image className="h-8 w-8 text-muted-foreground" />
-          </div>
-        )}
-        
-        {/* Position Indicator */}
-        {imagePreview && (
-          <div 
-            className="absolute z-10 w-4 h-4 bg-primary border-2 border-white rounded-full shadow-lg pointer-events-none transition-all duration-200"
-            style={{
-              left: `${formData.position_x}%`,
-              top: `${formData.position_y}%`,
-              transform: 'translate(-50%, -50%)'
-            }}
-          />
-        )}
-        
-        {/* Drag Hint */}
-        {imagePreview && onPositionChange && !isDragging && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
-            <div className="bg-black/60 text-white text-xs px-3 py-2 rounded-full backdrop-blur-sm">
-              {isRTL ? "اسحب لتحريك الصورة" : "Drag to move image"}
-            </div>
-          </div>
-        )}
-        
-        {/* Overlay */}
-        <div 
-          className="absolute inset-0 bg-black pointer-events-none"
-          style={{ opacity: formData.overlay_opacity / 100 }}
-        />
-        
-        {/* Content */}
-        <div 
-          className={cn(
-            "relative z-10 p-5 flex flex-col pointer-events-none",
-            formData.text_position === "start" && "justify-start",
-            formData.text_position === "center" && "justify-center",
-            formData.text_position === "end" && "justify-end",
-            formData.text_alignment === "start" && (isRTL ? "items-end text-end" : "items-start text-start"),
-            formData.text_alignment === "center" && "items-center text-center",
-            formData.text_alignment === "end" && (isRTL ? "items-start text-start" : "items-end text-end")
-          )}
-          style={{ minHeight: `${formData.banner_height}px` }}
-        >
-          <div className="space-y-2">
-            {formData.show_title && (
-              <h3 className="text-xl font-bold text-white drop-shadow-lg" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
-                {formData.title || t.adminBanners.bannerTitle}
-              </h3>
-            )}
-            {formData.show_subtitle && formData.subtitle && (
-              <p className="text-sm text-white/90 drop-shadow" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                {formData.subtitle}
-              </p>
-            )}
-            {formData.show_button && formData.button_text && (
-              <button 
-                className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap shadow-lg"
-                disabled
-              >
-                {formData.button_text}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>
-          {isRTL 
-            ? `الموضع: X=${formData.position_x}%, Y=${formData.position_y}%` 
-            : `Position: X=${formData.position_x}%, Y=${formData.position_y}%`}
-        </span>
-        <span>
-          {mobilePreview 
-            ? (isRTL ? "معاينة الجوال (375px)" : "Mobile Preview (375px)")
-            : (isRTL ? "معاينة سطح المكتب" : "Desktop Preview")
-          }
-        </span>
-      </div>
-    </div>
-  );
-};
-
 const AdminBanners = () => {
   const {
     banners,
@@ -452,7 +248,6 @@ const AdminBanners = () => {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [mobilePreview, setMobilePreview] = useState(false);
-  const [activeTab, setActiveTab] = useState("content");
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -517,7 +312,6 @@ const AdminBanners = () => {
     }
     setImageFile(null);
     setIsDialogOpen(true);
-    setActiveTab("content");
   };
 
   const handleCloseDialog = () => {
@@ -529,6 +323,8 @@ const AdminBanners = () => {
   };
 
   const handleSubmit = async () => {
+    // Title is now optional, only image is required
+
     setIsUploading(true);
     try {
       let imageUrl = formData.image_url;
@@ -689,530 +485,548 @@ const AdminBanners = () => {
         </Card>
       </main>
 
-      {/* Add/Edit Dialog with Tabs */}
+      {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[1000px] max-h-[95vh] overflow-hidden p-0 gap-0" dir={isRTL ? "rtl" : "ltr"}>
-          <TooltipProvider>
-            <DialogHeader className="px-6 pt-6 pb-2">
-              <DialogTitle className="text-xl">
-                {editingBanner ? t.adminBanners.editBanner : t.adminBanners.addNewBanner}
-              </DialogTitle>
-            </DialogHeader>
-            
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <div className="px-6">
-                <TabsList className="grid w-full grid-cols-3 mb-4">
-                  <TabsTrigger value="content" className="gap-2">
-                    <Layout className="h-4 w-4" />
-                    {isRTL ? "المحتوى" : "Content"}
-                  </TabsTrigger>
-                  <TabsTrigger value="design" className="gap-2">
-                    <Palette className="h-4 w-4" />
-                    {isRTL ? "التصميم" : "Design"}
-                  </TabsTrigger>
-                  <TabsTrigger value="schedule" className="gap-2">
-                    <Clock className="h-4 w-4" />
-                    {isRTL ? "الجدولة" : "Schedule"}
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-              
-              <ScrollArea className="h-[calc(95vh-240px)] overflow-y-auto">
-                <div className="px-6 pb-6 min-h-full">
-                  {/* Content Tab */}
-                  <TabsContent value="content" className="mt-0">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Left Column - Form Fields */}
-                      <div className="space-y-5">
-                        {/* Image Upload */}
-                        <Card className="p-4 border-dashed border-2 hover:border-primary/50 transition-colors">
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                              <Image className="h-5 w-5 text-primary" />
-                              <Label htmlFor="image" className="font-medium">{t.adminBanners.bannerImage}</Label>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{isRTL ? "الأبعاد المثالية: 1200×400 بكسل" : "Recommended: 1200×400px"}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </div>
-                            <Input
-                              id="image"
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                              className="cursor-pointer"
-                            />
-                          </div>
-                        </Card>
-
-                        {/* Text Content */}
-                        <Card className="p-4">
-                          <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
-                            <Layout className="h-4 w-4 text-primary" />
-                            {isRTL ? "محتوى البانر" : "Banner Content"}
-                          </h4>
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="title" className="text-sm">{t.adminBanners.bannerTitle}</Label>
-                              <Input
-                                id="title"
-                                value={formData.title}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({ ...prev, title: e.target.value }))
-                                }
-                                placeholder={t.adminBanners.titlePlaceholder}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="subtitle" className="text-sm">{t.adminBanners.subtitleLabel}</Label>
-                              <Input
-                                id="subtitle"
-                                value={formData.subtitle}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({ ...prev, subtitle: e.target.value }))
-                                }
-                                placeholder={t.adminBanners.subtitlePlaceholder}
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="space-y-2">
-                                <Label htmlFor="button_text" className="text-sm">{t.adminBanners.buttonText}</Label>
-                                <Input
-                                  id="button_text"
-                                  value={formData.button_text}
-                                  onChange={(e) =>
-                                    setFormData((prev) => ({ ...prev, button_text: e.target.value }))
-                                  }
-                                  placeholder={t.adminBanners.buttonTextPlaceholder}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="link_url" className="text-sm">{t.adminBanners.linkUrl}</Label>
-                                <Input
-                                  id="link_url"
-                                  value={formData.link_url}
-                                  onChange={(e) =>
-                                    setFormData((prev) => ({ ...prev, link_url: e.target.value }))
-                                  }
-                                  placeholder={t.adminBanners.linkUrlPlaceholder}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </Card>
-
-                        {/* Visibility Controls */}
-                        <Card className="p-4">
-                          <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
-                            <Eye className="h-4 w-4 text-primary" />
-                            {isRTL ? "إظهار/إخفاء العناصر" : "Show/Hide Elements"}
-                          </h4>
-                          <div className="space-y-2">
-                            {[
-                              { key: 'show_title', label: isRTL ? "إظهار العنوان" : "Show Title" },
-                              { key: 'show_subtitle', label: isRTL ? "إظهار العنوان الفرعي" : "Show Subtitle" },
-                              { key: 'show_button', label: isRTL ? "إظهار الزر" : "Show Button" },
-                            ].map((item, index) => (
-                              <div key={item.key} className={`flex items-center justify-between py-2 ${index > 0 ? 'border-t' : ''}`}>
-                                <Label className="text-sm">{item.label}</Label>
-                                <Switch
-                                  checked={formData[item.key as keyof BannerFormData] as boolean}
-                                  onCheckedChange={(checked) =>
-                                    setFormData((prev) => ({ ...prev, [item.key]: checked }))
-                                  }
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </Card>
-                      </div>
-
-                      {/* Right Column - Preview */}
-                      <div className="lg:sticky lg:top-0 h-fit">
-                        <BannerPreview 
-                          formData={formData} 
-                          imagePreview={imagePreview}
-                          mobilePreview={mobilePreview}
-                          isRTL={isRTL}
-                          t={t}
-                          onPositionChange={(x, y) => setFormData(prev => ({ ...prev, position_x: x, position_y: y }))}
-                          onMobilePreviewChange={setMobilePreview}
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* Design Tab */}
-                  <TabsContent value="design" className="mt-0">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Left Column - Design Controls */}
-                      <div className="space-y-5">
-                        {/* Text Styling */}
-                        <Card className="p-4">
-                          <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
-                            <Palette className="h-4 w-4 text-primary" />
-                            {isRTL ? "نمط النص" : "Text Styling"}
-                          </h4>
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label className="text-sm">{isRTL ? "موقع النص" : "Text Position"}</Label>
-                              <Select
-                                value={formData.text_position}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({ ...prev, text_position: value }))
-                                }
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="start">{isRTL ? "أعلى" : "Top"}</SelectItem>
-                                  <SelectItem value="center">{isRTL ? "وسط" : "Center"}</SelectItem>
-                                  <SelectItem value="end">{isRTL ? "أسفل" : "Bottom"}</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label className="text-sm">{isRTL ? "محاذاة النص" : "Text Alignment"}</Label>
-                              <Select
-                                value={formData.text_alignment}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({ ...prev, text_alignment: value }))
-                                }
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="start">{isRTL ? (isRTL ? "يمين" : "Left") : "Left"}</SelectItem>
-                                  <SelectItem value="center">{isRTL ? "وسط" : "Center"}</SelectItem>
-                                  <SelectItem value="end">{isRTL ? (isRTL ? "يسار" : "Right") : "Right"}</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        </Card>
-
-                        {/* Overlay Settings */}
-                        <Card className="p-4">
-                          <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
-                            <Palette className="h-4 w-4 text-primary" />
-                            {isRTL ? "إعدادات الخلفية" : "Background Settings"}
-                          </h4>
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-sm">{isRTL ? "شفافية الخلفية" : "Overlay Opacity"}</Label>
-                                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{formData.overlay_opacity}%</span>
-                              </div>
-                              <Slider
-                                value={[formData.overlay_opacity]}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({ ...prev, overlay_opacity: value[0] }))
-                                }
-                                min={0}
-                                max={100}
-                                step={5}
-                              />
-                              <div className="flex justify-between text-[10px] text-muted-foreground">
-                                <span>{isRTL ? "شفاف" : "Transparent"}</span>
-                                <span>{isRTL ? "غامق" : "Dark"}</span>
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-sm">{isRTL ? "ارتفاع البانر" : "Banner Height"}</Label>
-                                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{formData.banner_height}px</span>
-                              </div>
-                              <Slider
-                                value={[formData.banner_height]}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({ ...prev, banner_height: value[0] }))
-                                }
-                                min={80}
-                                max={400}
-                                step={10}
-                              />
-                              <div className="flex justify-between text-[10px] text-muted-foreground">
-                                <span>80px</span>
-                                <span>240px</span>
-                                <span>400px</span>
-                              </div>
-                            </div>
-                          </div>
-                        </Card>
-
-                        {/* Image Positioning */}
-                        <Card className="p-4">
-                          <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
-                            <span>🎯</span>
-                            {isRTL ? "موضع الصورة" : "Image Position"}
-                          </h4>
-                          
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-sm">{isRTL ? "الموضع الأفقي" : "Horizontal Position"}</Label>
-                                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{formData.position_x}%</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground">{isRTL ? "يسار" : "Left"}</span>
-                                <Slider
-                                  value={[formData.position_x]}
-                                  onValueChange={(value) =>
-                                    setFormData((prev) => ({ ...prev, position_x: value[0] }))
-                                  }
-                                  min={0}
-                                  max={100}
-                                  step={1}
-                                  className="flex-1"
-                                />
-                                <span className="text-xs text-muted-foreground">{isRTL ? "يمين" : "Right"}</span>
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-sm">{isRTL ? "الموضع العمودي" : "Vertical Position"}</Label>
-                                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{formData.position_y}%</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground">{isRTL ? "أعلى" : "Top"}</span>
-                                <Slider
-                                  value={[formData.position_y]}
-                                  onValueChange={(value) =>
-                                    setFormData((prev) => ({ ...prev, position_y: value[0] }))
-                                  }
-                                  min={0}
-                                  max={100}
-                                  step={1}
-                                  className="flex-1"
-                                />
-                                <span className="text-xs text-muted-foreground">{isRTL ? "أسفل" : "Bottom"}</span>
-                              </div>
-                            </div>
-
-                            {/* Position Presets */}
-                            <div className="grid grid-cols-3 gap-2 pt-2">
-                              {[
-                                { key: "top-left", label: "↖" },
-                                { key: "top", label: "↑" },
-                                { key: "top-right", label: "↗" },
-                                { key: "left", label: "←" },
-                                { key: "center", label: "•" },
-                                { key: "right", label: "→" },
-                                { key: "bottom-left", label: "↙" },
-                                { key: "bottom", label: "↓" },
-                                { key: "bottom-right", label: "↘" },
-                              ].map((preset) => {
-                                const presetValues: Record<string, { x: number; y: number }> = {
-                                  "top-left": { x: 0, y: 0 },
-                                  "top": { x: 50, y: 0 },
-                                  "top-right": { x: 100, y: 0 },
-                                  "left": { x: 0, y: 50 },
-                                  "center": { x: 50, y: 50 },
-                                  "right": { x: 100, y: 50 },
-                                  "bottom-left": { x: 0, y: 100 },
-                                  "bottom": { x: 50, y: 100 },
-                                  "bottom-right": { x: 100, y: 100 },
-                                };
-                                const isActive = formData.position_x === presetValues[preset.key].x && 
-                                                formData.position_y === presetValues[preset.key].y;
-                                return (
-                                  <Button
-                                    key={preset.key}
-                                    type="button"
-                                    variant={isActive ? "default" : "outline"}
-                                    size="sm"
-                                    className="h-10 text-lg"
-                                    onClick={() => {
-                                      const { x, y } = presetValues[preset.key];
-                                      setFormData((prev) => ({ ...prev, position_x: x, position_y: y }));
-                                    }}
-                                  >
-                                    {preset.label}
-                                  </Button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </Card>
-
-                        {/* Image Scale */}
-                        <Card className="p-4">
-                          <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
-                            <span>🔍</span>
-                            {isRTL ? "تكبير/تصغير" : "Zoom"}
-                          </h4>
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-sm">{isRTL ? "مستوى التكبير" : "Zoom Level"}</Label>
-                                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{formData.image_scale}%</span>
-                              </div>
-                              <Slider
-                                value={[formData.image_scale]}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({ ...prev, image_scale: value[0] }))
-                                }
-                                min={50}
-                                max={200}
-                                step={5}
-                              />
-                              <div className="flex justify-between text-[10px] text-muted-foreground">
-                                <span>50%</span>
-                                <span>100%</span>
-                                <span>200%</span>
-                              </div>
-                            </div>
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-full"
-                              onClick={() => setFormData((prev) => ({ ...prev, image_scale: 100 }))}
-                            >
-                              {isRTL ? "إعادة تعيين إلى 100%" : "Reset to 100%"}
-                            </Button>
-                          </div>
-                        </Card>
-                      </div>
-
-                      {/* Right Column - Preview */}
-                      <div className="lg:sticky lg:top-0 h-fit">
-                        <BannerPreview 
-                          formData={formData} 
-                          imagePreview={imagePreview}
-                          mobilePreview={mobilePreview}
-                          isRTL={isRTL}
-                          t={t}
-                          onPositionChange={(x, y) => setFormData(prev => ({ ...prev, position_x: x, position_y: y }))}
-                          onMobilePreviewChange={setMobilePreview}
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* Schedule Tab */}
-                  <TabsContent value="schedule" className="mt-0">
-                    <div className="max-w-md mx-auto">
-                      <Card className="p-6">
-                        <h4 className="font-medium text-base mb-6 flex items-center gap-2">
-                          <Clock className="h-5 w-5 text-primary" />
-                          {isRTL ? "جدولة عرض البانر" : "Banner Schedule"}
-                        </h4>
-                        
-                        <div className="space-y-6">
-                          <div className="space-y-3">
-                            <Label className="text-sm font-medium">{t.adminBanners.startDate}</Label>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full justify-start font-normal h-11",
-                                    !formData.valid_from && "text-muted-foreground"
-                                  )}
-                                >
-                                  <CalendarIcon className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-                                  {formData.valid_from
-                                    ? format(formData.valid_from, "PPP", { locale: dateLocale })
-                                    : t.adminBanners.selectDate}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={formData.valid_from}
-                                  onSelect={(date) =>
-                                    setFormData((prev) => ({ ...prev, valid_from: date }))
-                                  }
-                                  initialFocus
-                                  className="pointer-events-auto"
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-
-                          <div className="space-y-3">
-                            <Label className="text-sm font-medium">{t.adminBanners.endDate}</Label>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full justify-start font-normal h-11",
-                                    !formData.valid_until && "text-muted-foreground"
-                                  )}
-                                >
-                                  <CalendarIcon className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-                                  {formData.valid_until
-                                    ? format(formData.valid_until, "PPP", { locale: dateLocale })
-                                    : t.common.notAvailable}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={formData.valid_until}
-                                  onSelect={(date) =>
-                                    setFormData((prev) => ({ ...prev, valid_until: date }))
-                                  }
-                                  disabled={(date) =>
-                                    formData.valid_from ? isBefore(date, formData.valid_from) : false
-                                  }
-                                  initialFocus
-                                  className="pointer-events-auto"
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            {formData.valid_until && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-xs h-8"
-                                onClick={() => setFormData((prev) => ({ ...prev, valid_until: undefined }))}
-                              >
-                                {t.common.remove} {t.adminBanners.endDate}
-                              </Button>
-                            )}
-                          </div>
-
-                          <div className="pt-4 border-t">
-                            <p className="text-sm text-muted-foreground">
-                              {isRTL 
-                                ? "اترك تاريخ الانتهاء فارغاً لجعل البانر متاحاً بشكل دائم"
-                                : "Leave end date empty to make the banner available indefinitely"}
-                            </p>
-                          </div>
-                        </div>
-                      </Card>
-                    </div>
-                  </TabsContent>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-hidden" dir={isRTL ? "rtl" : "ltr"}>
+          <DialogHeader>
+            <DialogTitle>
+              {editingBanner ? t.adminBanners.editBanner : t.adminBanners.addNewBanner}
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[calc(90vh-140px)]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 px-1">
+              {/* Form Fields */}
+              <div className="space-y-4">
+                {/* Basic Info */}
+                <div className="space-y-2">
+                  <Label htmlFor="title">{t.adminBanners.bannerTitle}</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, title: e.target.value }))
+                    }
+                    placeholder={t.adminBanners.titlePlaceholder}
+                  />
                 </div>
-              </ScrollArea>
-            </Tabs>
-            
-            <DialogFooter className="px-6 py-4 border-t">
-              <Button variant="outline" onClick={handleCloseDialog}>
-                {t.common.cancel}
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={(!imagePreview && !imageFile) || isUploading}
-              >
-                {isUploading ? t.common.saving : editingBanner ? t.common.update : t.common.add}
-              </Button>
-            </DialogFooter>
-          </TooltipProvider>
+                <div className="space-y-2">
+                  <Label htmlFor="subtitle">{t.adminBanners.subtitleLabel}</Label>
+                  <Input
+                    id="subtitle"
+                    value={formData.subtitle}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, subtitle: e.target.value }))
+                    }
+                    placeholder={t.adminBanners.subtitlePlaceholder}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="button_text">{t.adminBanners.buttonText}</Label>
+                  <Input
+                    id="button_text"
+                    value={formData.button_text}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, button_text: e.target.value }))
+                    }
+                    placeholder={t.adminBanners.buttonTextPlaceholder}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="link_url">{t.adminBanners.linkUrl}</Label>
+                  <Input
+                    id="link_url"
+                    value={formData.link_url}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, link_url: e.target.value }))
+                    }
+                    placeholder={t.adminBanners.linkUrlPlaceholder}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="image">{t.adminBanners.bannerImage}</Label>
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {isRTL 
+                      ? "الأبعاد المثالية: 1200×400 بكسل (نسبة 3:1) أو 1200×600 بكسل (نسبة 2:1) للحصول على أفضل جودة"
+                      : "Recommended dimensions: 1200×400px (3:1 ratio) or 1200×600px (2:1 ratio) for best quality"}
+                  </p>
+                </div>
+
+                {/* Customization Controls */}
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                  <h4 className="font-medium text-sm">{isRTL ? "تخصيص العناصر" : "Element Customization"}</h4>
+                  
+                  {/* Show/Hide Toggles */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "إظهار العنوان" : "Show Title"}</Label>
+                      <Switch
+                        checked={formData.show_title}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({ ...prev, show_title: checked }))
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "إظهار العنوان الفرعي" : "Show Subtitle"}</Label>
+                      <Switch
+                        checked={formData.show_subtitle}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({ ...prev, show_subtitle: checked }))
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "إظهار الزر" : "Show Button"}</Label>
+                      <Switch
+                        checked={formData.show_button}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({ ...prev, show_button: checked }))
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* Text Position */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">{isRTL ? "موقع النص" : "Text Position"}</Label>
+                    <Select
+                      value={formData.text_position}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, text_position: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="start">{isRTL ? "أعلى" : "Top"}</SelectItem>
+                        <SelectItem value="center">{isRTL ? "وسط" : "Center"}</SelectItem>
+                        <SelectItem value="end">{isRTL ? "أسفل" : "Bottom"}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Text Alignment */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">{isRTL ? "محاذاة النص" : "Text Alignment"}</Label>
+                    <Select
+                      value={formData.text_alignment}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, text_alignment: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="start">{isRTL ? "يمين" : "Left"}</SelectItem>
+                        <SelectItem value="center">{isRTL ? "وسط" : "Center"}</SelectItem>
+                        <SelectItem value="end">{isRTL ? "يسار" : "Right"}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Overlay Opacity */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "شفافية الخلفية" : "Overlay Opacity"}</Label>
+                      <span className="text-xs text-muted-foreground">{formData.overlay_opacity}%</span>
+                    </div>
+                    <Slider
+                      value={[formData.overlay_opacity]}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, overlay_opacity: value[0] }))
+                      }
+                      min={0}
+                      max={100}
+                      step={5}
+                    />
+                  </div>
+
+                  {/* Image Position Controls */}
+                  <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm font-medium">
+                        <span className={isRTL ? "ml-2" : "mr-2"}>🎯</span>
+                        <span>{isRTL ? "موضع الصورة" : "Image Position"}</span>
+                      </div>
+                      {(formData.position_x !== 50 || formData.position_y !== 50) && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs text-primary"
+                          onClick={() => setFormData((prev) => ({ ...prev, position_x: 50, position_y: 50 }))}
+                        >
+                          {isRTL ? "إعادة للوسط" : "Reset to Center"}
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {/* Position X */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">{isRTL ? "موضع أفقي (يسار ← → يمين)" : "Horizontal Position (Left ← → Right)"}</Label>
+                        <span className="text-xs text-muted-foreground">{formData.position_x}%</span>
+                      </div>
+                      <Slider
+                        value={[formData.position_x]}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, position_x: value[0] }))
+                        }
+                        min={0}
+                        max={100}
+                        step={1}
+                      />
+                    </div>
+
+                    {/* Position Y */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">{isRTL ? "موضع رأسي (أعلى ↑ ↓ أسفل)" : "Vertical Position (Top ↑ ↓ Bottom)"}</Label>
+                        <span className="text-xs text-muted-foreground">{formData.position_y}%</span>
+                      </div>
+                      <Slider
+                        value={[formData.position_y]}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, position_y: value[0] }))
+                        }
+                        min={0}
+                        max={100}
+                        step={1}
+                      />
+                    </div>
+
+                    {/* Position Presets */}
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { key: "top-left", label: isRTL ? "↗ أعلى يمين" : "↖ Top Left" },
+                        { key: "top", label: isRTL ? "↑ أعلى" : "↑ Top" },
+                        { key: "top-right", label: isRTL ? "↖ أعلى يسار" : "↗ Top Right" },
+                        { key: "left", label: isRTL ? "→ يمين" : "← Left" },
+                        { key: "center", label: isRTL ? "• وسط" : "• Center" },
+                        { key: "right", label: isRTL ? "← يسار" : "→ Right" },
+                        { key: "bottom-left", label: isRTL ? "↘ أسفل يمين" : "↙ Bottom Left" },
+                        { key: "bottom", label: isRTL ? "↓ أسفل" : "↓ Bottom" },
+                        { key: "bottom-right", label: isRTL ? "↙ أسفل يسار" : "↘ Bottom Right" },
+                      ].map((preset) => {
+                        const presetValues: Record<string, { x: number; y: number }> = {
+                          "top-left": { x: 0, y: 0 },
+                          "top": { x: 50, y: 0 },
+                          "top-right": { x: 100, y: 0 },
+                          "left": { x: 0, y: 50 },
+                          "center": { x: 50, y: 50 },
+                          "right": { x: 100, y: 50 },
+                          "bottom-left": { x: 0, y: 100 },
+                          "bottom": { x: 50, y: 100 },
+                          "bottom-right": { x: 100, y: 100 },
+                        };
+                        const isActive = formData.position_x === presetValues[preset.key].x && 
+                                        formData.position_y === presetValues[preset.key].y;
+                        return (
+                          <Button
+                            key={preset.key}
+                            type="button"
+                            variant={isActive ? "default" : "outline"}
+                            size="sm"
+                            className="text-xs h-8"
+                            onClick={() => {
+                              const { x, y } = presetValues[preset.key];
+                              setFormData((prev) => ({ ...prev, position_x: x, position_y: y }));
+                            }}
+                          >
+                            {preset.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    <p className="text-xs text-muted-foreground text-center">
+                      {isRTL 
+                        ? "استخدم الأزرار أو السلايدر لتحديد الموضع المثالي" 
+                        : "Use buttons or sliders to set the perfect position"}
+                    </p>
+                  </div>
+
+                  {/* Image Scale/Zoom */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "تكبير/تصغير الصورة" : "Image Scale (Zoom)"}</Label>
+                      <span className="text-xs text-muted-foreground">{formData.image_scale}%</span>
+                    </div>
+                    <Slider
+                      value={[formData.image_scale]}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, image_scale: value[0] }))
+                      }
+                      min={50}
+                      max={200}
+                      step={5}
+                    />
+                    <div className="flex justify-between">
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-xs h-7"
+                        onClick={() => setFormData((prev) => ({ ...prev, image_scale: 100 }))}
+                      >
+                        {isRTL ? "إعادة تعيين 100%" : "Reset to 100%"}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Banner Height */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">{isRTL ? "ارتفاع البانر" : "Banner Height"}</Label>
+                      <span className="text-xs text-muted-foreground">{formData.banner_height}px</span>
+                    </div>
+                    <Slider
+                      value={[formData.banner_height]}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, banner_height: value[0] }))
+                      }
+                      min={80}
+                      max={400}
+                      step={10}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {isRTL 
+                        ? "الارتفاع الموصى به: 120-200 بكسل للهاتف، 200-400 للويب" 
+                        : "Recommended: 120-200px for mobile, 200-400px for web"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Scheduling */}
+                <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Clock className="h-4 w-4" />
+                    <span>{t.adminBanners.scheduling}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">{t.adminBanners.startDate}</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal h-9",
+                              !formData.valid_from && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {formData.valid_from ? (
+                              format(formData.valid_from, "PPP", { locale: dateLocale })
+                            ) : (
+                              <span className="text-xs">{t.adminBanners.selectDate}</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={formData.valid_from}
+                            onSelect={(date) =>
+                              setFormData((prev) => ({ ...prev, valid_from: date }))
+                            }
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">{t.adminBanners.endDate}</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal h-9",
+                              !formData.valid_until && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {formData.valid_until ? (
+                              format(formData.valid_until, "PPP", { locale: dateLocale })
+                            ) : (
+                              <span className="text-xs">{t.adminBanners.selectDate}</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={formData.valid_until}
+                            onSelect={(date) =>
+                              setFormData((prev) => ({ ...prev, valid_until: date }))
+                            }
+                            disabled={(date) =>
+                              formData.valid_from ? isBefore(date, formData.valid_from) : false
+                            }
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                  {formData.valid_until && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-7"
+                      onClick={() => setFormData((prev) => ({ ...prev, valid_until: undefined }))}
+                    >
+                      {t.common.remove} {t.adminBanners.endDate}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Live Preview with Mobile Toggle */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Eye className="h-4 w-4" />
+                    <span>{t.common.view} {t.adminBanners.banner}</span>
+                  </div>
+                  {/* Mobile/Desktop Toggle */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{isRTL ? "سطح المكتب" : "Desktop"}</span>
+                    <Switch
+                      checked={mobilePreview}
+                      onCheckedChange={setMobilePreview}
+                    />
+                    <span className="text-xs text-muted-foreground">{isRTL ? "📱 الجوال" : "📱 Mobile"}</span>
+                  </div>
+                </div>
+                
+                <div 
+                  className={cn(
+                    "relative overflow-hidden rounded-2xl border bg-muted mx-auto transition-all duration-300",
+                    mobilePreview ? "max-w-[375px]" : "w-full"
+                  )}
+                  style={{ minHeight: `${formData.banner_height}px` }}
+                >
+                  {/* Grid Overlay for Positioning */}
+                  <div className="absolute inset-0 z-20 pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
+                    <div className="w-full h-full grid grid-cols-3 grid-rows-3">
+                      {[...Array(9)].map((_, i) => (
+                        <div key={i} className="border border-white/20" />
+                      ))}
+                    </div>
+                    {/* Center Crosshair */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 border-2 border-white/50 rounded-full" />
+                  </div>
+                  
+                  {imagePreview ? (
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="absolute inset-0 w-full h-full object-cover transition-all duration-200"
+                      style={{ 
+                        transform: `scale(${formData.image_scale / 100})`,
+                        objectPosition: `${formData.position_x}% ${formData.position_y}%`,
+                      }}
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
+                      <Image className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
+                  
+                  {/* Position Indicator */}
+                  {imagePreview && (
+                    <div 
+                      className="absolute z-10 w-4 h-4 bg-primary border-2 border-white rounded-full shadow-lg pointer-events-none transition-all duration-200"
+                      style={{
+                        left: `${formData.position_x}%`,
+                        top: `${formData.position_y}%`,
+                        transform: 'translate(-50%, -50%)'
+                      }}
+                    />
+                  )}
+                  
+                  {/* Overlay */}
+                  <div 
+                    className="absolute inset-0 bg-black"
+                    style={{ opacity: formData.overlay_opacity / 100 }}
+                  />
+                  
+                  {/* Content */}
+                  <div 
+                    className={cn(
+                      "relative z-10 p-5 flex flex-col",
+                      formData.text_position === "start" && "justify-start",
+                      formData.text_position === "center" && "justify-center",
+                      formData.text_position === "end" && "justify-end",
+                      formData.text_alignment === "start" && (isRTL ? "items-end text-end" : "items-start text-start"),
+                      formData.text_alignment === "center" && "items-center text-center",
+                      formData.text_alignment === "end" && (isRTL ? "items-start text-start" : "items-end text-end")
+                    )}
+                    style={{ minHeight: `${formData.banner_height}px` }}
+                  >
+                    <div className="space-y-2">
+                      {formData.show_title && (
+                        <h3 className="text-xl font-bold text-white drop-shadow-lg" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                          {formData.title || t.adminBanners.bannerTitle}
+                        </h3>
+                      )}
+                      {formData.show_subtitle && formData.subtitle && (
+                        <p className="text-sm text-white/90 drop-shadow" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                          {formData.subtitle}
+                        </p>
+                      )}
+                      {formData.show_button && formData.button_text && (
+                        <button 
+                          className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap shadow-lg"
+                          disabled
+                        >
+                          {formData.button_text}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>
+                    {isRTL 
+                      ? `الموضع: X=${formData.position_x}%, Y=${formData.position_y}%` 
+                      : `Position: X=${formData.position_x}%, Y=${formData.position_y}%`}
+                  </span>
+                  <span>
+                    {mobilePreview 
+                      ? (isRTL ? "معاينة الجوال (375px)" : "Mobile Preview (375px)")
+                      : (isRTL ? "معاينة سطح المكتب" : "Desktop Preview")
+                    }
+                  </span>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseDialog}>
+              {t.common.cancel}
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={(!imagePreview && !imageFile) || isUploading}
+            >
+              {isUploading ? t.common.saving : editingBanner ? t.common.update : t.common.add}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
