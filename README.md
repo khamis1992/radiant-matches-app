@@ -255,22 +255,6 @@ Please read our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 ---
 
-## 📸 Screenshots
-
-<div align="center">
-
-| Home Page | Artist Profile | Booking |
-|-----------|---------------|---------|
-| ![Home](docs/screenshots/home.png) | ![Profile](docs/screenshots/profile.png) | ![Booking](docs/screenshots/booking.png) |
-
-| Admin Dashboard | Banner Editor | Analytics |
-|-----------------|---------------|-----------|
-| ![Admin](docs/screenshots/admin.png) | ![Banner](docs/screenshots/banner.png) | ![Analytics](docs/screenshots/analytics.png) |
-
-</div>
-
----
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
