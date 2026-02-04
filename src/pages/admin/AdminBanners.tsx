@@ -88,6 +88,8 @@ interface BannerFormData {
   image_scale: number;
   image_fit: string;
   banner_height: number;
+  position_x: number;
+  position_y: number;
 }
 
 const initialFormData: BannerFormData = {
@@ -107,6 +109,8 @@ const initialFormData: BannerFormData = {
   image_scale: 100,
   image_fit: "cover",
   banner_height: 160,
+  position_x: 50,
+  position_y: 50,
 };
 
 interface BannerData {
@@ -131,6 +135,8 @@ interface BannerData {
   image_scale: number;
   image_fit: string;
   banner_height: number;
+  position_x: number;
+  position_y: number;
 }
 
 interface SortableRowProps {
@@ -298,6 +304,8 @@ const AdminBanners = () => {
         image_scale: banner.image_scale ?? 100,
         image_fit: banner.image_fit || "cover",
         banner_height: banner.banner_height ?? 160,
+        position_x: banner.position_x ?? 50,
+        position_y: banner.position_y ?? 50,
       });
       setImagePreview(banner.image_url);
     } else {
@@ -350,6 +358,8 @@ const AdminBanners = () => {
         image_scale: formData.image_scale,
         image_fit: formData.image_fit,
         banner_height: formData.banner_height,
+        position_x: formData.position_x,
+        position_y: formData.position_y,
       };
 
       if (editingBanner) {
@@ -709,6 +719,61 @@ const AdminBanners = () => {
                         : "Recommended: 120-200px for mobile, 200-400px for web"}
                     </p>
                   </div>
+
+                  {/* Image Position Controls */}
+                  <div className="space-y-3 border-t pt-4">
+                    <h5 className="text-sm font-medium">{isRTL ? "موضع الصورة (نقطة التركيز)" : "Image Position (Focus Point)"}</h5>
+                    
+                    {/* Position X */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">{isRTL ? "الموضع الأفقي" : "Horizontal Position"}</Label>
+                        <span className="text-xs text-muted-foreground">{formData.position_x}%</span>
+                      </div>
+                      <Slider
+                        value={[formData.position_x]}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, position_x: value[0] }))
+                        }
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                      <div className="flex justify-between text-[10px] text-muted-foreground">
+                        <span>{isRTL ? "يسار" : "Left"}</span>
+                        <span>{isRTL ? "وسط" : "Center"}</span>
+                        <span>{isRTL ? "يمين" : "Right"}</span>
+                      </div>
+                    </div>
+
+                    {/* Position Y */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">{isRTL ? "الموضع العمودي" : "Vertical Position"}</Label>
+                        <span className="text-xs text-muted-foreground">{formData.position_y}%</span>
+                      </div>
+                      <Slider
+                        value={[formData.position_y]}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, position_y: value[0] }))
+                        }
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                      <div className="flex justify-between text-[10px] text-muted-foreground">
+                        <span>{isRTL ? "أعلى" : "Top"}</span>
+                        <span>{isRTL ? "وسط" : "Center"}</span>
+                        <span>{isRTL ? "أسفل" : "Bottom"}</span>
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground">
+                      {isRTL 
+                        ? "يحدد نقطة التركيز في الصورة عند القص. مفيد لإظهار جزء معين من الصورة" 
+                        : "Defines the focus point when image is cropped. Useful for showing a specific part of the image"}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Scheduling */}
@@ -805,17 +870,18 @@ const AdminBanners = () => {
                   className="relative overflow-hidden rounded-2xl border bg-muted"
                   style={{ minHeight: `${formData.banner_height}px` }}
                 >
-                  {imagePreview ? (
+                {imagePreview ? (
                     <img 
                       src={imagePreview} 
                       alt="Preview" 
                       className={cn(
-                        "absolute inset-0 w-full h-full transition-transform duration-200",
+                        "absolute inset-0 w-full h-full transition-all duration-200",
                         formData.image_fit === "cover" ? "object-cover" : "object-contain"
                       )}
                       style={{ 
                         transform: `scale(${formData.image_scale / 100})`,
-                        transformOrigin: 'center center'
+                        transformOrigin: `${formData.position_x}% ${formData.position_y}%`,
+                        objectPosition: `${formData.position_x}% ${formData.position_y}%`
                       }}
                     />
                   ) : (
