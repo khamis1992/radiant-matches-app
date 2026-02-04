@@ -217,6 +217,8 @@ export type Database = {
           is_active: boolean
           link_url: string | null
           overlay_opacity: number
+          position_x: number | null
+          position_y: number | null
           show_button: boolean
           show_subtitle: boolean
           show_title: boolean
@@ -240,6 +242,8 @@ export type Database = {
           is_active?: boolean
           link_url?: string | null
           overlay_opacity?: number
+          position_x?: number | null
+          position_y?: number | null
           show_button?: boolean
           show_subtitle?: boolean
           show_title?: boolean
@@ -263,6 +267,8 @@ export type Database = {
           is_active?: boolean
           link_url?: string | null
           overlay_opacity?: number
+          position_x?: number | null
+          position_y?: number | null
           show_button?: boolean
           show_subtitle?: boolean
           show_title?: boolean
