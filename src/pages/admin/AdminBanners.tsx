@@ -556,10 +556,10 @@ const AdminBanners = () => {
         text_position: formData.text_position,
         text_alignment: formData.text_alignment,
         overlay_opacity: formData.overlay_opacity,
-        image_scale: formData.image_scale,
-        banner_height: formData.banner_height,
-        position_x: formData.position_x,
-        position_y: formData.position_y,
+        image_scale: Math.round(formData.image_scale),
+        banner_height: Math.round(formData.banner_height),
+        position_x: Math.round(formData.position_x),
+        position_y: Math.round(formData.position_y),
       };
 
       if (editingBanner) {
