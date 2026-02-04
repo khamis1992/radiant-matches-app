@@ -211,14 +211,18 @@ export type Database = {
           created_at: string
           display_order: number
           id: string
-          image_fit: string
           image_scale: number
           image_url: string
           is_active: boolean
           link_url: string | null
           overlay_opacity: number
+<<<<<<< HEAD
           position_x: number | null
           position_y: number | null
+=======
+          position_x: number
+          position_y: number
+>>>>>>> 20f010c (feat: add banner image position controls with X/Y sliders and mobile preview)
           show_button: boolean
           show_subtitle: boolean
           show_title: boolean
@@ -236,14 +240,18 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: string
-          image_fit?: string
           image_scale?: number
           image_url: string
           is_active?: boolean
           link_url?: string | null
           overlay_opacity?: number
+<<<<<<< HEAD
           position_x?: number | null
           position_y?: number | null
+=======
+          position_x?: number
+          position_y?: number
+>>>>>>> 20f010c (feat: add banner image position controls with X/Y sliders and mobile preview)
           show_button?: boolean
           show_subtitle?: boolean
           show_title?: boolean
@@ -261,14 +269,18 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: string
-          image_fit?: string
           image_scale?: number
           image_url?: string
           is_active?: boolean
           link_url?: string | null
           overlay_opacity?: number
+<<<<<<< HEAD
           position_x?: number | null
           position_y?: number | null
+=======
+          position_x?: number
+          position_y?: number
+>>>>>>> 20f010c (feat: add banner image position controls with X/Y sliders and mobile preview)
           show_button?: boolean
           show_subtitle?: boolean
           show_title?: boolean

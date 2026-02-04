@@ -86,8 +86,9 @@ interface BannerFormData {
   text_alignment: string;
   overlay_opacity: number;
   image_scale: number;
-  image_fit: string;
   banner_height: number;
+  position_x: number;
+  position_y: number;
 }
 
 const initialFormData: BannerFormData = {
@@ -105,8 +106,9 @@ const initialFormData: BannerFormData = {
   text_alignment: "start",
   overlay_opacity: 50,
   image_scale: 100,
-  image_fit: "cover",
   banner_height: 160,
+  position_x: 50,
+  position_y: 50,
 };
 
 interface BannerData {
@@ -129,8 +131,9 @@ interface BannerData {
   text_alignment: string;
   overlay_opacity: number;
   image_scale: number;
-  image_fit: string;
   banner_height: number;
+  position_x: number;
+  position_y: number;
 }
 
 interface SortableRowProps {
@@ -244,6 +247,7 @@ const AdminBanners = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
+  const [mobilePreview, setMobilePreview] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -296,8 +300,9 @@ const AdminBanners = () => {
         text_alignment: banner.text_alignment || "start",
         overlay_opacity: banner.overlay_opacity ?? 50,
         image_scale: banner.image_scale ?? 100,
-        image_fit: banner.image_fit || "cover",
         banner_height: banner.banner_height ?? 160,
+        position_x: banner.position_x ?? 50,
+        position_y: banner.position_y ?? 50,
       });
       setImagePreview(banner.image_url);
     } else {
@@ -348,8 +353,9 @@ const AdminBanners = () => {
         text_alignment: formData.text_alignment,
         overlay_opacity: formData.overlay_opacity,
         image_scale: formData.image_scale,
-        image_fit: formData.image_fit,
         banner_height: formData.banner_height,
+        position_x: formData.position_x,
+        position_y: formData.position_y,
       };
 
       if (editingBanner) {
@@ -643,33 +649,100 @@ const AdminBanners = () => {
                     />
                   </div>
 
-                  {/* Image Fit Mode */}
-                  <div className="space-y-2">
-                    <Label className="text-sm">{isRTL ? "طريقة عرض الصورة" : "Image Fit Mode"}</Label>
-                    <Select
-                      value={formData.image_fit}
-                      onValueChange={(value) =>
-                        setFormData((prev) => ({ ...prev, image_fit: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cover">
-                          {isRTL ? "ملء البانر (قد يتم قص الصورة)" : "Fill Banner (may crop)"}
-                        </SelectItem>
-                        <SelectItem value="contain">
-                          {isRTL ? "إظهار الصورة كاملة" : "Show Full Image"}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                  {/* Image Position Controls - NEW */}
+                  <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <span className={isRTL ? "ml-2" : "mr-2"}>🎯</span>
+                      <span>{isRTL ? "موضع الصورة" : "Image Position"}</span>
+                    </div>
+                    
+                    {/* Position X */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">{isRTL ? "موضع أفقي (يسار ← → يمين)" : "Horizontal Position (Left ← → Right)"}</Label>
+                        <span className="text-xs text-muted-foreground">{formData.position_x}%</span>
+                      </div>
+                      <Slider
+                        value={[formData.position_x]}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, position_x: value[0] }))
+                        }
+                        min={0}
+                        max={100}
+                        step={1}
+                      />
+                    </div>
+
+                    {/* Position Y */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">{isRTL ? "موضع رأسي (أعلى ↑ ↓ أسفل)" : "Vertical Position (Top ↑ ↓ Bottom)"}</Label>
+                        <span className="text-xs text-muted-foreground">{formData.position_y}%</span>
+                      </div>
+                      <Slider
+                        value={[formData.position_y]}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, position_y: value[0] }))
+                        }
+                        min={0}
+                        max={100}
+                        step={1}
+                      />
+                    </div>
+
+                    {/* Position Presets */}
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { key: "top-left", label: isRTL ? "↗ أعلى يمين" : "↖ Top Left" },
+                        { key: "top", label: isRTL ? "↑ أعلى" : "↑ Top" },
+                        { key: "top-right", label: isRTL ? "↖ أعلى يسار" : "↗ Top Right" },
+                        { key: "left", label: isRTL ? "→ يمين" : "← Left" },
+                        { key: "center", label: isRTL ? "• وسط" : "• Center" },
+                        { key: "right", label: isRTL ? "← يسار" : "→ Right" },
+                        { key: "bottom-left", label: isRTL ? "↘ أسفل يمين" : "↙ Bottom Left" },
+                        { key: "bottom", label: isRTL ? "↓ أسفل" : "↓ Bottom" },
+                        { key: "bottom-right", label: isRTL ? "↙ أسفل يسار" : "↘ Bottom Right" },
+                      ].map((preset) => {
+                        const presetValues: Record<string, { x: number; y: number }> = {
+                          "top-left": { x: 0, y: 0 },
+                          "top": { x: 50, y: 0 },
+                          "top-right": { x: 100, y: 0 },
+                          "left": { x: 0, y: 50 },
+                          "center": { x: 50, y: 50 },
+                          "right": { x: 100, y: 50 },
+                          "bottom-left": { x: 0, y: 100 },
+                          "bottom": { x: 50, y: 100 },
+                          "bottom-right": { x: 100, y: 100 },
+                        };
+                        return (
+                          <Button
+                            key={preset.key}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-xs h-8"
+                            onClick={() => {
+                              const { x, y } = presetValues[preset.key];
+                              setFormData((prev) => ({ ...prev, position_x: x, position_y: y }));
+                            }}
+                          >
+                            {preset.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    <p className="text-xs text-muted-foreground text-center">
+                      {isRTL 
+                        ? "اسحب الصورة في المعاينة أو استخدم الأزرار لتحديد الموضع المثالي" 
+                        : "Drag the image in preview or use buttons to set the perfect position"}
+                    </p>
                   </div>
 
                   {/* Image Scale/Zoom */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm">{isRTL ? "حجم الصورة (تكبير/تصغير)" : "Image Scale (Zoom)"}</Label>
+                      <Label className="text-sm">{isRTL ? "تكبير/تصغير الصورة" : "Image Scale (Zoom)"}</Label>
                       <span className="text-xs text-muted-foreground">{formData.image_scale}%</span>
                     </div>
                     <Slider
@@ -681,11 +754,17 @@ const AdminBanners = () => {
                       max={200}
                       step={5}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      {isRTL 
-                        ? "استخدم هذا للتحكم بحجم الصورة بعد اختيار طريقة العرض" 
-                        : "Use this to adjust image size after choosing fit mode"}
-                    </p>
+                    <div className="flex justify-between">
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-xs h-7"
+                        onClick={() => setFormData((prev) => ({ ...prev, image_scale: 100 }))}
+                      >
+                        {isRTL ? "إعادة تعيين 100%" : "Reset to 100%"}
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Banner Height */}
@@ -795,39 +874,77 @@ const AdminBanners = () => {
                 </div>
               </div>
 
-              {/* Live Preview */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Eye className="h-4 w-4" />
-                  <span>{t.common.view} {t.adminBanners.banner}</span>
+              {/* Live Preview with Mobile Toggle */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Eye className="h-4 w-4" />
+                    <span>{t.common.view} {t.adminBanners.banner}</span>
+                  </div>
+                  {/* Mobile/Desktop Toggle */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{isRTL ? "سطح المكتب" : "Desktop"}</span>
+                    <Switch
+                      checked={mobilePreview}
+                      onCheckedChange={setMobilePreview}
+                    />
+                    <span className="text-xs text-muted-foreground">{isRTL ? "📱 الجوال" : "📱 Mobile"}</span>
+                  </div>
                 </div>
+                
                 <div 
-                  className="relative overflow-hidden rounded-2xl border bg-muted"
+                  className={cn(
+                    "relative overflow-hidden rounded-2xl border bg-muted mx-auto transition-all duration-300",
+                    mobilePreview ? "max-w-[375px]" : "w-full"
+                  )}
                   style={{ minHeight: `${formData.banner_height}px` }}
                 >
+                  {/* Grid Overlay for Positioning */}
+                  <div className="absolute inset-0 z-20 pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
+                    <div className="w-full h-full grid grid-cols-3 grid-rows-3">
+                      {[...Array(9)].map((_, i) => (
+                        <div key={i} className="border border-white/20" />
+                      ))}
+                    </div>
+                    {/* Center Crosshair */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 border-2 border-white/50 rounded-full" />
+                  </div>
+                  
                   {imagePreview ? (
                     <img 
                       src={imagePreview} 
                       alt="Preview" 
-                      className={cn(
-                        "absolute inset-0 w-full h-full transition-transform duration-200",
-                        formData.image_fit === "cover" ? "object-cover" : "object-contain"
-                      )}
+                      className="absolute inset-0 w-full h-full object-cover transition-all duration-200"
                       style={{ 
                         transform: `scale(${formData.image_scale / 100})`,
-                        transformOrigin: 'center center'
+                        objectPosition: `${formData.position_x}% ${formData.position_y}%`,
                       }}
+                      draggable={false}
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
                       <Image className="h-8 w-8 text-muted-foreground" />
                     </div>
                   )}
+                  
+                  {/* Position Indicator */}
+                  {imagePreview && (
+                    <div 
+                      className="absolute z-10 w-4 h-4 bg-primary border-2 border-white rounded-full shadow-lg pointer-events-none transition-all duration-200"
+                      style={{
+                        left: `${formData.position_x}%`,
+                        top: `${formData.position_y}%`,
+                        transform: 'translate(-50%, -50%)'
+                      }}
+                    />
+                  )}
+                  
                   {/* Overlay */}
                   <div 
                     className="absolute inset-0 bg-black"
                     style={{ opacity: formData.overlay_opacity / 100 }}
                   />
+                  
                   {/* Content */}
                   <div 
                     className={cn(
@@ -835,26 +952,26 @@ const AdminBanners = () => {
                       formData.text_position === "start" && "justify-start",
                       formData.text_position === "center" && "justify-center",
                       formData.text_position === "end" && "justify-end",
-                      formData.text_alignment === "start" && "items-start text-start",
+                      formData.text_alignment === "start" && (isRTL ? "items-end text-end" : "items-start text-start"),
                       formData.text_alignment === "center" && "items-center text-center",
-                      formData.text_alignment === "end" && "items-end text-end"
+                      formData.text_alignment === "end" && (isRTL ? "items-start text-start" : "items-end text-end")
                     )}
                     style={{ minHeight: `${formData.banner_height}px` }}
                   >
                     <div className="space-y-2">
                       {formData.show_title && (
-                        <h3 className="text-xl font-bold text-white drop-shadow-lg">
+                        <h3 className="text-xl font-bold text-white drop-shadow-lg" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
                           {formData.title || t.adminBanners.bannerTitle}
                         </h3>
                       )}
                       {formData.show_subtitle && formData.subtitle && (
-                        <p className="text-sm text-white/90 drop-shadow">
+                        <p className="text-sm text-white/90 drop-shadow" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                           {formData.subtitle}
                         </p>
                       )}
                       {formData.show_button && formData.button_text && (
                         <button 
-                          className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
+                          className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap shadow-lg"
                           disabled
                         >
                           {formData.button_text}
@@ -863,9 +980,20 @@ const AdminBanners = () => {
                     </div>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground text-center">
-                  {isRTL ? "هذه معاينة تقريبية لشكل البنر في الصفحة الرئيسية" : "This is an approximate preview of the banner on the homepage"}
-                </p>
+                
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>
+                    {isRTL 
+                      ? `الموضع: X=${formData.position_x}%, Y=${formData.position_y}%` 
+                      : `Position: X=${formData.position_x}%, Y=${formData.position_y}%`}
+                  </span>
+                  <span>
+                    {mobilePreview 
+                      ? (isRTL ? "معاينة الجوال (375px)" : "Mobile Preview (375px)")
+                      : (isRTL ? "معاينة سطح المكتب" : "Desktop Preview")
+                    }
+                  </span>
+                </div>
               </div>
             </div>
           </ScrollArea>
