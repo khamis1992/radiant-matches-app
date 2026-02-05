@@ -503,7 +503,7 @@ const AdminBanners = () => {
 
       {/* Add/Edit Dialog with Tabs */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[1000px] max-h-[95vh] overflow-hidden p-0" dir={isRTL ? "rtl" : "ltr"}>
+        <DialogContent className="sm:max-w-[1200px] max-h-[98vh] overflow-hidden p-0" dir={isRTL ? "rtl" : "ltr"}>
           <DialogHeader className="px-6 pt-6 pb-2">
             <DialogTitle className="text-xl">
               {editingBanner ? t.adminBanners.editBanner : t.adminBanners.addNewBanner}
@@ -528,7 +528,7 @@ const AdminBanners = () => {
               </TabsList>
             </div>
 
-            <ScrollArea className="h-[calc(95vh-240px)] overflow-y-auto">
+            <ScrollArea className="h-[calc(98vh-200px)] overflow-y-auto">
               <div className="px-6 pb-6">
                 {/* Content Tab */}
                 <TabsContent value="content" className="mt-0">
