@@ -675,16 +675,14 @@ const AdminBanners = () => {
                           ref={previewContainerRef}
                           onMouseDown={handleMouseDown}
                           className={cn(
-                            "relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-muted mx-auto transition-all duration-300 shadow-lg select-none",
+                            "relative rounded-2xl border-2 border-primary/20 bg-muted mx-auto transition-all duration-300 shadow-lg select-none overflow-auto",
                             imagePreview && "cursor-grab active:cursor-grabbing",
                             isDraggingImage && "cursor-grabbing",
                             mobilePreview ? "max-w-[375px]" : "w-full",
                           )}
                           style={{ 
-                            minHeight: `${Math.max(
-                              formData.banner_height,
-                              (formData.banner_height * formData.image_scale) / 100
-                            )}px` 
+                            height: `${formData.banner_height}px`,
+                            maxHeight: `${formData.banner_height}px`
                           }}
                         >
                           {/* Grid Overlay for Positioning */}
@@ -697,21 +695,28 @@ const AdminBanners = () => {
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 border-2 border-white/50 rounded-full" />
                           </div>
 
-                          {imagePreview ? (
-                            <img
-                              src={imagePreview}
-                              alt="Preview"
-                              className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
-                              style={{
-                                transform: `scale(${formData.image_scale / 100})`,
-                              }}
-                              draggable={false}
-                            />
-                          ) : (
-                            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
-                              <Image className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                          )}
+                          <div 
+                            className="absolute inset-0 flex items-center justify-center"
+                            style={{
+                              width: `${formData.image_scale}%`,
+                              height: `${formData.image_scale}%`,
+                              minWidth: '100%',
+                              minHeight: '100%',
+                            }}
+                          >
+                            {imagePreview ? (
+                              <img
+                                src={imagePreview}
+                                alt="Preview"
+                                className="w-full h-full object-contain transition-all duration-200 pointer-events-none"
+                                draggable={false}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
+                                <Image className="h-8 w-8 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
 
                           {/* Position Indicator */}
                           {imagePreview && (
@@ -744,7 +749,7 @@ const AdminBanners = () => {
                               formData.text_alignment === "end" &&
                                 (isRTL ? "items-start text-start" : "items-end text-end"),
                             )}
-                            style={{ minHeight: `${Math.max(formData.banner_height, (formData.banner_height * formData.image_scale) / 100)}px` }}
+                            style={{ height: `${formData.banner_height}px` }}
                           >
                             <div className="space-y-2">
                               {formData.show_title && (
@@ -1073,14 +1078,12 @@ const AdminBanners = () => {
 
                         <div
                           className={cn(
-                            "relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-muted mx-auto transition-all duration-300 shadow-lg",
+                            "relative rounded-2xl border-2 border-primary/20 bg-muted mx-auto transition-all duration-300 shadow-lg overflow-auto",
                             mobilePreview ? "max-w-[375px]" : "w-full",
                           )}
                           style={{ 
-                            minHeight: `${Math.max(
-                              formData.banner_height,
-                              (formData.banner_height * formData.image_scale) / 100
-                            )}px` 
+                            height: `${formData.banner_height}px`,
+                            maxHeight: `${formData.banner_height}px`
                           }}
                         >
                           {/* Grid Overlay for Positioning */}
@@ -1093,21 +1096,28 @@ const AdminBanners = () => {
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 border-2 border-white/50 rounded-full" />
                           </div>
 
-                          {imagePreview ? (
-                            <img
-                              src={imagePreview}
-                              alt="Preview"
-                              className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
-                              style={{
-                                transform: `scale(${formData.image_scale / 100})`,
-                              }}
-                              draggable={false}
-                            />
-                          ) : (
-                            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
-                              <Image className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                          )}
+                          <div 
+                            className="absolute inset-0 flex items-center justify-center"
+                            style={{
+                              width: `${formData.image_scale}%`,
+                              height: `${formData.image_scale}%`,
+                              minWidth: '100%',
+                              minHeight: '100%',
+                            }}
+                          >
+                            {imagePreview ? (
+                              <img
+                                src={imagePreview}
+                                alt="Preview"
+                                className="w-full h-full object-contain transition-all duration-200 pointer-events-none"
+                                draggable={false}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center">
+                                <Image className="h-8 w-8 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
 
                           {/* Position Indicator */}
                           {imagePreview && (
@@ -1140,7 +1150,7 @@ const AdminBanners = () => {
                               formData.text_alignment === "end" &&
                                 (isRTL ? "items-start text-start" : "items-end text-end"),
                             )}
-                            style={{ minHeight: `${formData.banner_height}px` }}
+                            style={{ height: `${formData.banner_height}px` }}
                           >
                             <div className="space-y-2">
                               {formData.show_title && (
