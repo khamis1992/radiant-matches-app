@@ -1,32 +1,196 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 
-interface PDFColumn {
+interface HTMLColumn {
   header: string;
   dataKey: string;
 }
 
-interface PDFExportOptions {
+interface HTMLExportOptions {
   title: string;
   subtitle?: string;
   filename: string;
-  columns: PDFColumn[];
+  columns: HTMLColumn[];
   data: Record<string, string | number | null | undefined>[];
   orientation?: "portrait" | "landscape";
 }
 
-// Arabic text needs to be reversed for proper display in PDF
-const reverseArabic = (text: string): string => {
-  if (!text) return "";
-  // Check if text contains Arabic characters
-  const arabicPattern = /[\u0600-\u06FF]/;
-  if (arabicPattern.test(text)) {
-    return text.split("").reverse().join("");
+const generateHTMLReport = ({
+  title,
+  subtitle,
+  filename,
+  columns,
+  data,
+}: HTMLExportOptions) => {
+  const currentDate = format(new Date(), "yyyy-MM-dd HH:mm");
+  
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      padding: 20px;
+      direction: rtl;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      color: white;
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-content h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .header-content p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .header-date {
+      font-size: 12px;
+      opacity: 0.8;
+      text-align: left;
+    }
+    .content {
+      padding: 24px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    thead {
+      background: #f1f5f9;
+    }
+    th {
+      padding: 14px 16px;
+      text-align: right;
+      font-weight: 600;
+      color: #475569;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    td {
+      padding: 12px 16px;
+      text-align: right;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+    }
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+    tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+    tbody tr:nth-child(even):hover {
+      background: #f1f5f9;
+    }
+    .footer {
+      padding: 16px 32px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .print-btn {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      background: #8b5cf6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .print-btn:hover {
+      background: #7c3aed;
+      transform: translateY(-2px);
+    }
+    @media print {
+      .print-btn { display: none; }
+      body { background: white; padding: 0; }
+      .container { box-shadow: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-content">
+        <h1>${title}</h1>
+        ${subtitle ? `<p>${subtitle}</p>` : ""}
+      </div>
+      <div class="header-date">${currentDate}</div>
+    </div>
+    <div class="content">
+      <table>
+        <thead>
+          <tr>
+            ${columns.map(col => `<th>${col.header}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map(row => `
+            <tr>
+              ${columns.map(col => `<td>${row[col.dataKey] ?? ""}</td>`).join("")}
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+    <div class="footer">
+      إجمالي ${data.length} سجل | تم إنشاء التقرير بتاريخ ${currentDate}
+    </div>
+  </div>
+  <button class="print-btn" onclick="window.print()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+      <rect x="6" y="14" width="12" height="8"/>
+    </svg>
+    طباعة التقرير
+  </button>
+</body>
+</html>`;
+
+  // Open in new window
+  const printWindow = window.open("", "_blank");
+  if (printWindow) {
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
   }
-  return text;
 };
 
+// Keep old function name for compatibility but now exports HTML
 export const exportToPDF = ({
   title,
   subtitle,
@@ -34,89 +198,15 @@ export const exportToPDF = ({
   columns,
   data,
   orientation = "landscape",
-}: PDFExportOptions) => {
-  const doc = new jsPDF({
+}: HTMLExportOptions) => {
+  generateHTMLReport({
+    title,
+    subtitle,
+    filename,
+    columns,
+    data,
     orientation,
-    unit: "mm",
-    format: "a4",
   });
-
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const currentDate = format(new Date(), "yyyy-MM-dd HH:mm");
-
-  // Header background
-  doc.setFillColor(139, 92, 246); // Primary purple color
-  doc.rect(0, 0, pageWidth, 35, "F");
-
-  // Title (reversed for Arabic)
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
-  doc.text(reverseArabic(title), pageWidth - 15, 15, { align: "right" });
-
-  // Subtitle
-  if (subtitle) {
-    doc.setFontSize(12);
-    doc.text(reverseArabic(subtitle), pageWidth - 15, 25, { align: "right" });
-  }
-
-  // Date
-  doc.setFontSize(10);
-  doc.text(currentDate, 15, 15);
-
-  // Prepare table data with reversed Arabic text
-  const tableColumns = columns.map((col) => ({
-    ...col,
-    header: reverseArabic(col.header),
-  }));
-
-  const tableData = data.map((row) => {
-    const newRow: Record<string, string> = {};
-    columns.forEach((col) => {
-      const value = row[col.dataKey];
-      newRow[col.dataKey] = reverseArabic(String(value ?? ""));
-    });
-    return newRow;
-  });
-
-  // Generate table
-  autoTable(doc, {
-    startY: 45,
-    head: [tableColumns.map((col) => col.header)],
-    body: tableData.map((row) => columns.map((col) => row[col.dataKey])),
-    styles: {
-      fontSize: 10,
-      cellPadding: 4,
-      halign: "right",
-      valign: "middle",
-    },
-    headStyles: {
-      fillColor: [139, 92, 246],
-      textColor: [255, 255, 255],
-      fontStyle: "bold",
-      halign: "right",
-    },
-    alternateRowStyles: {
-      fillColor: [249, 250, 251],
-    },
-    tableLineColor: [229, 231, 235],
-    tableLineWidth: 0.1,
-    margin: { top: 45, right: 15, bottom: 25, left: 15 },
-    didDrawPage: (data) => {
-      // Footer
-      const pageCount = doc.getNumberOfPages();
-      doc.setFontSize(9);
-      doc.setTextColor(128, 128, 128);
-      doc.text(
-        `${reverseArabic("صفحة")} ${data.pageNumber} ${reverseArabic("من")} ${pageCount}`,
-        pageWidth / 2,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: "center" }
-      );
-    },
-  });
-
-  // Save the PDF
-  doc.save(`${filename}_${format(new Date(), "yyyy-MM-dd")}.pdf`);
 };
 
 // Booking-specific PDF export
@@ -133,7 +223,7 @@ export const exportBookingsToPDF = (
   }>,
   statusLabels: Record<string, string>
 ) => {
-  const columns: PDFColumn[] = [
+  const columns: HTMLColumn[] = [
     { header: "رقم الحجز", dataKey: "id" },
     { header: "العميل", dataKey: "customer" },
     { header: "الهاتف", dataKey: "phone" },
@@ -166,7 +256,7 @@ export const exportBookingsToPDF = (
   });
 };
 
-// Transactions-specific PDF export
+// Transactions-specific HTML export
 export const exportTransactionsToPDF = (
   transactions: Array<{
     id: string;
@@ -180,7 +270,7 @@ export const exportTransactionsToPDF = (
   }>,
   typeLabels: Record<string, string>
 ) => {
-  const columns: PDFColumn[] = [
+  const columns: HTMLColumn[] = [
     { header: "التاريخ", dataKey: "date" },
     { header: "النوع", dataKey: "type" },
     { header: "الفنان", dataKey: "artist" },
@@ -212,7 +302,7 @@ export const exportTransactionsToPDF = (
   });
 };
 
-// Artist Payouts PDF export
+// Artist Payouts HTML export
 export const exportArtistPayoutsToPDF = (
   payouts: Array<{
     artist_id: string;
@@ -223,7 +313,7 @@ export const exportArtistPayoutsToPDF = (
     total_earnings: number;
   }>
 ) => {
-  const columns: PDFColumn[] = [
+  const columns: HTMLColumn[] = [
     { header: "الفنان", dataKey: "name" },
     { header: "البريد الإلكتروني", dataKey: "email" },
     { header: "عدد المعاملات", dataKey: "count" },
@@ -250,7 +340,7 @@ export const exportArtistPayoutsToPDF = (
   });
 };
 
-// Top Services PDF export
+// Top Services HTML export
 export const exportTopServicesToPDF = (
   services: Array<{
     id: string;
@@ -262,7 +352,7 @@ export const exportTopServicesToPDF = (
   }>,
   dateRangeLabel?: string
 ) => {
-  const columns: PDFColumn[] = [
+  const columns: HTMLColumn[] = [
     { header: "#", dataKey: "rank" },
     { header: "الخدمة", dataKey: "name" },
     { header: "الفئة", dataKey: "category" },
@@ -293,7 +383,7 @@ export const exportTopServicesToPDF = (
   });
 };
 
-// Top Artists PDF export
+// Top Artists HTML export
 export const exportTopArtistsToPDF = (
   artists: Array<{
     id: string;
@@ -306,7 +396,7 @@ export const exportTopArtistsToPDF = (
   }>,
   dateRangeLabel?: string
 ) => {
-  const columns: PDFColumn[] = [
+  const columns: HTMLColumn[] = [
     { header: "#", dataKey: "rank" },
     { header: "الفنانة", dataKey: "name" },
     { header: "الحجوزات", dataKey: "bookings" },
