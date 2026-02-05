@@ -680,7 +680,12 @@ const AdminBanners = () => {
                             isDraggingImage && "cursor-grabbing",
                             mobilePreview ? "max-w-[375px]" : "w-full",
                           )}
-                          style={{ minHeight: `${formData.banner_height}px` }}
+                          style={{ 
+                            minHeight: `${Math.max(
+                              formData.banner_height,
+                              (formData.banner_height * formData.image_scale) / 100
+                            )}px` 
+                          }}
                         >
                           {/* Grid Overlay for Positioning */}
                           <div className="absolute inset-0 z-20 pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
@@ -739,7 +744,7 @@ const AdminBanners = () => {
                               formData.text_alignment === "end" &&
                                 (isRTL ? "items-start text-start" : "items-end text-end"),
                             )}
-                            style={{ minHeight: `${formData.banner_height}px` }}
+                            style={{ minHeight: `${Math.max(formData.banner_height, (formData.banner_height * formData.image_scale) / 100)}px` }}
                           >
                             <div className="space-y-2">
                               {formData.show_title && (
@@ -1017,13 +1022,13 @@ const AdminBanners = () => {
                               value={[formData.image_scale]}
                               onValueChange={(value) => setFormData((prev) => ({ ...prev, image_scale: value[0] }))}
                               min={50}
-                              max={100}
+                              max={200}
                               step={5}
                             />
                             <div className="flex justify-between text-[10px] text-muted-foreground">
                               <span>50%</span>
-                              <span>75%</span>
                               <span>100%</span>
+                              <span>200%</span>
                             </div>
                           </div>
                           <Button
@@ -1071,7 +1076,12 @@ const AdminBanners = () => {
                             "relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-muted mx-auto transition-all duration-300 shadow-lg",
                             mobilePreview ? "max-w-[375px]" : "w-full",
                           )}
-                          style={{ minHeight: `${formData.banner_height}px` }}
+                          style={{ 
+                            minHeight: `${Math.max(
+                              formData.banner_height,
+                              (formData.banner_height * formData.image_scale) / 100
+                            )}px` 
+                          }}
                         >
                           {/* Grid Overlay for Positioning */}
                           <div className="absolute inset-0 z-20 pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
