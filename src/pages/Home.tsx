@@ -103,14 +103,19 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
             <CarouselItem key={banner.id}>
               <div 
                 className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5"
-                style={{ minHeight: `${banner.banner_height ?? 160}px` }}
+                style={{ 
+                  minHeight: `${Math.max(
+                    banner.banner_height ?? 160,
+                    ((banner.banner_height ?? 160) * (banner.image_scale ?? 100)) / 100
+                  )}px` 
+                }}
               >
                 <img
                   src={banner.image_url}
                   alt={banner.title || t.adminBanners.banner || "Banner"}
                   className="absolute inset-0 w-full h-full object-contain transition-transform duration-200"
                   style={{
-                    transform: `scale(${Math.min(banner.image_scale ?? 100, 100) / 100})`,
+                    transform: `scale(${(banner.image_scale ?? 100) / 100})`,
                   }}
                 />
 
@@ -135,7 +140,12 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
                         ? "items-end text-end"
                         : "items-start text-start"
                   }`}
-                  style={{ minHeight: `${banner.banner_height ?? 160}px` }}
+                  style={{ 
+                    minHeight: `${Math.max(
+                      banner.banner_height ?? 160,
+                      ((banner.banner_height ?? 160) * (banner.image_scale ?? 100)) / 100
+                    )}px` 
+                  }}
                 >
                   <div className="space-y-2">
                     {banner.show_title && banner.title && (
