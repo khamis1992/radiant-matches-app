@@ -102,27 +102,18 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
           {banners.map((banner) => (
             <CarouselItem key={banner.id}>
               <div 
-                className="relative rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 overflow-auto"
-                style={{ 
-                  height: `${banner.banner_height ?? 160}px`,
-                  maxHeight: `${banner.banner_height ?? 160}px`
-                }}
+                className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5"
+                style={{ height: `${banner.banner_height ?? 160}px` }}
               >
-                <div 
-                  className="absolute inset-0 flex items-center justify-center"
+                <img
+                  src={banner.image_url}
+                  alt={banner.title || t.adminBanners.banner || "Banner"}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-200"
                   style={{
-                    width: `${(banner.image_scale ?? 100)}%`,
-                    height: `${(banner.image_scale ?? 100)}%`,
-                    minWidth: '100%',
-                    minHeight: '100%',
+                    transform: `scale(${(banner.image_scale ?? 100) / 100})`,
+                    objectPosition: `${banner.position_x ?? 50}% ${banner.position_y ?? 50}%`,
                   }}
-                >
-                  <img
-                    src={banner.image_url}
-                    alt={banner.title || t.adminBanners.banner || "Banner"}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
+                />
 
                 {/* Overlay */}
                 <div
@@ -145,9 +136,7 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
                         ? "items-end text-end"
                         : "items-start text-start"
                   }`}
-                  style={{ 
-                    height: `${banner.banner_height ?? 160}px`
-                  }}
+                  style={{ height: `${banner.banner_height ?? 160}px` }}
                 >
                   <div className="space-y-2">
                     {banner.show_title && banner.title && (
