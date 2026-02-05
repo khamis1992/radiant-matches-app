@@ -1,64 +1,85 @@
 
-# خطة إنشاء حساب تجريبي لخبيرة تجميل
+# خطة حل مشكلة عدم ظهور بيانات في صفحة Finance
 
-## الهدف
-إنشاء حساب تجريبي كامل لخبيرة تجميل مع بيانات واقعية لاختبار التطبيق.
+## تشخيص المشكلة
 
-## البيانات التي سيتم إنشاؤها
+بعد التحقيق، وجدت أن:
+1. جدول `transactions` فارغ تماماً
+2. يوجد 5 حجوزات مكتملة (`completed`) في جدول `bookings` بقيمة إجمالية 1,950 ر.ق
+3. الـ Trigger الحالي (`create_booking_transaction_trigger`) يعمل فقط عند **تحديث** حالة الحجز من أي حالة أخرى إلى `completed`
+4. الحجوزات الحالية تم إدخالها مباشرة بحالة `completed` (بيانات تجريبية)، لذا لم يُفعَّل الـ trigger
 
-### 1. حساب خبيرة التجميل
-| الحقل | القيمة |
-|-------|--------|
-| الاسم | نورة الكواري |
-| البريد الإلكتروني | noura.demo@glambook.app |
-| كلمة المرور | Demo@123 |
-| الهاتف | +974 5555 1234 |
-| الموقع | الدوحة، قطر |
+## الحل المقترح
 
-### 2. ملف خبيرة التجميل (artists)
-| الحقل | القيمة |
-|-------|--------|
-| السيرة الذاتية | خبيرة تجميل معتمدة بخبرة 5 سنوات في مكياج الأفراح والمناسبات |
-| سنوات الخبرة | 5 |
-| التقييم | 4.8 |
-| عنوان الاستوديو | شارع السد، الدوحة |
-| متاحة | نعم |
+### الخطوة 1: إدراج المعاملات المفقودة للحجوزات المكتملة الحالية
 
-### 3. الخدمات (5 خدمات)
-| الخدمة | السعر (QAR) | المدة |
-|--------|-------------|-------|
-| مكياج عروس كامل | 800 | 120 دقيقة |
-| مكياج سهرة | 400 | 60 دقيقة |
-| مكياج ناعم | 250 | 45 دقيقة |
-| تصفيف شعر | 300 | 60 دقيقة |
-| رسم حناء | 200 | 90 دقيقة |
+سأقوم بإنشاء migration لإدراج سجلات المعاملات للحجوزات المكتملة الموجودة حالياً:
 
-### 4. ساعات العمل الأسبوعية
-- السبت - الخميس: 9:00 ص - 9:00 م
-- الجمعة: مغلق
+```sql
+-- إدراج المعاملات للحجوزات المكتملة التي لا توجد لها معاملات
+INSERT INTO public.transactions (booking_id, artist_id, type, amount, platform_fee, net_amount, status, description)
+SELECT 
+  b.id,
+  b.artist_id,
+  'booking_payment',
+  b.total_price,
+  b.platform_fee,
+  b.artist_earnings,
+  'completed',
+  'Payment for booking #' || LEFT(b.id::TEXT, 8)
+FROM public.bookings b
+WHERE b.status = 'completed'
+  AND NOT EXISTS (
+    SELECT 1 FROM public.transactions t WHERE t.booking_id = b.id
+  );
+```
 
-## الخطوات التقنية
+### الخطوة 2: (اختياري) تحسين الـ Trigger للتعامل مع الإدخال المباشر
 
-### الخطوة 1: إنشاء Edge Function
-إنشاء `create-demo-artist` edge function تقوم بـ:
-1. إنشاء المستخدم في `auth.users`
-2. تحديث الملف الشخصي في `profiles`
-3. تغيير الصلاحية من `customer` إلى `artist`
-4. إنشاء سجل في جدول `artists`
-5. إضافة الخدمات في جدول `services`
-6. إعداد ساعات العمل في `artist_working_hours`
+لمنع هذه المشكلة مستقبلاً، يمكن تعديل الـ trigger ليعمل أيضاً عند INSERT بحالة `completed`:
 
-### الخطوة 2: استدعاء الـ Function
-استدعاء Edge Function لإنشاء البيانات.
+```sql
+-- إضافة trigger للـ INSERT
+CREATE OR REPLACE FUNCTION public.create_booking_transaction()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  -- للتحديثات: فقط عند التغيير إلى completed
+  IF TG_OP = 'UPDATE' AND NEW.status = 'completed' AND OLD.status != 'completed' THEN
+    INSERT INTO public.transactions (...)
+    VALUES (...);
+  -- للإدخال المباشر بحالة completed
+  ELSIF TG_OP = 'INSERT' AND NEW.status = 'completed' THEN
+    INSERT INTO public.transactions (...)
+    VALUES (...);
+  END IF;
+  RETURN NEW;
+END;
+$$;
+```
 
-## ملاحظات أمنية
-- سيتم استخدام `service_role_key` لإنشاء الحساب
-- البريد الإلكتروني سيكون مؤكداً تلقائياً
-- يمكنك تسجيل الدخول مباشرة بالبيانات المذكورة
+## النتيجة المتوقعة
 
-## بعد التنفيذ
-ستتمكن من:
-- تسجيل الدخول بحساب خبيرة التجميل
-- عرض الخدمات في صفحة الفنانة
-- حجز موعد كعميل
-- اختبار جميع ميزات التطبيق
+بعد تنفيذ الحل:
+- ستظهر 5 معاملات في جدول `transactions`
+- ستعرض صفحة Finance:
+  - إجمالي الإيرادات: 1,950 ر.ق
+  - رسوم المنصة: 195 ر.ق
+  - أرباح الفنانين: 1,755 ر.ق
+  - الرسم البياني الشهري سيعرض البيانات
+
+---
+
+## التفاصيل التقنية
+
+### الملفات المتأثرة:
+- ملف migration جديد في `supabase/migrations/`
+
+### الجداول المتأثرة:
+- `transactions` (إضافة سجلات)
+
+### الـ Triggers المتأثرة:
+- `create_booking_transaction()` (تحديث اختياري)
