@@ -7,28 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,22 +23,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Pencil, Trash2, GripVertical, Image, ExternalLink, Eye, CalendarIcon, Clock, Layout, Palette } from "lucide-react";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+  Plus,
+  Pencil,
+  Trash2,
+  GripVertical,
+  Image,
+  ExternalLink,
+  Eye,
+  CalendarIcon,
+  Clock,
+  Layout,
+  Palette,
+} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminBanners } from "@/hooks/useAdminBanners";
 import { format, isAfter, isBefore } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
@@ -147,20 +131,16 @@ interface SortableRowProps {
   onEdit: (banner: BannerData) => void;
   onDelete: (id: string) => void;
   onToggle: (id: string, isActive: boolean) => void;
-  getScheduleStatus: (banner: BannerData) => { label: string; variant: "default" | "secondary" | "destructive" | "outline" };
+  getScheduleStatus: (banner: BannerData) => {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  };
   t: any;
   dateLocale: typeof ar | typeof enUS;
 }
 
 const SortableRow = ({ banner, onEdit, onDelete, onToggle, getScheduleStatus, t, dateLocale }: SortableRowProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: banner.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: banner.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -187,36 +167,29 @@ const SortableRow = ({ banner, onEdit, onDelete, onToggle, getScheduleStatus, t,
       </TableCell>
       <TableCell>
         <div className="w-20 h-12 rounded-lg overflow-hidden bg-muted">
-          <img
-            src={banner.image_url}
-            alt={banner.title}
-            className="w-full h-full object-cover"
-          />
+          <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" />
         </div>
       </TableCell>
       <TableCell className="font-medium">{banner.title}</TableCell>
       <TableCell className="text-muted-foreground">
         <div className="flex flex-col text-xs">
-          <span>{t.adminBanners.from}: {formatDate(banner.valid_from)}</span>
-          <span>{t.adminBanners.to}: {formatDate(banner.valid_until)}</span>
+          <span>
+            {t.adminBanners.from}: {formatDate(banner.valid_from)}
+          </span>
+          <span>
+            {t.adminBanners.to}: {formatDate(banner.valid_until)}
+          </span>
         </div>
       </TableCell>
       <TableCell>
         <Badge variant={status.variant}>{status.label}</Badge>
       </TableCell>
       <TableCell>
-        <Switch
-          checked={banner.is_active}
-          onCheckedChange={(checked) => onToggle(banner.id, checked)}
-        />
+        <Switch checked={banner.is_active} onCheckedChange={(checked) => onToggle(banner.id, checked)} />
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onEdit(banner)}
-          >
+          <Button variant="ghost" size="icon" onClick={() => onEdit(banner)}>
             <Pencil className="h-4 w-4" />
           </Button>
           <Button
@@ -260,7 +233,7 @@ const AdminBanners = () => {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   const { t, isRTL, language } = useLanguage();
@@ -289,7 +262,7 @@ const AdminBanners = () => {
     }
   };
 
-  const handleOpenDialog = (banner?: typeof banners[0]) => {
+  const handleOpenDialog = (banner?: (typeof banners)[0]) => {
     if (banner) {
       setEditingBanner({ id: banner.id });
       setFormData({
@@ -384,7 +357,7 @@ const AdminBanners = () => {
     }
   };
 
-  const getScheduleStatus = (banner: typeof banners[0]) => {
+  const getScheduleStatus = (banner: (typeof banners)[0]) => {
     const now = new Date();
     const validFrom = banner.valid_from ? new Date(banner.valid_from) : null;
     const validUntil = banner.valid_until ? new Date(banner.valid_until) : null;
@@ -448,11 +421,7 @@ const AdminBanners = () => {
                 </Button>
               </div>
             ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -466,19 +435,14 @@ const AdminBanners = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <SortableContext
-                      items={banners.map((b) => b.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
+                    <SortableContext items={banners.map((b) => b.id)} strategy={verticalListSortingStrategy}>
                       {banners.map((banner) => (
                         <SortableRow
                           key={banner.id}
                           banner={banner}
                           onEdit={handleOpenDialog}
                           onDelete={handleDelete}
-                          onToggle={(id, isActive) =>
-                            toggleBannerStatus.mutate({ id, is_active: isActive })
-                          }
+                          onToggle={(id, isActive) => toggleBannerStatus.mutate({ id, is_active: isActive })}
                           getScheduleStatus={getScheduleStatus}
                           t={t}
                           dateLocale={dateLocale}
@@ -501,7 +465,7 @@ const AdminBanners = () => {
               {editingBanner ? t.adminBanners.editBanner : t.adminBanners.addNewBanner}
             </DialogTitle>
           </DialogHeader>
-          
+
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="px-6">
               <TabsList className="grid w-full grid-cols-3 mb-4">
@@ -519,7 +483,7 @@ const AdminBanners = () => {
                 </TabsTrigger>
               </TabsList>
             </div>
-            
+
             <ScrollArea className="h-[calc(95vh-240px)] overflow-y-auto">
               <div className="px-6 pb-6">
                 {/* Content Tab */}
@@ -532,7 +496,9 @@ const AdminBanners = () => {
                         <div className="space-y-3">
                           <div className="flex items-center gap-2">
                             <Image className="h-5 w-5 text-primary" />
-                            <Label htmlFor="image" className="font-medium">{t.adminBanners.bannerImage}</Label>
+                            <Label htmlFor="image" className="font-medium">
+                              {t.adminBanners.bannerImage}
+                            </Label>
                           </div>
                           <Input
                             id="image"
@@ -542,7 +508,7 @@ const AdminBanners = () => {
                             className="cursor-pointer"
                           />
                           <p className="text-xs text-muted-foreground">
-                            {isRTL 
+                            {isRTL
                               ? "الأبعاد المثالية: 1200×400 بكسل للحصول على أفضل جودة"
                               : "Recommended: 1200×400px for best quality"}
                           </p>
@@ -557,49 +523,49 @@ const AdminBanners = () => {
                         </h4>
                         <div className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="title" className="text-sm">{t.adminBanners.bannerTitle}</Label>
+                            <Label htmlFor="title" className="text-sm">
+                              {t.adminBanners.bannerTitle}
+                            </Label>
                             <Input
                               id="title"
                               value={formData.title}
-                              onChange={(e) =>
-                                setFormData((prev) => ({ ...prev, title: e.target.value }))
-                              }
+                              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
                               placeholder={t.adminBanners.titlePlaceholder}
                             />
                           </div>
-                          
+
                           <div className="space-y-2">
-                            <Label htmlFor="subtitle" className="text-sm">{t.adminBanners.subtitleLabel}</Label>
+                            <Label htmlFor="subtitle" className="text-sm">
+                              {t.adminBanners.subtitleLabel}
+                            </Label>
                             <Input
                               id="subtitle"
                               value={formData.subtitle}
-                              onChange={(e) =>
-                                setFormData((prev) => ({ ...prev, subtitle: e.target.value }))
-                              }
+                              onChange={(e) => setFormData((prev) => ({ ...prev, subtitle: e.target.value }))}
                               placeholder={t.adminBanners.subtitlePlaceholder}
                             />
                           </div>
-                          
+
                           <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-2">
-                              <Label htmlFor="button_text" className="text-sm">{t.adminBanners.buttonText}</Label>
+                              <Label htmlFor="button_text" className="text-sm">
+                                {t.adminBanners.buttonText}
+                              </Label>
                               <Input
                                 id="button_text"
                                 value={formData.button_text}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({ ...prev, button_text: e.target.value }))
-                                }
+                                onChange={(e) => setFormData((prev) => ({ ...prev, button_text: e.target.value }))}
                                 placeholder={t.adminBanners.buttonTextPlaceholder}
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="link_url" className="text-sm">{t.adminBanners.linkUrl}</Label>
+                              <Label htmlFor="link_url" className="text-sm">
+                                {t.adminBanners.linkUrl}
+                              </Label>
                               <Input
                                 id="link_url"
                                 value={formData.link_url}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({ ...prev, link_url: e.target.value }))
-                                }
+                                onChange={(e) => setFormData((prev) => ({ ...prev, link_url: e.target.value }))}
                                 placeholder={t.adminBanners.linkUrlPlaceholder}
                               />
                             </div>
@@ -615,17 +581,18 @@ const AdminBanners = () => {
                         </h4>
                         <div className="space-y-2">
                           {[
-                            { key: 'show_title', label: isRTL ? "إظهار العنوان" : "Show Title" },
-                            { key: 'show_subtitle', label: isRTL ? "إظهار العنوان الفرعي" : "Show Subtitle" },
-                            { key: 'show_button', label: isRTL ? "إظهار الزر" : "Show Button" },
+                            { key: "show_title", label: isRTL ? "إظهار العنوان" : "Show Title" },
+                            { key: "show_subtitle", label: isRTL ? "إظهار العنوان الفرعي" : "Show Subtitle" },
+                            { key: "show_button", label: isRTL ? "إظهار الزر" : "Show Button" },
                           ].map((item, index) => (
-                            <div key={item.key} className={`flex items-center justify-between py-2 ${index > 0 ? 'border-t' : ''}`}>
+                            <div
+                              key={item.key}
+                              className={`flex items-center justify-between py-2 ${index > 0 ? "border-t" : ""}`}
+                            >
                               <Label className="text-sm">{item.label}</Label>
                               <Switch
                                 checked={formData[item.key as keyof BannerFormData] as boolean}
-                                onCheckedChange={(checked) =>
-                                  setFormData((prev) => ({ ...prev, [item.key]: checked }))
-                                }
+                                onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, [item.key]: checked }))}
                               />
                             </div>
                           ))}
@@ -642,7 +609,9 @@ const AdminBanners = () => {
                             <span>{t.adminBanners.preview || (isRTL ? "معاينة" : "Preview")}</span>
                           </div>
                           <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
-                            <span className={`text-xs px-2 py-1 rounded transition-all ${!mobilePreview ? 'bg-background shadow-sm' : ''}`}>
+                            <span
+                              className={`text-xs px-2 py-1 rounded transition-all ${!mobilePreview ? "bg-background shadow-sm" : ""}`}
+                            >
                               {isRTL ? "سطح المكتب" : "Desktop"}
                             </span>
                             <Switch
@@ -650,16 +619,18 @@ const AdminBanners = () => {
                               onCheckedChange={setMobilePreview}
                               className="data-[state=checked]:bg-primary"
                             />
-                            <span className={`text-xs px-2 py-1 rounded transition-all ${mobilePreview ? 'bg-background shadow-sm' : ''}`}>
+                            <span
+                              className={`text-xs px-2 py-1 rounded transition-all ${mobilePreview ? "bg-background shadow-sm" : ""}`}
+                            >
                               {isRTL ? "الجوال" : "Mobile"}
                             </span>
                           </div>
                         </div>
-                        
-                        <div 
+
+                        <div
                           className={cn(
                             "relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-muted mx-auto transition-all duration-300 shadow-lg",
-                            mobilePreview ? "max-w-[375px]" : "w-full"
+                            mobilePreview ? "max-w-[375px]" : "w-full",
                           )}
                           style={{ minHeight: `${formData.banner_height}px` }}
                         >
@@ -672,13 +643,13 @@ const AdminBanners = () => {
                             </div>
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 border-2 border-white/50 rounded-full" />
                           </div>
-                          
+
                           {imagePreview ? (
-                            <img 
-                              src={imagePreview} 
-                              alt="Preview" 
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
                               className="absolute inset-0 w-full h-full object-cover transition-all duration-200"
-                              style={{ 
+                              style={{
                                 transform: `scale(${formData.image_scale / 100})`,
                                 objectPosition: `${formData.position_x}% ${formData.position_y}%`,
                               }}
@@ -689,51 +660,59 @@ const AdminBanners = () => {
                               <Image className="h-8 w-8 text-muted-foreground" />
                             </div>
                           )}
-                          
+
                           {/* Position Indicator */}
                           {imagePreview && (
-                            <div 
+                            <div
                               className="absolute z-10 w-4 h-4 bg-primary border-2 border-white rounded-full shadow-lg pointer-events-none transition-all duration-200"
                               style={{
                                 left: `${formData.position_x}%`,
                                 top: `${formData.position_y}%`,
-                                transform: 'translate(-50%, -50%)'
+                                transform: "translate(-50%, -50%)",
                               }}
                             />
                           )}
-                          
+
                           {/* Overlay */}
-                          <div 
+                          <div
                             className="absolute inset-0 bg-black"
                             style={{ opacity: formData.overlay_opacity / 100 }}
                           />
-                          
+
                           {/* Content */}
-                          <div 
+                          <div
                             className={cn(
                               "relative z-10 p-5 flex flex-col",
                               formData.text_position === "start" && "justify-start",
                               formData.text_position === "center" && "justify-center",
                               formData.text_position === "end" && "justify-end",
-                              formData.text_alignment === "start" && (isRTL ? "items-end text-end" : "items-start text-start"),
+                              formData.text_alignment === "start" &&
+                                (isRTL ? "items-end text-end" : "items-start text-start"),
                               formData.text_alignment === "center" && "items-center text-center",
-                              formData.text_alignment === "end" && (isRTL ? "items-start text-start" : "items-end text-end")
+                              formData.text_alignment === "end" &&
+                                (isRTL ? "items-start text-start" : "items-end text-end"),
                             )}
                             style={{ minHeight: `${formData.banner_height}px` }}
                           >
                             <div className="space-y-2">
                               {formData.show_title && (
-                                <h3 className="text-xl font-bold text-white drop-shadow-lg" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                                <h3
+                                  className="text-xl font-bold text-white drop-shadow-lg"
+                                  style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}
+                                >
                                   {formData.title || t.adminBanners.bannerTitle}
                                 </h3>
                               )}
                               {formData.show_subtitle && formData.subtitle && (
-                                <p className="text-sm text-white/90 drop-shadow" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                <p
+                                  className="text-sm text-white/90 drop-shadow"
+                                  style={{ textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}
+                                >
                                   {formData.subtitle}
                                 </p>
                               )}
                               {formData.show_button && formData.button_text && (
-                                <button 
+                                <button
                                   className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap shadow-lg"
                                   disabled
                                 >
@@ -743,18 +722,21 @@ const AdminBanners = () => {
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span>
-                            {isRTL 
-                              ? `الموضع: X=${formData.position_x}%, Y=${formData.position_y}%` 
+                            {isRTL
+                              ? `الموضع: X=${formData.position_x}%, Y=${formData.position_y}%`
                               : `Position: X=${formData.position_x}%, Y=${formData.position_y}%`}
                           </span>
                           <span>
-                            {mobilePreview 
-                              ? (isRTL ? "معاينة الجوال (375px)" : "Mobile Preview (375px)")
-                              : (isRTL ? "معاينة سطح المكتب" : "Desktop Preview")
-                            }
+                            {mobilePreview
+                              ? isRTL
+                                ? "معاينة الجوال (375px)"
+                                : "Mobile Preview (375px)"
+                              : isRTL
+                                ? "معاينة سطح المكتب"
+                                : "Desktop Preview"}
                           </span>
                         </div>
                       </div>
@@ -778,9 +760,7 @@ const AdminBanners = () => {
                             <Label className="text-sm">{isRTL ? "موقع النص" : "Text Position"}</Label>
                             <Select
                               value={formData.text_position}
-                              onValueChange={(value) =>
-                                setFormData((prev) => ({ ...prev, text_position: value }))
-                              }
+                              onValueChange={(value) => setFormData((prev) => ({ ...prev, text_position: value }))}
                             >
                               <SelectTrigger>
                                 <SelectValue />
@@ -797,9 +777,7 @@ const AdminBanners = () => {
                             <Label className="text-sm">{isRTL ? "محاذاة النص" : "Text Alignment"}</Label>
                             <Select
                               value={formData.text_alignment}
-                              onValueChange={(value) =>
-                                setFormData((prev) => ({ ...prev, text_alignment: value }))
-                              }
+                              onValueChange={(value) => setFormData((prev) => ({ ...prev, text_alignment: value }))}
                             >
                               <SelectTrigger>
                                 <SelectValue />
@@ -824,13 +802,13 @@ const AdminBanners = () => {
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <Label className="text-sm">{isRTL ? "شفافية الخلفية" : "Overlay Opacity"}</Label>
-                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{formData.overlay_opacity}%</span>
+                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                                {formData.overlay_opacity}%
+                              </span>
                             </div>
                             <Slider
                               value={[formData.overlay_opacity]}
-                              onValueChange={(value) =>
-                                setFormData((prev) => ({ ...prev, overlay_opacity: value[0] }))
-                              }
+                              onValueChange={(value) => setFormData((prev) => ({ ...prev, overlay_opacity: value[0] }))}
                               min={0}
                               max={100}
                               step={5}
@@ -844,13 +822,13 @@ const AdminBanners = () => {
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <Label className="text-sm">{isRTL ? "ارتفاع البانر" : "Banner Height"}</Label>
-                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{formData.banner_height}px</span>
+                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                                {formData.banner_height}px
+                              </span>
                             </div>
                             <Slider
                               value={[formData.banner_height]}
-                              onValueChange={(value) =>
-                                setFormData((prev) => ({ ...prev, banner_height: value[0] }))
-                              }
+                              onValueChange={(value) => setFormData((prev) => ({ ...prev, banner_height: value[0] }))}
                               min={80}
                               max={400}
                               step={10}
@@ -883,20 +861,20 @@ const AdminBanners = () => {
                             </Button>
                           )}
                         </div>
-                        
+
                         <div className="space-y-4">
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <Label className="text-sm">{isRTL ? "الموضع الأفقي" : "Horizontal Position"}</Label>
-                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{formData.position_x}%</span>
+                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                                {formData.position_x}%
+                              </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-muted-foreground">{isRTL ? "يسار" : "Left"}</span>
                               <Slider
                                 value={[formData.position_x]}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({ ...prev, position_x: value[0] }))
-                                }
+                                onValueChange={(value) => setFormData((prev) => ({ ...prev, position_x: value[0] }))}
                                 min={0}
                                 max={100}
                                 step={1}
@@ -909,15 +887,15 @@ const AdminBanners = () => {
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <Label className="text-sm">{isRTL ? "الموضع العمودي" : "Vertical Position"}</Label>
-                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{formData.position_y}%</span>
+                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                                {formData.position_y}%
+                              </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-muted-foreground">{isRTL ? "أعلى" : "Top"}</span>
                               <Slider
                                 value={[formData.position_y]}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({ ...prev, position_y: value[0] }))
-                                }
+                                onValueChange={(value) => setFormData((prev) => ({ ...prev, position_y: value[0] }))}
                                 min={0}
                                 max={100}
                                 step={1}
@@ -942,17 +920,18 @@ const AdminBanners = () => {
                             ].map((preset) => {
                               const presetValues: Record<string, { x: number; y: number }> = {
                                 "top-left": { x: 0, y: 0 },
-                                "top": { x: 50, y: 0 },
+                                top: { x: 50, y: 0 },
                                 "top-right": { x: 100, y: 0 },
-                                "left": { x: 0, y: 50 },
-                                "center": { x: 50, y: 50 },
-                                "right": { x: 100, y: 50 },
+                                left: { x: 0, y: 50 },
+                                center: { x: 50, y: 50 },
+                                right: { x: 100, y: 50 },
                                 "bottom-left": { x: 0, y: 100 },
-                                "bottom": { x: 50, y: 100 },
+                                bottom: { x: 50, y: 100 },
                                 "bottom-right": { x: 100, y: 100 },
                               };
-                              const isActive = formData.position_x === presetValues[preset.key].x && 
-                                              formData.position_y === presetValues[preset.key].y;
+                              const isActive =
+                                formData.position_x === presetValues[preset.key].x &&
+                                formData.position_y === presetValues[preset.key].y;
                               return (
                                 <Button
                                   key={preset.key}
@@ -983,13 +962,13 @@ const AdminBanners = () => {
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <Label className="text-sm">{isRTL ? "مستوى التكبير" : "Zoom Level"}</Label>
-                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{formData.image_scale}%</span>
+                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                                {formData.image_scale}%
+                              </span>
                             </div>
                             <Slider
                               value={[formData.image_scale]}
-                              onValueChange={(value) =>
-                                setFormData((prev) => ({ ...prev, image_scale: value[0] }))
-                              }
+                              onValueChange={(value) => setFormData((prev) => ({ ...prev, image_scale: value[0] }))}
                               min={50}
                               max={200}
                               step={5}
@@ -1000,10 +979,10 @@ const AdminBanners = () => {
                               <span>200%</span>
                             </div>
                           </div>
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
                             className="w-full"
                             onClick={() => setFormData((prev) => ({ ...prev, image_scale: 100 }))}
                           >
@@ -1022,7 +1001,9 @@ const AdminBanners = () => {
                             <span>{t.adminBanners.preview || (isRTL ? "معاينة" : "Preview")}</span>
                           </div>
                           <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
-                            <span className={`text-xs px-2 py-1 rounded transition-all ${!mobilePreview ? 'bg-background shadow-sm' : ''}`}>
+                            <span
+                              className={`text-xs px-2 py-1 rounded transition-all ${!mobilePreview ? "bg-background shadow-sm" : ""}`}
+                            >
                               {isRTL ? "سطح المكتب" : "Desktop"}
                             </span>
                             <Switch
@@ -1030,16 +1011,18 @@ const AdminBanners = () => {
                               onCheckedChange={setMobilePreview}
                               className="data-[state=checked]:bg-primary"
                             />
-                            <span className={`text-xs px-2 py-1 rounded transition-all ${mobilePreview ? 'bg-background shadow-sm' : ''}`}>
+                            <span
+                              className={`text-xs px-2 py-1 rounded transition-all ${mobilePreview ? "bg-background shadow-sm" : ""}`}
+                            >
                               {isRTL ? "الجوال" : "Mobile"}
                             </span>
                           </div>
                         </div>
-                        
-                        <div 
+
+                        <div
                           className={cn(
                             "relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-muted mx-auto transition-all duration-300 shadow-lg",
-                            mobilePreview ? "max-w-[375px]" : "w-full"
+                            mobilePreview ? "max-w-[375px]" : "w-full",
                           )}
                           style={{ minHeight: `${formData.banner_height}px` }}
                         >
@@ -1052,13 +1035,13 @@ const AdminBanners = () => {
                             </div>
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 border-2 border-white/50 rounded-full" />
                           </div>
-                          
+
                           {imagePreview ? (
-                            <img 
-                              src={imagePreview} 
-                              alt="Preview" 
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
                               className="absolute inset-0 w-full h-full object-cover transition-all duration-200"
-                              style={{ 
+                              style={{
                                 transform: `scale(${formData.image_scale / 100})`,
                                 objectPosition: `${formData.position_x}% ${formData.position_y}%`,
                               }}
@@ -1069,51 +1052,59 @@ const AdminBanners = () => {
                               <Image className="h-8 w-8 text-muted-foreground" />
                             </div>
                           )}
-                          
+
                           {/* Position Indicator */}
                           {imagePreview && (
-                            <div 
+                            <div
                               className="absolute z-10 w-4 h-4 bg-primary border-2 border-white rounded-full shadow-lg pointer-events-none transition-all duration-200"
                               style={{
                                 left: `${formData.position_x}%`,
                                 top: `${formData.position_y}%`,
-                                transform: 'translate(-50%, -50%)'
+                                transform: "translate(-50%, -50%)",
                               }}
                             />
                           )}
-                          
+
                           {/* Overlay */}
-                          <div 
+                          <div
                             className="absolute inset-0 bg-black"
                             style={{ opacity: formData.overlay_opacity / 100 }}
                           />
-                          
+
                           {/* Content */}
-                          <div 
+                          <div
                             className={cn(
                               "relative z-10 p-5 flex flex-col",
                               formData.text_position === "start" && "justify-start",
                               formData.text_position === "center" && "justify-center",
                               formData.text_position === "end" && "justify-end",
-                              formData.text_alignment === "start" && (isRTL ? "items-end text-end" : "items-start text-start"),
+                              formData.text_alignment === "start" &&
+                                (isRTL ? "items-end text-end" : "items-start text-start"),
                               formData.text_alignment === "center" && "items-center text-center",
-                              formData.text_alignment === "end" && (isRTL ? "items-start text-start" : "items-end text-end")
+                              formData.text_alignment === "end" &&
+                                (isRTL ? "items-start text-start" : "items-end text-end"),
                             )}
                             style={{ minHeight: `${formData.banner_height}px` }}
                           >
                             <div className="space-y-2">
                               {formData.show_title && (
-                                <h3 className="text-xl font-bold text-white drop-shadow-lg" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                                <h3
+                                  className="text-xl font-bold text-white drop-shadow-lg"
+                                  style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}
+                                >
                                   {formData.title || t.adminBanners.bannerTitle}
                                 </h3>
                               )}
                               {formData.show_subtitle && formData.subtitle && (
-                                <p className="text-sm text-white/90 drop-shadow" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                <p
+                                  className="text-sm text-white/90 drop-shadow"
+                                  style={{ textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}
+                                >
                                   {formData.subtitle}
                                 </p>
                               )}
                               {formData.show_button && formData.button_text && (
-                                <button 
+                                <button
                                   className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap shadow-lg"
                                   disabled
                                 >
@@ -1123,18 +1114,21 @@ const AdminBanners = () => {
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span>
-                            {isRTL 
-                              ? `الموضع: X=${formData.position_x}%, Y=${formData.position_y}%` 
+                            {isRTL
+                              ? `الموضع: X=${formData.position_x}%, Y=${formData.position_y}%`
                               : `Position: X=${formData.position_x}%, Y=${formData.position_y}%`}
                           </span>
                           <span>
-                            {mobilePreview 
-                              ? (isRTL ? "معاينة الجوال (375px)" : "Mobile Preview (375px)")
-                              : (isRTL ? "معاينة سطح المكتب" : "Desktop Preview")
-                            }
+                            {mobilePreview
+                              ? isRTL
+                                ? "معاينة الجوال (375px)"
+                                : "Mobile Preview (375px)"
+                              : isRTL
+                                ? "معاينة سطح المكتب"
+                                : "Desktop Preview"}
                           </span>
                         </div>
                       </div>
@@ -1150,7 +1144,7 @@ const AdminBanners = () => {
                         <Clock className="h-5 w-5 text-primary" />
                         {isRTL ? "جدولة عرض البانر" : "Banner Schedule"}
                       </h4>
-                      
+
                       <div className="space-y-6">
                         <div className="space-y-3">
                           <Label className="text-sm font-medium">{t.adminBanners.startDate}</Label>
@@ -1160,7 +1154,7 @@ const AdminBanners = () => {
                                 variant="outline"
                                 className={cn(
                                   "w-full justify-start font-normal h-11",
-                                  !formData.valid_from && "text-muted-foreground"
+                                  !formData.valid_from && "text-muted-foreground",
                                 )}
                               >
                                 <CalendarIcon className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
@@ -1173,9 +1167,7 @@ const AdminBanners = () => {
                               <Calendar
                                 mode="single"
                                 selected={formData.valid_from}
-                                onSelect={(date) =>
-                                  setFormData((prev) => ({ ...prev, valid_from: date }))
-                                }
+                                onSelect={(date) => setFormData((prev) => ({ ...prev, valid_from: date }))}
                                 initialFocus
                                 className="pointer-events-auto"
                               />
@@ -1191,7 +1183,7 @@ const AdminBanners = () => {
                                 variant="outline"
                                 className={cn(
                                   "w-full justify-start font-normal h-11",
-                                  !formData.valid_until && "text-muted-foreground"
+                                  !formData.valid_until && "text-muted-foreground",
                                 )}
                               >
                                 <CalendarIcon className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
@@ -1204,12 +1196,8 @@ const AdminBanners = () => {
                               <Calendar
                                 mode="single"
                                 selected={formData.valid_until}
-                                onSelect={(date) =>
-                                  setFormData((prev) => ({ ...prev, valid_until: date }))
-                                }
-                                disabled={(date) =>
-                                  formData.valid_from ? isBefore(date, formData.valid_from) : false
-                                }
+                                onSelect={(date) => setFormData((prev) => ({ ...prev, valid_until: date }))}
+                                disabled={(date) => (formData.valid_from ? isBefore(date, formData.valid_from) : false)}
                                 initialFocus
                                 className="pointer-events-auto"
                               />
@@ -1229,7 +1217,7 @@ const AdminBanners = () => {
 
                         <div className="pt-4 border-t">
                           <p className="text-sm text-muted-foreground">
-                            {isRTL 
+                            {isRTL
                               ? "اترك تاريخ الانتهاء فارغاً لجعل البانر متاحاً بشكل دائم"
                               : "Leave end date empty to make the banner available indefinitely"}
                           </p>
@@ -1241,15 +1229,12 @@ const AdminBanners = () => {
               </div>
             </ScrollArea>
           </Tabs>
-          
+
           <DialogFooter className="px-6 py-4 border-t">
             <Button variant="outline" onClick={handleCloseDialog}>
               {t.common.cancel}
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={(!imagePreview && !imageFile) || isUploading}
-            >
+            <Button onClick={handleSubmit} disabled={(!imagePreview && !imageFile) || isUploading}>
               {isUploading ? t.common.saving : editingBanner ? t.common.update : t.common.add}
             </Button>
           </DialogFooter>
@@ -1261,9 +1246,7 @@ const AdminBanners = () => {
         <AlertDialogContent dir={isRTL ? "rtl" : "ltr"}>
           <AlertDialogHeader>
             <AlertDialogTitle>{t.adminBanners.deleteConfirmTitle}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t.adminBanners.deleteConfirmDesc}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t.adminBanners.deleteConfirmDesc}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
