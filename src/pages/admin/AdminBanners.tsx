@@ -696,11 +696,9 @@ const AdminBanners = () => {
                             <img
                               src={imagePreview}
                               alt="Preview"
-                              className="absolute inset-0 w-full h-full object-cover transition-all duration-200 pointer-events-none"
+                              className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
                               style={{
                                 transform: `scale(${formData.image_scale / 100})`,
-                                objectPosition: `${formData.position_x}% ${formData.position_y}%`,
-                                transformOrigin: `center`,
                               }}
                               draggable={false}
                             />
@@ -1019,13 +1017,13 @@ const AdminBanners = () => {
                               value={[formData.image_scale]}
                               onValueChange={(value) => setFormData((prev) => ({ ...prev, image_scale: value[0] }))}
                               min={50}
-                              max={200}
+                              max={100}
                               step={5}
                             />
                             <div className="flex justify-between text-[10px] text-muted-foreground">
                               <span>50%</span>
+                              <span>75%</span>
                               <span>100%</span>
-                              <span>200%</span>
                             </div>
                           </div>
                           <Button
@@ -1089,11 +1087,9 @@ const AdminBanners = () => {
                             <img
                               src={imagePreview}
                               alt="Preview"
-                              className="absolute inset-0 w-full h-full object-cover transition-all duration-200 pointer-events-none"
+                              className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
                               style={{
                                 transform: `scale(${formData.image_scale / 100})`,
-                                objectPosition: `${formData.position_x}% ${formData.position_y}%`,
-                                transformOrigin: `center`,
                               }}
                               draggable={false}
                             />
