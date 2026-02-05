@@ -699,7 +699,6 @@ const AdminBanners = () => {
                               className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
                               style={{
                                 transform: `scale(${formData.image_scale / 100})`,
-                                objectPosition: `${formData.position_x}% ${formData.position_y}%`,
                               }}
                               draggable={false}
                             />
@@ -1016,36 +1015,16 @@ const AdminBanners = () => {
                             </div>
                             <Slider
                               value={[formData.image_scale]}
-                              onValueChange={(value) => {
-                                const newScale = value[0];
-                                // Auto-increase banner height when zoom > 100% to prevent cropping
-                                if (newScale > 100) {
-                                  const baseHeight = 160;
-                                  const extraScale = (newScale - 100) / 100;
-                                  const autoHeight = Math.round(baseHeight * (1 + extraScale));
-                                  setFormData((prev) => ({ 
-                                    ...prev, 
-                                    image_scale: newScale,
-                                    banner_height: Math.max(prev.banner_height, autoHeight)
-                                  }));
-                                } else {
-                                  setFormData((prev) => ({ ...prev, image_scale: newScale }));
-                                }
-                              }}
+                              onValueChange={(value) => setFormData((prev) => ({ ...prev, image_scale: value[0] }))}
                               min={50}
-                              max={200}
+                              max={100}
                               step={5}
                             />
                             <div className="flex justify-between text-[10px] text-muted-foreground">
                               <span>50%</span>
+                              <span>75%</span>
                               <span>100%</span>
-                              <span>200%</span>
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                              {isRTL
-                                ? "بدون قص: عند رفع الزوم فوق 100%، يتم تلقائيًا زيادة ارتفاع البنر للحفاظ على الصورة كاملة."
-                                : "No-crop: When zoom exceeds 100%, banner height auto-increases to keep the full image visible."}
-                            </p>
                           </div>
                           <Button
                             type="button"
@@ -1111,7 +1090,6 @@ const AdminBanners = () => {
                               className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
                               style={{
                                 transform: `scale(${formData.image_scale / 100})`,
-                                objectPosition: `${formData.position_x}% ${formData.position_y}%`,
                               }}
                               draggable={false}
                             />
