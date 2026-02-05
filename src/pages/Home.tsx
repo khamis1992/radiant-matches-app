@@ -102,22 +102,27 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
           {banners.map((banner) => (
             <CarouselItem key={banner.id}>
               <div 
-                className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5"
+                className="relative rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 overflow-auto"
                 style={{ 
-                  minHeight: `${Math.max(
-                    banner.banner_height ?? 160,
-                    ((banner.banner_height ?? 160) * (banner.image_scale ?? 100)) / 100
-                  )}px` 
+                  height: `${banner.banner_height ?? 160}px`,
+                  maxHeight: `${banner.banner_height ?? 160}px`
                 }}
               >
-                <img
-                  src={banner.image_url}
-                  alt={banner.title || t.adminBanners.banner || "Banner"}
-                  className="absolute inset-0 w-full h-full object-contain transition-transform duration-200"
+                <div 
+                  className="absolute inset-0 flex items-center justify-center"
                   style={{
-                    transform: `scale(${(banner.image_scale ?? 100) / 100})`,
+                    width: `${(banner.image_scale ?? 100)}%`,
+                    height: `${(banner.image_scale ?? 100)}%`,
+                    minWidth: '100%',
+                    minHeight: '100%',
                   }}
-                />
+                >
+                  <img
+                    src={banner.image_url}
+                    alt={banner.title || t.adminBanners.banner || "Banner"}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
 
                 {/* Overlay */}
                 <div
@@ -141,10 +146,7 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
                         : "items-start text-start"
                   }`}
                   style={{ 
-                    minHeight: `${Math.max(
-                      banner.banner_height ?? 160,
-                      ((banner.banner_height ?? 160) * (banner.image_scale ?? 100)) / 100
-                    )}px` 
+                    height: `${banner.banner_height ?? 160}px`
                   }}
                 >
                   <div className="space-y-2">
