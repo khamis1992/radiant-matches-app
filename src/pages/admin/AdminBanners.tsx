@@ -696,10 +696,11 @@ const AdminBanners = () => {
                             <img
                               src={imagePreview}
                               alt="Preview"
-                              className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
+                              className="absolute inset-0 w-full h-full object-cover transition-all duration-200 pointer-events-none"
                               style={{
                                 transform: `scale(${formData.image_scale / 100})`,
-                                transformOrigin: `${formData.position_x}% ${formData.position_y}%`,
+                                objectPosition: `${formData.position_x}% ${formData.position_y}%`,
+                                transformOrigin: `center`,
                               }}
                               draggable={false}
                             />
@@ -1088,10 +1089,11 @@ const AdminBanners = () => {
                             <img
                               src={imagePreview}
                               alt="Preview"
-                              className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
+                              className="absolute inset-0 w-full h-full object-cover transition-all duration-200 pointer-events-none"
                               style={{
                                 transform: `scale(${formData.image_scale / 100})`,
-                                transformOrigin: `${formData.position_x}% ${formData.position_y}%`,
+                                objectPosition: `${formData.position_x}% ${formData.position_y}%`,
+                                transformOrigin: `center`,
                               }}
                               draggable={false}
                             />
