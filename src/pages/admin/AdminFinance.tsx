@@ -41,9 +41,11 @@ import {
   Legend,
 } from "recharts";
 import { exportToCSV } from "@/lib/csvExport";
-import { exportTransactionsToPDF, exportArtistPayoutsToPDF } from "@/lib/pdfExport";
+ import { exportTransactionsToPDF, exportArtistPayoutsToPDF, exportWithTemplate } from "@/lib/pdfExport";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+ import { ReportTemplateSelector } from "@/components/admin/ReportTemplateSelector";
+ import { format as formatDateFns } from "date-fns";
 
 const AdminFinance = () => {
   const { role, loading: roleLoading } = useUserRole();
@@ -148,7 +150,7 @@ const AdminFinance = () => {
     toast.success(t.adminFinance.exportPayoutsSuccess);
   };
 
-  const handleExportTransactionsPDF = () => {
+   const handleExportTransactionsPDF = (templateId?: string) => {
     if (!transactions?.length) {
       toast.error(t.adminFinance.noTransactionsToExport);
       return;
@@ -161,16 +163,70 @@ const AdminFinance = () => {
       subscription: t.adminFinance.typeSubscription,
     };
 
-    exportTransactionsToPDF(transactions, typeLabelsMap);
+     if (templateId) {
+       const columns = [
+         { header: t.adminFinance.colDate, dataKey: "date" },
+         { header: t.adminFinance.colType, dataKey: "type" },
+         { header: t.adminFinance.colArtist, dataKey: "artist" },
+         { header: t.adminFinance.colAmount, dataKey: "amount" },
+         { header: t.adminFinance.colFee, dataKey: "fee" },
+         { header: t.adminFinance.colNet, dataKey: "net" },
+         { header: t.adminFinance.colStatus, dataKey: "status" },
+       ];
+       const data = transactions.map((tx) => ({
+         date: formatDateFns(new Date(tx.created_at), "yyyy-MM-dd"),
+         type: typeLabelsMap[tx.type] || tx.type,
+         artist: tx.artist?.profiles?.full_name || t.common.unknown,
+         amount: `${tx.amount.toFixed(2)} ر.ق`,
+         fee: `${tx.platform_fee.toFixed(2)} ر.ق`,
+         net: `${tx.net_amount.toFixed(2)} ر.ق`,
+         status: tx.status === "completed" ? t.adminFinance.statusCompleted : tx.status,
+       }));
+       const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0);
+       exportWithTemplate({
+         title: t.adminFinance.recentTransactions,
+         subtitle: `${transactions.length} ${isRTL ? "معاملة" : "transactions"} | ${totalAmount.toFixed(2)} ر.ق`,
+         filename: "transactions_report",
+         columns,
+         data,
+       }, templateId);
+     } else {
+       exportTransactionsToPDF(transactions, typeLabelsMap);
+     }
     toast.success(t.adminFinance.exportPdfSuccess);
   };
 
-  const handleExportPayoutsPDF = () => {
+   const handleExportPayoutsPDF = (templateId?: string) => {
     if (!artistPayouts?.length) {
       toast.error(t.adminFinance.noPayoutsToExport);
       return;
     }
-    exportArtistPayoutsToPDF(artistPayouts);
+     if (templateId) {
+       const columns = [
+         { header: t.adminFinance.colArtist, dataKey: "name" },
+         { header: t.adminFinance.colEmail, dataKey: "email" },
+         { header: t.adminFinance.colTransactionsCount, dataKey: "count" },
+         { header: t.adminFinance.colTotalFees, dataKey: "fees" },
+         { header: t.adminFinance.colTotalEarnings, dataKey: "earnings" },
+       ];
+       const data = artistPayouts.map((p) => ({
+         name: p.full_name,
+         email: p.email,
+         count: String(p.transactions_count),
+         fees: `${p.total_fees.toFixed(2)} ر.ق`,
+         earnings: `${p.total_earnings.toFixed(2)} ر.ق`,
+       }));
+       const totalEarnings = artistPayouts.reduce((sum, p) => sum + p.total_earnings, 0);
+       exportWithTemplate({
+         title: t.adminFinance.artistPayoutsTab,
+         subtitle: `${artistPayouts.length} ${isRTL ? "فنان" : "artists"} | ${totalEarnings.toFixed(2)} ر.ق`,
+         filename: "artist_payouts_report",
+         columns,
+         data,
+       }, templateId);
+     } else {
+       exportArtistPayoutsToPDF(artistPayouts);
+     }
     toast.success(t.adminFinance.exportPdfSuccess);
   };
 
@@ -315,18 +371,18 @@ const AdminFinance = () => {
                 <Download className={cn("h-4 w-4", iconSpacing)} />
                 {t.adminFinance.exportTransactionsCsv}
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExportTransactionsPDF}>
-                <FileDown className={cn("h-4 w-4", iconSpacing)} />
-                {t.adminFinance.exportTransactionsPdf}
-              </Button>
+               <ReportTemplateSelector
+                 onExport={handleExportTransactionsPDF}
+                 label={t.adminFinance.exportTransactionsPdf}
+               />
               <Button variant="outline" size="sm" onClick={handleExportArtistPayouts}>
                 <Download className={cn("h-4 w-4", iconSpacing)} />
                 {t.adminFinance.exportPayoutsCsv}
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExportPayoutsPDF}>
-                <FileDown className={cn("h-4 w-4", iconSpacing)} />
-                {t.adminFinance.exportPayoutsPdf}
-              </Button>
+               <ReportTemplateSelector
+                 onExport={handleExportPayoutsPDF}
+                 label={t.adminFinance.exportPayoutsPdf}
+               />
             </div>
           </div>
 

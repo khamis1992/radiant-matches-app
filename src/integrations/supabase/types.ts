@@ -957,6 +957,51 @@ export type Database = {
         }
         Relationships: []
       }
+      report_templates: {
+        Row: {
+          company_name: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          footer_text: string
+          id: string
+          is_default: boolean | null
+          logo_url: string | null
+          name: string
+          primary_color: string
+          secondary_color: string
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          footer_text?: string
+          id?: string
+          is_default?: boolean | null
+          logo_url?: string | null
+          name: string
+          primary_color?: string
+          secondary_color?: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          footer_text?: string
+          id?: string
+          is_default?: boolean | null
+          logo_url?: string | null
+          name?: string
+          primary_color?: string
+          secondary_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       review_helpful_votes: {
         Row: {
           created_at: string
