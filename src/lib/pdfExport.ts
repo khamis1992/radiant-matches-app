@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
 interface HTMLColumn {
   header: string;
@@ -14,13 +15,72 @@ interface HTMLExportOptions {
   orientation?: "portrait" | "landscape";
 }
 
-const generateHTMLReport = ({
-  title,
-  subtitle,
-  filename,
-  columns,
-  data,
-}: HTMLExportOptions) => {
+interface ReportSettings {
+  logoUrl: string;
+  primaryColor: string;
+  secondaryColor: string;
+  companyName: string;
+  footerText: string;
+}
+
+const getReportSettings = async (): Promise<ReportSettings> => {
+  const defaults: ReportSettings = {
+    logoUrl: "",
+    primaryColor: "#8b5cf6",
+    secondaryColor: "#a855f7",
+    companyName: "Glam",
+    footerText: "جميع الحقوق محفوظة",
+  };
+
+  try {
+    const { data } = await supabase
+      .from("platform_settings")
+      .select("key, value")
+      .in("key", [
+        "report_logo_url",
+        "report_primary_color",
+        "report_secondary_color",
+        "report_company_name",
+        "report_footer_text",
+      ]);
+
+    if (data) {
+      data.forEach((setting) => {
+        const val = (setting.value as Record<string, unknown>)?.value;
+        if (val !== undefined) {
+          switch (setting.key) {
+            case "report_logo_url":
+              defaults.logoUrl = String(val);
+              break;
+            case "report_primary_color":
+              defaults.primaryColor = String(val);
+              break;
+            case "report_secondary_color":
+              defaults.secondaryColor = String(val);
+              break;
+            case "report_company_name":
+              defaults.companyName = String(val);
+              break;
+            case "report_footer_text":
+              defaults.footerText = String(val);
+              break;
+          }
+        }
+      });
+    }
+  } catch (e) {
+    console.error("Failed to fetch report settings:", e);
+  }
+
+  return defaults;
+};
+
+const generateHTMLReportWithSettings = (
+  options: HTMLExportOptions,
+  settings: ReportSettings
+) => {
+  const { title, subtitle, columns, data } = options;
+  const { logoUrl, primaryColor, secondaryColor, companyName, footerText } = settings;
   const currentDate = format(new Date(), "yyyy-MM-dd HH:mm");
   
   const htmlContent = `
@@ -52,12 +112,25 @@ const generateHTMLReport = ({
       overflow: hidden;
     }
     .header {
-      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      background: linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%);
       color: white;
       padding: 24px 32px;
+    }
+    .header-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 16px;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-logo {
+      max-height: 40px;
+      max-width: 120px;
+      object-fit: contain;
     }
     .header-content h1 {
       font-size: 24px;
@@ -82,14 +155,14 @@ const generateHTMLReport = ({
       font-size: 14px;
     }
     thead {
-      background: #f1f5f9;
+      background: ${primaryColor}15;
     }
     th {
       padding: 14px 16px;
       text-align: right;
       font-weight: 600;
-      color: #475569;
-      border-bottom: 2px solid #e2e8f0;
+      color: ${primaryColor};
+      border-bottom: 2px solid ${primaryColor}30;
     }
     td {
       padding: 12px 16px;
@@ -114,11 +187,16 @@ const generateHTMLReport = ({
       font-size: 12px;
       color: #64748b;
     }
+    .footer-brand {
+      font-weight: 600;
+      color: ${primaryColor};
+      margin-bottom: 4px;
+    }
     .print-btn {
       position: fixed;
       bottom: 24px;
       left: 24px;
-      background: #8b5cf6;
+      background: ${primaryColor};
       color: white;
       border: none;
       padding: 12px 24px;
@@ -126,14 +204,14 @@ const generateHTMLReport = ({
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+      box-shadow: 0 4px 12px ${primaryColor}66;
       transition: all 0.2s;
       display: flex;
       align-items: center;
       gap: 8px;
     }
     .print-btn:hover {
-      background: #7c3aed;
+      filter: brightness(0.9);
       transform: translateY(-2px);
     }
     @media print {
@@ -146,11 +224,17 @@ const generateHTMLReport = ({
 <body>
   <div class="container">
     <div class="header">
+      <div class="header-top">
+        <div class="header-brand">
+          ${logoUrl ? `<img src="${logoUrl}" alt="Logo" class="header-logo" />` : ""}
+          <span style="font-weight: 600; font-size: 18px;">${companyName}</span>
+        </div>
+        <div class="header-date">${currentDate}</div>
+      </div>
       <div class="header-content">
         <h1>${title}</h1>
         ${subtitle ? `<p>${subtitle}</p>` : ""}
       </div>
-      <div class="header-date">${currentDate}</div>
     </div>
     <div class="content">
       <table>
@@ -169,7 +253,8 @@ const generateHTMLReport = ({
       </table>
     </div>
     <div class="footer">
-      إجمالي ${data.length} سجل | تم إنشاء التقرير بتاريخ ${currentDate}
+      <div class="footer-brand">${companyName}</div>
+      ${footerText} | إجمالي ${data.length} سجل | ${currentDate}
     </div>
   </div>
   <button class="print-btn" onclick="window.print()">
@@ -191,22 +276,9 @@ const generateHTMLReport = ({
 };
 
 // Keep old function name for compatibility but now exports HTML
-export const exportToPDF = ({
-  title,
-  subtitle,
-  filename,
-  columns,
-  data,
-  orientation = "landscape",
-}: HTMLExportOptions) => {
-  generateHTMLReport({
-    title,
-    subtitle,
-    filename,
-    columns,
-    data,
-    orientation,
-  });
+export const exportToPDF = async (options: HTMLExportOptions) => {
+  const settings = await getReportSettings();
+  generateHTMLReportWithSettings(options, settings);
 };
 
 // Booking-specific PDF export
