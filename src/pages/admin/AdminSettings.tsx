@@ -14,6 +14,7 @@ import { Settings, Percent, Clock, Phone, Mail, Building, FileText, Palette, Ima
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+ import { ReportTemplatesManager } from "@/components/admin/ReportTemplatesManager";
 
 const AdminSettings = () => {
   const { role, loading: roleLoading } = useUserRole();
@@ -444,6 +445,9 @@ const AdminSettings = () => {
                 </CardContent>
               </Card>
 
+               {/* Report Templates */}
+               <ReportTemplatesManager />
+ 
               <div className="flex justify-end">
                 <Button type="submit" size="lg" disabled={updateSettings.isPending}>
                   {updateSettings.isPending ? t.adminSettings.saving : t.adminSettings.saveSettings}

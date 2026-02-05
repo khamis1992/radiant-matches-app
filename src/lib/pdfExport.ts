@@ -13,6 +13,7 @@ interface HTMLExportOptions {
   columns: HTMLColumn[];
   data: Record<string, string | number | null | undefined>[];
   orientation?: "portrait" | "landscape";
+   templateId?: string; // Optional: use a specific template
 }
 
 interface ReportSettings {
@@ -23,7 +24,7 @@ interface ReportSettings {
   footerText: string;
 }
 
-const getReportSettings = async (): Promise<ReportSettings> => {
+ const getReportSettings = async (templateId?: string): Promise<ReportSettings> => {
   const defaults: ReportSettings = {
     logoUrl: "",
     primaryColor: "#8b5cf6",
@@ -33,6 +34,43 @@ const getReportSettings = async (): Promise<ReportSettings> => {
   };
 
   try {
+     // If templateId is provided, fetch that specific template
+     if (templateId) {
+       const { data: template } = await supabase
+         .from("report_templates")
+         .select("*")
+         .eq("id", templateId)
+         .single();
+ 
+       if (template) {
+         return {
+           logoUrl: template.logo_url || "",
+           primaryColor: template.primary_color,
+           secondaryColor: template.secondary_color,
+           companyName: template.company_name,
+           footerText: template.footer_text,
+         };
+       }
+     }
+ 
+     // Try to get the default template first
+     const { data: defaultTemplate } = await supabase
+       .from("report_templates")
+       .select("*")
+       .eq("is_default", true)
+       .maybeSingle();
+ 
+     if (defaultTemplate) {
+       return {
+         logoUrl: defaultTemplate.logo_url || "",
+         primaryColor: defaultTemplate.primary_color,
+         secondaryColor: defaultTemplate.secondary_color,
+         companyName: defaultTemplate.company_name,
+         footerText: defaultTemplate.footer_text,
+       };
+     }
+ 
+     // Fall back to platform settings
     const { data } = await supabase
       .from("platform_settings")
       .select("key, value")
@@ -277,9 +315,29 @@ const generateHTMLReportWithSettings = (
 
 // Keep old function name for compatibility but now exports HTML
 export const exportToPDF = async (options: HTMLExportOptions) => {
-  const settings = await getReportSettings();
+   const settings = await getReportSettings(options.templateId);
   generateHTMLReportWithSettings(options, settings);
 };
+ 
+ // Export with a specific template
+ export const exportWithTemplate = async (
+   options: Omit<HTMLExportOptions, "templateId">,
+   templateId: string
+ ) => {
+   const settings = await getReportSettings(templateId);
+   generateHTMLReportWithSettings({ ...options, templateId }, settings);
+ };
+ 
+ // Get all available templates for selection UI
+ export const getAvailableTemplates = async () => {
+   const { data } = await supabase
+     .from("report_templates")
+     .select("id, name, primary_color, secondary_color, is_default")
+     .order("is_default", { ascending: false })
+     .order("name");
+   
+   return data || [];
+ };
 
 // Booking-specific PDF export
 export const exportBookingsToPDF = (
