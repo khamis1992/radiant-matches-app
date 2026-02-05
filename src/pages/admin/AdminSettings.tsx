@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Percent, Clock, Phone, Mail, Building } from "lucide-react";
+import { Settings, Percent, Clock, Phone, Mail, Building, FileText, Palette, Image, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const AdminSettings = () => {
   const { role, loading: roleLoading } = useUserRole();
@@ -27,7 +29,14 @@ const AdminSettings = () => {
     platform_name: "",
     support_email: "",
     support_phone: "",
+    report_logo_url: "",
+    report_primary_color: "#8b5cf6",
+    report_secondary_color: "#a855f7",
+    report_company_name: "Glam",
+    report_footer_text: "جميع الحقوق محفوظة",
   });
+
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -39,6 +48,11 @@ const AdminSettings = () => {
         platform_name: settings.platform_name,
         support_email: settings.support_email,
         support_phone: settings.support_phone,
+        report_logo_url: settings.report_logo_url || "",
+        report_primary_color: settings.report_primary_color || "#8b5cf6",
+        report_secondary_color: settings.report_secondary_color || "#a855f7",
+        report_company_name: settings.report_company_name || "Glam",
+        report_footer_text: settings.report_footer_text || "جميع الحقوق محفوظة",
       });
     }
   }, [settings]);
@@ -62,6 +76,48 @@ const AdminSettings = () => {
 
   const handleChange = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("يرجى اختيار ملف صورة");
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("حجم الصورة يجب أن يكون أقل من 2 ميغابايت");
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `report-logo-${Date.now()}.${fileExt}`;
+      const filePath = `logos/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("banners")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("banners")
+        .getPublicUrl(filePath);
+
+      setFormData((prev) => ({ ...prev, report_logo_url: urlData.publicUrl }));
+      toast.success("تم رفع الشعار بنجاح");
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      toast.error("فشل رفع الشعار");
+    } finally {
+      setUploadingLogo(false);
+    }
   };
 
   return (
@@ -204,6 +260,184 @@ const AdminSettings = () => {
                           value={formData.support_phone}
                           onChange={(e) => handleChange("support_phone", e.target.value)}
                         />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    {isRTL ? "تخصيص التقارير" : "Report Customization"}
+                  </CardTitle>
+                  <CardDescription>
+                    {isRTL ? "تخصيص مظهر التقارير المصدرة" : "Customize the appearance of exported reports"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-6">
+                    {/* Logo Upload */}
+                    <div className="grid gap-3">
+                      <Label className="flex items-center gap-2">
+                        <Image className="h-4 w-4" />
+                        {isRTL ? "شعار التقارير" : "Report Logo"}
+                      </Label>
+                      <div className="flex items-center gap-4">
+                        {formData.report_logo_url ? (
+                          <div className="relative">
+                            <img
+                              src={formData.report_logo_url}
+                              alt="Report Logo"
+                              className="h-16 w-auto max-w-[200px] object-contain rounded-lg border border-border"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                              onClick={() => setFormData((prev) => ({ ...prev, report_logo_url: "" }))}
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="h-16 w-32 border-2 border-dashed border-border rounded-lg flex items-center justify-center text-muted-foreground">
+                            <Image className="h-6 w-6" />
+                          </div>
+                        )}
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            id="logo-upload"
+                            className="hidden"
+                            onChange={handleLogoUpload}
+                            disabled={uploadingLogo}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => document.getElementById("logo-upload")?.click()}
+                            disabled={uploadingLogo}
+                          >
+                            <Upload className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                            {uploadingLogo
+                              ? isRTL ? "جاري الرفع..." : "Uploading..."
+                              : isRTL ? "رفع شعار" : "Upload Logo"}
+                          </Button>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {isRTL ? "PNG أو JPG، بحد أقصى 2 ميغابايت" : "PNG or JPG, max 2MB"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Colors */}
+                    <div className="grid gap-4">
+                      <Label className="flex items-center gap-2">
+                        <Palette className="h-4 w-4" />
+                        {isRTL ? "ألوان التقارير" : "Report Colors"}
+                      </Label>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-2">
+                          <Label htmlFor="report_primary_color" className="text-sm text-muted-foreground">
+                            {isRTL ? "اللون الرئيسي" : "Primary Color"}
+                          </Label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="color"
+                              id="report_primary_color"
+                              value={formData.report_primary_color}
+                              onChange={(e) => handleChange("report_primary_color", e.target.value)}
+                              className="h-10 w-14 rounded-md border border-input cursor-pointer"
+                            />
+                            <Input
+                              value={formData.report_primary_color}
+                              onChange={(e) => handleChange("report_primary_color", e.target.value)}
+                              className="max-w-[120px] font-mono text-sm"
+                              dir="ltr"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="report_secondary_color" className="text-sm text-muted-foreground">
+                            {isRTL ? "اللون الثانوي" : "Secondary Color"}
+                          </Label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="color"
+                              id="report_secondary_color"
+                              value={formData.report_secondary_color}
+                              onChange={(e) => handleChange("report_secondary_color", e.target.value)}
+                              className="h-10 w-14 rounded-md border border-input cursor-pointer"
+                            />
+                            <Input
+                              value={formData.report_secondary_color}
+                              onChange={(e) => handleChange("report_secondary_color", e.target.value)}
+                              className="max-w-[120px] font-mono text-sm"
+                              dir="ltr"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Company Info */}
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="grid gap-2">
+                        <Label htmlFor="report_company_name">
+                          {isRTL ? "اسم الشركة في التقرير" : "Company Name in Report"}
+                        </Label>
+                        <Input
+                          id="report_company_name"
+                          value={formData.report_company_name}
+                          onChange={(e) => handleChange("report_company_name", e.target.value)}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="report_footer_text">
+                          {isRTL ? "نص التذييل" : "Footer Text"}
+                        </Label>
+                        <Input
+                          id="report_footer_text"
+                          value={formData.report_footer_text}
+                          onChange={(e) => handleChange("report_footer_text", e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Preview */}
+                    <div className="mt-4 p-4 rounded-lg border border-border bg-muted/30">
+                      <p className="text-sm font-medium mb-3">{isRTL ? "معاينة رأس التقرير" : "Report Header Preview"}</p>
+                      <div
+                        className="rounded-lg overflow-hidden"
+                        style={{
+                          background: `linear-gradient(135deg, ${formData.report_primary_color} 0%, ${formData.report_secondary_color} 100%)`,
+                        }}
+                      >
+                        <div className="p-4 flex items-center justify-between text-white">
+                          <div className="flex items-center gap-3">
+                            {formData.report_logo_url ? (
+                              <img
+                                src={formData.report_logo_url}
+                                alt="Logo"
+                                className="h-8 w-auto max-w-[100px] object-contain"
+                              />
+                            ) : null}
+                            <span className="font-bold">{formData.report_company_name}</span>
+                          </div>
+                          <span className="text-xs opacity-80">{new Date().toLocaleDateString("ar-QA")}</span>
+                        </div>
+                      </div>
+                      <div className="mt-2 p-2 bg-muted rounded text-center text-xs text-muted-foreground">
+                        {formData.report_footer_text}
                       </div>
                     </div>
                   </div>

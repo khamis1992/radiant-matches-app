@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-interface PlatformSettings {
+export interface PlatformSettings {
   commission_rate: number;
   min_booking_hours: number;
   max_booking_days: number;
@@ -10,6 +10,12 @@ interface PlatformSettings {
   platform_name: string;
   support_email: string;
   support_phone: string;
+  // Report customization
+  report_logo_url: string;
+  report_primary_color: string;
+  report_secondary_color: string;
+  report_company_name: string;
+  report_footer_text: string;
 }
 
 const defaultSettings: PlatformSettings = {
@@ -20,6 +26,11 @@ const defaultSettings: PlatformSettings = {
   platform_name: "منصة التجميل",
   support_email: "support@example.com",
   support_phone: "+966500000000",
+  report_logo_url: "",
+  report_primary_color: "#8b5cf6",
+  report_secondary_color: "#a855f7",
+  report_company_name: "Glam",
+  report_footer_text: "جميع الحقوق محفوظة",
 };
 
 export const usePlatformSettings = () => {
