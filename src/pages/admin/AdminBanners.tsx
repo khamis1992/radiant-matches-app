@@ -323,8 +323,7 @@ const AdminBanners = () => {
         text_position: banner.text_position || "start",
         text_alignment: banner.text_alignment || "start",
         overlay_opacity: banner.overlay_opacity ?? 50,
-        // No-crop mode: clamp zoom to 100% max (anything above will crop inside a fixed frame)
-        image_scale: Math.max(50, Math.min(banner.image_scale ?? 100, 100)),
+        image_scale: banner.image_scale ?? 100,
         banner_height: banner.banner_height ?? 160,
         position_x: banner.position_x ?? 50,
         position_y: banner.position_y ?? 50,
@@ -378,8 +377,7 @@ const AdminBanners = () => {
         text_position: formData.text_position,
         text_alignment: formData.text_alignment,
         overlay_opacity: formData.overlay_opacity,
-        // No-crop mode: enforce 50%–100% in storage to match UI constraints
-        image_scale: Math.max(50, Math.min(100, Math.round(formData.image_scale))),
+        image_scale: Math.round(formData.image_scale),
         banner_height: Math.round(formData.banner_height),
         position_x: Math.round(formData.position_x),
         position_y: Math.round(formData.position_y),
@@ -700,7 +698,7 @@ const AdminBanners = () => {
                               alt="Preview"
                               className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
                               style={{
-                                transform: `scale(${Math.max(50, Math.min(formData.image_scale, 100)) / 100})`,
+                                transform: `scale(${formData.image_scale / 100})`,
                                 objectPosition: `${formData.position_x}% ${formData.position_y}%`,
                               }}
                               draggable={false}
@@ -1018,20 +1016,35 @@ const AdminBanners = () => {
                             </div>
                             <Slider
                               value={[formData.image_scale]}
-                              onValueChange={(value) => setFormData((prev) => ({ ...prev, image_scale: value[0] }))}
+                              onValueChange={(value) => {
+                                const newScale = value[0];
+                                // Auto-increase banner height when zoom > 100% to prevent cropping
+                                if (newScale > 100) {
+                                  const baseHeight = 160;
+                                  const extraScale = (newScale - 100) / 100;
+                                  const autoHeight = Math.round(baseHeight * (1 + extraScale));
+                                  setFormData((prev) => ({ 
+                                    ...prev, 
+                                    image_scale: newScale,
+                                    banner_height: Math.max(prev.banner_height, autoHeight)
+                                  }));
+                                } else {
+                                  setFormData((prev) => ({ ...prev, image_scale: newScale }));
+                                }
+                              }}
                               min={50}
-                              max={100}
+                              max={200}
                               step={5}
                             />
                             <div className="flex justify-between text-[10px] text-muted-foreground">
                               <span>50%</span>
-                              <span>75%</span>
                               <span>100%</span>
+                              <span>200%</span>
                             </div>
                             <p className="text-xs text-muted-foreground">
                               {isRTL
-                                ? "بدون قص: 100% هو الحد الأقصى. إذا تريد الصورة أكبر بدون قص، زِد (ارتفاع البنر)."
-                                : "No-crop: 100% is the maximum. For a larger image without cropping, increase Banner Height."}
+                                ? "بدون قص: عند رفع الزوم فوق 100%، يتم تلقائيًا زيادة ارتفاع البنر للحفاظ على الصورة كاملة."
+                                : "No-crop: When zoom exceeds 100%, banner height auto-increases to keep the full image visible."}
                             </p>
                           </div>
                           <Button
@@ -1097,7 +1110,7 @@ const AdminBanners = () => {
                               alt="Preview"
                               className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
                               style={{
-                                transform: `scale(${Math.max(50, Math.min(formData.image_scale, 100)) / 100})`,
+                                transform: `scale(${formData.image_scale / 100})`,
                                 objectPosition: `${formData.position_x}% ${formData.position_y}%`,
                               }}
                               draggable={false}
