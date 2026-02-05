@@ -111,6 +111,7 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
                   className="absolute inset-0 w-full h-full object-contain transition-transform duration-200"
                   style={{
                     transform: `scale(${Math.min(banner.image_scale ?? 100, 100) / 100})`,
+                    objectPosition: `${banner.position_x ?? 50}% ${banner.position_y ?? 50}%`,
                   }}
                 />
 

@@ -323,7 +323,8 @@ const AdminBanners = () => {
         text_position: banner.text_position || "start",
         text_alignment: banner.text_alignment || "start",
         overlay_opacity: banner.overlay_opacity ?? 50,
-        image_scale: banner.image_scale ?? 100,
+        // No-crop mode: clamp zoom to 100% max (anything above will crop inside a fixed frame)
+        image_scale: Math.max(50, Math.min(banner.image_scale ?? 100, 100)),
         banner_height: banner.banner_height ?? 160,
         position_x: banner.position_x ?? 50,
         position_y: banner.position_y ?? 50,
@@ -377,7 +378,8 @@ const AdminBanners = () => {
         text_position: formData.text_position,
         text_alignment: formData.text_alignment,
         overlay_opacity: formData.overlay_opacity,
-        image_scale: Math.round(formData.image_scale),
+        // No-crop mode: enforce 50%–100% in storage to match UI constraints
+        image_scale: Math.max(50, Math.min(100, Math.round(formData.image_scale))),
         banner_height: Math.round(formData.banner_height),
         position_x: Math.round(formData.position_x),
         position_y: Math.round(formData.position_y),
@@ -698,7 +700,8 @@ const AdminBanners = () => {
                               alt="Preview"
                               className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
                               style={{
-                                transform: `scale(${formData.image_scale / 100})`,
+                                transform: `scale(${Math.max(50, Math.min(formData.image_scale, 100)) / 100})`,
+                                objectPosition: `${formData.position_x}% ${formData.position_y}%`,
                               }}
                               draggable={false}
                             />
@@ -1025,6 +1028,11 @@ const AdminBanners = () => {
                               <span>75%</span>
                               <span>100%</span>
                             </div>
+                            <p className="text-xs text-muted-foreground">
+                              {isRTL
+                                ? "بدون قص: 100% هو الحد الأقصى. إذا تريد الصورة أكبر بدون قص، زِد (ارتفاع البنر)."
+                                : "No-crop: 100% is the maximum. For a larger image without cropping, increase Banner Height."}
+                            </p>
                           </div>
                           <Button
                             type="button"
@@ -1089,7 +1097,8 @@ const AdminBanners = () => {
                               alt="Preview"
                               className="absolute inset-0 w-full h-full object-contain transition-all duration-200 pointer-events-none"
                               style={{
-                                transform: `scale(${formData.image_scale / 100})`,
+                                transform: `scale(${Math.max(50, Math.min(formData.image_scale, 100)) / 100})`,
+                                objectPosition: `${formData.position_x}% ${formData.position_y}%`,
                               }}
                               draggable={false}
                             />
