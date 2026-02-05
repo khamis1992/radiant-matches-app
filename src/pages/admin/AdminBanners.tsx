@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -228,6 +228,50 @@ const AdminBanners = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [mobilePreview, setMobilePreview] = useState(false);
   const [activeTab, setActiveTab] = useState("content");
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imagePreview || !previewContainerRef.current) return;
+    e.preventDefault();
+    setIsDraggingImage(true);
+    updatePositionFromMouse(e);
+  };
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDraggingImage || !previewContainerRef.current) return;
+      updatePositionFromMouse(e as unknown as React.MouseEvent<HTMLDivElement>);
+    },
+    [isDraggingImage]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsDraggingImage(false);
+  }, []);
+
+  const updatePositionFromMouse = (e: React.MouseEvent | MouseEvent) => {
+    if (!previewContainerRef.current) return;
+    const rect = previewContainerRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setFormData((prev) => ({
+      ...prev,
+      position_x: Math.max(0, Math.min(100, x)),
+      position_y: Math.max(0, Math.min(100, y)),
+    }));
+  };
+
+  useEffect(() => {
+    if (isDraggingImage) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [isDraggingImage, handleMouseMove, handleMouseUp]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -491,7 +535,7 @@ const AdminBanners = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Left Column - Form Fields */}
                     <div className="space-y-5">
-                      {/* Image Upload */}
+                      {/* Image Upload - Drag image in preview to position */}
                       <Card className="p-4 border-dashed border-2 hover:border-primary/50 transition-colors">
                         <div className="space-y-3">
                           <div className="flex items-center gap-2">
@@ -600,7 +644,7 @@ const AdminBanners = () => {
                       </Card>
                     </div>
 
-                    {/* Right Column - Preview */}
+                    {/* Right Column - Preview with Mouse Drag */}
                     <div className="lg:sticky lg:top-0 h-fit">
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
@@ -628,8 +672,12 @@ const AdminBanners = () => {
                         </div>
 
                         <div
+                          ref={previewContainerRef}
+                          onMouseDown={handleMouseDown}
                           className={cn(
-                            "relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-muted mx-auto transition-all duration-300 shadow-lg",
+                            "relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-muted mx-auto transition-all duration-300 shadow-lg select-none",
+                            imagePreview && "cursor-grab active:cursor-grabbing",
+                            isDraggingImage && "cursor-grabbing",
                             mobilePreview ? "max-w-[375px]" : "w-full",
                           )}
                           style={{ minHeight: `${formData.banner_height}px` }}
@@ -648,7 +696,7 @@ const AdminBanners = () => {
                             <img
                               src={imagePreview}
                               alt="Preview"
-                              className="absolute inset-0 w-full h-full object-cover transition-all duration-200"
+                              className="absolute inset-0 w-full h-full object-cover transition-all duration-200 pointer-events-none"
                               style={{
                                 transform: `scale(${formData.image_scale / 100})`,
                                 objectPosition: `${formData.position_x}% ${formData.position_y}%`,
