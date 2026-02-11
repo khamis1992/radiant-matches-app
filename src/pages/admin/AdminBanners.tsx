@@ -503,7 +503,7 @@ const AdminBanners = () => {
 
       {/* Add/Edit Dialog with Tabs */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[1000px] max-h-[95vh] overflow-hidden p-0" dir={isRTL ? "rtl" : "ltr"}>
+        <DialogContent className="sm:max-w-[1200px] max-h-[98vh] overflow-hidden p-0" dir={isRTL ? "rtl" : "ltr"}>
           <DialogHeader className="px-6 pt-6 pb-2">
             <DialogTitle className="text-xl">
               {editingBanner ? t.adminBanners.editBanner : t.adminBanners.addNewBanner}
@@ -528,7 +528,7 @@ const AdminBanners = () => {
               </TabsList>
             </div>
 
-            <ScrollArea className="h-[calc(95vh-240px)] overflow-y-auto">
+            <ScrollArea className="h-[calc(98vh-200px)] overflow-y-auto">
               <div className="px-6 pb-6">
                 {/* Content Tab */}
                 <TabsContent value="content" className="mt-0">
@@ -680,7 +680,7 @@ const AdminBanners = () => {
                             isDraggingImage && "cursor-grabbing",
                             mobilePreview ? "max-w-[375px]" : "w-full",
                           )}
-                          style={{ minHeight: `${formData.banner_height}px` }}
+                          style={{ height: `${formData.banner_height}px` }}
                         >
                           {/* Grid Overlay for Positioning */}
                           <div className="absolute inset-0 z-20 pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
@@ -740,7 +740,7 @@ const AdminBanners = () => {
                               formData.text_alignment === "end" &&
                                 (isRTL ? "items-start text-start" : "items-end text-end"),
                             )}
-                            style={{ minHeight: `${formData.banner_height}px` }}
+                            style={{ height: `${formData.banner_height}px` }}
                           >
                             <div className="space-y-2">
                               {formData.show_title && (
@@ -1072,7 +1072,7 @@ const AdminBanners = () => {
                             "relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-muted mx-auto transition-all duration-300 shadow-lg",
                             mobilePreview ? "max-w-[375px]" : "w-full",
                           )}
-                          style={{ minHeight: `${formData.banner_height}px` }}
+                          style={{ height: `${formData.banner_height}px` }}
                         >
                           {/* Grid Overlay for Positioning */}
                           <div className="absolute inset-0 z-20 pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
@@ -1088,7 +1088,7 @@ const AdminBanners = () => {
                             <img
                               src={imagePreview}
                               alt="Preview"
-                              className="absolute inset-0 w-full h-full object-cover transition-all duration-200"
+                              className="absolute inset-0 w-full h-full object-cover transition-all duration-200 pointer-events-none"
                               style={{
                                 transform: `scale(${formData.image_scale / 100})`,
                                 objectPosition: `${formData.position_x}% ${formData.position_y}%`,
@@ -1132,7 +1132,7 @@ const AdminBanners = () => {
                               formData.text_alignment === "end" &&
                                 (isRTL ? "items-start text-start" : "items-end text-end"),
                             )}
-                            style={{ minHeight: `${formData.banner_height}px` }}
+                            style={{ height: `${formData.banner_height}px` }}
                           >
                             <div className="space-y-2">
                               {formData.show_title && (

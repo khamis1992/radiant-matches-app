@@ -103,7 +103,7 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
             <CarouselItem key={banner.id}>
               <div 
                 className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5"
-                style={{ minHeight: `${banner.banner_height ?? 160}px` }}
+                style={{ height: `${banner.banner_height ?? 160}px` }}
               >
                 <img
                   src={banner.image_url}
@@ -136,7 +136,7 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
                         ? "items-end text-end"
                         : "items-start text-start"
                   }`}
-                  style={{ minHeight: `${banner.banner_height ?? 160}px` }}
+                  style={{ height: `${banner.banner_height ?? 160}px` }}
                 >
                   <div className="space-y-2">
                     {banner.show_title && banner.title && (
