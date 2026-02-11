@@ -586,7 +586,7 @@ const Onboarding = () => {
             </div>
 
             {/* Swipe hint */}
-            <p className="text-center mt-6 text-xs text-muted-foreground/60">
+            <p className="text-center mt-6 text-xs text-muted-foreground/60 md:hidden">
               {language === "ar" ? "اسحب للتنقل" : "Swipe to navigate"}
             </p>
           </div>

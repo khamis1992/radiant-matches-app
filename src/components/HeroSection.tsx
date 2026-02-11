@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Sparkles, Star, ArrowRight, Search, MapPin } from "lucide-react";
+import { Sparkles, ArrowRight, Search, MapPin } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import categoryBridal from "@/assets/category-bridal.jpg";
+import artist1 from "@/assets/artist-1.jpg";
+import artist2 from "@/assets/artist-2.jpg";
+import artist3 from "@/assets/artist-3.jpg";
 
 /**
  * HeroSection - Native App Style
@@ -59,17 +61,14 @@ export const HeroSection = () => {
                  </span>
               </h1>
               
-              {/* Native-style Stats Row */}
+              {/* Native-style Avatar Row */}
               <div className="flex items-center gap-3 pt-1">
                  <div className="flex -space-x-2">
-                    {[1, 2, 3].map(i => (
+                    {[artist1, artist2, artist3].map((src, i) => (
                        <div key={i} className="w-6 h-6 rounded-full border border-white bg-gray-300 overflow-hidden">
-                          <img src={`https://i.pravatar.cc/100?img=${i + 15}`} alt="Artist" className="w-full h-full object-cover" />
+                          <img src={src} alt="Artist" className="w-full h-full object-cover" />
                        </div>
                     ))}
-                 </div>
-                 <div className="text-white/90 text-xs font-medium">
-                    <span className="font-bold">4.9</span> (2k+ Reviews)
                  </div>
               </div>
            </div>
