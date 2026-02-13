@@ -80,11 +80,11 @@ export const SplashScreen = ({ onComplete, duration = 2500 }: SplashScreenProps)
           isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
         )}>
           {/* Subtle rotating glow ring */}
-          <div className="absolute inset-0 -m-8 rounded-full border border-primary/20 animate-spin-slow opacity-60" />
-          <div className="absolute inset-0 -m-4 rounded-full border border-gold/30 animate-[spin-slow_15s_linear_infinite_reverse] opacity-60" />
+          <div className="absolute inset-0 -m-16 rounded-full border border-primary/20 animate-spin-slow opacity-60" />
+          <div className="absolute inset-0 -m-8 rounded-full border border-gold/30 animate-[spin-slow_15s_linear_infinite_reverse] opacity-60" />
           
           {/* Logo */}
-          <div className="relative h-32 w-32 drop-shadow-2xl">
+          <div className="relative h-64 w-64 drop-shadow-2xl">
             <img
               src={logo}
               alt="Glam"
