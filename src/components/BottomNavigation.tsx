@@ -60,7 +60,8 @@ const BottomNavigation = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Prevent the dock from flashing the wrong menu while the role is loading / unresolved
-  if (loading || role === null) return null;
+  // Allow guest users (role === null) to see the dock
+  if (loading) return null;
   
   const handleSearch = () => {
     if (searchQuery.trim()) {

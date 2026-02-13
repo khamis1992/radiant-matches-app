@@ -14,8 +14,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import artist1 from "@/assets/artist-1.jpg";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { LoginPromptModal } from "@/components/auth/LoginPromptModal";
 
 const Favorites = () => {
   const navigate = useNavigate();
@@ -23,8 +24,16 @@ const Favorites = () => {
   const { favorites, isLoading: favoritesLoading } = useFavorites();
   const { t, isRTL } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useSwipeBack();
+
+  // Show login modal for guest users
+  useEffect(() => {
+    if (!user && !authLoading) {
+      setShowLoginModal(true);
+    }
+  }, [user, authLoading]);
 
   // Filter to get only artist favorites
   const artistFavorites = useMemo(() => {
@@ -95,36 +104,8 @@ const Favorites = () => {
     );
   }
 
-  // If user is not logged in
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
-        <AppHeader title={t.favorites.title} style="modern" showBack={true} />
-        <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
-          <div className="relative mb-6">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full blur-2xl" />
-            <div className="relative w-24 h-24 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center">
-              <Heart className="w-12 h-12 text-primary fill-primary/20" />
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-foreground mb-3">
-            {t.auth.login}
-          </h2>
-          <p className="text-muted-foreground mb-8 max-w-sm">
-            {t.favorites.noFavoritesDesc}
-          </p>
-          <Button 
-            onClick={() => navigate("/auth")}
-            className="shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
-          >
-            <Heart className="w-4 h-4 mr-2" />
-            {t.auth.login}
-          </Button>
-        </div>
-        <BottomNavigation />
-      </div>
-    );
-  }
+  // If user is not logged in, show the normal page with login modal
+  // This allows guests to see the dock and browse, then prompts login naturally
 
   const isLoading = favoritesLoading || artistsLoading;
 
@@ -303,6 +284,13 @@ const Favorites = () => {
       </div>
 
       <BottomNavigation />
+
+      {/* Login modal for guest users */}
+      <LoginPromptModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        featureName="favorites"
+      />
     </div>
   );
 };

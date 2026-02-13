@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import BottomNavigation from "@/components/BottomNavigation";
 import AppHeader from "@/components/layout/AppHeader";
-import { 
-  Calendar, Clock, MapPin, MessageCircle, ChevronRight, 
+import {
+  Calendar, Clock, MapPin, MessageCircle, ChevronRight,
   Sparkles, Star, CalendarCheck, History, AlertCircle,
   CheckCircle2, XCircle, Timer, CreditCard
 } from "lucide-react";
@@ -18,6 +18,7 @@ import { format, formatDistanceToNow, isToday, isTomorrow, differenceInDays } fr
 import { ar, enUS, type Locale } from "date-fns/locale";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { LoginPromptModal } from "@/components/auth/LoginPromptModal";
 
 // Tab component
 const TabButton = ({ 
@@ -362,8 +363,16 @@ const Bookings = () => {
   const { t, language } = useLanguage();
   const { getOrCreateBookingConversation } = useConversations();
   const navigate = useNavigate();
-  
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   const dateLocale = language === "ar" ? ar : enUS;
+
+  // Show login modal for guest users
+  useEffect(() => {
+    if (!user && !authLoading) {
+      setShowLoginModal(true);
+    }
+  }, [user, authLoading]);
 
   const handleOpenChat = async (e: React.MouseEvent, booking: any) => {
     e.preventDefault();
@@ -416,15 +425,8 @@ const Bookings = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
-        <AppHeader title={t.bookings.title} style="modern" />
-        <EmptyState type="login" language={language} />
-        <BottomNavigation />
-      </div>
-    );
-  }
+  // If user is not logged in, show normal page with login modal
+  // This allows guests to see dock and browse, then prompts login naturally
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
@@ -507,6 +509,13 @@ const Bookings = () => {
       </div>
 
       <BottomNavigation />
+
+      {/* Login modal for guest users */}
+      <LoginPromptModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        featureName="bookings"
+      />
     </div>
   );
 };
