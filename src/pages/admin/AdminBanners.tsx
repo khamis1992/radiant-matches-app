@@ -895,14 +895,14 @@ const AdminBanners = () => {
                         <div className="flex items-center justify-between mb-4">
                           <h4 className="font-medium text-sm flex items-center gap-2">
                             <span>🎯</span>
-                            {isRTL ? "موضع الصورة" : "Image Position"}
+                            {isRTL ? "نقطة ارتكاز الصورة" : "Image Anchor Point"}
                           </h4>
                           {(formData.position_x !== 50 || formData.position_y !== 50) && (
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="h-7 text-xs text-primary"
+                              className="h-7 text-xs text-primary hover:bg-primary/10"
                               onClick={() => setFormData((prev) => ({ ...prev, position_x: 50, position_y: 50 }))}
                             >
                               {isRTL ? "إعادة للوسط" : "Reset to Center"}
@@ -911,92 +911,80 @@ const AdminBanners = () => {
                         </div>
 
                         <div className="space-y-4">
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <Label className="text-sm">{isRTL ? "الموضع الأفقي" : "Horizontal Position"}</Label>
-                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                                {formData.position_x}%
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">{isRTL ? "يسار" : "Left"}</span>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                  {isRTL ? "الموضع الأفقي (X)" : "Horizontal (X)"}
+                                </Label>
+                                <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded text-foreground">
+                                  {formData.position_x}%
+                                </span>
+                              </div>
                               <Slider
                                 value={[formData.position_x]}
                                 onValueChange={(value) => setFormData((prev) => ({ ...prev, position_x: value[0] }))}
                                 min={0}
                                 max={100}
                                 step={1}
-                                className="flex-1"
+                                className="[&_.bg-primary]:bg-primary/80"
                               />
-                              <span className="text-xs text-muted-foreground">{isRTL ? "يمين" : "Right"}</span>
                             </div>
-                          </div>
 
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <Label className="text-sm">{isRTL ? "الموضع العمودي" : "Vertical Position"}</Label>
-                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                                {formData.position_y}%
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">{isRTL ? "أعلى" : "Top"}</span>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                  {isRTL ? "الموضع العمودي (Y)" : "Vertical (Y)"}
+                                </Label>
+                                <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded text-foreground">
+                                  {formData.position_y}%
+                                </span>
+                              </div>
                               <Slider
                                 value={[formData.position_y]}
                                 onValueChange={(value) => setFormData((prev) => ({ ...prev, position_y: value[0] }))}
                                 min={0}
                                 max={100}
                                 step={1}
-                                className="flex-1"
+                                className="[&_.bg-primary]:bg-primary/80"
                               />
-                              <span className="text-xs text-muted-foreground">{isRTL ? "أسفل" : "Bottom"}</span>
                             </div>
                           </div>
 
-                          {/* Position Presets */}
-                          <div className="grid grid-cols-3 gap-2 pt-2">
+                          {/* Visual Grid Selector */}
+                          <div className="grid grid-cols-3 gap-2 max-w-[200px] mx-auto p-2 bg-muted/30 rounded-xl border border-border/50 mb-4">
                             {[
-                              { key: "top-left", label: "↖" },
-                              { key: "top", label: "↑" },
-                              { key: "top-right", label: "↗" },
-                              { key: "left", label: "←" },
-                              { key: "center", label: "•" },
-                              { key: "right", label: "→" },
-                              { key: "bottom-left", label: "↙" },
-                              { key: "bottom", label: "↓" },
-                              { key: "bottom-right", label: "↘" },
-                            ].map((preset) => {
-                              const presetValues: Record<string, { x: number; y: number }> = {
-                                "top-left": { x: 0, y: 0 },
-                                top: { x: 50, y: 0 },
-                                "top-right": { x: 100, y: 0 },
-                                left: { x: 0, y: 50 },
-                                center: { x: 50, y: 50 },
-                                right: { x: 100, y: 50 },
-                                "bottom-left": { x: 0, y: 100 },
-                                bottom: { x: 50, y: 100 },
-                                "bottom-right": { x: 100, y: 100 },
-                              };
-                              const isActive =
-                                formData.position_x === presetValues[preset.key].x &&
-                                formData.position_y === presetValues[preset.key].y;
+                              { key: "top-left", x: 0, y: 0, icon: "↖" },
+                              { key: "top", x: 50, y: 0, icon: "↑" },
+                              { key: "top-right", x: 100, y: 0, icon: "↗" },
+                              { key: "left", x: 0, y: 50, icon: "←" },
+                              { key: "center", x: 50, y: 50, icon: "•" },
+                              { key: "right", x: 100, y: 50, icon: "→" },
+                              { key: "bottom-left", x: 0, y: 100, icon: "↙" },
+                              { key: "bottom", x: 50, y: 100, icon: "↓" },
+                              { key: "bottom-right", x: 100, y: 100, icon: "↘" },
+                            ].map((pos) => {
+                              const isSelected = formData.position_x === pos.x && formData.position_y === pos.y;
                               return (
-                                <Button
-                                  key={preset.key}
+                                <button
+                                  key={pos.key}
                                   type="button"
-                                  variant={isActive ? "default" : "outline"}
-                                  size="sm"
-                                  className="h-10 text-lg"
-                                  onClick={() => {
-                                    const { x, y } = presetValues[preset.key];
-                                    setFormData((prev) => ({ ...prev, position_x: x, position_y: y }));
-                                  }}
+                                  onClick={() => setFormData((prev) => ({ ...prev, position_x: pos.x, position_y: pos.y }))}
+                                  className={cn(
+                                    "w-12 h-12 rounded-lg flex items-center justify-center text-lg transition-all duration-200",
+                                    isSelected
+                                      ? "bg-primary text-primary-foreground shadow-md scale-105 font-bold ring-2 ring-primary/20"
+                                      : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground border border-border/50"
+                                  )}
+                                  title={pos.key}
                                 >
-                                  {preset.label}
-                                </Button>
+                                  {pos.icon}
+                                </button>
                               );
                             })}
                           </div>
+
+                          {/* Fine Tuning Sliders */}
+                          <div className="pt-4 border-t border-border/50">
                         </div>
                       </Card>
 
