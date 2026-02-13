@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
 import CategoryCard from "@/components/CategoryCard";
 import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -39,45 +40,100 @@ const getCategoryTranslations = (t: ReturnType<typeof useLanguage>["t"]) => [
   { name: t.categories.photoshoot, image: categoryPhotoshoot, key: "Photoshoot" },
 ];
 
-// Dynamic Promotions Carousel Component
-const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) => {
+/* ─── Section Header ─── */
+const SectionHeader = ({
+  title,
+  actionText,
+  onAction,
+}: {
+  title: string;
+  actionText?: string;
+  onAction?: () => void;
+}) => (
+  <div className="flex items-center justify-between px-5 mb-3">
+    <h2 className="text-[15px] font-bold text-foreground">{title}</h2>
+    {actionText && onAction && (
+      <button
+        onClick={onAction}
+        className="flex items-center gap-0.5 text-xs text-primary font-semibold active:opacity-70"
+      >
+        {actionText}
+        <ChevronRight className="w-3.5 h-3.5" />
+      </button>
+    )}
+  </div>
+);
+
+/* ─── Filter Tabs ─── */
+const FilterTabs = ({
+  tabs,
+  activeTab,
+  onSelect,
+}: {
+  tabs: { label: string; key: string }[];
+  activeTab: string;
+  onSelect: (key: string) => void;
+}) => (
+  <div className="overflow-x-auto scrollbar-hide px-5 mb-4">
+    <div className="flex gap-2 pb-1">
+      {tabs.map((tab) => (
+        <button
+          key={tab.key}
+          onClick={() => onSelect(tab.key)}
+          className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95 ${
+            activeTab === tab.key
+              ? "bg-foreground text-background shadow-sm"
+              : "bg-muted text-muted-foreground hover:bg-muted/80"
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
+/* ─── Promotions Carousel ─── */
+const PromotionsCarousel = ({
+  navigate,
+}: {
+  navigate: (path: string) => void;
+}) => {
   const { data: banners = [], isLoading } = useActiveBanners();
   const { t } = useLanguage();
 
-  // Fallback to static promos if no banners
   if (isLoading) {
     return (
-      <section className="px-5 pb-6">
+      <section className="px-5 pb-5">
         <Skeleton className="h-[120px] w-full rounded-2xl" />
       </section>
     );
   }
 
   if (banners.length === 0) {
-    // Fallback to static promos from translations
     return (
-      <section className="px-5 pb-6">
-        <Carousel
-          opts={{ align: "start", loop: true }}
-          className="w-full"
-        >
+      <section className="px-5 pb-5">
+        <Carousel opts={{ align: "start", loop: true }} className="w-full">
           <CarouselContent>
             {t.home.promos.map((promo, index) => (
               <CarouselItem key={index}>
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5">
-                  <img 
-                    src={promoBanner1} 
-                    alt={promo.title} 
-                    className="absolute inset-0 w-full h-full object-cover opacity-50"
+                <div className="relative overflow-hidden rounded-2xl h-[130px]">
+                  <img
+                    src={promoBanner1}
+                    alt={promo.title}
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
-                  <div className="relative z-10 p-5 flex items-center justify-between min-h-[100px]">
+                  <div className="absolute inset-0 bg-black/40" />
+                  <div className="relative z-10 p-5 flex items-center justify-between h-full">
                     <div className="space-y-1">
-                      <h3 className="text-lg font-bold text-foreground">{promo.title}</h3>
-                      <p className="text-sm text-muted-foreground">{promo.subtitle}</p>
+                      <h3 className="text-base font-bold text-white">
+                        {promo.title}
+                      </h3>
+                      <p className="text-xs text-white/70">{promo.subtitle}</p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => navigate("/makeup-artists")}
-                      className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-primary/90 transition-colors"
+                      className="bg-white text-foreground px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shadow-lg hover:bg-white/90 transition-colors"
                     >
                       {promo.button}
                     </button>
@@ -93,37 +149,30 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
   }
 
   return (
-    <section className="px-5 pb-6">
-      <Carousel
-        opts={{ align: "start", loop: true }}
-        className="w-full"
-      >
+    <section className="px-5 pb-5">
+      <Carousel opts={{ align: "start", loop: true }} className="w-full">
         <CarouselContent>
           {banners.map((banner) => (
             <CarouselItem key={banner.id}>
-              <div 
-                className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5"
-                style={{ height: `${banner.banner_height ?? 160}px` }}
+              <div
+                className="relative overflow-hidden rounded-2xl"
+                style={{ height: `${banner.banner_height ?? 140}px` }}
               >
                 <img
                   src={banner.image_url}
-                  alt={banner.title || t.adminBanners.banner || "Banner"}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-200"
+                  alt={banner.title || "Banner"}
+                  className="absolute inset-0 w-full h-full object-cover"
                   style={{
                     transform: `scale(${(banner.image_scale ?? 100) / 100})`,
                     objectPosition: `${banner.position_x ?? 50}% ${banner.position_y ?? 50}%`,
                   }}
                 />
-
-                {/* Overlay */}
                 <div
                   className="absolute inset-0 bg-black"
-                  style={{ opacity: (banner.overlay_opacity ?? 50) / 100 }}
+                  style={{ opacity: (banner.overlay_opacity ?? 40) / 100 }}
                 />
-
-                {/* Content */}
                 <div
-                  className={`relative z-10 p-5 flex flex-col ${
+                  className={`relative z-10 p-5 flex flex-col h-full ${
                     banner.text_position === "center"
                       ? "justify-center"
                       : banner.text_position === "end"
@@ -136,23 +185,24 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
                         ? "items-end text-end"
                         : "items-start text-start"
                   }`}
-                  style={{ height: `${banner.banner_height ?? 160}px` }}
                 >
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {banner.show_title && banner.title && (
-                      <h3 className="text-lg font-bold text-white drop-shadow">
+                      <h3 className="text-lg font-bold text-white drop-shadow-lg">
                         {banner.title}
                       </h3>
                     )}
                     {banner.show_subtitle && banner.subtitle && (
-                      <p className="text-sm text-white/90 drop-shadow">
+                      <p className="text-xs text-white/80 drop-shadow">
                         {banner.subtitle}
                       </p>
                     )}
                     {banner.show_button && banner.button_text && (
                       <button
-                        onClick={() => navigate(banner.link_url || "/makeup-artists")}
-                        className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-primary/90 transition-colors"
+                        onClick={() =>
+                          navigate(banner.link_url || "/makeup-artists")
+                        }
+                        className="mt-1.5 bg-white text-foreground px-4 py-2 rounded-full text-xs font-bold shadow-lg hover:bg-white/90 transition-colors"
                       >
                         {banner.button_text}
                       </button>
@@ -169,18 +219,64 @@ const PromotionsCarousel = ({ navigate }: { navigate: (path: string) => void }) 
   );
 };
 
+/* ─── Artist Loading Skeleton ─── */
+const ArtistSkeleton = () => (
+  <div className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border/30">
+    <Skeleton className="h-24 w-full" />
+    <div className="flex justify-center -mt-7">
+      <Skeleton className="w-14 h-14 rounded-full" />
+    </div>
+    <div className="p-3 pt-2 space-y-2 flex flex-col items-center">
+      <Skeleton className="h-3.5 w-20" />
+      <Skeleton className="h-3 w-14" />
+      <Skeleton className="h-8 w-full mt-1" />
+    </div>
+  </div>
+);
+
+/* ═══════════════════════════════════
+   HOME PAGE
+   ═══════════════════════════════════ */
 const Home = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isArtist, loading: roleLoading } = useUserRole();
   const { data: artists, isLoading } = useArtistsWithPricing();
   const { data: unreadCount = 0 } = useUnreadNotificationsCount();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isRTL = language === "ar";
+
+  const [activeFilter, setActiveFilter] = useState("all");
 
   const categories = getCategoryTranslations(t);
 
-  // Get artist IDs for availability check
-  const artistIds = useMemo(() => artists?.map(a => a.id) || [], [artists]);
+  const filterTabs = useMemo(
+    () => [
+      { label: isRTL ? "الكل" : "All", key: "all" },
+      { label: isRTL ? "مكياج" : "Makeup", key: "Makeup" },
+      { label: isRTL ? "شعر" : "Hair", key: "Hair Styling" },
+      { label: isRTL ? "أظافر" : "Nails", key: "Nails" },
+      { label: isRTL ? "عروس" : "Bridal", key: "Bridal" },
+      { label: isRTL ? "حنة" : "Henna", key: "Henna" },
+    ],
+    [isRTL],
+  );
+
+  // Filter artists by active tab
+  const filteredArtists = useMemo(() => {
+    if (!artists) return [];
+    if (activeFilter === "all") return artists;
+    return artists.filter((a) =>
+      a.specialties?.some((s: string) =>
+        s.toLowerCase().includes(activeFilter.toLowerCase()),
+      ),
+    );
+  }, [artists, activeFilter]);
+
+  const artistIds = useMemo(
+    () => artists?.map((a) => a.id) || [],
+    [artists],
+  );
   const { data: availabilityMap } = useArtistsAvailability(artistIds);
 
   useEffect(() => {
@@ -197,166 +293,84 @@ const Home = () => {
     );
   }
 
-  if (isArtist) {
-    return null;
-  }
+  if (isArtist) return null;
 
   return (
-    <div className="min-h-screen bg-background pb-32">
-      {/* Header - Modern App Design */}
-      <AppHeader
-        showLogo={true}
-        style="modern"
-      />
+    <div className="min-h-screen bg-background pb-28">
+      {/* ─── Header ─── */}
+      <AppHeader showLogo={true} style="modern" />
 
-      {/* Editorial Hero Section */}
+      {/* ─── Hero ─── */}
       <HeroSection />
 
-      {/* Categories */}
-      <section className="px-5 py-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">
-          {t.home.browseCategory}
-        </h2>
-        {/* Mobile Carousel */}
-        <div className="md:hidden -mx-5">
-          <Carousel
-            opts={{
-              align: "start",
-              loop: false,
-              dragFree: true,
-            }}
-            className="w-full"
-          >
-            <CarouselContent className="px-5 -ml-3">
-              {categories.map((category) => (
-                <CarouselItem key={category.key} className="basis-auto pl-3">
-                  <CategoryCard
-                    name={category.name}
-                    image={category.image}
-                    onClick={() => navigate(`/makeup-artists?category=${encodeURIComponent(category.key)}`)}
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
-        
-        {/* Desktop Scroll */}
-        <div className="hidden md:flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-          {categories.map((category) => (
-            <CategoryCard
-              key={category.key}
-              name={category.name}
-              image={category.image}
-              onClick={() => navigate(`/makeup-artists?category=${encodeURIComponent(category.key)}`)}
-            />
-          ))}
+      {/* ─── Categories ─── */}
+      <section className="pt-7 pb-2">
+        <SectionHeader title={t.home.browseCategory} />
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex gap-5 px-5 pb-2">
+            {categories.map((cat) => (
+              <CategoryCard
+                key={cat.key}
+                name={cat.name}
+                image={cat.image}
+                onClick={() =>
+                  navigate(
+                    `/makeup-artists?category=${encodeURIComponent(cat.key)}`,
+                  )
+                }
+              />
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Promotions Carousel */}
-      <PromotionsCarousel navigate={navigate} />
+      {/* ─── Promotions ─── */}
+      <section className="pt-3">
+        <PromotionsCarousel navigate={navigate} />
+      </section>
 
-      {/* Featured Artists */}
-      <section className="px-5 pb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-foreground">
-            {t.home.topRatedArtists}
-          </h2>
-          <button 
-            onClick={() => navigate("/makeup-artists")}
-            className="text-sm text-primary font-medium hover:underline"
-          >
-            {t.common.seeAll}
-          </button>
-        </div>
-        {/* Mobile Carousel */}
-        <div className="md:hidden -mx-5">
-          {isLoading ? (
-            <div className="flex gap-3 px-5">
-              {[1, 2].map((i) => (
-                <div key={i} className="min-w-[160px] bg-card rounded-2xl overflow-hidden shadow-md">
-                  <Skeleton className="h-24 w-full" />
-                  <div className="flex justify-center -mt-8">
-                    <Skeleton className="w-16 h-16 rounded-full" />
-                  </div>
-                  <div className="p-3 pt-2 space-y-2 flex flex-col items-center">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-3 w-16" />
-                    <Skeleton className="h-8 w-full mt-1" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : artists && artists.length > 0 ? (
-            <Carousel
-              opts={{
-                align: "start",
-                loop: false,
-                dragFree: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="px-5 -ml-3 items-stretch">
-                {artists.map((artist, index) => (
-                  <CarouselItem key={artist.id} className="basis-[48%] sm:basis-[45%] pl-3 h-auto">
-                    <div
-                      className="animate-fade-in h-full"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <EnhancedArtistCard
-                        artist={artist}
-                        availability={availabilityMap?.get(artist.id)}
-                        viewMode="grid"
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            </Carousel>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground px-5">
-              <p>{t.home.noArtistsYet}</p>
-            </div>
-          )}
-        </div>
+      {/* ─── Top Rated Artists ─── */}
+      <section className="pb-6">
+        <SectionHeader
+          title={t.home.topRatedArtists}
+          actionText={t.common.seeAll}
+          onAction={() => navigate("/makeup-artists")}
+        />
 
-        {/* Desktop Grid */}
-        <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {/* Filter Tabs */}
+        <FilterTabs
+          tabs={filterTabs}
+          activeTab={activeFilter}
+          onSelect={setActiveFilter}
+        />
+
+        {/* Artist Cards */}
+        <div className="px-5">
           {isLoading ? (
-            <>
+            <div className="grid grid-cols-2 gap-3">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-card rounded-2xl overflow-hidden shadow-md">
-                  <Skeleton className="h-32 w-full" />
-                  <div className="flex justify-center -mt-10">
-                    <Skeleton className="w-20 h-20 rounded-full" />
-                  </div>
-                  <div className="p-4 pt-3 space-y-2 flex flex-col items-center">
-                    <Skeleton className="h-5 w-24" />
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-4 w-28" />
-                    <Skeleton className="h-10 w-full mt-2" />
-                  </div>
+                <ArtistSkeleton key={i} />
+              ))}
+            </div>
+          ) : filteredArtists.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {filteredArtists.map((artist, index) => (
+                <div
+                  key={artist.id}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 40}ms` }}
+                >
+                  <EnhancedArtistCard
+                    artist={artist}
+                    availability={availabilityMap?.get(artist.id)}
+                    viewMode="grid"
+                  />
                 </div>
               ))}
-            </>
-          ) : artists && artists.length > 0 ? (
-            artists.map((artist, index) => (
-              <div
-                key={artist.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <EnhancedArtistCard
-                  artist={artist}
-                  availability={availabilityMap?.get(artist.id)}
-                  viewMode="grid"
-                />
-              </div>
-            ))
+            </div>
           ) : (
-            <div className="col-span-full text-center py-8 text-muted-foreground">
-              <p>{t.home.noArtistsYet}</p>
+            <div className="text-center py-10 text-muted-foreground">
+              <p className="text-sm">{t.home.noArtistsYet}</p>
             </div>
           )}
         </div>

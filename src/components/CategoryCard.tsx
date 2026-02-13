@@ -8,19 +8,22 @@ const CategoryCard = ({ name, image, onClick }: CategoryCardProps) => {
   return (
     <button
       onClick={onClick}
-      className="relative flex-shrink-0 w-20 group"
+      className="flex flex-col items-center gap-2.5 flex-shrink-0 w-[68px] group active:scale-95 transition-transform"
     >
-      <div className="relative w-16 h-16 mx-auto overflow-hidden rounded-2xl shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 to-transparent" />
+      {/* Circle with border ring */}
+      <div className="relative">
+        <div className="w-[56px] h-[56px] rounded-full overflow-hidden ring-2 ring-border/40 group-hover:ring-primary/40 transition-all duration-300 shadow-sm group-hover:shadow-md">
+          <img
+            src={image}
+            alt={name}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          />
+        </div>
       </div>
-      <p className="mt-2 text-xs font-medium text-center text-foreground truncate">
+      {/* Label */}
+      <span className="text-[10px] font-semibold text-muted-foreground group-hover:text-foreground text-center leading-tight line-clamp-2 transition-colors">
         {name}
-      </p>
+      </span>
     </button>
   );
 };
