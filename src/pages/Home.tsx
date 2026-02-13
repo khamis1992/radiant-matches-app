@@ -267,7 +267,7 @@ const Home = () => {
     if (!artists) return [];
     if (activeFilter === "all") return artists;
     return artists.filter((a) =>
-      a.specialties?.some((s: string) =>
+      (a as any).categories?.some((s: string) =>
         s.toLowerCase().includes(activeFilter.toLowerCase()),
       ),
     );

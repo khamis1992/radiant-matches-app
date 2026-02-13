@@ -82,6 +82,7 @@ const App = () => (
           <Routes>
           <Route path="/" element={<Onboarding />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/artist-signup" element={<ArtistSignup />} />
           <Route path="/artist-signup/:token" element={<ArtistSignup />} />
 
           {/* Customer-only Routes */}

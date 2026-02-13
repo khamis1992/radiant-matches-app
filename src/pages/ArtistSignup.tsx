@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Eye, EyeOff, Mail, Lock, User, Sparkles, AlertCircle, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Sparkles, AlertCircle, CheckCircle, Phone } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { z } from "zod";
 
@@ -23,7 +23,10 @@ const ArtistSignup = () => {
   const { token } = useParams<{ token: string }>();
   const { t, isRTL } = useLanguage();
   
-  const [loading, setLoading] = useState(true);
+  // Determine if this is a public signup (no token) or invitation-based
+  const isPublicSignup = !token;
+  
+  const [loading, setLoading] = useState(!isPublicSignup);
   const [submitting, setSubmitting] = useState(false);
   const [invitation, setInvitation] = useState<InvitationData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -31,14 +34,17 @@ const ArtistSignup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [formErrors, setFormErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
+  const [formErrors, setFormErrors] = useState<{ email?: string; password?: string; fullName?: string; phone?: string }>({});
 
   const emailSchema = z.string().email(t.artistSignup.invalidEmail);
   const passwordSchema = z.string().min(6, t.artistSignup.passwordMin);
 
-  // Check invitation validity
+  // Check invitation validity (only for invitation-based signup)
   useEffect(() => {
+    if (isPublicSignup) return;
+
     const checkInvitation = async () => {
       if (!token) {
         setError(t.artistSignup.invalidLink);
@@ -59,14 +65,12 @@ const ArtistSignup = () => {
           return;
         }
 
-        // Check expiration
         if (new Date(data.expires_at) < new Date()) {
           setError(t.artistSignup.linkExpired);
           setLoading(false);
           return;
         }
 
-        // Check previous usage
         if (data.used_at) {
           setError(t.artistSignup.linkUsed);
           setLoading(false);
@@ -83,10 +87,10 @@ const ArtistSignup = () => {
     };
 
     checkInvitation();
-  }, [token, t.artistSignup]);
+  }, [token, t.artistSignup, isPublicSignup]);
 
   const validateForm = (): boolean => {
-    const newErrors: { email?: string; password?: string; fullName?: string } = {};
+    const newErrors: { email?: string; password?: string; fullName?: string; phone?: string } = {};
     
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
@@ -101,6 +105,10 @@ const ArtistSignup = () => {
     if (!fullName.trim()) {
       newErrors.fullName = t.artistSignup.fullNameRequired;
     }
+
+    if (isPublicSignup && !phone.trim()) {
+      newErrors.phone = isRTL ? "رقم الهاتف مطلوب" : "Phone number is required";
+    }
     
     setFormErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -109,7 +117,8 @@ const ArtistSignup = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm() || !invitation) return;
+    if (!validateForm()) return;
+    if (!isPublicSignup && !invitation) return;
     
     setSubmitting(true);
 
@@ -140,27 +149,59 @@ const ArtistSignup = () => {
         return;
       }
 
-      // Call edge function to complete artist signup
-      const { data: completeData, error: completeError } = await supabase.functions.invoke(
-        "complete-artist-signup",
-        {
-          body: {
-            invitationId: invitation.id,
-            userId: authData.user.id,
-          },
-        }
-      );
+      if (isPublicSignup) {
+        // Public signup - call public-artist-signup edge function
+        const { data: completeData, error: completeError } = await supabase.functions.invoke(
+          "public-artist-signup",
+          {
+            body: {
+              userId: authData.user.id,
+            },
+          }
+        );
 
-      if (completeError) {
-        console.error("Error completing artist signup:", completeError);
-        toast.error(t.artistSignup.errorCompletingSignup);
-        return;
+        if (completeError) {
+          console.error("Error completing public artist signup:", completeError);
+          toast.error(t.artistSignup.errorCompletingSignup);
+          return;
+        }
+
+        if (!completeData?.success) {
+          console.error("Public artist signup failed:", completeData?.error);
+          toast.error(completeData?.error || t.artistSignup.errorCompletingSignup);
+          return;
+        }
+      } else {
+        // Invitation-based signup
+        const { data: completeData, error: completeError } = await supabase.functions.invoke(
+          "complete-artist-signup",
+          {
+            body: {
+              invitationId: invitation!.id,
+              userId: authData.user.id,
+            },
+          }
+        );
+
+        if (completeError) {
+          console.error("Error completing artist signup:", completeError);
+          toast.error(t.artistSignup.errorCompletingSignup);
+          return;
+        }
+
+        if (!completeData?.success) {
+          console.error("Artist signup failed:", completeData?.error);
+          toast.error(completeData?.error || t.artistSignup.errorCompletingSignup);
+          return;
+        }
       }
 
-      if (!completeData?.success) {
-        console.error("Artist signup failed:", completeData?.error);
-        toast.error(completeData?.error || t.artistSignup.errorCompletingSignup);
-        return;
+      // Update phone in profile if provided
+      if (phone.trim()) {
+        await supabase
+          .from("profiles")
+          .update({ phone: phone.trim() })
+          .eq("id", authData.user.id);
       }
 
       toast.success(t.artistSignup.accountCreatedSuccess);
@@ -187,8 +228,8 @@ const ArtistSignup = () => {
     );
   }
 
-  // Error state
-  if (error) {
+  // Error state (only for invitation-based)
+  if (error && !isPublicSignup) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/10 flex items-center justify-center p-6" dir={isRTL ? "rtl" : "ltr"}>
         <div className="bg-card rounded-3xl shadow-2xl p-8 max-w-md w-full text-center space-y-6">
@@ -220,22 +261,44 @@ const ArtistSignup = () => {
             <img src={logo} alt="Logo" className="w-20 h-20 object-contain" />
           </div>
           
-          <h1 className="text-3xl font-bold text-foreground mb-3">{t.artistSignup.welcome}</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-3">
+            {isPublicSignup 
+              ? (isRTL ? "انضمي كخبيرة تجميل" : "Join as a Beauty Expert") 
+              : t.artistSignup.welcome}
+          </h1>
           <p className="text-muted-foreground max-w-xs mx-auto">
-            {t.artistSignup.createAccount}
+            {isPublicSignup 
+              ? (isRTL ? "سجّلي حسابك وابدئي باستقبال الحجوزات وزيادة دخلك" : "Create your account and start receiving bookings and growing your income")
+              : t.artistSignup.createAccount}
           </p>
         </div>
 
-        {/* Invitation details */}
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 max-w-md mx-auto w-full mb-6">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-green-800">{t.artistSignup.validInvitation}</p>
-              <p className="text-xs text-green-600">{t.artistSignup.invitedAsArtist}</p>
+        {/* Invitation badge or Public signup badge */}
+        {!isPublicSignup && invitation ? (
+          <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl p-4 max-w-md mx-auto w-full mb-6">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-green-800 dark:text-green-300">{t.artistSignup.validInvitation}</p>
+                <p className="text-xs text-green-600 dark:text-green-500">{t.artistSignup.invitedAsArtist}</p>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 max-w-md mx-auto w-full mb-6">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-5 h-5 text-primary flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {isRTL ? "تسجيل مجاني لخبيرات التجميل" : "Free registration for Beauty Experts"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {isRTL ? "أنشئي حسابك وأضيفي خدماتك ومعرض أعمالك" : "Create your account, add services & portfolio"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Signup form */}
         <div className="bg-card/90 backdrop-blur-md rounded-3xl shadow-2xl p-6 max-w-md mx-auto w-full border border-border/50">
@@ -258,6 +321,30 @@ const ArtistSignup = () => {
                 <p className="text-sm text-destructive">⚠️ {formErrors.fullName}</p>
               )}
             </div>
+
+            {/* Phone (shown for public signup) */}
+            {isPublicSignup && (
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium">
+                  {isRTL ? "رقم الهاتف" : "Phone Number"}
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder={isRTL ? "مثال: +974 5555 1234" : "e.g. +974 5555 1234"}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="ps-12 h-14 rounded-xl border-2"
+                    dir="ltr"
+                  />
+                </div>
+                {formErrors.phone && (
+                  <p className="text-sm text-destructive">⚠️ {formErrors.phone}</p>
+                )}
+              </div>
+            )}
 
             {/* Email */}
             <div className="space-y-2">
