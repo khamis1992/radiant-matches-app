@@ -1,16 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, SlidersHorizontal } from "lucide-react";
 import CategoryCard from "@/components/CategoryCard";
-import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
+import { HomeArtistCard } from "@/components/home/HomeArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
 import AppHeader from "@/components/layout/AppHeader";
 import { HeroSection } from "@/components/HeroSection";
 import { useArtistsWithPricing } from "@/hooks/useArtistsWithPricing";
-import { useArtistsAvailability } from "@/hooks/useArtistAvailability";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
-import { useUnreadNotificationsCount } from "@/hooks/useArtistNotifications";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -64,7 +62,7 @@ const SectionHeader = ({
   </div>
 );
 
-/* ─── Filter Tabs ─── */
+/* ─── Filter Tabs with Filter Icon ─── */
 const FilterTabs = ({
   tabs,
   activeTab,
@@ -75,7 +73,11 @@ const FilterTabs = ({
   onSelect: (key: string) => void;
 }) => (
   <div className="overflow-x-auto scrollbar-hide px-5 mb-4">
-    <div className="flex gap-2 pb-1">
+    <div className="flex items-center gap-2 pb-1">
+      {/* Filter icon button */}
+      <button className="flex items-center justify-center w-9 h-9 rounded-xl bg-muted border border-border/50 shrink-0">
+        <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
+      </button>
       {tabs.map((tab) => (
         <button
           key={tab.key}
@@ -221,16 +223,12 @@ const PromotionsCarousel = ({
 
 /* ─── Artist Loading Skeleton ─── */
 const ArtistSkeleton = () => (
-  <div className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border/30">
-    <Skeleton className="h-24 w-full" />
-    <div className="flex justify-center -mt-7">
-      <Skeleton className="w-14 h-14 rounded-full" />
-    </div>
-    <div className="p-3 pt-2 space-y-2 flex flex-col items-center">
-      <Skeleton className="h-3.5 w-20" />
-      <Skeleton className="h-3 w-14" />
-      <Skeleton className="h-8 w-full mt-1" />
-    </div>
+  <div className="bg-card rounded-2xl border border-border/40 p-3 flex flex-col items-center gap-2">
+    <Skeleton className="w-14 h-14 rounded-full" />
+    <Skeleton className="h-3.5 w-20" />
+    <Skeleton className="h-3 w-14" />
+    <Skeleton className="h-3 w-16" />
+    <Skeleton className="h-4 w-12" />
   </div>
 );
 
@@ -242,7 +240,6 @@ const Home = () => {
   const { user } = useAuth();
   const { isArtist, loading: roleLoading } = useUserRole();
   const { data: artists, isLoading } = useArtistsWithPricing();
-  const { data: unreadCount = 0 } = useUnreadNotificationsCount();
   const { t, language } = useLanguage();
   const isRTL = language === "ar";
 
@@ -254,8 +251,8 @@ const Home = () => {
     () => [
       { label: isRTL ? "الكل" : "All", key: "all" },
       { label: isRTL ? "مكياج" : "Makeup", key: "Makeup" },
-      { label: isRTL ? "شعر" : "Hair", key: "Hair Styling" },
       { label: isRTL ? "أظافر" : "Nails", key: "Nails" },
+      { label: isRTL ? "خدمات منزلية" : "Home Services", key: "Home" },
       { label: isRTL ? "عروس" : "Bridal", key: "Bridal" },
       { label: isRTL ? "حنة" : "Henna", key: "Henna" },
     ],
@@ -267,17 +264,32 @@ const Home = () => {
     if (!artists) return [];
     if (activeFilter === "all") return artists;
     return artists.filter((a) =>
-      a.specialties?.some((s: string) =>
+      a.categories?.some((s: string) =>
         s.toLowerCase().includes(activeFilter.toLowerCase()),
       ),
     );
   }, [artists, activeFilter]);
 
-  const artistIds = useMemo(
-    () => artists?.map((a) => a.id) || [],
-    [artists],
-  );
-  const { data: availabilityMap } = useArtistsAvailability(artistIds);
+  // Top-rated artists (sorted by rating)
+  const topRatedArtists = useMemo(() => {
+    return filteredArtists.slice(0, 4);
+  }, [filteredArtists]);
+
+  // "Top-Rating Services" and "Trending Services" - split remaining artists
+  const topRatingServices = useMemo(() => {
+    if (!artists) return [];
+    return artists
+      .filter((a) => (a.rating ?? 0) >= 4)
+      .slice(0, 2);
+  }, [artists]);
+
+  const trendingServices = useMemo(() => {
+    if (!artists) return [];
+    return artists
+      .filter((a) => (a.total_reviews ?? 0) > 0)
+      .sort((a, b) => (b.total_reviews ?? 0) - (a.total_reviews ?? 0))
+      .slice(0, 2);
+  }, [artists]);
 
   useEffect(() => {
     if (!roleLoading && isArtist) {
@@ -303,9 +315,8 @@ const Home = () => {
       {/* ─── Hero ─── */}
       <HeroSection />
 
-      {/* ─── Categories ─── */}
+      {/* ─── Categories (circular icons row) ─── */}
       <section className="pt-7 pb-2">
-        <SectionHeader title={t.home.browseCategory} />
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-5 px-5 pb-2">
             {categories.map((cat) => (
@@ -324,27 +335,23 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ─── Promotions ─── */}
-      <section className="pt-3">
-        <PromotionsCarousel navigate={navigate} />
-      </section>
-
-      {/* ─── Top Rated Artists ─── */}
-      <section className="pb-6">
-        <SectionHeader
-          title={t.home.topRatedArtists}
-          actionText={t.common.seeAll}
-          onAction={() => navigate("/makeup-artists")}
-        />
-
-        {/* Filter Tabs */}
+      {/* ─── Filter Tabs ─── */}
+      <section className="pt-2 pb-1">
         <FilterTabs
           tabs={filterTabs}
           activeTab={activeFilter}
           onSelect={setActiveFilter}
         />
+      </section>
 
-        {/* Artist Cards */}
+      {/* ─── Top Rated Artists ─── */}
+      <section className="pb-5">
+        <SectionHeader
+          title={isRTL ? "الفنانات الأعلى تقييماً" : "Top-Rated Artists"}
+          actionText={t.common.seeAll}
+          onAction={() => navigate("/makeup-artists")}
+        />
+
         <div className="px-5">
           {isLoading ? (
             <div className="grid grid-cols-2 gap-3">
@@ -352,19 +359,15 @@ const Home = () => {
                 <ArtistSkeleton key={i} />
               ))}
             </div>
-          ) : filteredArtists.length > 0 ? (
+          ) : topRatedArtists.length > 0 ? (
             <div className="grid grid-cols-2 gap-3">
-              {filteredArtists.map((artist, index) => (
+              {topRatedArtists.map((artist, index) => (
                 <div
                   key={artist.id}
                   className="animate-fade-in"
                   style={{ animationDelay: `${index * 40}ms` }}
                 >
-                  <EnhancedArtistCard
-                    artist={artist}
-                    availability={availabilityMap?.get(artist.id)}
-                    viewMode="grid"
-                  />
+                  <HomeArtistCard artist={artist} />
                 </div>
               ))}
             </div>
@@ -374,6 +377,45 @@ const Home = () => {
             </div>
           )}
         </div>
+      </section>
+
+      {/* ─── Top-Rating Services & Trending Services (side by side) ─── */}
+      {!isLoading && (topRatingServices.length > 0 || trendingServices.length > 0) && (
+        <section className="px-5 pb-5">
+          <div className="grid grid-cols-2 gap-3">
+            {/* Top-Rating Services */}
+            <div>
+              <h3 className="text-[13px] font-bold text-foreground mb-2">
+                {isRTL ? "أعلى تقييم" : "Top-Rating Services"}
+              </h3>
+              <div className="space-y-3">
+                {topRatingServices.map((artist) => (
+                  <HomeArtistCard key={artist.id} artist={artist} />
+                ))}
+              </div>
+            </div>
+
+            {/* Trending Services */}
+            <div>
+              <h3 className="text-[13px] font-bold text-foreground mb-2">
+                {isRTL ? "الأكثر طلباً" : "Trending Services"}
+              </h3>
+              <div className="space-y-3">
+                {trendingServices.map((artist) => (
+                  <HomeArtistCard key={artist.id} artist={artist} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ─── Promotions ─── */}
+      <section className="pt-1">
+        <SectionHeader
+          title={isRTL ? "العروض" : "Promotions"}
+        />
+        <PromotionsCarousel navigate={navigate} />
       </section>
 
       <BottomNavigation />
