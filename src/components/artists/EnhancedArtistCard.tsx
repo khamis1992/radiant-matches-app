@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Star, MapPin, Clock, GitCompare } from "lucide-react";
+import { Star, MapPin, Clock, GitCompare, Sparkles, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -86,6 +86,7 @@ const EnhancedArtistCard = ({
     return categoryMap[category] || category;
   };
 
+  const isSeller = (artist as any).account_type === "seller";
   const coverImage = artist.featured_image || artist.profile?.avatar_url;
   const hasPortfolioPreviews = artist.portfolio_previews && artist.portfolio_previews.length > 0;
 
@@ -120,6 +121,19 @@ const EnhancedArtistCard = ({
               <h3 className="font-semibold text-foreground">
                 {artist.profile?.full_name || "Unknown Artist"}
               </h3>
+              <Badge
+                className={`text-[10px] px-1.5 py-0 ${
+                  isSeller
+                    ? "bg-accent/20 text-accent-foreground border border-accent/30"
+                    : "bg-primary/10 text-primary border border-primary/20"
+                }`}
+              >
+                {isSeller ? (
+                  <><ShoppingBag className="w-2.5 h-2.5 mr-0.5" />{isRTL ? "متجر" : "Shop"}</>
+                ) : (
+                  <><Sparkles className="w-2.5 h-2.5 mr-0.5" />{isRTL ? "خبيرة" : "Expert"}</>
+                )}
+              </Badge>
               {availability?.isAvailableToday && (
                 <Badge className="bg-green-500/90 hover:bg-green-500 text-white text-[10px] px-1.5 py-0">
                   <Clock className="w-2.5 h-2.5 mr-0.5" />
@@ -288,6 +302,23 @@ const EnhancedArtistCard = ({
 
       {/* Content */}
       <div className="px-3 pt-2 pb-3 text-center flex flex-col flex-grow">
+        {/* Account Type Badge */}
+        <div className="flex justify-center mb-1">
+          <Badge
+            variant="outline"
+            className={`text-[9px] px-2 py-0 ${
+              isSeller
+                ? "bg-accent/10 text-accent-foreground border-accent/30"
+                : "bg-primary/10 text-primary border-primary/20"
+            }`}
+          >
+            {isSeller ? (
+              <><ShoppingBag className="w-2.5 h-2.5 mr-0.5" />{isRTL ? "متجر" : "Shop"}</>
+            ) : (
+              <><Sparkles className="w-2.5 h-2.5 mr-0.5" />{isRTL ? "خبيرة تجميل" : "Beauty Expert"}</>
+            )}
+          </Badge>
+        </div>
         <h3 className="font-semibold text-foreground text-sm line-clamp-1">
           {artist.profile?.full_name || "Unknown Artist"}
         </h3>
