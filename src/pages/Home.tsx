@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, ShoppingBag } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import CategoryCard from "@/components/CategoryCard";
 import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
 import AppHeader from "@/components/layout/AppHeader";
 import { HeroSection } from "@/components/HeroSection";
-import { ShopCard } from "@/components/shops/ShopCard";
 import { useArtistsWithPricing } from "@/hooks/useArtistsWithPricing";
 import { useArtistsAvailability } from "@/hooks/useArtistAvailability";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -391,34 +390,27 @@ const Home = () => {
       {/* ─── Shops Section ─── */}
       {sellers.length > 0 && (
         <section className="pb-6">
-          <div className="flex items-center gap-2 px-5 mb-1">
-            <div className="h-5 w-1 rounded-full bg-accent" />
-            <ShoppingBag className="w-4 h-4 text-accent-foreground" />
-            <h2 className="text-[15px] font-bold text-foreground">
-              {isRTL ? "المتاجر" : "Shops"}
-            </h2>
-            <div className="flex-1" />
-            <button
-              onClick={() => navigate("/makeup-artists")}
-              className="flex items-center gap-0.5 text-xs text-primary font-semibold active:opacity-70"
-            >
-              {t.common.seeAll}
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <p className="text-xs text-muted-foreground px-5 mb-3">
-            {isRTL ? "تسوّقي منتجات التجميل من المتاجر المميزة" : "Shop beauty products from top stores"}
-          </p>
-          <div className="px-5 space-y-2.5">
-            {sellers.map((seller, index) => (
-              <div
-                key={seller.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 60}ms` }}
-              >
-                <ShopCard shop={seller} />
-              </div>
-            ))}
+          <SectionHeader
+            title={isRTL ? "المتاجر" : "Shops"}
+            actionText={t.common.seeAll}
+            onAction={() => navigate("/makeup-artists")}
+          />
+          <div className="px-5">
+            <div className="grid grid-cols-2 gap-3">
+              {sellers.map((seller, index) => (
+                <div
+                  key={seller.id}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 40}ms` }}
+                >
+                  <EnhancedArtistCard
+                    artist={seller}
+                    availability={availabilityMap?.get(seller.id)}
+                    viewMode="grid"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}
