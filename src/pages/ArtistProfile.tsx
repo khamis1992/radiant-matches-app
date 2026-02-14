@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate } from "react-router-dom";
 import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff, Camera, Briefcase, ChevronRight, Play, Sparkles, Check, Grid3x3, ShoppingBag, Package } from "lucide-react";
@@ -64,6 +64,25 @@ const ArtistProfile = () => {
 
   // Review sorting
   const [reviewSort, setReviewSort] = useState<ReviewSort>("newest");
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [isTabsSticky, setIsTabsSticky] = useState(false);
+  const tabsRef = useRef<HTMLDivElement>(null);
+
+  // Scroll progress & sticky tabs
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(docHeight > 0 ? (scrollTop / docHeight) * 100 : 0);
+
+      if (tabsRef.current) {
+        const tabsTop = tabsRef.current.getBoundingClientRect().top;
+        setIsTabsSticky(tabsTop <= 0);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const filteredAndSortedReviews = useMemo(() => {
     if (!reviews) return [];
@@ -187,6 +206,13 @@ const ArtistProfile = () => {
 
   return (
     <div className="min-h-screen bg-background pb-28">
+      {/* Scroll Progress Bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-muted/30">
+        <div 
+          className="h-full bg-primary transition-all duration-100 ease-out"
+          style={{ width: `${scrollProgress}%` }}
+        />
+      </div>
       {/* Hero Section with Parallax-like effect */}
       <div className="relative h-80 overflow-hidden">
         <img
@@ -230,7 +256,7 @@ const ArtistProfile = () => {
 
       {/* Profile Card - Floating */}
       <div className="px-5 -mt-20 relative z-10">
-        <div className="bg-card rounded-3xl p-6 shadow-xl border border-border/50 backdrop-blur-sm">
+        <div className="bg-card rounded-3xl p-6 shadow-2xl border border-border/30 backdrop-blur-sm" style={{ boxShadow: '0 8px 40px -12px hsl(var(--primary) / 0.15), 0 4px 20px -8px rgba(0,0,0,0.1)' }}>
           {/* Centered Profile */}
           <div className="flex flex-col items-center text-center">
             <Avatar className="w-20 h-20 border-4 border-card shadow-lg -mt-16">
@@ -400,10 +426,11 @@ const ArtistProfile = () => {
 
 
       {/* Main Tabs */}
-      <div ref={servicesSectionRef} className="px-5 mt-6">
+      <div ref={tabsRef} className="mt-6">
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)} className="w-full">
-          {/* Mobile-optimized scrollable tab bar */}
-          <div className="overflow-x-auto scrollbar-hide -mx-5 px-5">
+          {/* Sticky tab bar */}
+          <div className={`overflow-x-auto scrollbar-hide px-5 transition-all duration-200 ${isTabsSticky ? 'sticky top-1 z-40 bg-background/95 backdrop-blur-md py-2 border-b border-border/30 shadow-sm' : ''}`}>
+            <div ref={servicesSectionRef}>
             <TabsList className="inline-flex gap-2 bg-transparent p-0 h-auto min-w-max">
               <TabsTrigger
                 value="services"
@@ -455,7 +482,11 @@ const ArtistProfile = () => {
                 )}
               </TabsTrigger>
             </TabsList>
+            </div>
           </div>
+
+          {/* Tab content with padding */}
+          <div className="px-5">
 
           {/* Services Tab */}
           <TabsContent value="services" className="mt-4 space-y-3">
@@ -874,6 +905,7 @@ const ArtistProfile = () => {
               </div>
             )}
           </TabsContent>
+          </div>
         </Tabs>
       </div>
 
