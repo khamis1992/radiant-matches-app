@@ -81,7 +81,12 @@ const App = () => (
         <NotificationPrompt />
         <InstallAppPrompt />
         <PermissionsPrompt />
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <Routes>
           <Route path="/" element={<Onboarding />} />
           <Route path="/auth" element={<Auth />} />

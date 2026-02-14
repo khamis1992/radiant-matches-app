@@ -16,8 +16,8 @@ export default defineConfig(({ mode }) => ({
       usePolling: true,
     }
   },
-  // Configure base path for Capacitor
-  base: mode === 'production' ? '' : '/',
+  // Configure base path for deployment
+  base: mode === 'production' ? '/booking/' : '/',
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {

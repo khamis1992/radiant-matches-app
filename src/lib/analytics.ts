@@ -9,7 +9,7 @@ const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || "";
 // Initialize Google Analytics
 export const initGA = () => {
   if (!GA_MEASUREMENT_ID) {
-    console.warn("[Analytics] No GA Measurement ID provided");
+    // Silently skip analytics initialization if not configured
     return;
   }
 
