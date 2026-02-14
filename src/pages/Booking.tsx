@@ -913,42 +913,55 @@ const Booking = () => {
                   </div>
                 </div>
 
-                {/* Address Form */}
+            {/* Address Form */}
                 <div className="space-y-4 pt-2">
-                  <div className="flex flex-wrap gap-2 justify-between items-center">
-                    <h3 className="font-medium text-foreground text-sm">{t.bookings.enterAddress}</h3>
-                    <div className="flex gap-2">
-                      <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCurrentLocation}
-                      className="text-primary border-primary/20 hover:bg-primary/5 gap-2">
-
-                        <Navigation className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">{t.settings?.useCurrentLocation || "Use Current Location"}</span>
-                        <span className="sm:hidden">{t.settings?.useCurrentLocation?.split(' ')[0] || "Location"}</span>
-                      </Button>
-                      
-
-
-
-
-
-
-
-
-
+                  {/* Location Detection */}
+                  <div className="bg-muted/30 rounded-2xl p-4 border border-border/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-medium text-foreground text-sm flex items-center gap-2">
+                        <Navigation className="w-4 h-4 text-primary" />
+                        {language === "ar" ? "تحديد موقعك" : "Your Location"}
+                      </h3>
                     </div>
+                    
+                    {!coordinates ? (
+                      <Button
+                        variant="outline"
+                        onClick={handleCurrentLocation}
+                        className="w-full h-12 text-primary border-primary/20 hover:bg-primary/5 gap-2 rounded-xl border-dashed">
+                        <Navigation className="w-4 h-4" />
+                        {language === "ar" ? "اضغط لتحديد موقعك تلقائياً" : "Tap to detect your location"}
+                      </Button>
+                    ) : (
+                      <div className="flex items-center gap-3 bg-primary/5 p-3 rounded-xl border border-primary/10">
+                        <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-primary">
+                            {language === "ar" ? "تم تحديد الموقع" : "Location detected"}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleCurrentLocation}
+                          className="text-xs text-primary hover:bg-primary/10 rounded-lg px-2">
+                          {language === "ar" ? "تحديث" : "Update"}
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
-                  {coordinates &&
-                <div className="bg-primary/5 p-3 rounded-xl border border-primary/10 flex items-center gap-2">
-                      <Check className="w-4 h-4 text-primary" />
-                      <span className="text-sm text-primary font-medium">
-                        {t.bookings.locationSelected || "Location Selected"}: {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
-                      </span>
-                    </div>
-                }
+                  {/* Address Fields */}
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-foreground text-sm">{t.bookings.enterAddress}</h3>
+                  </div>
+
+
                   
                   <div className="space-y-2">
                     <Label htmlFor="area">{t.bookings.area || "Area / Zone"}</Label>
