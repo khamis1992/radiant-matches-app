@@ -44,9 +44,7 @@ function getEmailTemplate(type: EmailType, data: Record<string, unknown>): { sub
           <!-- Logo Header -->
           <tr>
             <td style="padding: 28px 32px 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <h1 style="margin: 0; font-size: 26px; font-weight: 700; color: ${BRAND_COLOR}; letter-spacing: -0.5px;">
-                ${APP_NAME}
-              </h1>
+              <img src="${APP_URL}/images/logo.png" alt="${APP_NAME}" style="height: 48px; width: auto;" />
             </td>
           </tr>
 
