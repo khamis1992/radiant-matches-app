@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const APP_NAME = "Glamore";
 const APP_URL = "https://radiant-matches-app.lovable.app";
+const LOGO_URL = "https://besjfzlgtssriqpluzgn.supabase.co/storage/v1/object/public/banners/logo.png";
 const USER_MANUAL_URL = `${APP_URL}/user-manual-ar.html`;
 const BRAND_COLOR = "#C4526E";
 const BRAND_LIGHT = "#FDF2F4";
@@ -26,7 +27,7 @@ function wrap(title: string, emoji: string, content: string) {
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width: 560px; width: 100%; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.06);">
           <tr>
             <td style="padding: 28px 32px 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <img src="${APP_URL}/images/logo.png" alt="${APP_NAME}" style="height: 48px; width: auto;" />
+              <img src="${LOGO_URL}" alt="${APP_NAME}" style="height: 48px; width: auto;" />
             </td>
           </tr>
           <tr>
