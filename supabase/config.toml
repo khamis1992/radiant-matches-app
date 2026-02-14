@@ -38,3 +38,6 @@ verify_jwt = true
 
 [functions.bootstrap-admin]
 verify_jwt = false
+
+[functions.public-seller-signup]
+verify_jwt = true

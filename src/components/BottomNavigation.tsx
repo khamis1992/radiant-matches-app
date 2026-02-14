@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, Calendar, User, LayoutDashboard, Palette, LucideIcon, Users, Heart, Images, Search, X, Gift, ShoppingBag } from "lucide-react";
+import { Home, Calendar, User, LayoutDashboard, Palette, LucideIcon, Users, Heart, Images, Search, X, Gift, ShoppingBag, ClipboardList, Store } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePendingBookingsCount } from "@/hooks/usePendingBookings";
@@ -47,6 +47,13 @@ const artistNavItems: NavItem[] = [
   { icon: ShoppingBag, labelKey: "products", path: "/artist-products" },
 ];
 
+const sellerNavItems: NavItem[] = [
+  { icon: LayoutDashboard, labelKey: "dashboard", path: "/seller-dashboard" },
+  { icon: ShoppingBag, labelKey: "products", path: "/seller-products" },
+  { icon: ClipboardList, labelKey: "orders", path: "/seller-orders" },
+  { icon: User, labelKey: "profile", path: "/profile" },
+];
+
 const BottomNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -77,14 +84,16 @@ const BottomNavigation = () => {
     }
   };
 
-  const isCustomer = role !== "artist" && !isArtist && role !== "admin";
+  const isCustomer = role !== "artist" && role !== "seller" && !isArtist && role !== "admin";
   
   const navItems =
     role === "artist" || isArtist
       ? artistNavItems
-      : role === "admin"
-        ? []
-        : customerNavItems;
+      : role === "seller"
+        ? sellerNavItems
+        : role === "admin"
+          ? []
+          : customerNavItems;
 
   if (navItems.length === 0) return null;
 
@@ -228,6 +237,17 @@ const BottomNavigation = () => {
   // العرض الجديد للفنان - Instagram-style Tab Bar
   if (role === "artist" || isArtist) {
     return <ArtistTabBar />;
+  }
+
+  // عرض البائعة
+  if (role === "seller") {
+    return (
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg safe-area-bottom">
+        <div className="flex items-center justify-around h-16 max-w-md mx-auto px-4">
+          {sellerNavItems.map((item, index) => renderNavItem(item, index))}
+        </div>
+      </nav>
+    );
   }
 
   // العرض العادي للفنان (backup)

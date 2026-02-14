@@ -64,6 +64,10 @@ import CompareArtists from "./pages/CompareArtists";
 import Referrals from "./pages/Referrals";
 import Wallet from "./pages/Wallet";
 import Logout from "./pages/Logout";
+import SellerDashboard from "./pages/seller/SellerDashboard";
+import SellerProducts from "./pages/seller/SellerProducts";
+import SellerOrders from "./pages/seller/SellerOrders";
+import SellerSignup from "./pages/seller/SellerSignup";
 import { InstallAppPrompt } from "./components/InstallAppPrompt";
 import { PermissionsPrompt } from "./components/PermissionsPrompt";
 import { AnalyticsProvider } from "./hooks/useAnalytics";
@@ -92,6 +96,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/artist-signup" element={<ArtistSignup />} />
           <Route path="/artist-signup/:token" element={<ArtistSignup />} />
+          <Route path="/seller-signup" element={<SellerSignup />} />
 
           {/* Customer-only Routes */}
           <Route
@@ -246,7 +251,33 @@ const App = () => (
             }
           />
 
-          {/* Shared Routes (Customer + Artist) */}
+          {/* Seller-only Routes */}
+          <Route
+            path="/seller-dashboard"
+            element={
+              <RoleGate allow={["seller"]} showLoading>
+                <SellerDashboard />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/seller-products"
+            element={
+              <RoleGate allow={["seller"]} showLoading>
+                <SellerProducts />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/seller-orders"
+            element={
+              <RoleGate allow={["seller"]} showLoading>
+                <SellerOrders />
+              </RoleGate>
+            }
+          />
+
+          {/* Shared Routes (Customer + Artist + Seller) */}
           <Route path="/messages" element={<Messages />} />
           <Route path="/chat/:id" element={<Chat />} />
           <Route path="/profile" element={<Profile />} />

@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!["admin", "artist", "customer"].includes(role)) {
+    if (!["admin", "artist", "customer", "seller"].includes(role)) {
       return new Response(JSON.stringify({ error: "Invalid role" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
     }
 
     // If artist role, create artist profile if not exists
-    if (role === "artist") {
+    if (role === "artist" || role === "seller") {
       const { data: existingArtist } = await adminClient
         .from("artists")
         .select("id")
@@ -111,12 +111,17 @@ Deno.serve(async (req) => {
       if (!existingArtist) {
         const { error: artistError } = await adminClient
           .from("artists")
-          .insert({ user_id: userId });
+          .insert({ user_id: userId, account_type: role === "seller" ? "seller" : "artist" });
 
         if (artistError) {
-          console.error("Error creating artist profile:", artistError.message);
-          // Don't fail the whole operation, just log the error
+          console.error("Error creating artist/seller profile:", artistError.message);
         }
+      } else {
+        // Update account_type if profile exists
+        await adminClient
+          .from("artists")
+          .update({ account_type: role === "seller" ? "seller" : "artist" })
+          .eq("user_id", userId);
       }
     }
 

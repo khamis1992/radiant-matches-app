@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
-export type AppRole = "admin" | "customer" | "artist";
+export type AppRole = "admin" | "customer" | "artist" | "seller";
 
 // Simple in-memory cache to persist role across component remounts
 const roleCache: { [userId: string]: { role: AppRole; isArtist: boolean } } = {};
@@ -73,9 +73,10 @@ export const useUserRole = () => {
         const roles = (data || []).map((r) => r.role as AppRole);
         const hasArtistRole = roles.includes("artist");
         const hasAdminRole = roles.includes("admin");
+        const hasSellerRole = roles.includes("seller");
         
-        // Priority: admin > artist > customer
-        const primaryRole = hasAdminRole ? "admin" : hasArtistRole ? "artist" : "customer";
+        // Priority: admin > artist > seller > customer
+        const primaryRole = hasAdminRole ? "admin" : hasArtistRole ? "artist" : hasSellerRole ? "seller" : "customer";
         
         // Cache the result
         roleCache[user.id] = { role: primaryRole, isArtist: hasArtistRole };
