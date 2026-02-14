@@ -253,6 +253,8 @@ const Home = () => {
   const filterTabs = useMemo(
     () => [
       { label: isRTL ? "الكل" : "All", key: "all" },
+      { label: isRTL ? "خبيرات تجميل" : "Experts", key: "artist" },
+      { label: isRTL ? "متاجر" : "Shops", key: "seller" },
       { label: isRTL ? "مكياج" : "Makeup", key: "Makeup" },
       { label: isRTL ? "شعر" : "Hair", key: "Hair Styling" },
       { label: isRTL ? "أظافر" : "Nails", key: "Nails" },
@@ -265,12 +267,23 @@ const Home = () => {
   // Filter artists by active tab
   const filteredArtists = useMemo(() => {
     if (!artists) return [];
-    if (activeFilter === "all") return artists;
-    return artists.filter((a) =>
-      (a as any).categories?.some((s: string) =>
-        s.toLowerCase().includes(activeFilter.toLowerCase()),
-      ),
-    );
+    let result = artists;
+    
+    // Account type filter
+    if (activeFilter === "artist") {
+      result = result.filter((a) => (a as any).account_type === "artist");
+    } else if (activeFilter === "seller") {
+      result = result.filter((a) => (a as any).account_type === "seller");
+    } else if (activeFilter !== "all") {
+      // Category filter
+      result = result.filter((a) =>
+        (a as any).categories?.some((s: string) =>
+          s.toLowerCase().includes(activeFilter.toLowerCase()),
+        ),
+      );
+    }
+    
+    return result;
   }, [artists, activeFilter]);
 
   const artistIds = useMemo(
