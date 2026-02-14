@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Sparkles, Store } from "lucide-react";
 import CategoryCard from "@/components/CategoryCard";
 import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -45,13 +45,24 @@ const SectionHeader = ({
   title,
   actionText,
   onAction,
+  icon,
+  accentClass,
 }: {
   title: string;
   actionText?: string;
   onAction?: () => void;
+  icon?: React.ReactNode;
+  accentClass?: string;
 }) => (
   <div className="flex items-center justify-between px-5 mb-3">
-    <h2 className="text-[15px] font-bold text-foreground">{title}</h2>
+    <div className="flex items-center gap-2">
+      {icon && (
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${accentClass || "bg-primary/10"}`}>
+          {icon}
+        </div>
+      )}
+      <h2 className="text-[15px] font-bold text-foreground">{title}</h2>
+    </div>
     {actionText && onAction && (
       <button
         onClick={onAction}
@@ -346,6 +357,8 @@ const Home = () => {
           title={t.home.topRatedArtists}
           actionText={t.common.seeAll}
           onAction={() => navigate("/makeup-artists")}
+          icon={<Sparkles className="w-4 h-4 text-primary" />}
+          accentClass="bg-primary/10"
         />
 
         {/* Filter Tabs */}
@@ -389,11 +402,14 @@ const Home = () => {
 
       {/* ─── Shops Section ─── */}
       {sellers.length > 0 && (
-        <section className="pb-6">
+        <section className="pb-6 pt-2">
+          <div className="mx-5 mb-4 h-px bg-border/60" />
           <SectionHeader
             title={isRTL ? "المتاجر" : "Shops"}
             actionText={t.common.seeAll}
             onAction={() => navigate("/makeup-artists")}
+            icon={<Store className="w-4 h-4 text-accent-foreground" />}
+            accentClass="bg-accent"
           />
           <div className="px-5">
             <div className="grid grid-cols-2 gap-3">
