@@ -178,6 +178,8 @@ const MakeupArtists = () => {
     
     // Filter by search query, category, availability, and advanced filters
     const filtered = artists.filter(artist => {
+      // Exclude sellers/shops from this page
+      if ((artist as any).account_type === "seller") return false;
       // Search filter
       if (debouncedSearchQuery.trim()) {
         const query = debouncedSearchQuery.toLowerCase();
