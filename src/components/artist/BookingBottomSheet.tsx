@@ -190,21 +190,47 @@ export const BookingBottomSheet = ({
                       const building = addressParts?.[3]?.trim();
 
                       return (
-                        <div className="space-y-2">
-                          <div className="flex items-start gap-2 text-muted-foreground">
-                            <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
-                            <div className="text-sm">
-                              {area && <span>{language === "ar" ? "منطقة" : "Area"}: {area}</span>}
-                              {street && <span> • {language === "ar" ? "شارع" : "St"}: {street}</span>}
-                              {building && <span> • {language === "ar" ? "مبنى" : "Bldg"}: {building}</span>}
-                              {!area && !street && !building && <span>{booking.location_address}</span>}
+                        <div className="space-y-3">
+                          {/* Qatar Address Plate */}
+                          {(area || street || building) ? (
+                            <div className="rounded-xl overflow-hidden border border-border">
+                              {/* Building row - top accent */}
+                              <div className="bg-primary/15 px-3 py-2">
+                                <p className="text-[10px] font-medium text-primary/70 uppercase tracking-wider">
+                                  {language === "ar" ? "مبنى" : "Building"}
+                                </p>
+                                <p className="text-base font-bold text-primary text-center">
+                                  {building || "—"}
+                                </p>
+                              </div>
+                              {/* Zone & Street row */}
+                              <div className="grid grid-cols-2 divide-x divide-border">
+                                <div className="px-3 py-2 text-center">
+                                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                                    {language === "ar" ? "منطقة" : "Zone"}
+                                  </p>
+                                  <p className="text-sm font-semibold text-foreground">{area || "—"}</p>
+                                </div>
+                                <div className="px-3 py-2 text-center">
+                                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                                    {language === "ar" ? "شارع" : "Street"}
+                                  </p>
+                                  <p className="text-sm font-semibold text-foreground">{street || "—"}</p>
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                          ) : (
+                            <div className="flex items-start gap-2 text-muted-foreground">
+                              <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                              <span className="text-sm">{booking.location_address}</span>
+                            </div>
+                          )}
+                          {/* Google Maps Button */}
                           <a
                             href={mapsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors w-fit"
+                            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors w-full"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Navigation className="w-4 h-4" />
