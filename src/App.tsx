@@ -64,6 +64,7 @@ import Referrals from "./pages/Referrals";
 import Wallet from "./pages/Wallet";
 import Logout from "./pages/Logout";
 import { InstallAppPrompt } from "./components/InstallAppPrompt";
+import { PermissionsPrompt } from "./components/PermissionsPrompt";
 import { AnalyticsProvider } from "./hooks/useAnalytics";
 
 
@@ -78,6 +79,7 @@ const App = () => (
         <Sonner />
         <NotificationPrompt />
         <InstallAppPrompt />
+        <PermissionsPrompt />
         <BrowserRouter>
           <Routes>
           <Route path="/" element={<Onboarding />} />
