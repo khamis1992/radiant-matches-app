@@ -9,6 +9,7 @@ export interface SavedSearch {
     minExperience: number;
     locations: string[];
     serviceTypes: string[];
+    accountType?: "all" | "artist" | "seller";
   };
   createdAt: string;
 }
