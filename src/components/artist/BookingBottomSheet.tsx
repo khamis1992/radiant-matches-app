@@ -175,9 +175,28 @@ export const BookingBottomSheet = ({
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <MapPin className="w-4 h-4 shrink-0" />
-                      <span>
-                        {booking.location_address || booking.location_type}
-                      </span>
+                      {booking.location_address ? (() => {
+                        const latMatch = booking.location_address.match(/Lat:\s*([\d.-]+)/);
+                        const lngMatch = booking.location_address.match(/Lng:\s*([\d.-]+)/);
+                        const lat = latMatch?.[1];
+                        const lng = lngMatch?.[1];
+                        const mapsUrl = lat && lng
+                          ? `https://www.google.com/maps?q=${lat},${lng}`
+                          : `https://www.google.com/maps/search/${encodeURIComponent(booking.location_address)}`;
+                        return (
+                          <a
+                            href={mapsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {booking.location_address}
+                          </a>
+                        );
+                      })() : (
+                        <span>{booking.location_type}</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Banknote className="w-4 h-4 shrink-0" />
