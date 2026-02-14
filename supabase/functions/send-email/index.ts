@@ -22,6 +22,7 @@ interface EmailRequest {
 
 const APP_NAME = "Glamore";
 const APP_URL = "https://radiant-matches-app.lovable.app";
+const LOGO_URL = "https://besjfzlgtssriqpluzgn.supabase.co/storage/v1/object/public/banners/logo.png";
 const USER_MANUAL_URL = `${APP_URL}/user-manual-ar.html`;
 const BRAND_COLOR = "#C4526E";
 const BRAND_LIGHT = "#FDF2F4";
@@ -44,7 +45,7 @@ function getEmailTemplate(type: EmailType, data: Record<string, unknown>): { sub
           <!-- Logo Header -->
           <tr>
             <td style="padding: 28px 32px 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <img src="${APP_URL}/images/logo.png" alt="${APP_NAME}" style="height: 48px; width: auto;" />
+              <img src="${LOGO_URL}" alt="${APP_NAME}" style="height: 48px; width: auto;" />
             </td>
           </tr>
 
