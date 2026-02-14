@@ -104,7 +104,7 @@ const SellerProfile = () => {
         {/* Top bar */}
         <div className="relative z-10 flex items-center justify-between px-4 pt-12 pb-3">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/home")}
             className="w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center shadow-sm active:scale-95 transition-transform"
           >
             <ArrowLeft className={cn("w-4.5 h-4.5 text-foreground", isRTL && "rotate-180")} />
