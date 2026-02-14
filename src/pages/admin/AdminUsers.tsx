@@ -24,7 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 
-const roleColors: Record<string, string> = { admin: "bg-purple-100 text-purple-800", artist: "bg-pink-100 text-pink-800", customer: "bg-blue-100 text-blue-800" };
+const roleColors: Record<string, string> = { admin: "bg-purple-100 text-purple-800", artist: "bg-pink-100 text-pink-800", customer: "bg-blue-100 text-blue-800", seller: "bg-green-100 text-green-800" };
 
 const AdminUsers = () => {
   const { role, loading: roleLoading } = useUserRole();
@@ -61,7 +61,8 @@ const AdminUsers = () => {
   const roleLabels: Record<string, string> = { 
     admin: t.adminUsers.admin, 
     artist: t.adminUsers.artist, 
-    customer: t.adminUsers.customer 
+    customer: t.adminUsers.customer,
+    seller: t.adminUsers.seller,
   };
 
   const handleRoleChange = async (userId: string, targetRole: "admin" | "artist" | "customer") => {
@@ -219,6 +220,7 @@ const AdminUsers = () => {
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, "admin")} disabled={user.roles.includes("admin")}><Shield className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.makeAdmin}</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, "artist")} disabled={user.roles.includes("artist")}><Palette className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.makeArtist}</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, "customer")} disabled={user.roles.includes("customer")}><Shield className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.makeCustomer}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, "seller" as any)} disabled={user.roles.includes("seller")}><Shield className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.makeSeller}</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openPasswordDialog(user.id, user.full_name || user.email || t.adminUsers.user)}><Key className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.changePassword}</DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={async () => {
