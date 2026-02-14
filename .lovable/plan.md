@@ -1,42 +1,39 @@
 
 
-## خطة توسيع صفحة Add New Banner
+## Phone Screenshots for Google Play
 
-### التغييرات المطلوبة
+Google Play requires **2-8 phone screenshots** at recommended resolution **1080x1920** (9:16 ratio). I'll create a set of polished promotional screenshots with text overlays and device frames, designed as a static HTML page you can open and capture.
 
-سأقوم بتوسيع حجم الـ Dialog ليصبح أكبر وأكثر راحة للاستخدام:
+### Screenshots to Create (6 screens)
 
-| الخاصية | القيمة الحالية | القيمة الجديدة |
-|---------|---------------|----------------|
-| العرض الأقصى | `sm:max-w-[1000px]` | `sm:max-w-[1200px]` |
-| الارتفاع الأقصى | `max-h-[95vh]` | `max-h-[98vh]` |
-| ارتفاع منطقة التمرير | `h-[calc(95vh-240px)]` | `h-[calc(98vh-200px)]` |
+1. **Welcome/Hero** - App logo + tagline "Book Beauty Experts at Your Door"
+2. **Browse Categories** - Showing makeup, bridal, henna, nails categories grid
+3. **Artist Profile** - Artist card with rating, reviews, portfolio preview
+4. **Easy Booking** - Calendar/booking flow with date & time selection
+5. **Artist Dashboard** - Earnings, bookings overview, products store
+6. **Secure Payments** - SADAD payment integration, wallet balance
 
-### الملف المتأثر
+### Implementation
 
-```
-src/pages/admin/AdminBanners.tsx
-```
+I'll create a single static HTML file `public/play-store-screenshots.html` that:
 
-### التفاصيل التقنية
+- Renders 6 promotional screenshot cards at **1080x1920px** each
+- Uses the app's pink/rose color scheme and branding
+- Includes Arabic + English text overlays with feature highlights
+- Embeds actual app screenshots from `public/images/system/` folder
+- Each card has a gradient background, promotional text at top, and a phone mockup showing the app screen
 
-**السطر 506** - تعديل DialogContent:
-```tsx
-// من
-<DialogContent className="sm:max-w-[1000px] max-h-[95vh] overflow-hidden p-0">
+### How to Use
 
-// إلى  
-<DialogContent className="sm:max-w-[1200px] max-h-[98vh] overflow-hidden p-0">
-```
+1. After publishing, visit `https://glamore.app/play-store-screenshots.html`
+2. Right-click each screenshot and "Save Image As" or use browser DevTools to capture at exact dimensions
+3. Upload the saved images to Google Play Console under "Phone screenshots"
 
-**السطر 531** - تعديل ScrollArea:
-```tsx
-// من
-<ScrollArea className="h-[calc(95vh-240px)] overflow-y-auto">
+### Technical Details
 
-// إلى
-<ScrollArea className="h-[calc(98vh-200px)] overflow-y-auto">
-```
-
-هذه التغييرات ستجعل الحوار أعرض بـ 200 بكسل وأطول بـ 3% من ارتفاع الشاشة، مع مساحة تمرير أكبر للمحتوى.
+- Pure HTML/CSS with inline styles (no dependencies)
+- Uses CSS `aspect-ratio: 9/16` and fixed `1080px` width for each card
+- References existing system screenshots from `/images/system/` directory
+- Bilingual promotional text (Arabic primary, English secondary)
+- Gradient overlays matching app theme (`#E8A0BF` pink to rose gold palette)
 
