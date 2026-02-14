@@ -158,16 +158,18 @@ serve(async (req) => {
     const email = customer_email || "";
     const returnUrl = return_url || "";
 
-    // Create payment transaction record
+    // Create payment transaction record using new schema
+    const paymentId = `SADAD-${orderId}`;
     const { data: transaction, error: txError } = await supabase
       .from("payment_transactions")
       .insert({
-        booking_id: booking_id,
+        order_id: booking_id,
+        payment_id: paymentId,
+        payment_method: "sadad",
         amount: booking.total_price,
         currency: "QAR",
-        status: "pending",
-        payment_method: "sadad",
-        sadad_order_id: orderId,
+        status: "initiated",
+        metadata: { customer_email: email, customer_phone: mobileNo, customer_name: customer_name },
       })
       .select()
       .single();
@@ -180,13 +182,14 @@ serve(async (req) => {
       );
     }
 
-    // Update booking with SADAD order ID
+    // Update booking with payment info
     await supabase
       .from("bookings")
       .update({
         payment_method: "sadad",
         payment_status: "processing",
         sadad_order_id: orderId,
+        payment_transaction_id: paymentId,
       })
       .eq("id", booking_id);
 
