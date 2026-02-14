@@ -20,48 +20,102 @@ interface EmailRequest {
   data: Record<string, unknown>;
 }
 
-const APP_NAME = "Glam";
+const APP_NAME = "Glamore";
 const APP_URL = "https://radiant-matches-app.lovable.app";
 const USER_MANUAL_URL = `${APP_URL}/user-manual-ar.html`;
+const BRAND_COLOR = "#C4526E";
+const BRAND_LIGHT = "#FDF2F4";
+const BRAND_DARK = "#9B3A52";
 
 function getEmailTemplate(type: EmailType, data: Record<string, unknown>): { subject: string; html: string } {
-  const headerStyle = `background: linear-gradient(135deg, #8b5cf6, #a855f7); padding: 32px; text-align: center; border-radius: 12px 12px 0 0;`;
-  const containerStyle = `max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, sans-serif; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);`;
-  const bodyStyle = `padding: 32px; color: #333; line-height: 1.8; direction: rtl; text-align: right;`;
-  const footerStyle = `background: #f8f9fa; padding: 20px; text-align: center; color: #999; font-size: 12px; direction: rtl;`;
-  const btnStyle = `display: inline-block; background: linear-gradient(135deg, #8b5cf6, #a855f7); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 16px 0;`;
+  const wrap = (title: string, emoji: string, content: string) => `
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f6f6f9; font-family: 'Segoe UI', Tahoma, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f6f6f9; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width: 560px; width: 100%; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.06);">
+          
+          <!-- Logo Header -->
+          <tr>
+            <td style="padding: 28px 32px 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
+              <h1 style="margin: 0; font-size: 26px; font-weight: 700; color: ${BRAND_COLOR}; letter-spacing: -0.5px;">
+                ${APP_NAME}
+              </h1>
+            </td>
+          </tr>
 
-  const wrap = (title: string, content: string) => `
-    <div style="${containerStyle}">
-      <div style="${headerStyle}">
-        <h1 style="color: #ffffff; margin: 0; font-size: 28px;">✨ ${APP_NAME}</h1>
-      </div>
-      <div style="${bodyStyle}">
-        <h2 style="color: #8b5cf6; margin-top: 0;">${title}</h2>
-        ${content}
-      </div>
-      <div style="${footerStyle}">
-        <p>© ${new Date().getFullYear()} ${APP_NAME} - جميع الحقوق محفوظة</p>
-        <p><a href="${APP_URL}" style="color: #8b5cf6;">زيارة التطبيق</a></p>
-      </div>
+          <!-- Emoji Circle -->
+          <tr>
+            <td style="padding: 28px 0 8px; text-align: center;">
+              <div style="display: inline-block; width: 64px; height: 64px; line-height: 64px; font-size: 32px; background: ${BRAND_LIGHT}; border-radius: 50%;">${emoji}</div>
+            </td>
+          </tr>
+
+          <!-- Title -->
+          <tr>
+            <td style="padding: 12px 32px 4px; text-align: center;">
+              <h2 style="margin: 0; font-size: 20px; font-weight: 700; color: #1a1a2e;">${title}</h2>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 16px 32px 28px; color: #4a4a5a; font-size: 15px; line-height: 1.7; text-align: right;">
+              ${content}
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding: 0 32px;">
+              <div style="border-top: 1px solid #f0f0f0;"></div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 20px 32px 24px; text-align: center;">
+              <p style="margin: 0 0 6px; font-size: 12px; color: #aaa;">© ${new Date().getFullYear()} ${APP_NAME} — جميع الحقوق محفوظة</p>
+              <a href="${APP_URL}" style="font-size: 12px; color: ${BRAND_COLOR}; text-decoration: none;">glamore.app</a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const btn = (text: string, href: string) =>
+    `<div style="text-align: center; margin: 20px 0;">
+      <a href="${href}" style="display: inline-block; background: ${BRAND_COLOR}; color: #ffffff; text-decoration: none; padding: 12px 36px; border-radius: 24px; font-weight: 600; font-size: 15px;">${text}</a>
     </div>`;
+
+  const infoCard = (items: string[], bgColor = BRAND_LIGHT) =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${bgColor}; border-radius: 12px; margin: 16px 0;">
+      <tr><td style="padding: 18px 20px;">
+        ${items.map(i => `<p style="margin: 6px 0; font-size: 14px; color: #333;">${i}</p>`).join("")}
+      </td></tr>
+    </table>`;
 
   switch (type) {
     case "welcome": {
       const name = (data.name as string) || "عزيزتي";
       return {
-        subject: `مرحباً بك في ${APP_NAME}! 🎉`,
-        html: wrap("مرحباً بك في عائلة Glam! 💄", `
-          <p>أهلاً ${name}،</p>
-          <p>يسعدنا انضمامك إلينا! مع ${APP_NAME} يمكنك اكتشاف أفضل خبيرات التجميل وحجز مواعيدك بسهولة.</p>
-          <p>📖 للتعرف على جميع ميزات التطبيق، يمكنك الاطلاع على دليل المستخدم:</p>
-          <div style="text-align: center;">
-            <a href="${USER_MANUAL_URL}" style="${btnStyle}">📖 دليل المستخدم</a>
-          </div>
-          <div style="text-align: center; margin-top: 8px;">
-            <a href="${APP_URL}/home" style="${btnStyle}">🏠 ابدئي الاستكشاف</a>
-          </div>
-          <p>إذا كان لديك أي استفسار، لا تترددي في التواصل معنا عبر قسم المساعدة في التطبيق.</p>
+        subject: `أهلاً بك في ${APP_NAME}! 🎉`,
+        html: wrap("مرحباً بك في عائلة Glamore!", "💄", `
+          <p style="margin: 0 0 12px;">أهلاً <strong>${name}</strong>،</p>
+          <p style="margin: 0 0 16px;">يسعدنا انضمامك إلينا! اكتشفي أفضل خبيرات التجميل واحجزي مواعيدك بكل سهولة.</p>
+          ${btn("📖  دليل المستخدم", USER_MANUAL_URL)}
+          ${btn("✨  ابدئي الاستكشاف", APP_URL + "/home")}
+          <p style="margin: 16px 0 0; font-size: 13px; color: #888;">لأي استفسار تواصلي معنا عبر قسم المساعدة في التطبيق.</p>
         `),
       };
     }
@@ -69,20 +123,18 @@ function getEmailTemplate(type: EmailType, data: Record<string, unknown>): { sub
     case "booking_created": {
       const { customerName, artistName, serviceName, bookingDate, bookingTime, totalPrice } = data as Record<string, string>;
       return {
-        subject: `تأكيد حجز جديد - ${APP_NAME}`,
-        html: wrap("تم استلام حجزك! 📋", `
-          <p>عزيزتي ${customerName || "العميلة"},</p>
-          <p>تم استلام حجزك بنجاح وهو بانتظار تأكيد الخبيرة.</p>
-          <div style="background: #f3f0ff; padding: 20px; border-radius: 8px; margin: 16px 0;">
-            <p style="margin: 4px 0;">🎨 <strong>الخدمة:</strong> ${serviceName || "-"}</p>
-            <p style="margin: 4px 0;">👩‍🎨 <strong>الخبيرة:</strong> ${artistName || "-"}</p>
-            <p style="margin: 4px 0;">📅 <strong>التاريخ:</strong> ${bookingDate || "-"}</p>
-            <p style="margin: 4px 0;">🕐 <strong>الوقت:</strong> ${bookingTime || "-"}</p>
-            <p style="margin: 4px 0;">💰 <strong>المبلغ:</strong> ${totalPrice || "-"} ر.ق</p>
-          </div>
-          <div style="text-align: center;">
-            <a href="${APP_URL}/bookings" style="${btnStyle}">عرض حجوزاتي</a>
-          </div>
+        subject: `تأكيد حجز جديد — ${APP_NAME}`,
+        html: wrap("تم استلام حجزك بنجاح!", "📋", `
+          <p>عزيزتي <strong>${customerName || "العميلة"}</strong>،</p>
+          <p>تم استلام حجزك وهو بانتظار تأكيد الخبيرة.</p>
+          ${infoCard([
+            `<strong>الخدمة:</strong> ${serviceName || "-"}`,
+            `<strong>الخبيرة:</strong> ${artistName || "-"}`,
+            `<strong>التاريخ:</strong> ${bookingDate || "-"}`,
+            `<strong>الوقت:</strong> ${bookingTime || "-"}`,
+            `<strong>المبلغ:</strong> ${totalPrice || "-"} ر.ق`,
+          ])}
+          ${btn("عرض حجوزاتي", APP_URL + "/bookings")}
         `),
       };
     }
@@ -90,16 +142,16 @@ function getEmailTemplate(type: EmailType, data: Record<string, unknown>): { sub
     case "booking_confirmed": {
       const { customerName, artistName, serviceName, bookingDate, bookingTime } = data as Record<string, string>;
       return {
-        subject: `تم تأكيد حجزك! ✅ - ${APP_NAME}`,
-        html: wrap("تم تأكيد حجزك! ✅", `
-          <p>عزيزتي ${customerName || "العميلة"},</p>
-          <p>يسعدنا إبلاغك بأن <strong>${artistName || "الخبيرة"}</strong> قامت بتأكيد حجزك.</p>
-          <div style="background: #ecfdf5; padding: 20px; border-radius: 8px; margin: 16px 0;">
-            <p style="margin: 4px 0;">🎨 <strong>الخدمة:</strong> ${serviceName || "-"}</p>
-            <p style="margin: 4px 0;">📅 <strong>التاريخ:</strong> ${bookingDate || "-"}</p>
-            <p style="margin: 4px 0;">🕐 <strong>الوقت:</strong> ${bookingTime || "-"}</p>
-          </div>
-          <p>نتمنى لك تجربة رائعة! 💕</p>
+        subject: `تم تأكيد حجزك ✅ — ${APP_NAME}`,
+        html: wrap("تم تأكيد حجزك!", "✅", `
+          <p>عزيزتي <strong>${customerName || "العميلة"}</strong>،</p>
+          <p>قامت <strong>${artistName || "الخبيرة"}</strong> بتأكيد حجزك.</p>
+          ${infoCard([
+            `<strong>الخدمة:</strong> ${serviceName || "-"}`,
+            `<strong>التاريخ:</strong> ${bookingDate || "-"}`,
+            `<strong>الوقت:</strong> ${bookingTime || "-"}`,
+          ], "#ecfdf5")}
+          <p style="text-align: center; font-size: 14px; color: #888;">نتمنى لك تجربة رائعة 💕</p>
         `),
       };
     }
@@ -107,18 +159,16 @@ function getEmailTemplate(type: EmailType, data: Record<string, unknown>): { sub
     case "booking_cancelled": {
       const { customerName, artistName, serviceName, bookingDate } = data as Record<string, string>;
       return {
-        subject: `تم إلغاء الحجز - ${APP_NAME}`,
-        html: wrap("تم إلغاء الحجز ❌", `
-          <p>عزيزتي ${customerName || "العميلة"},</p>
+        subject: `تم إلغاء الحجز — ${APP_NAME}`,
+        html: wrap("تم إلغاء الحجز", "❌", `
+          <p>عزيزتي <strong>${customerName || "العميلة"}</strong>،</p>
           <p>نأسف لإبلاغك بأن حجزك مع <strong>${artistName || "الخبيرة"}</strong> تم إلغاؤه.</p>
-          <div style="background: #fef2f2; padding: 20px; border-radius: 8px; margin: 16px 0;">
-            <p style="margin: 4px 0;">🎨 <strong>الخدمة:</strong> ${serviceName || "-"}</p>
-            <p style="margin: 4px 0;">📅 <strong>التاريخ:</strong> ${bookingDate || "-"}</p>
-          </div>
+          ${infoCard([
+            `<strong>الخدمة:</strong> ${serviceName || "-"}`,
+            `<strong>التاريخ:</strong> ${bookingDate || "-"}`,
+          ], "#fef2f2")}
           <p>يمكنك حجز موعد جديد في أي وقت.</p>
-          <div style="text-align: center;">
-            <a href="${APP_URL}/makeup-artists" style="${btnStyle}">تصفح الخبيرات</a>
-          </div>
+          ${btn("تصفح الخبيرات", APP_URL + "/makeup-artists")}
         `),
       };
     }
@@ -126,18 +176,16 @@ function getEmailTemplate(type: EmailType, data: Record<string, unknown>): { sub
     case "order_created": {
       const { customerName, orderId, totalPrice, itemCount } = data as Record<string, string>;
       return {
-        subject: `تأكيد طلب جديد #${(orderId || "").slice(0, 8)} - ${APP_NAME}`,
-        html: wrap("تم استلام طلبك! 🛍️", `
-          <p>عزيزتي ${customerName || "العميلة"},</p>
+        subject: `تأكيد طلب #${(orderId || "").slice(0, 8)} — ${APP_NAME}`,
+        html: wrap("تم استلام طلبك!", "🛍️", `
+          <p>عزيزتي <strong>${customerName || "العميلة"}</strong>،</p>
           <p>تم استلام طلبك بنجاح!</p>
-          <div style="background: #f3f0ff; padding: 20px; border-radius: 8px; margin: 16px 0;">
-            <p style="margin: 4px 0;">📦 <strong>رقم الطلب:</strong> #${(orderId || "").slice(0, 8)}</p>
-            <p style="margin: 4px 0;">🛒 <strong>عدد المنتجات:</strong> ${itemCount || "-"}</p>
-            <p style="margin: 4px 0;">💰 <strong>المبلغ:</strong> ${totalPrice || "-"} ر.ق</p>
-          </div>
-          <div style="text-align: center;">
-            <a href="${APP_URL}/orders" style="${btnStyle}">تتبع طلبك</a>
-          </div>
+          ${infoCard([
+            `<strong>رقم الطلب:</strong> #${(orderId || "").slice(0, 8)}`,
+            `<strong>عدد المنتجات:</strong> ${itemCount || "-"}`,
+            `<strong>المبلغ:</strong> ${totalPrice || "-"} ر.ق`,
+          ])}
+          ${btn("تتبع طلبك", APP_URL + "/orders")}
         `),
       };
     }
@@ -152,23 +200,21 @@ function getEmailTemplate(type: EmailType, data: Record<string, unknown>): { sub
       };
       const label = statusLabels[status || ""] || status || "-";
       return {
-        subject: `تحديث حالة الطلب #${(orderId || "").slice(0, 8)} - ${APP_NAME}`,
-        html: wrap("تحديث حالة طلبك 📦", `
-          <p>عزيزتي ${customerName || "العميلة"},</p>
+        subject: `تحديث طلب #${(orderId || "").slice(0, 8)} — ${APP_NAME}`,
+        html: wrap("تحديث حالة طلبك", "📦", `
+          <p>عزيزتي <strong>${customerName || "العميلة"}</strong>،</p>
           <p>تم تحديث حالة طلبك:</p>
-          <div style="background: #f3f0ff; padding: 20px; border-radius: 8px; margin: 16px 0; text-align: center;">
-            <p style="font-size: 20px; font-weight: bold; color: #8b5cf6;">${label}</p>
-            <p style="margin: 4px 0; color: #666;">رقم الطلب: #${(orderId || "").slice(0, 8)}</p>
+          <div style="text-align: center; background: ${BRAND_LIGHT}; border-radius: 12px; padding: 20px; margin: 16px 0;">
+            <p style="font-size: 22px; font-weight: 700; color: ${BRAND_COLOR}; margin: 0 0 4px;">${label}</p>
+            <p style="font-size: 13px; color: #888; margin: 0;">رقم الطلب: #${(orderId || "").slice(0, 8)}</p>
           </div>
-          <div style="text-align: center;">
-            <a href="${APP_URL}/orders/${orderId || ""}" style="${btnStyle}">عرض تفاصيل الطلب</a>
-          </div>
+          ${btn("عرض تفاصيل الطلب", APP_URL + "/orders/" + (orderId || ""))}
         `),
       };
     }
 
     default:
-      return { subject: `إشعار من ${APP_NAME}`, html: wrap("إشعار", `<p>${JSON.stringify(data)}</p>`) };
+      return { subject: `إشعار من ${APP_NAME}`, html: wrap("إشعار", "🔔", `<p>${JSON.stringify(data)}</p>`) };
   }
 }
 
