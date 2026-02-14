@@ -327,6 +327,7 @@ export type Database = {
           notes: string | null
           payment_method: string | null
           payment_status: string | null
+          payment_transaction_id: string | null
           platform_fee: number | null
           promo_code_id: string | null
           sadad_order_id: string | null
@@ -350,6 +351,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          payment_transaction_id?: string | null
           platform_fee?: number | null
           promo_code_id?: string | null
           sadad_order_id?: string | null
@@ -373,6 +375,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          payment_transaction_id?: string | null
           platform_fee?: number | null
           promo_code_id?: string | null
           sadad_order_id?: string | null
@@ -389,6 +392,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "artists"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_payment_transaction_id_fkey"
+            columns: ["payment_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "payment_transactions"
+            referencedColumns: ["payment_id"]
           },
           {
             foreignKeyName: "bookings_promo_code_id_fkey"
@@ -589,55 +599,68 @@ export type Database = {
       payment_transactions: {
         Row: {
           amount: number
-          booking_id: string
-          created_at: string
+          created_at: string | null
           currency: string
           error_message: string | null
           id: string
+          initiated_at: string
+          metadata: Json | null
+          order_id: string
+          payment_date: string | null
+          payment_id: string
           payment_method: string
-          response_data: Json | null
-          sadad_order_id: string | null
-          sadad_transaction_number: string | null
+          refund_id: string | null
+          refunded_at: string | null
+          response_code: string | null
+          response_message: string | null
           status: string
-          updated_at: string
+          transaction_id: string | null
+          updated_at: string | null
+          verified_at: string | null
         }
         Insert: {
           amount: number
-          booking_id: string
-          created_at?: string
+          created_at?: string | null
           currency?: string
           error_message?: string | null
           id?: string
-          payment_method?: string
-          response_data?: Json | null
-          sadad_order_id?: string | null
-          sadad_transaction_number?: string | null
-          status?: string
-          updated_at?: string
+          initiated_at?: string
+          metadata?: Json | null
+          order_id: string
+          payment_date?: string | null
+          payment_id: string
+          payment_method: string
+          refund_id?: string | null
+          refunded_at?: string | null
+          response_code?: string | null
+          response_message?: string | null
+          status: string
+          transaction_id?: string | null
+          updated_at?: string | null
+          verified_at?: string | null
         }
         Update: {
           amount?: number
-          booking_id?: string
-          created_at?: string
+          created_at?: string | null
           currency?: string
           error_message?: string | null
           id?: string
+          initiated_at?: string
+          metadata?: Json | null
+          order_id?: string
+          payment_date?: string | null
+          payment_id?: string
           payment_method?: string
-          response_data?: Json | null
-          sadad_order_id?: string | null
-          sadad_transaction_number?: string | null
+          refund_id?: string | null
+          refunded_at?: string | null
+          response_code?: string | null
+          response_message?: string | null
           status?: string
-          updated_at?: string
+          transaction_id?: string | null
+          updated_at?: string | null
+          verified_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "payment_transactions_booking_id_fkey"
-            columns: ["booking_id"]
-            isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       platform_settings: {
         Row: {
@@ -720,6 +743,8 @@ export type Database = {
           customer_id: string
           id: string
           items: Json
+          payment_method: string | null
+          payment_transaction_id: string | null
           shipping_address: Json | null
           status: string | null
           total_qar: number
@@ -732,6 +757,8 @@ export type Database = {
           customer_id: string
           id?: string
           items: Json
+          payment_method?: string | null
+          payment_transaction_id?: string | null
           shipping_address?: Json | null
           status?: string | null
           total_qar: number
@@ -744,6 +771,8 @@ export type Database = {
           customer_id?: string
           id?: string
           items?: Json
+          payment_method?: string | null
+          payment_transaction_id?: string | null
           shipping_address?: Json | null
           status?: string | null
           total_qar?: number
@@ -757,6 +786,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "artists"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_orders_payment_transaction_id_fkey"
+            columns: ["payment_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "payment_transactions"
+            referencedColumns: ["payment_id"]
           },
         ]
       }
