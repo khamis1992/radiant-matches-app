@@ -231,34 +231,32 @@ const ArtistProfile = () => {
       {/* Profile Card - Floating */}
       <div className="px-5 -mt-20 relative z-10">
         <div className="bg-card rounded-3xl p-6 shadow-xl border border-border/50 backdrop-blur-sm">
-          {/* Top Row */}
-          <div className="flex items-start gap-4">
-            <Avatar className="w-20 h-20 border-4 border-card shadow-lg">
+          {/* Centered Profile */}
+          <div className="flex flex-col items-center text-center">
+            <Avatar className="w-20 h-20 border-4 border-card shadow-lg -mt-16">
               <AvatarImage src={displayImage} alt={displayName} />
               <AvatarFallback className="text-2xl bg-primary/10 text-primary">
                 {displayName.charAt(0)}
               </AvatarFallback>
             </Avatar>
 
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold text-foreground truncate">{displayName}</h1>
-              <p className="text-primary font-medium text-sm mt-0.5">
-                {artist.bio?.split(".")[0] || t.artist.makeupArtist}
-              </p>
+            <h1 className="text-xl font-bold text-foreground mt-3">{displayName}</h1>
+            <p className="text-primary font-medium text-sm mt-0.5">
+              {artist.bio?.split(".")[0] || t.artist.makeupArtist}
+            </p>
 
-              <div className="flex items-center gap-3 mt-2 flex-wrap">
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 text-[hsl(var(--gold))] fill-[hsl(var(--gold))]" />
-                  <span className="font-semibold text-foreground text-sm">
-                    {Number(artist.rating)?.toFixed(1) || "0.0"}
-                  </span>
-                  <span className="text-xs text-muted-foreground">({artist.total_reviews || 0})</span>
-                </div>
-                <span className="text-muted-foreground">•</span>
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span className="text-xs">{displayLocation}</span>
-                </div>
+            <div className="flex items-center gap-3 mt-2 flex-wrap justify-center">
+              <div className="flex items-center gap-1">
+                <Star className="w-4 h-4 text-[hsl(var(--gold))] fill-[hsl(var(--gold))]" />
+                <span className="font-semibold text-foreground text-sm">
+                  {Number(artist.rating)?.toFixed(1) || "0.0"}
+                </span>
+                <span className="text-xs text-muted-foreground">({artist.total_reviews || 0})</span>
+              </div>
+              <span className="text-muted-foreground">•</span>
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <MapPin className="w-3.5 h-3.5" />
+                <span className="text-xs">{displayLocation}</span>
               </div>
             </div>
           </div>
