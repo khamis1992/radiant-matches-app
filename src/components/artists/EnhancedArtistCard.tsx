@@ -257,27 +257,12 @@ const EnhancedArtistCard = ({
         )}
         
         {/* Actions */}
-        <div className="absolute top-2 flex gap-1">
-          <div className={isRTL ? "right-2" : "left-2"}>
-            <FavoriteButton
-              itemType="artist"
-              itemId={artist.id}
-              className="bg-card/80 backdrop-blur-sm hover:bg-card w-8 h-8"
-            />
-          </div>
-          <Button
-            variant={isCompared ? "default" : "outline"}
-            size="icon"
-            className={`
-              ${isRTL ? "left-2" : "right-2"}
-              bg-card/80 backdrop-blur-sm hover:bg-card w-8 h-8
-              transition-all
-              ${isCompared ? "bg-primary text-primary-foreground" : "hover:bg-primary/20"}
-            `}
-            onClick={handleToggleCompare}
-          >
-            <GitCompare className="w-4 h-4" />
-          </Button>
+        <div className={`absolute top-2 ${isRTL ? "right-2" : "left-2"}`}>
+          <FavoriteButton
+            itemType="artist"
+            itemId={artist.id}
+            className="bg-card/80 backdrop-blur-sm hover:bg-card w-8 h-8"
+          />
         </div>
 
         {/* Price Badge */}
