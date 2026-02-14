@@ -28,7 +28,6 @@ const ServiceCard = ({
 }: ServiceCardProps) => {
   const { t, isRTL, language } = useLanguage();
 
-  // Select the appropriate language version with fallback
   const displayName = language === "ar" 
     ? (nameAr || nameEn || name) 
     : (nameEn || nameAr || name);
@@ -38,21 +37,30 @@ const ServiceCard = ({
     : (descriptionEn || descriptionAr || description);
 
   return (
-    <div className="bg-card p-4 rounded-xl border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-md">
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          <h4 className="font-semibold text-foreground">{displayName}</h4>
-          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-            {displayDescription}
-          </p>
-          <div className="flex items-center gap-1 mt-2 text-muted-foreground">
+    <div className="bg-card px-4 py-4 border-b border-border/50 last:border-b-0">
+      <div className="flex justify-between items-start gap-3">
+        {/* Left: Info */}
+        <div className="flex-1 min-w-0">
+          <h4 className="font-bold text-foreground text-base leading-tight">{displayName}</h4>
+          {displayDescription && (
+            <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+              {displayDescription}
+            </p>
+          )}
+          <div className="flex items-center gap-1.5 mt-2 text-muted-foreground">
             <Clock className="w-3.5 h-3.5" />
             <span className="text-xs">{duration}</span>
           </div>
         </div>
-        <div className={`${isRTL ? "text-left me-4" : "text-right ms-4"}`}>
-          <p className="text-xl font-bold text-foreground">{formatQAR(price)}</p>
-          <Button size="sm" className="mt-2" onClick={onBook}>
+
+        {/* Right: Price + Button */}
+        <div className={`flex flex-col items-end gap-2 shrink-0 ${isRTL ? "items-start" : "items-end"}`}>
+          <p className="text-lg font-bold text-foreground">{formatQAR(price)}</p>
+          <Button 
+            size="sm" 
+            className="rounded-full px-5 h-8 text-sm font-medium"
+            onClick={onBook}
+          >
             {t.common.select}
           </Button>
         </div>

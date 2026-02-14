@@ -466,7 +466,7 @@ const ArtistProfile = () => {
                 ))}
               </>
             ) : services && services.length > 0 ? (
-              <div className="space-y-3">
+              <div className="bg-card rounded-2xl border border-border/50 overflow-hidden divide-y divide-border/50">
                 {services.map((service, index) => (
                   <div
                     key={service.id}
