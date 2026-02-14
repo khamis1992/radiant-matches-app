@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sendEmail } from "@/lib/email";
 
 interface CreateBookingData {
   artist_id: string;
@@ -39,6 +40,37 @@ export const useCreateBooking = () => {
         .single();
 
       if (error) throw error;
+
+      // Send booking confirmation email (fire and forget)
+      try {
+        const [profileRes, serviceRes, artistRes] = await Promise.all([
+          supabase.from("profiles").select("full_name, email").eq("id", user.id).single(),
+          supabase.from("services").select("name").eq("id", data.service_id).single(),
+          supabase.from("artists").select("user_id").eq("id", data.artist_id).single(),
+        ]);
+        
+        const artistProfile = artistRes.data?.user_id
+          ? (await supabase.from("profiles").select("full_name").eq("id", artistRes.data.user_id).single()).data
+          : null;
+
+        if (profileRes.data?.email) {
+          sendEmail({
+            type: "booking_created",
+            to: profileRes.data.email,
+            data: {
+              customerName: profileRes.data.full_name || "",
+              artistName: artistProfile?.full_name || "",
+              serviceName: serviceRes.data?.name || "",
+              bookingDate: data.booking_date,
+              bookingTime: data.booking_time,
+              totalPrice: String(data.total_price),
+            },
+          });
+        }
+      } catch (emailErr) {
+        console.error("Email send failed (non-blocking):", emailErr);
+      }
+
       return booking;
     },
     onSuccess: () => {
