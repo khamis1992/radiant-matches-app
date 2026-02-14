@@ -16,8 +16,8 @@ export default defineConfig(({ mode }) => ({
       usePolling: true,
     }
   },
-  // Configure base path for deployment
-  base: mode === 'production' ? '/booking/' : '/',
+  // Use root base path for deployment
+  base: '/',
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
