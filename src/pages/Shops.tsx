@@ -1,15 +1,15 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Store } from "lucide-react";
+import { Search, Store, ShoppingBag, Package, Star, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import BottomNavigation from "@/components/BottomNavigation";
-import AppHeader from "@/components/layout/AppHeader";
 import { useArtistsWithPricing } from "@/hooks/useArtistsWithPricing";
 import { useArtistsAvailability } from "@/hooks/useArtistAvailability";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const Shops = () => {
@@ -37,53 +37,98 @@ const Shops = () => {
   const { data: availabilityMap } = useArtistsAvailability(sellerIds);
 
   return (
-    <div className="min-h-screen bg-background pb-28">
-      <AppHeader showLogo={true} style="modern" />
+    <div className="min-h-screen bg-background pb-32">
+      {/* ─── Hero Banner ─── */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-accent via-secondary to-accent">
+        {/* Back button */}
+        <button
+          onClick={() => navigate(-1)}
+          className={cn(
+            "absolute top-12 z-10 w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center shadow-sm active:scale-95 transition-transform",
+            isRTL ? "right-4" : "left-4"
+          )}
+        >
+          <ArrowLeft className={cn("w-4.5 h-4.5 text-foreground", isRTL && "rotate-180")} />
+        </button>
 
-      {/* Header Section */}
-      <div className="px-5 pt-5 pb-4">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-accent flex items-center justify-center">
-            <Store className="w-4.5 h-4.5 text-accent-foreground" />
+        {/* Decorative elements */}
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-primary/5" />
+        <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-primary/8" />
+        <div className="absolute top-16 right-20 w-5 h-5 rounded-full bg-primary/15 animate-pulse" />
+
+        <div className="relative px-5 pt-20 pb-8">
+          {/* Icon + Title */}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 rounded-2xl bg-card shadow-md flex items-center justify-center">
+              <Store className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "var(--font-serif-display)" }}>
+                {isRTL ? "المتاجر" : "Shops"}
+              </h1>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {isRTL ? "تسوقي منتجات التجميل المفضلة" : "Shop your favorite beauty products"}
+              </p>
+            </div>
           </div>
-          <h1 className="text-xl font-bold text-foreground">
-            {isRTL ? "المتاجر" : "Shops"}
-          </h1>
-        </div>
 
-        {/* Search */}
+          {/* Stats pills */}
+          <div className="flex gap-2 mt-4">
+            <Badge variant="secondary" className="gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium bg-card/80 backdrop-blur-sm border-0 shadow-sm">
+              <ShoppingBag className="w-3 h-3 text-primary" />
+              {isRTL ? `${sellers.length} متجر` : `${sellers.length} Shops`}
+            </Badge>
+            <Badge variant="secondary" className="gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium bg-card/80 backdrop-blur-sm border-0 shadow-sm">
+              <Package className="w-3 h-3 text-primary" />
+              {isRTL ? "منتجات أصلية" : "Authentic Products"}
+            </Badge>
+            <Badge variant="secondary" className="gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium bg-card/80 backdrop-blur-sm border-0 shadow-sm">
+              <Star className="w-3 h-3 text-primary" />
+              {isRTL ? "موثوقة" : "Trusted"}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Search Bar ─── */}
+      <div className="px-5 -mt-3 relative z-10 mb-5">
         <div className="relative">
-          <Search className={cn("absolute top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground", isRTL ? "right-3" : "left-3")} />
+          <Search className={cn("absolute top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground", isRTL ? "right-4" : "left-4")} />
           <Input
             placeholder={isRTL ? "ابحث في المتاجر..." : "Search shops..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={cn("h-10 rounded-xl bg-muted/50 border-border/50", isRTL ? "pr-10" : "pl-10")}
+            className={cn(
+              "h-12 rounded-2xl bg-card border-border/40 shadow-sm text-sm",
+              isRTL ? "pr-11" : "pl-11"
+            )}
           />
         </div>
       </div>
 
-      {/* Results */}
+      {/* ─── Results ─── */}
       <div className="px-5">
         {isLoading ? (
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-52 rounded-2xl" />
+              <Skeleton key={i} className="h-56 rounded-2xl" />
             ))}
           </div>
         ) : sellers.length > 0 ? (
           <>
-            <p className="text-xs text-muted-foreground mb-3">
-              {isRTL
-                ? `${sellers.length} متجر`
-                : `${sellers.length} shop${sellers.length !== 1 ? "s" : ""}`}
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-muted-foreground font-medium">
+                {isRTL
+                  ? `عرض ${sellers.length} متجر`
+                  : `Showing ${sellers.length} shop${sellers.length !== 1 ? "s" : ""}`}
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               {sellers.map((seller, index) => (
                 <div
                   key={seller.id}
                   className="animate-fade-in"
-                  style={{ animationDelay: `${index * 40}ms` }}
+                  style={{ animationDelay: `${index * 60}ms` }}
                 >
                   <EnhancedArtistCard
                     artist={seller}
@@ -95,10 +140,17 @@ const Shops = () => {
             </div>
           </>
         ) : (
-          <div className="text-center py-16 text-muted-foreground">
-            <Store className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">
-              {isRTL ? "لا توجد متاجر حالياً" : "No shops found"}
+          <div className="text-center py-20">
+            <div className="w-20 h-20 rounded-3xl bg-muted/60 flex items-center justify-center mx-auto mb-4">
+              <Store className="w-9 h-9 text-muted-foreground/40" />
+            </div>
+            <h3 className="text-base font-semibold text-foreground mb-1">
+              {isRTL ? "لا توجد متاجر" : "No shops yet"}
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-[220px] mx-auto">
+              {isRTL
+                ? "سيتم إضافة متاجر جديدة قريباً"
+                : "New shops will be added soon"}
             </p>
           </div>
         )}
