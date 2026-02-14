@@ -1,11 +1,11 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { 
-  Calendar as CalendarIcon, Clock, MapPin, CreditCard, Check, Loader2, Banknote, 
+import {
+  Calendar as CalendarIcon, Clock, MapPin, CreditCard, Check, Loader2, Banknote,
   AlertCircle, ChevronLeft, ChevronRight, Sparkles, Home, Building2, Sun, Sunset,
-  Star, Shield, Navigation
-} from "lucide-react";
+  Star, Shield, Navigation } from
+"lucide-react";
 
 // Calendar alias for JSX usage
 const Calendar = CalendarIcon;
@@ -33,117 +33,117 @@ import { ar, enUS } from "date-fns/locale";
 // Generate time slots from start to end time
 const generateTimeSlots = (startTime: string | null, endTime: string | null): string[] => {
   if (!startTime || !endTime) return [];
-  
+
   const slots: string[] = [];
   const [startHour] = startTime.split(":").map(Number);
   const [endHour] = endTime.split(":").map(Number);
-  
+
   for (let hour = startHour; hour < endHour; hour++) {
     const ampm = hour >= 12 ? "PM" : "AM";
     const displayHour = hour % 12 || 12;
     slots.push(`${displayHour}:00 ${ampm}`);
   }
-  
+
   return slots;
 };
 
 const defaultTimeSlots = [
-  "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
-  "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
-];
+"9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
+"1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"];
+
 
 // Convert display time to database format
 const convertTimeToDbFormat = (displayTime: string): string => {
   const [time, period] = displayTime.split(" ");
   let [hours] = time.split(":").map(Number);
-  
+
   if (period === "PM" && hours !== 12) {
     hours += 12;
   } else if (period === "AM" && hours === 12) {
     hours = 0;
   }
-  
+
   return `${hours.toString().padStart(2, "0")}:00:00`;
 };
 
 // Step indicator component
-const StepIndicator = ({ 
-  currentStep, 
-  steps 
-}: { 
-  currentStep: number; 
-  steps: { icon: React.ElementType; label: string }[] 
-}) => (
-  <div className="flex items-center justify-center gap-1 py-4 px-6">
+const StepIndicator = ({
+  currentStep,
+  steps
+
+
+
+}: {currentStep: number;steps: {icon: React.ElementType;label: string;}[];}) =>
+<div className="flex items-center justify-center gap-1 py-4 px-6">
     {steps.map((step, index) => {
-      const Icon = step.icon;
-      const stepNum = index + 1;
-      const isActive = stepNum === currentStep;
-      const isCompleted = stepNum < currentStep;
-      
-      return (
-        <div key={stepNum} className="flex items-center">
+    const Icon = step.icon;
+    const stepNum = index + 1;
+    const isActive = stepNum === currentStep;
+    const isCompleted = stepNum < currentStep;
+
+    return (
+      <div key={stepNum} className="flex items-center">
           <div className={`
             relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-500
-            ${isActive 
-              ? "bg-gradient-to-br from-primary to-primary/80 text-white shadow-lg shadow-primary/30 scale-110" 
-              : isCompleted 
-                ? "bg-primary/20 text-primary" 
-                : "bg-muted text-muted-foreground"
-            }
-          `}>
-            {isCompleted ? (
-              <Check className="w-5 h-5" />
-            ) : (
-              <Icon className="w-5 h-5" />
-            )}
-            {isActive && (
-              <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-            )}
+            ${isActive ?
+        "bg-gradient-to-br from-primary to-primary/80 text-white shadow-lg shadow-primary/30 scale-110" :
+        isCompleted ?
+        "bg-primary/20 text-primary" :
+        "bg-muted text-muted-foreground"}
+          `
+        }>
+            {isCompleted ?
+          <Check className="w-5 h-5" /> :
+
+          <Icon className="w-5 h-5" />
+          }
+            {isActive &&
+          <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+          }
           </div>
-          {index < steps.length - 1 && (
-            <div className={`
+          {index < steps.length - 1 &&
+        <div className={`
               w-12 h-1 mx-1 rounded-full transition-all duration-500
               ${isCompleted ? "bg-primary" : "bg-muted"}
             `} />
-          )}
-        </div>
-      );
-    })}
-  </div>
-);
+        }
+        </div>);
+
+  })}
+  </div>;
+
 
 // Floating artist card component
-const FloatingArtistCard = ({ 
-  artistName, 
-  artistAvatar, 
-  serviceName, 
-  price, 
-  duration 
-}: { 
-  artistName: string; 
-  artistAvatar?: string; 
-  serviceName: string; 
-  price: number; 
-  duration?: number;
-}) => (
-  <div className="mx-4 -mt-2 mb-4">
+const FloatingArtistCard = ({
+  artistName,
+  artistAvatar,
+  serviceName,
+  price,
+  duration
+
+
+
+
+
+
+}: {artistName: string;artistAvatar?: string;serviceName: string;price: number;duration?: number;}) =>
+<div className="mx-4 -mt-2 mb-4">
     <div className="bg-gradient-to-br from-card via-card to-primary/5 rounded-2xl p-4 shadow-xl border border-primary/10 backdrop-blur-sm">
       <div className="flex items-center gap-4">
         <div className="relative">
-          {artistAvatar ? (
-            <img
-              src={artistAvatar}
-              alt={artistName}
-              className="w-16 h-16 rounded-2xl object-cover ring-2 ring-primary/20"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center ring-2 ring-primary/20">
+          {artistAvatar ?
+        <img
+          src={artistAvatar}
+          alt={artistName}
+          className="w-16 h-16 rounded-2xl object-cover ring-2 ring-primary/20" /> :
+
+
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center ring-2 ring-primary/20">
               <span className="text-2xl font-bold text-primary">
                 {artistName.charAt(0)}
               </span>
             </div>
-          )}
+        }
           <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg">
             <Star className="w-3 h-3 text-white fill-white" />
           </div>
@@ -157,38 +157,38 @@ const FloatingArtistCard = ({
         </div>
         <div className="text-end">
           <p className="text-xl font-bold text-foreground">{formatQAR(price)}</p>
-          {duration && (
-            <p className="text-xs text-muted-foreground mt-0.5">
+          {duration &&
+        <p className="text-xs text-muted-foreground mt-0.5">
               {Math.floor(duration / 60)}h {duration % 60 > 0 ? `${duration % 60}m` : ''}
             </p>
-          )}
+        }
         </div>
       </div>
     </div>
-  </div>
-);
+  </div>;
+
 
 import { LocationPicker } from "@/components/LocationPicker";
 
 const Booking = () => {
   // ... existing hooks ...
-  
+
   const [showMap, setShowMap] = useState(false);
-  const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
+  const [coordinates, setCoordinates] = useState<{lat: number;lng: number;} | null>(null);
 
   // ... existing code ...
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{id: string;}>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const { user, loading: authLoading } = useAuth();
-  
+
   const serviceName = searchParams.get("service") || "Service";
   const serviceId = searchParams.get("serviceId");
   const artistId = searchParams.get("artistId") || id;
   const priceParam = searchParams.get("price");
   const servicePrice = priceParam ? parseFloat(priceParam) : 0;
-  
+
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<string>("client_home");
@@ -205,16 +205,16 @@ const Booking = () => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [timeFilter, setTimeFilter] = useState<"AM" | "PM">("AM");
-  
+
   const [errors, setErrors] = useState<{
     date?: string;
     time?: string;
     location?: string;
     notes?: string;
   }>({});
-  
+
   const [bookingError, setBookingError] = useState<string | null>(null);
-  
+
   const [paymentState, setPaymentState] = useState<{
     isProcessing: boolean;
     isSuccess: boolean;
@@ -232,7 +232,7 @@ const Booking = () => {
     meta.name = 'viewport';
     meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
     document.head.appendChild(meta);
-    
+
     return () => {
       document.head.removeChild(meta);
     };
@@ -246,37 +246,37 @@ const Booking = () => {
     queryKey: ["artist-info", artistId],
     queryFn: async () => {
       if (!artistId) return null;
-      const { data: artist } = await supabase
-        .from("artists")
-        .select("*")
-        .eq("id", artistId)
-        .single();
-      
+      const { data: artist } = await supabase.
+      from("artists").
+      select("*").
+      eq("id", artistId).
+      single();
+
       if (!artist) return null;
-      
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, avatar_url")
-        .eq("id", artist.user_id)
-        .single();
-      
+
+      const { data: profile } = await supabase.
+      from("profiles").
+      select("full_name, avatar_url").
+      eq("id", artist.user_id).
+      single();
+
       return { ...artist, profile };
     },
-    enabled: !!artistId,
+    enabled: !!artistId
   });
 
   const { data: serviceInfo, isLoading: isServiceLoading } = useQuery({
     queryKey: ["service-info", serviceId],
     queryFn: async () => {
       if (!serviceId) return null;
-      const { data: service } = await supabase
-        .from("services")
-        .select("*")
-        .eq("id", serviceId)
-        .single();
+      const { data: service } = await supabase.
+      from("services").
+      select("*").
+      eq("id", serviceId).
+      single();
       return service;
     },
-    enabled: !!serviceId,
+    enabled: !!serviceId
   });
 
   const actualServiceName = serviceInfo?.name || serviceName;
@@ -302,7 +302,7 @@ const Booking = () => {
 
   // Filter time slots based on AM/PM toggle
   const filteredTimeSlots = useMemo(() => {
-    return availableTimeSlots.filter(slot => {
+    return availableTimeSlots.filter((slot) => {
       if (timeFilter === "AM") return slot.includes("AM");
       return slot.includes("PM");
     });
@@ -313,14 +313,14 @@ const Booking = () => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
     const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
-    
+
     // Get the day of week for the first day (0 = Sunday)
     const startDayOfWeek = monthStart.getDay();
-    
+
     // Add empty slots for days before the start of month
     const paddedDays: (Date | null)[] = Array(startDayOfWeek).fill(null);
     paddedDays.push(...days);
-    
+
     return paddedDays;
   }, [currentMonth]);
 
@@ -345,11 +345,11 @@ const Booking = () => {
 
   const validateForm = useCallback(() => {
     const newErrors: typeof errors = {};
-    
+
     if (!selectedDate) {
       newErrors.date = t.bookings.selectDateError || "Please select a date";
     }
-    
+
     if (!selectedTime) {
       newErrors.time = t.bookings.selectTimeError || "Please select a time";
     }
@@ -358,7 +358,7 @@ const Booking = () => {
     if (selectedLocation === "client_home" && !addressDetails.area.trim()) {
       newErrors.location = t.bookings.enterAddress || "Please enter address details";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [selectedDate, selectedTime, selectedLocation, addressDetails.area, t.bookings]);
@@ -382,7 +382,7 @@ const Booking = () => {
   }, [step, navigate]);
 
   useSwipeBack({
-    onSwipeBack: handlePrevStep,
+    onSwipeBack: handlePrevStep
   });
 
   const dates = Array.from({ length: 14 }, (_, i) => {
@@ -446,47 +446,47 @@ const Booking = () => {
         location_type: "client_home",
         location_address: `Lat: ${coordinates?.lat || 0}, Lng: ${coordinates?.lng || 0} | Area: ${addressDetails.area}, Street: ${addressDetails.street}, Building: ${addressDetails.building}, Details: ${addressDetails.details}`,
         total_price: totalPrice,
-        notes: notes || undefined,
+        notes: notes || undefined
       });
 
       if (paymentMethod === "sadad") {
-        setPaymentState(prev => ({ ...prev, isProcessing: true }));
+        setPaymentState((prev) => ({ ...prev, isProcessing: true }));
         setIsProcessingPayment(true);
-        
+
         const returnUrl = `${window.location.origin}/payment-result`;
-        
+
         const { data, error } = await supabase.functions.invoke("sadad-initiate-payment", {
           body: {
             booking_id: booking.id,
             customer_email: userProfile?.email || user.email,
             customer_phone: userProfile?.phone || "",
             customer_name: userProfile?.full_name || "",
-            return_url: returnUrl,
-          },
+            return_url: returnUrl
+          }
         });
 
         if (error || !data?.success) {
           console.error("Payment initiation failed:", error || data?.error);
           const errorMessage = error?.message || data?.error || "فشل في بدء عملية الدفع";
-          setPaymentState(prev => ({ ...prev, isProcessing: false, error: errorMessage }));
+          setPaymentState((prev) => ({ ...prev, isProcessing: false, error: errorMessage }));
           setIsProcessingPayment(false);
           toast.error(errorMessage);
           return;
         }
 
         const paymentData = data.data;
-        
+
         const form = document.createElement("form");
         form.method = "POST";
         form.action = paymentData.payment_url;
         form.name = "gosadad";
-        
+
         const standardFields = [
-          "merchant_id", "ORDER_ID", "WEBSITE", "TXN_AMOUNT", "CUST_ID",
-          "EMAIL", "MOBILE_NO", "SADAD_WEBCHECKOUT_PAGE_LANGUAGE",
-          "CALLBACK_URL", "txnDate", "VERSION", "checksumhash",
-        ];
-        
+        "merchant_id", "ORDER_ID", "WEBSITE", "TXN_AMOUNT", "CUST_ID",
+        "EMAIL", "MOBILE_NO", "SADAD_WEBCHECKOUT_PAGE_LANGUAGE",
+        "CALLBACK_URL", "txnDate", "VERSION", "checksumhash"];
+
+
         standardFields.forEach((fieldName) => {
           const value = paymentData[fieldName];
 
@@ -499,7 +499,7 @@ const Booking = () => {
             form.appendChild(input);
           }
         });
-        
+
         if (paymentData.productdetail && Array.isArray(paymentData.productdetail)) {
           paymentData.productdetail.forEach((product: Record<string, string>, index: number) => {
             Object.entries(product).forEach(([key, value]) => {
@@ -511,11 +511,11 @@ const Booking = () => {
             });
           });
         }
-        
+
         document.body.appendChild(form);
         form.submit();
       } else {
-        setPaymentState(prev => ({ ...prev, isProcessing: true }));
+        setPaymentState((prev) => ({ ...prev, isProcessing: true }));
         setTimeout(() => {
           setPaymentState({ isProcessing: false, isSuccess: true, error: null });
           setIsConfirmed(true);
@@ -526,7 +526,7 @@ const Booking = () => {
     } catch (error) {
       console.error("Booking error:", error);
       setIsProcessingPayment(false);
-      
+
       const errorMessage = error instanceof Error ? error.message : "Failed to create booking";
       setBookingError(errorMessage);
       toast.error(t.bookings.bookingFailed || "Failed to create booking");
@@ -576,28 +576,28 @@ const Booking = () => {
             {t.bookings.redirectingToBookings}
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   const artistName = artistInfo?.profile?.full_name || "Artist";
   const artistAvatar = artistInfo?.profile?.avatar_url;
 
   const steps = [
-    { icon: Calendar, label: t.bookings.selectDate },
-    { icon: MapPin, label: t.bookings.selectLocation },
-    { icon: CreditCard, label: t.bookings.payment || "Payment" }
-  ];
+  { icon: Calendar, label: t.bookings.selectDate },
+  { icon: MapPin, label: t.bookings.selectLocation },
+  { icon: CreditCard, label: t.bookings.payment || "Payment" }];
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-28" onTouchMove={(e) => e.touches.length > 1 && e.preventDefault()}>
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/50">
         <div className="flex items-center gap-3 px-4 py-3">
-          <button 
+          <button
             onClick={handlePrevStep}
-            className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
-          >
+            className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors">
+
             <ChevronLeft className="w-5 h-5 text-foreground" />
           </button>
           <div className="flex-1 text-center">
@@ -612,31 +612,31 @@ const Booking = () => {
 
       <div className="px-4">
         {/* Step 1: Select Date & Time */}
-        {step === 1 && (
-          <div className="animate-fade-in space-y-4">
+        {step === 1 &&
+        <div className="animate-fade-in space-y-4">
             {/* Service & Artist Card - Compact */}
             <div className="bg-gradient-to-br from-card via-card to-primary/5 rounded-2xl p-4 shadow-sm border border-primary/10">
               <div className="flex items-center gap-3">
                 {/* Artist Avatar */}
                 <div className="relative flex-shrink-0">
-                  {artistAvatar ? (
-                    <img
-                      src={artistAvatar}
-                      alt={artistName}
-                      className="w-14 h-14 rounded-xl object-cover ring-2 ring-primary/20"
-                    />
-                  ) : (
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center ring-2 ring-primary/20">
+                  {artistAvatar ?
+                <img
+                  src={artistAvatar}
+                  alt={artistName}
+                  className="w-14 h-14 rounded-xl object-cover ring-2 ring-primary/20" /> :
+
+
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center ring-2 ring-primary/20">
                       <span className="text-xl font-bold text-white">
                         {artistName.charAt(0)}
                       </span>
                     </div>
-                  )}
-                  {(artistInfo?.rating ?? 0) > 0 && (
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-sm">
+                }
+                  {(artistInfo?.rating ?? 0) > 0 &&
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-sm">
                       <Star className="w-3 h-3 text-white fill-white" />
                     </div>
-                  )}
+                }
                 </div>
 
                 {/* Service Info */}
@@ -646,23 +646,23 @@ const Booking = () => {
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
                     <p className="text-xs text-primary font-medium truncate">{actualServiceName}</p>
                   </div>
-                  {serviceInfo?.duration_minutes && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                  {serviceInfo?.duration_minutes &&
+                <p className="text-xs text-muted-foreground mt-0.5">
                       <Clock className="w-3 h-3 inline-block mr-1" />
                       {Math.floor(serviceInfo.duration_minutes / 60) > 0 && `${Math.floor(serviceInfo.duration_minutes / 60)}h `}
                       {serviceInfo.duration_minutes % 60 > 0 && `${serviceInfo.duration_minutes % 60}m`}
                     </p>
-                  )}
+                }
                 </div>
 
                 {/* Price */}
                 <div className="text-end flex-shrink-0">
                   <p className="text-lg font-bold text-primary">{formatQAR(actualServicePrice)}</p>
-                  {(artistInfo?.rating ?? 0) > 0 && (artistInfo?.total_reviews ?? 0) > 0 && (
-                    <p className="text-xs text-muted-foreground">
+                  {(artistInfo?.rating ?? 0) > 0 && (artistInfo?.total_reviews ?? 0) > 0 &&
+                <p className="text-xs text-muted-foreground">
                       {artistInfo.rating.toFixed(1)} ({artistInfo.total_reviews})
                     </p>
-                  )}
+                }
                 </div>
               </div>
             </div>
@@ -676,86 +676,86 @@ const Booking = () => {
                 </h2>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
-                    disabled={isSameMonth(currentMonth, new Date())}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    aria-label="Previous month"
-                  >
+                  onClick={() => setCurrentMonth((prev) => subMonths(prev, 1))}
+                  disabled={isSameMonth(currentMonth, new Date())}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Previous month">
+
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
-                    aria-label="Next month"
-                  >
+                  onClick={() => setCurrentMonth((prev) => addMonths(prev, 1))}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+                  aria-label="Next month">
+
                     <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
               </div>
 
-              {errors.date && (
-                <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center gap-2">
+              {errors.date &&
+            <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
                   <span className="text-sm text-destructive">{errors.date}</span>
                 </div>
-              )}
+            }
 
               {/* Weekday Headers */}
               <div className="grid grid-cols-7 gap-1 mb-2">
-                {(language === "ar" 
-                  ? ["أحد", "اثن", "ثلا", "أرب", "خمس", "جمع", "سبت"]
-                  : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-                ).map((day) => (
-                  <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+                {(language === "ar" ?
+              ["أحد", "اثن", "ثلا", "أرب", "خمس", "جمع", "سبت"] :
+              ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]).
+              map((day) =>
+              <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
                     {day}
                   </div>
-                ))}
+              )}
               </div>
 
               {/* Calendar Grid */}
               <div className="grid grid-cols-7 gap-1">
                 {calendarDays.map((day, index) => {
-                  if (!day) {
-                    return <div key={`empty-${index}`} className="aspect-square" />;
-                  }
-                  
-                  const isSelected = selectedDate && isSameDay(day, selectedDate);
-                  const isAvailable = hasAvailability(day);
-                  const isTodayDate = isToday(day);
-                  const isPast = isBefore(startOfDay(day), startOfDay(new Date()));
-                  
-                  return (
-                    <button
-                      key={day.toISOString()}
-                      onClick={() => {
-                        if (isAvailable) {
-                          setSelectedDate(day);
-                          setSelectedTime(null);
-                          setErrors(prev => ({ ...prev, date: undefined }));
-                        }
-                      }}
-                      disabled={!isAvailable || isPast}
-                      className={`
+                if (!day) {
+                  return <div key={`empty-${index}`} className="aspect-square" />;
+                }
+
+                const isSelected = selectedDate && isSameDay(day, selectedDate);
+                const isAvailable = hasAvailability(day);
+                const isTodayDate = isToday(day);
+                const isPast = isBefore(startOfDay(day), startOfDay(new Date()));
+
+                return (
+                  <button
+                    key={day.toISOString()}
+                    onClick={() => {
+                      if (isAvailable) {
+                        setSelectedDate(day);
+                        setSelectedTime(null);
+                        setErrors((prev) => ({ ...prev, date: undefined }));
+                      }
+                    }}
+                    disabled={!isAvailable || isPast}
+                    className={`
                         aspect-square flex flex-col items-center justify-center rounded-full text-sm font-medium
                         transition-all duration-200 relative touch-manipulation
-                        ${!isAvailable || isPast
-                          ? "text-muted-foreground/40 cursor-not-allowed"
-                          : isSelected
-                          ? "bg-primary text-primary-foreground shadow-lg scale-110"
-                          : isTodayDate
-                          ? "text-foreground font-bold"
-                          : "text-foreground hover:bg-muted"
-                        }
-                      `}
-                    >
+                        ${!isAvailable || isPast ?
+                    "text-muted-foreground/40 cursor-not-allowed" :
+                    isSelected ?
+                    "bg-primary text-primary-foreground shadow-lg scale-110" :
+                    isTodayDate ?
+                    "text-foreground font-bold" :
+                    "text-foreground hover:bg-muted"}
+                      `
+                    }>
+
                       <span>{day.getDate()}</span>
                       {/* Availability dot indicator */}
-                      {isAvailable && !isPast && !isSelected && (
-                        <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-primary" />
-                      )}
-                    </button>
-                  );
-                })}
+                      {isAvailable && !isPast && !isSelected &&
+                    <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-primary" />
+                    }
+                    </button>);
+
+              })}
               </div>
             </div>
 
@@ -768,104 +768,104 @@ const Booking = () => {
                 </h3>
                 <div className="flex items-center bg-muted rounded-full p-1">
                   <button
-                    onClick={() => setTimeFilter("AM")}
-                    className={`
+                  onClick={() => setTimeFilter("AM")}
+                  className={`
                       px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200
-                      ${timeFilter === "AM"
-                        ? "bg-card text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                      }
-                    `}
-                  >
+                      ${timeFilter === "AM" ?
+                  "bg-card text-foreground shadow-sm" :
+                  "text-muted-foreground hover:text-foreground"}
+                    `
+                  }>
+
                     AM
                   </button>
                   <button
-                    onClick={() => setTimeFilter("PM")}
-                    className={`
+                  onClick={() => setTimeFilter("PM")}
+                  className={`
                       px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200
-                      ${timeFilter === "PM"
-                        ? "bg-card text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                      }
-                    `}
-                  >
+                      ${timeFilter === "PM" ?
+                  "bg-card text-foreground shadow-sm" :
+                  "text-muted-foreground hover:text-foreground"}
+                    `
+                  }>
+
                     PM
                   </button>
                 </div>
               </div>
 
-              {errors.time && (
-                <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center gap-2">
+              {errors.time &&
+            <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
                   <span className="text-sm text-destructive">{errors.time}</span>
                 </div>
-              )}
+            }
 
-              {!selectedDate ? (
-                <div className="text-center py-8 text-muted-foreground">
+              {!selectedDate ?
+            <div className="text-center py-8 text-muted-foreground">
                   {language === "ar" ? "اختر تاريخاً أولاً" : "Select a date first"}
-                </div>
-              ) : filteredTimeSlots.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                </div> :
+            filteredTimeSlots.length === 0 ?
+            <div className="text-center py-8 text-muted-foreground">
                   {t.bookings.noAvailableSlots || "No available time slots"}
-                </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-3">
+                </div> :
+
+            <div className="grid grid-cols-3 gap-3">
                   {filteredTimeSlots.map((time) => {
-                    const isTimeSelected = selectedTime === time;
-                    const hourDisplay = time.replace(" AM", ".00").replace(" PM", ".00");
-                    const isPastTime = selectedDate && isToday(selectedDate) && 
-                      new Date(`${format(selectedDate, "yyyy-MM-dd")} ${time.replace(" AM", ":00 AM").replace(" PM", ":00 PM")}`) < new Date();
-                    
-                    return (
-                      <button
-                        key={time}
-                        onClick={() => {
-                          setSelectedTime(time);
-                          setErrors(prev => ({ ...prev, time: undefined }));
-                        }}
-                        disabled={isPastTime}
-                        className={`
+                const isTimeSelected = selectedTime === time;
+                const hourDisplay = time.replace(" AM", ".00").replace(" PM", ".00");
+                const isPastTime = selectedDate && isToday(selectedDate) &&
+                new Date(`${format(selectedDate, "yyyy-MM-dd")} ${time.replace(" AM", ":00 AM").replace(" PM", ":00 PM")}`) < new Date();
+
+                return (
+                  <button
+                    key={time}
+                    onClick={() => {
+                      setSelectedTime(time);
+                      setErrors((prev) => ({ ...prev, time: undefined }));
+                    }}
+                    disabled={isPastTime}
+                    className={`
                           py-3 px-4 rounded-xl text-base font-medium transition-all duration-200
                           touch-manipulation select-none
-                          ${isPastTime
-                            ? "bg-muted/50 text-muted-foreground/50 cursor-not-allowed"
-                            : isTimeSelected
-                            ? "bg-primary text-primary-foreground shadow-lg"
-                            : "bg-muted/50 text-foreground border border-border hover:border-primary/50"
-                          }
-                        `}
-                        aria-label={`Select ${time}`}
-                      >
+                          ${isPastTime ?
+                    "bg-muted/50 text-muted-foreground/50 cursor-not-allowed" :
+                    isTimeSelected ?
+                    "bg-primary text-primary-foreground shadow-lg" :
+                    "bg-muted/50 text-foreground border border-border hover:border-primary/50"}
+                        `
+                    }
+                    aria-label={`Select ${time}`}>
+
                         {hourDisplay}
-                      </button>
-                    );
-                  })}
+                      </button>);
+
+              })}
                 </div>
-              )}
+            }
             </div>
           </div>
-        )}
+        }
 
         {/* Step 2: Select Location */}
-        {step === 2 && (
-          <div className="animate-fade-in space-y-4">
+        {step === 2 &&
+        <div className="animate-fade-in space-y-4">
             {/* Service & Artist Card - Compact */}
             <div className="bg-gradient-to-br from-card via-card to-primary/5 rounded-2xl p-4 shadow-sm border border-primary/10">
               <div className="flex items-center gap-3">
-                {artistAvatar ? (
-                  <img
-                    src={artistAvatar}
-                    alt={artistName}
-                    className="w-12 h-12 rounded-xl object-cover ring-2 ring-primary/20"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center ring-2 ring-primary/20">
+                {artistAvatar ?
+              <img
+                src={artistAvatar}
+                alt={artistName}
+                className="w-12 h-12 rounded-xl object-cover ring-2 ring-primary/20" /> :
+
+
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center ring-2 ring-primary/20">
                     <span className="text-lg font-bold text-white">
                       {artistName.charAt(0)}
                     </span>
                   </div>
-                )}
+              }
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground text-sm truncate">{artistName}</h3>
                   <div className="flex items-center gap-1.5">
@@ -918,83 +918,83 @@ const Booking = () => {
                   <div className="flex flex-wrap gap-2 justify-between items-center">
                     <h3 className="font-medium text-foreground text-sm">{t.bookings.enterAddress}</h3>
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={handleCurrentLocation}
-                        className="text-primary border-primary/20 hover:bg-primary/5 gap-2"
-                      >
+                      <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCurrentLocation}
+                      className="text-primary border-primary/20 hover:bg-primary/5 gap-2">
+
                         <Navigation className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">{t.settings?.useCurrentLocation || "Use Current Location"}</span>
                         <span className="sm:hidden">{t.settings?.useCurrentLocation?.split(' ')[0] || "Location"}</span>
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => setShowMap(true)}
-                        className="text-primary border-primary/20 hover:bg-primary/5 gap-2"
-                      >
-                        <MapPin className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">{t.bookings.selectFromMap || "Select from Map"}</span>
-                        <span className="sm:hidden">{t.common.map || "Map"}</span>
-                      </Button>
+                      
+
+
+
+
+
+
+
+
+
                     </div>
                   </div>
 
-                  {coordinates && (
-                    <div className="bg-primary/5 p-3 rounded-xl border border-primary/10 flex items-center gap-2">
+                  {coordinates &&
+                <div className="bg-primary/5 p-3 rounded-xl border border-primary/10 flex items-center gap-2">
                       <Check className="w-4 h-4 text-primary" />
                       <span className="text-sm text-primary font-medium">
                         {t.bookings.locationSelected || "Location Selected"}: {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
                       </span>
                     </div>
-                  )}
+                }
                   
                   <div className="space-y-2">
                     <Label htmlFor="area">{t.bookings.area || "Area / Zone"}</Label>
-                    <Input 
-                      id="area" 
-                      value={addressDetails.area}
-                      onChange={(e) => setAddressDetails(prev => ({ ...prev, area: e.target.value }))}
-                      placeholder={language === "ar" ? "المنطقة / الحي" : "Area / Zone"}
-                      className={errors.location ? "border-destructive" : ""}
-                    />
+                    <Input
+                    id="area"
+                    value={addressDetails.area}
+                    onChange={(e) => setAddressDetails((prev) => ({ ...prev, area: e.target.value }))}
+                    placeholder={language === "ar" ? "المنطقة / الحي" : "Area / Zone"}
+                    className={errors.location ? "border-destructive" : ""} />
+
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label htmlFor="street">{t.bookings.street || "Street"}</Label>
-                      <Input 
-                        id="street" 
-                        value={addressDetails.street}
-                        onChange={(e) => setAddressDetails(prev => ({ ...prev, street: e.target.value }))}
-                        placeholder={language === "ar" ? "الشارع" : "Street"}
-                      />
+                      <Input
+                      id="street"
+                      value={addressDetails.street}
+                      onChange={(e) => setAddressDetails((prev) => ({ ...prev, street: e.target.value }))}
+                      placeholder={language === "ar" ? "الشارع" : "Street"} />
+
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="building">{t.bookings.building || "Building No"}</Label>
-                      <Input 
-                        id="building" 
-                        value={addressDetails.building}
-                        onChange={(e) => setAddressDetails(prev => ({ ...prev, building: e.target.value }))}
-                        placeholder={language === "ar" ? "رقم المبنى" : "Building No"}
-                      />
+                      <Input
+                      id="building"
+                      value={addressDetails.building}
+                      onChange={(e) => setAddressDetails((prev) => ({ ...prev, building: e.target.value }))}
+                      placeholder={language === "ar" ? "رقم المبنى" : "Building No"} />
+
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="details">{t.bookings.addressDetails || "Additional Directions"}</Label>
-                    <Input 
-                      id="details" 
-                      value={addressDetails.details}
-                      onChange={(e) => setAddressDetails(prev => ({ ...prev, details: e.target.value }))}
-                      placeholder={language === "ar" ? "توجيهات إضافية..." : "Near landmark, etc..."}
-                    />
+                    <Input
+                    id="details"
+                    value={addressDetails.details}
+                    onChange={(e) => setAddressDetails((prev) => ({ ...prev, details: e.target.value }))}
+                    placeholder={language === "ar" ? "توجيهات إضافية..." : "Near landmark, etc..."} />
+
                   </div>
                   
-                  {errors.location && (
-                    <p className="text-sm text-destructive mt-1">{errors.location}</p>
-                  )}
+                  {errors.location &&
+                <p className="text-sm text-destructive mt-1">{errors.location}</p>
+                }
                 </div>
               </div>
             </div>
@@ -1007,53 +1007,53 @@ const Booking = () => {
                 <span className="text-xs text-muted-foreground">({language === "ar" ? "اختياري" : "Optional"})</span>
               </label>
               <textarea
-                id="booking-notes"
-                placeholder={t.bookings.notesPlaceholder}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full p-4 bg-muted/30 border-0 rounded-xl resize-none h-28 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-              />
+              id="booking-notes"
+              placeholder={t.bookings.notesPlaceholder}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full p-4 bg-muted/30 border-0 rounded-xl resize-none h-28 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+
             </div>
           </div>
-        )}
+        }
 
         {/* Step 3: Confirm & Pay */}
-        {step === 3 && (
-          <div className="animate-fade-in space-y-5">
+        {step === 3 &&
+        <div className="animate-fade-in space-y-5">
             {/* Artist & Service Card - Premium Design */}
             <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-card to-primary/5 rounded-3xl p-5 border border-primary/20 shadow-lg">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
               
               <div className="relative flex items-center gap-4">
-                {artistInfo?.profile?.avatar_url ? (
-                  <img
-                    src={artistInfo.profile.avatar_url}
-                    alt={artistInfo?.profile?.full_name || "Artist"}
-                    className="w-20 h-20 rounded-2xl object-cover ring-3 ring-primary/30 shadow-xl"
-                  />
-                ) : (
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center ring-3 ring-primary/30 shadow-xl">
+                {artistInfo?.profile?.avatar_url ?
+              <img
+                src={artistInfo.profile.avatar_url}
+                alt={artistInfo?.profile?.full_name || "Artist"}
+                className="w-20 h-20 rounded-2xl object-cover ring-3 ring-primary/30 shadow-xl" /> :
+
+
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center ring-3 ring-primary/30 shadow-xl">
                     <span className="text-3xl font-bold text-white">
                       {(artistInfo?.profile?.full_name || "A").charAt(0)}
                     </span>
                   </div>
-                )}
+              }
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-bold text-foreground">{artistInfo?.profile?.full_name || "Artist"}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <Sparkles className="w-4 h-4 text-primary" />
                     <p className="text-sm text-primary font-medium">{actualServiceName}</p>
                   </div>
-                  {(artistInfo?.rating ?? 0) > 0 && (
-                    <div className="flex items-center gap-1 mt-2">
+                  {(artistInfo?.rating ?? 0) > 0 &&
+                <div className="flex items-center gap-1 mt-2">
                       <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
                       <span className="text-sm font-medium text-foreground">{artistInfo.rating.toFixed(1)}</span>
-                      {(artistInfo?.total_reviews ?? 0) > 0 && (
-                        <span className="text-xs text-muted-foreground">({artistInfo.total_reviews})</span>
-                      )}
+                      {(artistInfo?.total_reviews ?? 0) > 0 &&
+                  <span className="text-xs text-muted-foreground">({artistInfo.total_reviews})</span>
+                  }
                     </div>
-                  )}
+                }
                 </div>
               </div>
             </div>
@@ -1087,11 +1087,11 @@ const Booking = () => {
                   <div className="flex-1">
                     <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{t.bookings.time}</p>
                     <p className="text-base font-semibold text-foreground mt-0.5">{selectedTime}</p>
-                    {serviceInfo?.duration_minutes && (
-                      <p className="text-sm text-muted-foreground">
+                    {serviceInfo?.duration_minutes &&
+                  <p className="text-sm text-muted-foreground">
                         {Math.floor(serviceInfo.duration_minutes / 60)}h {serviceInfo.duration_minutes % 60 > 0 ? `${serviceInfo.duration_minutes % 60}m` : ''}
                       </p>
-                    )}
+                  }
                   </div>
                 </div>
               </div>
@@ -1107,11 +1107,11 @@ const Booking = () => {
                     <p className="text-base font-semibold text-foreground mt-0.5">
                       {t.bookings.atMyLocation}
                     </p>
-                    {addressDetails.area && (
-                      <p className="text-sm text-muted-foreground truncate">
+                    {addressDetails.area &&
+                  <p className="text-sm text-muted-foreground truncate">
                         {addressDetails.area} {addressDetails.street ? `, ${addressDetails.street}` : ''}
                       </p>
-                    )}
+                  }
                   </div>
                 </div>
               </div>
@@ -1130,12 +1130,12 @@ const Booking = () => {
                   <span className="font-medium text-foreground">{formatQAR(actualServicePrice)}</span>
                 </div>
                 
-                {selectedLocation === "client_home" && (
-                  <div className="flex justify-between items-center">
+                {selectedLocation === "client_home" &&
+              <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">{t.bookings.travelFee}</span>
                     <span className="font-medium text-foreground">{formatQAR(travelFee)}</span>
                   </div>
-                )}
+              }
                 
                 <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-2" />
                 
@@ -1160,20 +1160,20 @@ const Booking = () => {
               <div className="grid grid-cols-2 gap-3">
                 {/* SADAD Payment */}
                 <button
-                  onClick={() => setPaymentMethod("sadad")}
-                  className={`
+                onClick={() => setPaymentMethod("sadad")}
+                className={`
                     relative p-4 rounded-2xl border-2 text-center transition-all duration-300
-                    ${paymentMethod === "sadad"
-                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
-                      : "border-border bg-card hover:border-primary/40"
-                    }
-                  `}
-                >
-                  {paymentMethod === "sadad" && (
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                    ${paymentMethod === "sadad" ?
+                "border-primary bg-primary/10 shadow-lg shadow-primary/20" :
+                "border-border bg-card hover:border-primary/40"}
+                  `
+                }>
+
+                  {paymentMethod === "sadad" &&
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg">
                       <Check className="w-3.5 h-3.5 text-white" />
                     </div>
-                  )}
+                }
                   <div className="w-12 h-8 mx-auto bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm mb-2">
                     <span className="text-[10px] font-bold text-white">SADAD</span>
                   </div>
@@ -1185,20 +1185,20 @@ const Booking = () => {
 
                 {/* Cash Payment */}
                 <button
-                  onClick={() => setPaymentMethod("cash")}
-                  className={`
+                onClick={() => setPaymentMethod("cash")}
+                className={`
                     relative p-4 rounded-2xl border-2 text-center transition-all duration-300
-                    ${paymentMethod === "cash"
-                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
-                      : "border-border bg-card hover:border-primary/40"
-                    }
-                  `}
-                >
-                  {paymentMethod === "cash" && (
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                    ${paymentMethod === "cash" ?
+                "border-primary bg-primary/10 shadow-lg shadow-primary/20" :
+                "border-border bg-card hover:border-primary/40"}
+                  `
+                }>
+
+                  {paymentMethod === "cash" &&
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg">
                       <Check className="w-3.5 h-3.5 text-white" />
                     </div>
-                  )}
+                }
                   <div className="w-12 h-8 mx-auto bg-muted rounded-lg flex items-center justify-center mb-2">
                     <Banknote className="w-5 h-5 text-muted-foreground" />
                   </div>
@@ -1221,45 +1221,45 @@ const Booking = () => {
               </div>
             </div>
           </div>
-        )}
+        }
       </div>
 
-      {showMap && (
-        <LocationPicker 
-          onClose={() => setShowMap(false)}
-          onLocationSelect={(lat, lng) => {
-            setCoordinates({ lat, lng });
-            // Optionally try to reverse geocode roughly or just mark as selected
-            // We'll rely on the user filling the text fields for precise address
-          }}
-          initialLat={coordinates?.lat}
-          initialLng={coordinates?.lng}
-        />
-      )}
+      {showMap &&
+      <LocationPicker
+        onClose={() => setShowMap(false)}
+        onLocationSelect={(lat, lng) => {
+          setCoordinates({ lat, lng });
+          // Optionally try to reverse geocode roughly or just mark as selected
+          // We'll rely on the user filling the text fields for precise address
+        }}
+        initialLat={coordinates?.lat}
+        initialLng={coordinates?.lng} />
+
+      }
 
       {/* Payment Processing Overlay */}
-      {paymentState.isProcessing && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50">
+      {paymentState.isProcessing &&
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50">
           <div className="bg-card rounded-3xl p-8 m-4 max-w-sm w-full shadow-2xl">
             <PaymentProcessing
-              isProcessing={paymentState.isProcessing}
-              isSuccess={paymentState.isSuccess}
-              error={paymentState.error}
-              method={paymentMethod}
-              amount={totalPrice}
-              onRetry={() => setPaymentState({ isProcessing: false, isSuccess: false, error: null })}
-            />
+            isProcessing={paymentState.isProcessing}
+            isSuccess={paymentState.isSuccess}
+            error={paymentState.error}
+            method={paymentMethod}
+            amount={totalPrice}
+            onRetry={() => setPaymentState({ isProcessing: false, isSuccess: false, error: null })} />
+
           </div>
         </div>
-      )}
+      }
 
       {/* Error Display */}
       <ErrorDisplay
         error={bookingError}
         variant="toast"
         onRetry={() => setBookingError(null)}
-        onDismiss={() => setBookingError(null)}
-      />
+        onDismiss={() => setBookingError(null)} />
+
 
       {/* Bottom CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-card via-card to-card/80 backdrop-blur-lg border-t border-border/50 p-4 pb-6 safe-area-bottom">
@@ -1268,40 +1268,40 @@ const Booking = () => {
           variant={step === 3 ? "gold" : "default"}
           className={`
             w-full h-14 rounded-2xl text-base font-semibold transition-all duration-300
-            ${step < 3 
-              ? "bg-primary hover:bg-primary/90" 
-              : "bg-gradient-to-r from-primary to-primary/90 shadow-lg shadow-primary/30"
-            }
-          `}
-          disabled={(step === 1 && (!selectedDate || !selectedTime)) || createBooking.isPending || isProcessingPayment}
-          onClick={step === 3 ? handleConfirmBooking : handleNextStep}
-        >
-          {createBooking.isPending || isProcessingPayment ? (
-            <span className="flex items-center gap-2">
+            ${step < 3 ?
+          "bg-primary hover:bg-primary/90" :
+          "bg-gradient-to-r from-primary to-primary/90 shadow-lg shadow-primary/30"}
+          `
+          }
+          disabled={step === 1 && (!selectedDate || !selectedTime) || createBooking.isPending || isProcessingPayment}
+          onClick={step === 3 ? handleConfirmBooking : handleNextStep}>
+
+          {createBooking.isPending || isProcessingPayment ?
+          <span className="flex items-center gap-2">
               <Loader2 className="w-5 h-5 animate-spin" />
-              {paymentMethod === "sadad" ? (t.payment?.processingPleaseWait || "Processing...") : (t.common.processing || "Processing...")}
-            </span>
-          ) : step === 3 ? (
-            <span className="flex items-center gap-2">
-              {paymentMethod === "sadad" ? (
-                <>
+              {paymentMethod === "sadad" ? t.payment?.processingPleaseWait || "Processing..." : t.common.processing || "Processing..."}
+            </span> :
+          step === 3 ?
+          <span className="flex items-center gap-2">
+              {paymentMethod === "sadad" ?
+            <>
                   <CreditCard className="w-5 h-5" />
                   {t.payment?.payWithSadad || "Pay with SADAD"} • {formatQAR(totalPrice)}
-                </>
-              ) : (
-                <>
+                </> :
+
+            <>
                   <Check className="w-5 h-5" />
                   {t.bookings.confirmBooking || "Confirm Booking"} • {formatQAR(totalPrice)}
                 </>
-              )}
-            </span>
-          ) : (
-            t.bookings.continue
-          )}
+            }
+            </span> :
+
+          t.bookings.continue
+          }
         </Button>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Booking;
