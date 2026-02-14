@@ -180,9 +180,9 @@ export const BookingBottomSheet = ({
                         const lngMatch = booking.location_address.match(/Lng:\s*([\d.-]+)/);
                         const lat = latMatch?.[1];
                         const lng = lngMatch?.[1];
-                        const mapsUrl = lat && lng
-                          ? `https://www.google.com/maps?q=${lat},${lng}`
-                          : `https://www.google.com/maps/search/${encodeURIComponent(booking.location_address)}`;
+                        const mapsUrl = lat && lng && lat !== '0' && lng !== '0'
+                          ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+                          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location_address)}`;
                         return (
                           <a
                             href={mapsUrl}
