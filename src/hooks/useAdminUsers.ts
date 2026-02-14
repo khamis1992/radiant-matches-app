@@ -79,10 +79,6 @@ export const useUpdateUserRole = () => {
 
       if (response.error) {
         const message = response.error.message || "Unknown error";
-        if (message.includes("401") || message.toLowerCase().includes("unauthorized")) {
-          await supabase.auth.signOut();
-          throw new Error("Session expired. Please sign in again.");
-        }
         throw new Error(message);
       }
 
