@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bell, Lock, User, ChevronRight, Eye, EyeOff, Globe, Phone, MapPin, AlertTriangle, Link2, Crosshair, Loader2 } from "lucide-react";
+import { Bell, Lock, User, ChevronRight, Eye, EyeOff, Globe, Phone, MapPin, AlertTriangle, Link2, Crosshair, Loader2, FileText, ExternalLink, Shield } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -682,6 +682,46 @@ const Settings = () => {
               <span className="text-destructive font-medium">{t.settings.deleteAccount}</span>
               <ChevronRight className="w-5 h-5 text-destructive" />
             </button>
+          </div>
+        </section>
+
+        {/* Legal Section */}
+        <section className="bg-card rounded-2xl border border-border overflow-hidden">
+          <div className="flex items-center gap-3 p-5 pb-4">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Shield className="w-5 h-5 text-primary" />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">{t.settings.legal}</h2>
+          </div>
+          
+          <div className="px-5 pb-5 space-y-1">
+            <a 
+              href="/privacy-policy.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-between py-3 hover:bg-muted/50 transition-colors rounded-lg px-2 -mx-2"
+            >
+              <div className="flex items-center gap-3">
+                <FileText className="w-5 h-5 text-muted-foreground" />
+                <span className="text-foreground font-medium">{t.settings.privacyPolicy}</span>
+              </div>
+              <ExternalLink className="w-4 h-4 text-muted-foreground" />
+            </a>
+            
+            <Separator />
+            
+            <a 
+              href="/privacy-policy.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-between py-3 hover:bg-muted/50 transition-colors rounded-lg px-2 -mx-2"
+            >
+              <div className="flex items-center gap-3">
+                <FileText className="w-5 h-5 text-muted-foreground" />
+                <span className="text-foreground font-medium">{t.settings.termsOfUse}</span>
+              </div>
+              <ExternalLink className="w-4 h-4 text-muted-foreground" />
+            </a>
           </div>
         </section>
       </div>
