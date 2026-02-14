@@ -363,6 +363,12 @@ export const en = {
     accountDeleted: "Account deleted successfully",
     accountDeleteFailed: "Failed to delete account",
     deleting: "Deleting...",
+    // Legal
+    legal: "Legal",
+    privacyPolicy: "Privacy Policy",
+    termsOfUse: "Terms of Use",
+    privacyPolicyDesc: "Read our privacy policy",
+    termsOfUseDesc: "Read our terms of use",
   },
 
   // Security/2FA
@@ -464,6 +470,11 @@ export const en = {
     accountDeleted: "Account deleted successfully",
     accountDeleteFailed: "Failed to delete account",
     deleting: "Deleting...",
+    legal: "Legal",
+    privacyPolicy: "Privacy Policy",
+    termsOfUse: "Terms of Use",
+    privacyPolicyDesc: "Read our privacy policy",
+    termsOfUseDesc: "Read our terms of use",
   },
 
   // Notifications

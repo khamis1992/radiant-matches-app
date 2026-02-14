@@ -324,6 +324,11 @@ export const ar = {
     accountDeleted: "تم حذف الحساب بنجاح",
     accountDeleteFailed: "فشل في حذف الحساب",
     deleting: "جاري الحذف...",
+    legal: "القانونية",
+    privacyPolicy: "سياسة الخصوصية",
+    termsOfUse: "شروط الاستخدام",
+    privacyPolicyDesc: "اقرأ سياسة الخصوصية الخاصة بنا",
+    termsOfUseDesc: "اقرأ شروط الاستخدام الخاصة بنا",
     security: "الأمان",
   },
 
@@ -1246,6 +1251,11 @@ export const ar = {
     accountDeleted: "تم حذف الحساب بنجاح",
     accountDeleteFailed: "فشل في حذف الحساب",
     deleting: "جاري الحذف...",
+    legal: "القانونية",
+    privacyPolicy: "سياسة الخصوصية",
+    termsOfUse: "شروط الاستخدام",
+    privacyPolicyDesc: "اقرأ سياسة الخصوصية الخاصة بنا",
+    termsOfUseDesc: "اقرأ شروط الاستخدام الخاصة بنا",
   },
 
   // Compare Artists
