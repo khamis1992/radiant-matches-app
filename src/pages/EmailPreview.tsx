@@ -26,9 +26,7 @@ function wrap(title: string, emoji: string, content: string) {
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width: 560px; width: 100%; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.06);">
           <tr>
             <td style="padding: 28px 32px 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <h1 style="margin: 0; font-size: 26px; font-weight: 700; color: ${BRAND_COLOR}; letter-spacing: -0.5px;">
-                ${APP_NAME}
-              </h1>
+              <img src="${APP_URL}/images/logo.png" alt="${APP_NAME}" style="height: 48px; width: auto;" />
             </td>
           </tr>
           <tr>
