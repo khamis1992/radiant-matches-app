@@ -37,28 +37,33 @@ const ServiceCard = ({
     : (descriptionEn || descriptionAr || description);
 
   return (
-    <div className="bg-card px-4 py-4 border-b border-border/50 last:border-b-0">
-      <div className="flex justify-between items-start gap-3">
+    <div className="group relative px-4 py-5 transition-colors hover:bg-muted/30 active:bg-muted/50">
+      {/* Left accent line */}
+      <div className="absolute top-3 bottom-3 start-0 w-[3px] rounded-full bg-primary/60 group-hover:bg-primary transition-colors" />
+      
+      <div className="flex justify-between items-start gap-4">
         {/* Left: Info */}
-        <div className="flex-1 min-w-0">
-          <h4 className="font-bold text-foreground text-base leading-tight">{displayName}</h4>
+        <div className="flex-1 min-w-0 ps-2">
+          <h4 className="font-bold text-foreground text-[15px] leading-snug">{displayName}</h4>
           {displayDescription && (
-            <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+            <p className="text-[13px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
               {displayDescription}
             </p>
           )}
-          <div className="flex items-center gap-1.5 mt-2 text-muted-foreground">
-            <Clock className="w-3.5 h-3.5" />
-            <span className="text-xs">{duration}</span>
+          <div className="flex items-center gap-1.5 mt-2.5">
+            <div className="flex items-center gap-1 text-muted-foreground bg-muted/50 rounded-full px-2.5 py-0.5">
+              <Clock className="w-3 h-3" />
+              <span className="text-[11px] font-medium">{duration}</span>
+            </div>
           </div>
         </div>
 
         {/* Right: Price + Button */}
-        <div className={`flex flex-col items-end gap-2 shrink-0 ${isRTL ? "items-start" : "items-end"}`}>
-          <p className="text-lg font-bold text-foreground">{formatQAR(price)}</p>
+        <div className="flex flex-col items-end gap-2.5 shrink-0">
+          <p className="text-lg font-bold text-foreground tracking-tight">{formatQAR(price)}</p>
           <Button 
             size="sm" 
-            className="rounded-full px-5 h-8 text-sm font-medium"
+            className="rounded-full px-6 h-9 text-[13px] font-semibold shadow-sm hover:shadow-md transition-shadow"
             onClick={onBook}
           >
             {t.common.select}
