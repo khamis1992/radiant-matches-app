@@ -64,6 +64,7 @@ import CompareArtists from "./pages/CompareArtists";
 import Referrals from "./pages/Referrals";
 import Wallet from "./pages/Wallet";
 import Logout from "./pages/Logout";
+import EmailPreview from "./pages/EmailPreview";
 import SellerDashboard from "./pages/seller/SellerDashboard";
 import SellerProducts from "./pages/seller/SellerProducts";
 import SellerOrders from "./pages/seller/SellerOrders";
@@ -308,6 +309,7 @@ const App = () => (
           <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/campaigns" element={<AdminCampaigns />} />
+          <Route path="/email-preview" element={<EmailPreview />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
