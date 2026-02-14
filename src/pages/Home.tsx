@@ -411,7 +411,7 @@ const Home = () => {
           <SectionHeader
             title={isRTL ? "المتاجر" : "Shops"}
             actionText={t.common.seeAll}
-            onAction={() => navigate("/makeup-artists")}
+            onAction={() => navigate("/shops")}
             icon={<Store className="w-4 h-4 text-accent-foreground" />}
             accentClass="bg-accent"
           />

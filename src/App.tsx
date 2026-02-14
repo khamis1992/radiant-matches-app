@@ -69,6 +69,7 @@ import SellerDashboard from "./pages/seller/SellerDashboard";
 import SellerProducts from "./pages/seller/SellerProducts";
 import SellerOrders from "./pages/seller/SellerOrders";
 import SellerSignup from "./pages/seller/SellerSignup";
+import Shops from "./pages/Shops";
 import { InstallAppPrompt } from "./components/InstallAppPrompt";
 import { PermissionsPrompt } from "./components/PermissionsPrompt";
 import { AnalyticsProvider } from "./hooks/useAnalytics";
@@ -113,6 +114,14 @@ const App = () => (
             element={
               <RoleGate allow={["customer"]} showLoading>
                 <MakeupArtists />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/shops"
+            element={
+              <RoleGate allow={["customer"]} showLoading>
+                <Shops />
               </RoleGate>
             }
           />
