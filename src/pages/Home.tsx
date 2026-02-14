@@ -253,8 +253,6 @@ const Home = () => {
   const filterTabs = useMemo(
     () => [
       { label: isRTL ? "الكل" : "All", key: "all" },
-      { label: isRTL ? "خبيرات تجميل" : "Experts", key: "artist" },
-      { label: isRTL ? "متاجر" : "Shops", key: "seller" },
       { label: isRTL ? "مكياج" : "Makeup", key: "Makeup" },
       { label: isRTL ? "شعر" : "Hair", key: "Hair Styling" },
       { label: isRTL ? "أظافر" : "Nails", key: "Nails" },
@@ -264,18 +262,12 @@ const Home = () => {
     [isRTL],
   );
 
-  // Filter artists by active tab
+  // Filter artists (experts only) by active tab
   const filteredArtists = useMemo(() => {
     if (!artists) return [];
-    let result = artists;
+    let result = artists.filter((a) => (a as any).account_type !== "seller");
     
-    // Account type filter
-    if (activeFilter === "artist") {
-      result = result.filter((a) => (a as any).account_type === "artist");
-    } else if (activeFilter === "seller") {
-      result = result.filter((a) => (a as any).account_type === "seller");
-    } else if (activeFilter !== "all") {
-      // Category filter
+    if (activeFilter !== "all") {
       result = result.filter((a) =>
         (a as any).categories?.some((s: string) =>
           s.toLowerCase().includes(activeFilter.toLowerCase()),
@@ -285,6 +277,12 @@ const Home = () => {
     
     return result;
   }, [artists, activeFilter]);
+
+  // Sellers/shops
+  const sellers = useMemo(() => {
+    if (!artists) return [];
+    return artists.filter((a) => (a as any).account_type === "seller");
+  }, [artists]);
 
   const artistIds = useMemo(
     () => artists?.map((a) => a.id) || [],
@@ -388,6 +386,34 @@ const Home = () => {
           )}
         </div>
       </section>
+
+      {/* ─── Shops Section ─── */}
+      {sellers.length > 0 && (
+        <section className="pb-6">
+          <SectionHeader
+            title={isRTL ? "المتاجر" : "Shops"}
+            actionText={t.common.seeAll}
+            onAction={() => navigate("/makeup-artists")}
+          />
+          <div className="px-5">
+            <div className="grid grid-cols-2 gap-3">
+              {sellers.map((seller, index) => (
+                <div
+                  key={seller.id}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 40}ms` }}
+                >
+                  <EnhancedArtistCard
+                    artist={seller}
+                    availability={availabilityMap?.get(seller.id)}
+                    viewMode="grid"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <BottomNavigation />
     </div>
