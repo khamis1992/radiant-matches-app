@@ -155,6 +155,7 @@ export type Database = {
       }
       artists: {
         Row: {
+          account_type: string
           available_balance: number | null
           bio: string | null
           created_at: string
@@ -171,6 +172,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_type?: string
           available_balance?: number | null
           bio?: string | null
           created_at?: string
@@ -187,6 +189,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_type?: string
           available_balance?: number | null
           bio?: string | null
           created_at?: string
@@ -1462,7 +1465,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "customer" | "artist"
+      app_role: "admin" | "customer" | "artist" | "seller"
       booking_status: "pending" | "confirmed" | "completed" | "cancelled"
     }
     CompositeTypes: {
@@ -1591,7 +1594,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "customer", "artist"],
+      app_role: ["admin", "customer", "artist", "seller"],
       booking_status: ["pending", "confirmed", "completed", "cancelled"],
     },
   },

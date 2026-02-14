@@ -77,10 +77,12 @@ export const en = {
     gallery: "Gallery",
     services: "Services",
     products: "Products",
+    orders: "Orders",
     messages: "Messages",
     profile: "Profile",
     settings: "Settings",
     logout: "Logout",
+    store: "Store",
   },
 
   // Messages

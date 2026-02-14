@@ -79,6 +79,7 @@ export const ar = {
     gallery: "المعرض",
     services: "الخدمات",
     products: "المتجر",
+    orders: "الطلبات",
     messages: "الرسائل",
     profile: "الملف الشخصي",
     settings: "الإعدادات",
@@ -86,6 +87,7 @@ export const ar = {
     notifications: "الإشعارات",
     markAllRead: "تحديد الكل كمقروء",
     noNotifications: "لا توجد إشعارات",
+    store: "المتجر",
   },
 
   // Messages

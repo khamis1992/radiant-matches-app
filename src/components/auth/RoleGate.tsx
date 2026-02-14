@@ -15,6 +15,7 @@ type RoleGateProps = {
 
 const defaultRedirectForRole = (role: AppRole | null) => {
   if (role === "artist") return "/artist-dashboard";
+  if (role === "seller") return "/seller-dashboard";
   if (role === "admin") return "/admin";
   return "/home";
 };
