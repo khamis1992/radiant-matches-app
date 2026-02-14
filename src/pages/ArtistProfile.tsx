@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate } from "react-router-dom";
 import { Star, MapPin, Heart, Share2, Clock, Award, MessageCircle, CalendarOff, Camera, Briefcase, ChevronRight, Play, Sparkles, Check, Grid3x3, ShoppingBag, Package } from "lucide-react";
+import SellerProfile from "@/pages/SellerProfile";
 import { toast } from "@/hooks/use-toast";
 import BackButton from "@/components/BackButton";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -196,6 +197,11 @@ const ArtistProfile = () => {
         </div>
       </div>
     );
+  }
+
+  // If this is a seller account, render the SellerProfile instead
+  if ((artist as any).account_type === "seller") {
+    return <SellerProfile />;
   }
 
   const displayImage = artist.profile?.avatar_url || artist1;
