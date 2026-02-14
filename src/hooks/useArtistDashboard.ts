@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { sendEmail } from "@/lib/email";
 import { useEffect } from "react";
 
 export interface ArtistProfile {
@@ -329,10 +330,42 @@ export const useUpdateBookingStatus = () => {
         .from("bookings")
         .update({ status })
         .eq("id", bookingId)
-        .select()
+        .select("*, service_id")
         .single();
 
       if (error) throw error;
+
+      // Send email on confirmed/cancelled (fire and forget)
+      if (status === "confirmed" || status === "cancelled") {
+        try {
+          const booking = data;
+          const [customerProfile, serviceData, artistData] = await Promise.all([
+            supabase.from("profiles").select("full_name, email").eq("id", booking.customer_id).single(),
+            supabase.from("services").select("name").eq("id", booking.service_id).maybeSingle(),
+            supabase.from("artists").select("user_id").eq("id", booking.artist_id).single(),
+          ]);
+          const artistProfile = artistData.data?.user_id
+            ? (await supabase.from("profiles").select("full_name").eq("id", artistData.data.user_id).single()).data
+            : null;
+
+          if (customerProfile.data?.email) {
+            sendEmail({
+              type: status === "confirmed" ? "booking_confirmed" : "booking_cancelled",
+              to: customerProfile.data.email,
+              data: {
+                customerName: customerProfile.data.full_name || "",
+                artistName: artistProfile?.full_name || "",
+                serviceName: serviceData.data?.name || "",
+                bookingDate: booking.booking_date,
+                bookingTime: booking.booking_time,
+              },
+            });
+          }
+        } catch (emailErr) {
+          console.error("Email notification failed (non-blocking):", emailErr);
+        }
+      }
+
       return data;
     },
     onSuccess: () => {

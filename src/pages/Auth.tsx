@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { sendEmail } from "@/lib/email";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -289,11 +290,23 @@ const Auth = () => {
         if (data.user && !data.session) {
           setSignupEmail(email.trim());
           setMode("verify-email");
+          // Send welcome email with user manual
+          sendEmail({
+            type: "welcome",
+            to: email.trim(),
+            data: { name: fullName.trim() },
+          });
           setEmail("");
           setPassword("");
           setFullName("");
         } else {
           toast.success(language === "ar" ? "تم إنشاء الحساب بنجاح!" : "Account created successfully!");
+          // Send welcome email
+          sendEmail({
+            type: "welcome",
+            to: email.trim(),
+            data: { name: fullName.trim() },
+          });
         }
       }
     } catch (error: any) {

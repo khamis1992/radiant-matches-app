@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { sendEmail } from "@/lib/email";
 import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
 import type { ProductOrder, ProductOrderItem, ShippingAddress } from "@/types/product";
 
@@ -50,6 +51,19 @@ export const useUpdateOrderStatus = () => {
         .single();
 
       if (error) throw error;
+
+      // Send order status email (fire and forget)
+      try {
+        const profile = (await supabase.from("profiles").select("full_name, email").eq("id", data.customer_id).single()).data;
+        if (profile?.email) {
+          sendEmail({
+            type: "order_status_updated",
+            to: profile.email,
+            data: { customerName: profile.full_name || "", orderId, status },
+          });
+        }
+      } catch (e) { console.error("Order email failed:", e); }
+
       return data;
     },
     onSuccess: () => {
@@ -135,6 +149,24 @@ export const useCreateOrder = () => {
         .single();
 
       if (error) throw error;
+
+      // Send order created email (fire and forget)
+      try {
+        const profile = (await supabase.from("profiles").select("full_name, email").eq("id", user.id).single()).data;
+        if (profile?.email) {
+          sendEmail({
+            type: "order_created",
+            to: profile.email,
+            data: {
+              customerName: profile.full_name || "",
+              orderId: data.id,
+              totalPrice: String(orderData.total_qar),
+              itemCount: String(orderData.items.length),
+            },
+          });
+        }
+      } catch (e) { console.error("Order email failed:", e); }
+
       return data;
     },
     onSuccess: () => {
