@@ -368,29 +368,33 @@ const Home = () => {
           onSelect={setActiveFilter}
         />
 
-        {/* Artist Cards */}
-        <div className="px-5">
+        {/* Artist Cards - Horizontal Scroll */}
+        <div>
           {isLoading ? (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide">
               {[1, 2, 3, 4].map((i) => (
-                <ArtistSkeleton key={i} />
+                <div key={i} className="min-w-[46%] max-w-[46%]">
+                  <ArtistSkeleton />
+                </div>
               ))}
             </div>
           ) : filteredArtists.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3">
-              {filteredArtists.map((artist, index) => (
-                <div
-                  key={artist.id}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 40}ms` }}
-                >
-                  <EnhancedArtistCard
-                    artist={artist}
-                    availability={availabilityMap?.get(artist.id)}
-                    viewMode="grid"
-                  />
-                </div>
-              ))}
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-3 px-5 pb-2">
+                {filteredArtists.map((artist, index) => (
+                  <div
+                    key={artist.id}
+                    className="min-w-[46%] max-w-[46%] animate-fade-in"
+                    style={{ animationDelay: `${index * 40}ms` }}
+                  >
+                    <EnhancedArtistCard
+                      artist={artist}
+                      availability={availabilityMap?.get(artist.id)}
+                      viewMode="grid"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="text-center py-10 text-muted-foreground">
@@ -411,12 +415,12 @@ const Home = () => {
             icon={<Store className="w-4 h-4 text-accent-foreground" />}
             accentClass="bg-accent"
           />
-          <div className="px-5">
-            <div className="grid grid-cols-2 gap-3">
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex gap-3 px-5 pb-2">
               {sellers.map((seller, index) => (
                 <div
                   key={seller.id}
-                  className="animate-fade-in"
+                  className="min-w-[46%] max-w-[46%] animate-fade-in"
                   style={{ animationDelay: `${index * 40}ms` }}
                 >
                   <EnhancedArtistCard
