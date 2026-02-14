@@ -15,7 +15,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MoreVertical, Shield, Palette, Key, Eye, EyeOff, Trash2, UserPlus } from "lucide-react";
+import { Search, MoreVertical, Shield, Palette, Key, Eye, EyeOff, Trash2, UserPlus, Mail } from "lucide-react";
+import { sendEmail } from "@/lib/email";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
@@ -44,6 +45,7 @@ const AdminUsers = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [sendingEmailUserId, setSendingEmailUserId] = useState<string | null>(null);
   
   // New user form state
   const [newUserEmail, setNewUserEmail] = useState("");
@@ -218,6 +220,28 @@ const AdminUsers = () => {
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, "artist")} disabled={user.roles.includes("artist")}><Palette className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.makeArtist}</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, "customer")} disabled={user.roles.includes("customer")}><Shield className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.makeCustomer}</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openPasswordDialog(user.id, user.full_name || user.email || t.adminUsers.user)}><Key className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.changePassword}</DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={async () => {
+                                if (!user.email) return;
+                                setSendingEmailUserId(user.id);
+                                try {
+                                  const result = await sendEmail({ type: 'welcome', to: user.email, data: { name: user.full_name || '' } });
+                                  if (result.success) {
+                                    toast.success(t.adminUsers.welcomeEmailSent);
+                                  } else {
+                                    toast.error(t.adminUsers.welcomeEmailError);
+                                  }
+                                } catch {
+                                  toast.error(t.adminUsers.welcomeEmailError);
+                                } finally {
+                                  setSendingEmailUserId(null);
+                                }
+                              }}
+                              disabled={sendingEmailUserId === user.id || !user.email}
+                            >
+                              <Mail className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                              {sendingEmailUserId === user.id ? t.adminUsers.sendingEmail : t.adminUsers.sendWelcomeEmail}
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openDeleteDialog(user.id, user.full_name || user.email || t.adminUsers.user)} className="text-destructive focus:text-destructive"><Trash2 className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.deleteUser}</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

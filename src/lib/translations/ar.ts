@@ -925,6 +925,10 @@ export const ar = {
     userDeleted: "تم حذف المستخدم بنجاح",
     error: "حدث خطأ",
     cancel: "إلغاء",
+    sendWelcomeEmail: "إرسال إيميل ترحيب",
+    welcomeEmailSent: "تم إرسال إيميل الترحيب بنجاح",
+    sendingEmail: "جاري الإرسال...",
+    welcomeEmailError: "فشل إرسال إيميل الترحيب",
   },
 
   // Admin Services

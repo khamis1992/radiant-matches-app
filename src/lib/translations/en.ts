@@ -1010,6 +1010,10 @@ export const en = {
     userDeleted: "User deleted successfully",
     error: "An error occurred",
     cancel: "Cancel",
+    sendWelcomeEmail: "Send Welcome Email",
+    welcomeEmailSent: "Welcome email sent successfully",
+    sendingEmail: "Sending...",
+    welcomeEmailError: "Failed to send welcome email",
   },
 
   // Admin Services
