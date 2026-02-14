@@ -26,6 +26,7 @@ interface SadadInitiateResponse {
     payment_url: string;
     transaction_id: string;
     ORDER_ID: string;
+    WEBSITE: string;
     merchant_id: string;
     TXN_AMOUNT: string;
     CUST_ID: string;
