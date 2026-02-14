@@ -274,17 +274,24 @@ serve(async (req) => {
       }
     }
 
-    // Update payment transaction
+    // Map our status to new schema status values
+    const txStatus = paymentStatus === "completed" ? "success" : paymentStatus;
+    
+    // Update payment transaction using new schema
+    const paymentId = `SADAD-${orderId}`;
     const { error: txUpdateError } = await supabase
       .from("payment_transactions")
       .update({
-        status: paymentStatus,
-        sadad_transaction_number: transaction_number || null,
-        response_data: callbackData,
+        status: txStatus,
+        transaction_id: transaction_number || null,
+        response_code: RESPCODE || null,
+        response_message: RESPMSG || null,
         error_message: errorMessage || null,
-        updated_at: new Date().toISOString(),
+        metadata: callbackData,
+        payment_date: paymentStatus === "completed" ? new Date().toISOString() : null,
+        verified_at: paymentStatus === "completed" ? new Date().toISOString() : null,
       })
-      .eq("sadad_order_id", orderId);
+      .eq("payment_id", paymentId);
 
     if (txUpdateError) {
       console.error("Failed to update transaction:", txUpdateError);
