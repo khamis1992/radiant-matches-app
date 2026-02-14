@@ -16,6 +16,7 @@ export const useArtistsWithPricing = () => {
         .from("artists")
         .select("*")
         .eq("is_available", true)
+        .eq("account_type", "artist")
         .order("rating", { ascending: false });
 
       if (artistsError) throw artistsError;
