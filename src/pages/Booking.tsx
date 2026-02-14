@@ -367,11 +367,17 @@ const Booking = () => {
     if (step < 3) {
       if (step === 1 && (!selectedDate || !selectedTime)) {
         validateForm();
+        toast.error(language === "ar" ? "يرجى اختيار التاريخ والوقت" : "Please select date and time");
+        return;
+      }
+      if (step === 2 && selectedLocation === "client_home" && !addressDetails.area.trim()) {
+        setErrors(prev => ({ ...prev, location: language === "ar" ? "يرجى إدخال رقم المنطقة" : "Please enter zone number" }));
+        toast.error(language === "ar" ? "يرجى إدخال تفاصيل العنوان" : "Please enter address details");
         return;
       }
       setStep(step + 1);
     }
-  }, [step, selectedDate, selectedTime, validateForm]);
+  }, [step, selectedDate, selectedTime, validateForm, selectedLocation, addressDetails.area, language]);
 
   const handlePrevStep = useCallback(() => {
     if (step > 1) {
