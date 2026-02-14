@@ -957,52 +957,59 @@ const Booking = () => {
                   </div>
 
                   {/* Address Fields */}
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-foreground text-sm">{t.bookings.enterAddress}</h3>
-                  </div>
-
-
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="area">{t.bookings.area || "Area / Zone"}</Label>
-                    <Input
-                    id="area"
-                    value={addressDetails.area}
-                    onChange={(e) => setAddressDetails((prev) => ({ ...prev, area: e.target.value }))}
-                    placeholder={language === "ar" ? "المنطقة / الحي" : "Area / Zone"}
-                    className={errors.location ? "border-destructive" : ""} />
-
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="street">{t.bookings.street || "Street"}</Label>
+                  {/* Qatar-style Address Plate */}
+                  <div className="rounded-2xl overflow-hidden border border-primary/20 shadow-sm">
+                    {/* Building - Top Section */}
+                    <div className="bg-primary p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-primary-foreground">Building</span>
+                        <span className="text-sm font-medium text-primary-foreground">{language === "ar" ? "رقم المبنى" : ""}</span>
+                      </div>
                       <Input
-                      id="street"
-                      value={addressDetails.street}
-                      onChange={(e) => setAddressDetails((prev) => ({ ...prev, street: e.target.value }))}
-                      placeholder={language === "ar" ? "الشارع" : "Street"} />
-
+                        id="building"
+                        value={addressDetails.building}
+                        onChange={(e) => setAddressDetails((prev) => ({ ...prev, building: e.target.value }))}
+                        placeholder={language === "ar" ? "رقم المبنى" : "Building No"}
+                        className="bg-white text-foreground border-0 h-11 text-center text-lg font-semibold rounded-lg" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="building">{t.bookings.building || "Building No"}</Label>
-                      <Input
-                      id="building"
-                      value={addressDetails.building}
-                      onChange={(e) => setAddressDetails((prev) => ({ ...prev, building: e.target.value }))}
-                      placeholder={language === "ar" ? "رقم المبنى" : "Building No"} />
-
+                    
+                    {/* Zone & Street - Bottom Section */}
+                    <div className="grid grid-cols-2 divide-x divide-primary/20">
+                      <div className="bg-card p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-muted-foreground">Zone</span>
+                          <span className="text-xs font-medium text-muted-foreground">{language === "ar" ? "منطقة" : ""}</span>
+                        </div>
+                        <Input
+                          id="area"
+                          value={addressDetails.area}
+                          onChange={(e) => setAddressDetails((prev) => ({ ...prev, area: e.target.value }))}
+                          placeholder={language === "ar" ? "المنطقة" : "Zone"}
+                          className={`h-10 text-center font-medium border-border/50 ${errors.location ? "border-destructive" : ""}`} />
+                      </div>
+                      <div className="bg-card p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-muted-foreground">Street</span>
+                          <span className="text-xs font-medium text-muted-foreground">{language === "ar" ? "شارع" : ""}</span>
+                        </div>
+                        <Input
+                          id="street"
+                          value={addressDetails.street}
+                          onChange={(e) => setAddressDetails((prev) => ({ ...prev, street: e.target.value }))}
+                          placeholder={language === "ar" ? "الشارع" : "Street"}
+                          className="h-10 text-center font-medium border-border/50" />
+                      </div>
                     </div>
                   </div>
 
+                  {/* Additional Directions */}
                   <div className="space-y-2">
                     <Label htmlFor="details">{t.bookings.addressDetails || "Additional Directions"}</Label>
                     <Input
-                    id="details"
-                    value={addressDetails.details}
-                    onChange={(e) => setAddressDetails((prev) => ({ ...prev, details: e.target.value }))}
-                    placeholder={language === "ar" ? "توجيهات إضافية..." : "Near landmark, etc..."} />
-
+                      id="details"
+                      value={addressDetails.details}
+                      onChange={(e) => setAddressDetails((prev) => ({ ...prev, details: e.target.value }))}
+                      placeholder={language === "ar" ? "بالقرب من معلم بارز..." : "Near landmark, etc..."} />
                   </div>
                   
                   {errors.location &&
