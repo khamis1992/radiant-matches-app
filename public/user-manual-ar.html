@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>دليل المستخدم الشامل | Glamoreore</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ==================== VARIABLES ==================== */
+      :root {
+          --primary: #D97B8C;
+          --primary-light: #E89BA9;
+          --primary-dark: #B85D6E;
+          --gold: #CDA349;
+          --gold-light: #DDBA6E;
+          --nude: #DBC7B8;
+          --blush: #F0D7DB;
+          --cream: #F5EFE4;
+          --background: #FAF8F6;
+          --foreground: #2A2420;
+          --text-muted: #6B5E56;
+          --text-light: #9B8B80;
+          --success: #10B981;
+          --warning: #F59E0B;
+          --error: #EF4444;
+          --info: #3B82F6;
+          --border: #E8DDD6;
+          --border-light: #F0E8E0;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      @page {
+          size: A4;
+          margin: 15mm 12mm;
+      }
+
+      body {
+          font-family: 'Tajawal', sans-serif;
+          background: #e8e0d8;
+          color: var(--foreground);
+          line-height: 1.7;
+          font-size: 10.5pt;
+      }
+
+      /* ==================== COVER PAGE ==================== */
+      .cover-page {
+          width: 210mm;
+          height: 277mm;
+          margin: 0 auto;
+          background: linear-gradient(145deg, var(--background) 0%, var(--cream) 50%, var(--blush) 100%);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+          overflow: hidden;
+          padding: 20mm;
+      }
+
+      .cover-page::before {
+          content: '';
+          position: absolute;
+          top: -30%;
+          right: -20%;
+          width: 70%;
+          height: 80%;
+          background: radial-gradient(ellipse, var(--blush) 0%, transparent 70%);
+          opacity: 0.6;
+      }
+
+      .cover-content {
+          position: relative;
+          z-index: 10;
+          text-align: center;
+      }
+
+      .cover-logo {
+          font-size: 64pt;
+          font-weight: 800;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--gold) 50%, var(--primary-dark) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin-bottom: 8mm;
+      }
+
+      .cover-title {
+          font-size: 26pt;
+          font-weight: 700;
+          color: var(--foreground);
+          margin-bottom: 5mm;
+      }
+
+      .cover-subtitle {
+          font-size: 13pt;
+          color: var(--text-muted);
+          margin-bottom: 15mm;
+      }
+
+      .cover-divider {
+          width: 50mm;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, var(--gold), transparent);
+          margin: 0 auto 10mm;
+      }
+
+      .cover-meta {
+          font-size: 10pt;
+          color: var(--text-light);
+      }
+
+      /* ==================== TOC PAGE ==================== */
+      .toc-page {
+          width: 210mm;
+          min-height: 277mm;
+          margin: 0 auto;
+          background: white;
+          padding: 10mm 15mm;
+      }
+
+      .toc-header {
+          text-align: center;
+          margin-bottom: 10mm;
+          padding-bottom: 5mm;
+          border-bottom: 2px solid var(--border);
+      }
+
+      .toc-header h1 {
+          font-size: 22pt;
+          font-weight: 700;
+          color: var(--foreground);
+      }
+
+      .toc-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 4mm;
+      }
+
+      .toc-item {
+          padding: 3mm 4mm;
+          background: linear-gradient(90deg, var(--cream) 0%, white 100%);
+          border-radius: 2mm;
+          border-right: 2px solid var(--primary);
+          display: flex;
+          align-items: center;
+          gap: 3mm;
+          page-break-inside: avoid;
+      }
+
+      .toc-number {
+          width: 7mm;
+          height: 7mm;
+          background: var(--primary);
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 9pt;
+          flex-shrink: 0;
+      }
+
+      .toc-text {
+          font-weight: 500;
+          font-size: 10pt;
+      }
+
+      /* ==================== CONTENT PAGE ==================== */
+      .content-page {
+          width: 210mm;
+          margin: 0 auto;
+          background: white;
+          padding: 10mm 15mm;
+          position: relative;
+      }
+
+      .page-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding-bottom: 2mm;
+          border-bottom: 1px solid var(--border-light);
+          margin-bottom: 8mm;
+      }
+
+      .page-logo {
+          font-size: 12pt;
+          font-weight: 800;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--gold) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+      }
+
+      .page-number {
+          font-size: 8pt;
+          color: var(--text-light);
+      }
+
+      .section {
+          margin-bottom: 8mm;
+      }
+
+      .section-header {
+          display: flex;
+          align-items: center;
+          gap: 4mm;
+          margin-bottom: 5mm;
+          padding-bottom: 3mm;
+          border-bottom: 2px solid var(--primary);
+      }
+
+      .section-icon {
+          width: 12mm;
+          height: 12mm;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+          border-radius: 2mm;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+      }
+
+      .section-icon svg { width: 6mm; height: 6mm; }
+
+      .section-title {
+          font-size: 18pt;
+          font-weight: 700;
+          color: var(--foreground);
+          margin: 0;
+      }
+
+      h1 {
+          font-size: 16pt;
+          font-weight: 700;
+          color: var(--foreground);
+          margin: 6mm 0 3mm;
+      }
+
+      h2 {
+          font-size: 13pt;
+          font-weight: 700;
+          color: var(--primary-dark);
+          margin: 5mm 0 2mm;
+      }
+
+      h3 {
+          font-size: 11pt;
+          font-weight: 700;
+          color: var(--foreground);
+          margin: 4mm 0 2mm;
+      }
+
+      p {
+          margin-bottom: 3mm;
+          color: var(--text-muted);
+          text-align: justify;
+          line-height: 1.6;
+      }
+
+      ul, ol {
+          margin: 3mm 0;
+          padding-right: 5mm;
+      }
+
+      li { margin-bottom: 1.5mm; color: var(--text-muted); }
+
+      /* Screenshots - Larger Size */
+      .screenshot-container {
+          text-align: center;
+          margin: 6mm 0;
+          padding: 8mm;
+          background: linear-gradient(135deg, var(--cream) 0%, var(--background) 100%);
+          border-radius: 4mm;
+          border: 1px solid var(--border);
+          page-break-inside: avoid;
+      }
+
+      .mobile-screenshot {
+          max-width: 320px;
+          width: 100%;
+          max-height: 550px;
+          object-fit: contain;
+          border-radius: 24px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+          display: block;
+          margin: 0 auto;
+      }
+
+      .screenshot-row {
+          display: flex;
+          gap: 10mm;
+          justify-content: center;
+          flex-wrap: wrap;
+          margin: 5mm 0;
+      }
+
+      .screenshot-row .mobile-screenshot {
+          max-width: 250px;
+      }
+
+      .screenshot-label {
+          display: block;
+          margin-top: 3mm;
+          font-size: 8pt;
+          color: var(--text-light);
+          font-style: italic;
+      }
+
+      /* Info Boxes */
+      .tip-box, .warning-box, .info-box {
+          margin: 4mm 0;
+          padding: 4mm;
+          border-radius: 2mm;
+          display: flex;
+          gap: 3mm;
+          page-break-inside: avoid;
+      }
+
+      .tip-box {
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%);
+          border-right: 2px solid var(--success);
+      }
+
+      .warning-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%);
+          border-right: 2px solid var(--warning);
+      }
+
+      .info-box {
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.03) 100%);
+          border-right: 2px solid var(--info);
+      }
+
+      .box-icon {
+          width: 8mm;
+          height: 8mm;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          flex-shrink: 0;
+      }
+
+      .tip-box .box-icon { background: var(--success); }
+      .warning-box .box-icon { background: var(--warning); }
+      .info-box .box-icon { background: var(--info); }
+
+      .box-icon svg { width: 4mm; height: 4mm; }
+
+      .box-content h4 {
+          font-size: 10pt;
+          font-weight: 700;
+          margin-bottom: 1mm;
+      }
+
+      .tip-box .box-content h4 { color: var(--success); }
+      .warning-box .box-content h4 { color: var(--warning); }
+      .info-box .box-content h4 { color: var(--info); }
+
+      .box-content p {
+          margin: 0;
+          font-size: 9pt;
+      }
+
+      /* Steps */
+      .steps {
+          counter-reset: step;
+          list-style: none;
+          padding: 0;
+      }
+
+      .step {
+          position: relative;
+          padding-right: 10mm;
+          margin-bottom: 4mm;
+          page-break-inside: avoid;
+      }
+
+      .step::before {
+          counter-increment: step;
+          content: counter(step);
+          position: absolute;
+          right: 0;
+          top: 0;
+          width: 7mm;
+          height: 7mm;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--gold) 100%);
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 9pt;
+      }
+
+      .step-title {
+          font-weight: 700;
+          color: var(--foreground);
+          margin-bottom: 1mm;
+          font-size: 10pt;
+      }
+
+      .step-desc {
+          color: var(--text-muted);
+          font-size: 9pt;
+      }
+
+      /* Tables */
+      .table-container {
+          margin: 4mm 0;
+          overflow-x: auto;
+          page-break-inside: avoid;
+      }
+
+      table {
+          width: 100%;
+          border-collapse: collapse;
+          background: white;
+          font-size: 9pt;
+      }
+
+      th {
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+          color: white;
+          padding: 2mm;
+          text-align: right;
+          font-weight: 600;
+      }
+
+      td {
+          padding: 2mm;
+          border-bottom: 1px solid var(--border);
+          color: var(--text-muted);
+      }
+
+      tr:nth-child(even) { background: var(--cream); }
+
+      /* Status Badges */
+      .status-badge {
+          display: inline-block;
+          padding: 1mm 2mm;
+          border-radius: 1.5mm;
+          font-size: 8pt;
+          font-weight: 600;
+      }
+
+      .status-success { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+      .status-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+      .status-error { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+      .status-info { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+
+      /* FAQ */
+      .faq-item {
+          margin-bottom: 3mm;
+          padding: 3mm;
+          background: var(--cream);
+          border-radius: 2mm;
+          border-right: 2px solid var(--gold);
+          page-break-inside: avoid;
+      }
+
+      .faq-question {
+          font-weight: 700;
+          color: var(--foreground);
+          margin-bottom: 1mm;
+          font-size: 10pt;
+      }
+
+      .faq-answer {
+          color: var(--text-muted);
+          font-size: 9pt;
+      }
+
+      /* Feature Grid */
+      .feature-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 4mm;
+          margin: 4mm 0;
+      }
+
+      .feature-card {
+          padding: 4mm;
+          background: var(--cream);
+          border-radius: 2mm;
+          page-break-inside: avoid;
+      }
+
+      .feature-card h4 {
+          font-size: 10pt;
+          font-weight: 700;
+          color: var(--primary-dark);
+          margin-bottom: 1mm;
+      }
+
+      .feature-card p {
+          font-size: 9pt;
+          margin: 0;
+      }
+
+      /* Print */
+      @media print {
+          body {
+              background: white;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+          }
+
+          .cover-page {
+              height: 277mm;
+              page-break-after: always;
+              break-after: page;
+          }
+
+          .toc-page {
+              page-break-after: always;
+              break-after: page;
+          }
+
+          .content-page {
+              page-break-after: always;
+              break-after: page;
+          }
+
+          .content-page:last-child {
+              page-break-after: auto;
+              break-after: auto;
+          }
+
+          .screenshot-container,
+          .tip-box, .warning-box, .info-box,
+          table, .faq-item, .feature-card {
+              page-break-inside: avoid;
+              break-inside: avoid;
+          }
+
+          h1, h2, h3 {
+              page-break-after: avoid;
+              break-after: avoid;
+          }
+
+          .section {
+              page-break-inside: avoid;
+              break-inside: avoid;
+          }
+
+          /* Prevent empty pages */
+          html, body {
+              height: auto;
+          }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- COVER PAGE -->
+    <div class="cover-page">
+      <div class="cover-content">
+        <div class="cover-logo"></div>
+        <h1 class="cover-title">دليل المستخدم الشامل</h1>
+        <p class="cover-subtitle">دليلك الكامل لاستخدام منصة خدمات التجميل</p>
+        <div class="cover-divider"></div>
+        <div class="cover-meta">
+          <p>الإصدار 2.0 | فبراير 2026</p>
+          <p>للمحترفين والفنيين</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE OF CONTENTS -->
+    <div class="toc-page">
+      <div class="toc-header">
+        <h1>فهرس المحتويات</h1>
+      </div>
+      <div class="toc-grid">
+        <div class="toc-item"><span class="toc-number">1</span><span class="toc-text">التسجيل وإنشاء الحساب</span></div>
+        <div class="toc-item"><span class="toc-number">2</span><span class="toc-text">التحقق من الهوية</span></div>
+        <div class="toc-item"><span class="toc-number">3</span><span class="toc-text">لوحة التحكم الرئيسية</span></div>
+        <div class="toc-item"><span class="toc-number">4</span><span class="toc-text">إدارة الخدمات</span></div>
+        <div class="toc-item"><span class="toc-number">5</span><span class="toc-text">معرض الأعمال</span></div>
+        <div class="toc-item"><span class="toc-number">6</span><span class="toc-text">إدارة الحجوزات</span></div>
+        <div class="toc-item"><span class="toc-number">7</span><span class="toc-text">الرسائل والدردشة</span></div>
+        <div class="toc-item"><span class="toc-number">8</span><span class="toc-text">الإشعارات</span></div>
+        <div class="toc-item"><span class="toc-number">9</span><span class="toc-text">إدارة المنتجات</span></div>
+        <div class="toc-item"><span class="toc-number">10</span><span class="toc-text">المحفظة والأرباح</span></div>
+        <div class="toc-item"><span class="toc-number">11</span><span class="toc-text">التقارير والتحليلات</span></div>
+        <div class="toc-item"><span class="toc-number">12</span><span class="toc-text">الملف الشخصي</span></div>
+        <div class="toc-item"><span class="toc-number">13</span><span class="toc-text">الإعدادات</span></div>
+        <div class="toc-item"><span class="toc-number">14</span><span class="toc-text">الأسئلة الشائعة</span></div>
+      </div>
+    </div>
+
+    <!-- SECTION 1: Registration -->
+    <div class="content-page" id="section1">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 1</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">التسجيل وإنشاء الحساب</h1>
+        </div>
+
+        <p>
+          مرحباً بك في منصة ! دليلك الشامل للانضمام إلى أكبر منصة لخدمات التجميل في المنطقة. في هذا القسم، سنتعرف على
+          خطوات إنشاء حسابك والتحقق من هويتك.
+        </p>
+
+        <h2>متطلبات التسجيل</h2>
+        <ul>
+          <li>بطاقة هوية سارية (هوية وطنية أو إقامة)</li>
+          <li>صورة شخصية واضحة للملف الشخصي</li>
+          <li>شهادات خبرة أو مؤهلات في مجال التجميل (إن وجدت)</li>
+          <li>رقم هاتف محمول نشط</li>
+          <li>عنوان بريد إلكتروني صالح</li>
+        </ul>
+
+        <div class="screenshot-container">
+          <img src="images/system/01-login.png" alt="شاشة التسجيل" class="mobile-screenshot" />
+          <span class="screenshot-label">شاشة تسجيل الدخول وإنشاء الحساب</span>
+        </div>
+
+        <h2>خطوات إنشاء الحساب</h2>
+        <ol class="steps">
+          <li class="step">
+            <div class="step-title">تحميل التطبيق</div>
+            <div class="step-desc">قم بتحميل تطبيق من متجر App Store أو Google Play</div>
+          </li>
+          <li class="step">
+            <div class="step-title">اختيار نوع الحساب</div>
+            <div class="step-desc">اختر "أنا محترف" للانضمام كمزود خدمة تجميل</div>
+          </li>
+          <li class="step">
+            <div class="step-title">إدخال البيانات الشخصية</div>
+            <div class="step-desc">أدخل اسمك الكامل، رقم الهاتف، والبريد الإلكتروني</div>
+          </li>
+          <li class="step">
+            <div class="step-title">إنشاء كلمة المرور</div>
+            <div class="step-desc">اختر كلمة مرور قوية تحتوي على أحرف وأرقام ورموز</div>
+          </li>
+          <li class="step">
+            <div class="step-title">التحقق من الهاتف</div>
+            <div class="step-desc">أدخل رمز التحقق المرسل إلى هاتفك</div>
+          </li>
+          <li class="step">
+            <div class="step-title">إكمال الملف الشخصي</div>
+            <div class="step-desc">أضف صورتك، نبذة عن خبراتك، ومجال عملك</div>
+          </li>
+        </ol>
+
+        <div class="tip-box">
+          <div class="box-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="box-content">
+            <h4>نصيحة احترافية</h4>
+            <p>
+              استخدم صورة شخصية واضحة ومهنية في ملفك الشخصي. الإحصائيات تظهر أن المحترفين ذوي الصور الجذابة يحصلون على
+              40% المزيد من الحجوزات!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: Verification -->
+    <div class="content-page" id="section2">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 2</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">التحقق من الهوية</h1>
+        </div>
+
+        <p>لضمان جودة الخدمات وحماية المستخدمين، نتطلب التحقق من هوية جميع المحترفين قبل تفعيل الحساب.</p>
+
+        <div class="info-box">
+          <div class="box-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="box-content">
+            <h4>لماذا نتحقق من الهوية؟</h4>
+            <p>التحقق يضمن بناء منصة آمنة وموثوقة للجميع، ويساعد في زيادة ثقة العملاء في خدماتك.</p>
+          </div>
+        </div>
+
+        <h2>خطوات التحقق</h2>
+        <ol class="steps">
+          <li class="step">
+            <div class="step-title">رفع صورة الهوية</div>
+            <div class="step-desc">قم بتحميل صورة واضحة لبطاقة الهوية من الأمام والخلف</div>
+          </li>
+          <li class="step">
+            <div class="step-title">صورة شخصية</div>
+            <div class="step-desc">التقط صورة سيلفي مع الهوية للتحقق من المطابقة</div>
+          </li>
+          <li class="step">
+            <div class="step-title">انتظار المراجعة</div>
+            <div class="step-desc">تستغرق عملية التحقق عادةً من 24 إلى 48 ساعة</div>
+          </li>
+        </ol>
+
+        <div class="warning-box">
+          <div class="box-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <div class="box-content">
+            <h4>تنبيه مهم</h4>
+            <p>تأكد من وضوح صور المستندات المرسلة وصلاحيتها. المستندات الغير واضحة قد تؤدي إلى تأخير عملية التحقق.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: Dashboard -->
+    <div class="content-page" id="section3">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 3</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">لوحة التحكم الرئيسية</h1>
+        </div>
+
+        <p>
+          لوحة التحكم الرئيسية هي مركز قيادة نشاطك التجاري على منصة . من هنا يمكنك متابعة أدائك، الحجوزات الجديدة،
+          والإشعارات المهمة في لمحة سريعة.
+        </p>
+
+        <div class="screenshot-container">
+          <img src="images/system/02-dashboard.png" alt="لوحة التحكم" class="mobile-screenshot" />
+          <span class="screenshot-label">لوحة التحكم الرئيسية - نظرة شاملة على الأداء</span>
+        </div>
+
+        <h2>عناصر لوحة التحكم</h2>
+
+        <h3>البطاقات الإحصائية</h3>
+        <p>في الجزء العلوي من اللوحة، ستجد بطاقات تعرض أهم المؤشرات:</p>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>المؤشر</th>
+                <th>الوصف</th>
+                <th>التحديث</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>إجمالي الأرباح</td>
+                <td>مجموع الأرباح من الحجوزات المكتملة</td>
+                <td>فوري</td>
+              </tr>
+              <tr>
+                <td>الحجوزات النشطة</td>
+                <td>الحجوزات المؤكدة القادمة</td>
+                <td>فوري</td>
+              </tr>
+              <tr>
+                <td>طلبات جديدة</td>
+                <td>الحجوزات بانتظار قبولك</td>
+                <td>فوري</td>
+              </tr>
+              <tr>
+                <td>التقييمات</td>
+                <td>متوسط تقييمك وعدد التقييمات</td>
+                <td>كل ساعة</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tip-box">
+          <div class="box-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="box-content">
+            <h4>نصيحة للكفاءة</h4>
+            <p>استخدم خاصية "الفلترة" لعرض الحجوزات حسب الحالة (مؤكدة، قيد الانتظار، مكتملة) لتنظيم عملك بشكل أفضل.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: Services -->
+    <div class="content-page" id="section4">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 4</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">إدارة الخدمات</h1>
+        </div>
+
+        <p>
+          إدارة الخدمات هي قلب عملك على منصة . في هذا القسم، سنتعلم كيفية إضافة خدماتك، تحديد أسعارها، وإدارة جدول
+          مواعيدك.
+        </p>
+
+        <div class="screenshot-container">
+          <img src="images/system/03-services.png" alt="صفحة الخدمات" class="mobile-screenshot" />
+          <span class="screenshot-label">صفحة إدارة الخدمات</span>
+        </div>
+
+        <h2>إضافة خدمة جديدة</h2>
+        <ol class="steps">
+          <li class="step">
+            <div class="step-title">اختيار الفئة</div>
+            <div class="step-desc">اختر الفئة الرئيسية (مكياج، عناية بالشعر، عناية بالأظافر، إلخ)</div>
+          </li>
+          <li class="step">
+            <div class="step-title">تحديد نوع الخدمة</div>
+            <div class="step-desc">حدد الخدمة الفرعية بدقة (مثال: مكياج عرائس، مكياج سهرة)</div>
+          </li>
+          <li class="step">
+            <div class="step-title">إضافة الوصف</div>
+            <div class="step-desc">اكتب وصفاً تفصيلياً يشرح ما يشمله الخدمة والمنتجات المستخدمة</div>
+          </li>
+          <li class="step">
+            <div class="step-title">تحديد السعر والمدة</div>
+            <div class="step-desc">حدد السعر ومدة الخدمة المتوقعة بدقة</div>
+          </li>
+          <li class="step">
+            <div class="step-title">رفع الصور</div>
+            <div class="step-desc">أضف صوراً توضيحية لأعمالك السابقة في هذه الخدمة</div>
+          </li>
+          <li class="step">
+            <div class="step-title">تحديد المناطق</div>
+            <div class="step-desc">حدد المناطق التي تستطيع تقديم الخدمة فيها</div>
+          </li>
+        </ol>
+
+        <div class="info-box">
+          <div class="box-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="box-content">
+            <h4>أنواع الخدمات المتاحة</h4>
+            <p>
+              يمكنك تقديم خدماتك بثلاث طرق: خدمة منزلية (زيارة العميل)، خدمة في الصالون، أو كليهما. اختر ما يناسب عملك.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: Portfolio -->
+    <div class="content-page" id="section5">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 5</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">معرض الأعمال</h1>
+        </div>
+
+        <p>
+          معرض الأعمال هو واجهة عرض أعمالك أمام العملاء المحتملين. يمكنك هنا رفع صور لأعمالك السابقة لتعزيز مصداقيتك
+          وجذب المزيد من الحجوزات.
+        </p>
+
+        <div class="screenshot-container">
+          <img src="images/system/05-portfolio.png" alt="معرض الأعمال" class="mobile-screenshot" />
+          <span class="screenshot-label">معرض الأعمال - عرض نماذج من أعمالك السابقة</span>
+        </div>
+
+        <h2>كيفية إدارة المعرض</h2>
+        <ul>
+          <li><strong>إضافة صور:</strong> اضغط على زر الإضافة واختر الصور من معرض الصور</li>
+          <li><strong>تصنيف الصور:</strong> صنف كل صورة حسب نوع الخدمة (مكياج، تسريحة، أظافر...)</li>
+          <li><strong>الصور المميزة:</strong> حدد أفضل أعمالك كصور مميزة لتظهر في مقدمة الملف الشخصي</li>
+          <li><strong>حذف الصور:</strong> يمكنك حذف أي صورة بالضغط المطول عليها</li>
+        </ul>
+
+        <div class="tip-box">
+          <div class="box-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="box-content">
+            <h4>نصيحة احترافية</h4>
+            <p>أضف صوراً عالية الجودة توضح تفاصيل عملك. الصور الجيدة تزيد من فرص الحصول على حجوزات بنسبة 60%.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 6: Bookings -->
+    <div class="content-page" id="section6">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 6</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">إدارة الحجوزات</h1>
+        </div>
+
+        <p>
+          إدارة الحجوزات بكفاءة أمر حيوي لنجاح عملك. في هذا القسم، ستتعلم كيفية التعامل مع الحجوزات الجديدة، تتبع
+          المواعيد، والتواصل مع العملاء.
+        </p>
+
+        <div class="screenshot-container">
+          <img src="images/system/04-bookings.png" alt="صفحة الحجوزات" class="mobile-screenshot" />
+          <span class="screenshot-label">صفحة إدارة الحجوزات</span>
+        </div>
+
+        <h2>حالات الحجوزات</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>الحالة</th>
+                <th>اللون</th>
+                <th>الوصف</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>قيد الانتظار</td>
+                <td><span class="status-badge status-warning">أصفر</span></td>
+                <td>حجز جديد ينتظر قبولك</td>
+              </tr>
+              <tr>
+                <td>مؤكد</td>
+                <td><span class="status-badge status-success">أخضر</span></td>
+                <td>تم قبول الحجز وتم تأكيده</td>
+              </tr>
+              <tr>
+                <td>قيد التنفيذ</td>
+                <td><span class="status-badge status-info">أزرق</span></td>
+                <td>الخدمة قيد التنفيذ حالياً</td>
+              </tr>
+              <tr>
+                <td>مكتمل</td>
+                <td><span class="status-badge status-success">أخضر داكن</span></td>
+                <td>تم إكمال الخدمة بنجاح</td>
+              </tr>
+              <tr>
+                <td>ملغي</td>
+                <td><span class="status-badge status-error">أحمر</span></td>
+                <td>تم إلغاء الحجز</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>الرد على طلبات الحجز الجديدة</h2>
+        <p>عند استلام طلب حجز جديد، ستحصل على إشعار فوري. يجب عليك الرد خلال:</p>
+        <ul>
+          <li><strong>24 ساعة</strong> للحجوزات المجدولة بعد أكثر من يومين</li>
+          <li><strong>4 ساعات</strong> للحجوزات المجدولة خلال يومين</li>
+          <li><strong>1 ساعة</strong> للحجوزات العاجلة (نفس اليوم)</li>
+        </ul>
+
+        <div class="tip-box">
+          <div class="box-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="box-content">
+            <h4>نصيحة للنجاح</h4>
+            <p>الاستجابة السريعة لطلبات الحجز تزيد من تصنيفك في نتائج البحث وتجذب المزيد من العملاء.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 7: Messages -->
+    <div class="content-page" id="section7">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 7</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">الرسائل والدردشة</h1>
+        </div>
+
+        <p>
+          تواصل مع عملائك بسهولة من خلال نظام الرسائل المدمج في التطبيق. يمكنك الرد على استفساراتهم، تأكيد تفاصيل الحجز،
+          وإرسال الصور.
+        </p>
+
+        <h2>مميزات الدردشة</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h4>💬 دردشة فورية</h4>
+            <p>تواصل مباشر مع العملاء في الوقت الفعلي</p>
+          </div>
+          <div class="feature-card">
+            <h4>📸 مشاركة الصور</h4>
+            <p>أرسل صوراً لأعمالك أو للتأكيد على التفاصيل</p>
+          </div>
+          <div class="feature-card">
+            <h4>✅ مؤشر القراءة</h4>
+            <p>تعرف متى تم قراءة رسائلك من قبل العميل</p>
+          </div>
+          <div class="feature-card">
+            <h4>🔔 إشعارات فورية</h4>
+            <p>احصل على تنبيهات فورية عند وصول رسائل جديدة</p>
+          </div>
+        </div>
+
+        <h2>قواعد التواصل</h2>
+        <ul>
+          <li>كن مهذباً ومحترفاً في جميع رسائلك</li>
+          <li>رد على الرسائل في أقرب وقت ممكن</li>
+          <li>لا تشارك معلومات شخصية حساسة</li>
+          <li>احتفظ بالمحادثات داخل التطبيق لحماية حقوقك</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SECTION 8: Notifications -->
+    <div class="content-page" id="section8">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 8</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">الإشعارات</h1>
+        </div>
+
+        <p>
+          تابع كل ما يحدث في حسابك من خلال مركز الإشعارات. ستصلك إشعارات فورية عن الحجوزات الجديدة، الرسائل، والتقييمات.
+        </p>
+
+        <h2>أنواع الإشعارات</h2>
+        <ul>
+          <li><strong>حجوزات:</strong> تنبيهات بخصوص حجوزات جديدة، تعديلات، أو إلغاءات</li>
+          <li><strong>رسائل:</strong> رسائل جديدة من العملاء</li>
+          <li><strong>تقييمات:</strong> إشعارات عندما يقوم العميل بتقييم خدمتك</li>
+          <li><strong>مدفوعات:</strong> تأكيدات استلام المدفوعات</li>
+          <li><strong>نظام:</strong> تحديثات وإعلانات من</li>
+        </ul>
+
+        <h2>إعدادات الإشعارات</h2>
+        <p>يمكنك تخصيص الإشعارات التي تتلقاها من خلال صفحة الإعدادات:</p>
+        <ul>
+          <li>إشعارات الحجوزات الجديدة (موصى بها)</li>
+          <li>إشعارات الرسائل (موصى بها)</li>
+          <li>إشعارات المدفوعات (موصى بها)</li>
+          <li>إشعارات التقييمات</li>
+          <li>إشعارات العروض والتحديثات</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SECTION 9: Products -->
+    <div class="content-page" id="section9">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 9</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">إدارة المنتجات</h1>
+        </div>
+
+        <p>
+          بالإضافة إلى الخدمات، يمكنك عرض وبيع منتجات التجميل عبر منصة مثل أدوات المكياج، منتجات العناية بالبشرة،
+          والإكسسوارات.
+        </p>
+
+        <div class="screenshot-container">
+          <img src="images/system/06-products.png" alt="صفحة المنتجات" class="mobile-screenshot" />
+          <span class="screenshot-label">إدارة المنتجات - تتبع المخزون والمبيعات</span>
+        </div>
+
+        <h2>أنواع المنتجات</h2>
+        <ul>
+          <li><strong>منتجات فعلية:</strong> مثل فرش المكياج، أدوات التسريح، منتجات العناية</li>
+          <li><strong>منتجات رقمية:</strong> مثل الدروس التعليمية، الكتب الإلكترونية</li>
+          <li><strong>باقات:</strong> مجموعة منتجات معاً بسعر مخفض</li>
+          <li><strong>بطاقات هدايا:</strong> بطاقات يمكن استخدامها لاحقاً</li>
+        </ul>
+
+        <h2>إدارة المخزون</h2>
+        <p>تابع كمية المنتجات المتوفرة لديك:</p>
+        <ul>
+          <li>تحديث الكمية عند بيع منتج</li>
+          <li>إعداد تنبيهات للمنتجات التي أوشكت على النفاد</li>
+          <li>إخفاء المنتجات غير المتوفرة مؤقتاً</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SECTION 10: Wallet -->
+    <div class="content-page" id="section10">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 10</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">المحفظة والأرباح</h1>
+        </div>
+
+        <div class="screenshot-container">
+          <img src="images/system/07-wallet.png" alt="صفحة المحفظة" class="mobile-screenshot" />
+          <span class="screenshot-label">المحفظة والأرباح - تتبع المدفوعات والإيرادات</span>
+        </div>
+
+        <h2>هيكل العمولات</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>نوع الخدمة</th>
+                <th>نسبة العمولة</th>
+                <th>الشروط</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>خدمات التجميل</td>
+                <td>15%</td>
+                <td>على إجمالي قيمة الحجز</td>
+              </tr>
+              <tr>
+                <td>بيع المنتجات</td>
+                <td>10%</td>
+                <td>على إجمالي قيمة البيع</td>
+              </tr>
+              <tr>
+                <td>بطاقات الهدايا</td>
+                <td>12%</td>
+                <td>عند استخدام البطاقة</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>دورة الدفع</h2>
+        <ul>
+          <li><strong>الخدمات:</strong> بعد 48 ساعة من إكمال الحجز</li>
+          <li><strong>المنتجات:</strong> بعد تأكيد استلام العميل</li>
+          <li><strong>الحد الأدنى للسحب:</strong> 100 ريال</li>
+          <li><strong>أيام التحويل:</strong> يومي الأحد والأربعاء</li>
+        </ul>
+
+        <div class="tip-box">
+          <div class="box-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="box-content">
+            <h4>نصيحة مالية</h4>
+            <p>فعّل التحويل التلقائي لاستلام أرباحك مباشرة في حسابك البنكي بمجرد وصولها للحد الأدنى.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 11: Analytics -->
+    <div class="content-page" id="section11">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 11</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">التقارير والتحليلات</h1>
+        </div>
+
+        <p>البيانات هي مفتاح النمو. استخدم أدوات التحليل المتقدمة في لفهم أدائك وتحديد فرص التحسين.</p>
+
+        <div class="screenshot-container">
+          <img src="images/system/02-dashboard.png" alt="لوحة التحليلات" class="mobile-screenshot" />
+          <span class="screenshot-label">لوحة التحليلات والإحصائيات - بيانات الأداء والمؤشرات</span>
+        </div>
+
+        <h2>المؤشرات الرئيسية (KPIs)</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>المؤشر</th>
+                <th>الوصف</th>
+                <th>الهدف</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>معدل تحويل الحجوزات</td>
+                <td>نسبة القبول على إجمالي الطلبات</td>
+                <td>أعلى من 70%</td>
+              </tr>
+              <tr>
+                <td>متوسط التقييم</td>
+                <td>متوسط نجوم التقييمات</td>
+                <td>4.5+ من 5</td>
+              </tr>
+              <tr>
+                <td>القيمة المتوسطة للحجز</td>
+                <td>متوسط قيمة الحجز الواحد</td>
+                <td>زيادة شهرياً</td>
+              </tr>
+              <tr>
+                <td>نسبة الإلغاء</td>
+                <td>نسبة الحجوزات الملغاة</td>
+                <td>أقل من 5%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>التقارير المتاحة</h2>
+        <ul>
+          <li><strong>تقرير الأرباح:</strong> تحليل تفصيلي للإيرادات والمصروفات</li>
+          <li><strong>تقرير الحجوزات:</strong> إحصائيات عن الحجوزات والحالات</li>
+          <li><strong>تقرير العملاء:</strong> تحليل سلوك العملاء وتفضيلاتهم</li>
+          <li><strong>تقرير الخدمات:</strong> الأكثر طلباً والأكثر ربحاً</li>
+        </ul>
+
+        <div class="tip-box">
+          <div class="box-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="box-content">
+            <h4>نصيحة تحليلية</h4>
+            <p>راجع تقاريرك أسبوعياً لتحديد الخدمات الأكثر ربحاً وركز على تطويرها. البيانات لا تكذب!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 12: Profile -->
+    <div class="content-page" id="section12">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 12</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">الملف الشخصي</h1>
+        </div>
+
+        <p>
+          حافظ على تحديث معلوماتك وإعداداتك لضمان تجربة مثالية على المنصة. الملف الشخصي الجيد يزيد من ثقة العملاء وفرص
+          الحصول على حجوزات.
+        </p>
+
+        <h2>تعديل الملف الشخصي</h2>
+        <ul>
+          <li><strong>الصورة الشخصية:</strong> قم بتحديثها بشكل دوري</li>
+          <li><strong>نبذة عني:</strong> اكتب سيرة ذاتية جذابة تبرز خبراتك</li>
+          <li><strong>المهارات:</strong> أضف المهارات الجديدة التي تكتسبها</li>
+          <li><strong>اللغات:</strong> حدد اللغات التي تتحدثها</li>
+          <li><strong>الموقع:</strong> تحديث موقع عملك والمناطق التي تخدمها</li>
+        </ul>
+
+        <h2>التقييمات والمراجعات</h2>
+        <p>التقييمات مهمة جداً لنجاحك في المنصة:</p>
+        <ul>
+          <li>رد على جميع التقييمات بأدب واحترافية</li>
+          <li>شكر العملاء على التقييمات الإيجابية</li>
+          <li>تعلم من التقييمات السلبية وحاول تحسين خدماتك</li>
+          <li>احتفظ بتقييمك العالي لزيادة فرص الظهور</li>
+        </ul>
+
+        <div class="info-box">
+          <div class="box-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="box-content">
+            <h4>نصيحة للملف الشخصي</h4>
+            <p>أضف كلمات مفتاحية في نبذتك (مثل: مكياج عرائس، تسريحات، عناية بالبشرة) لتظهر في نتائج البحث.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 13: Settings -->
+    <div class="content-page" id="section13">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 13</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">الإعدادات</h1>
+        </div>
+
+        <div class="screenshot-container">
+          <img src="images/system/09-settings.png" alt="صفحة الإعدادات" class="mobile-screenshot" />
+          <span class="screenshot-label">صفحة الإعدادات - خيارات الملف الشخصي والأمان</span>
+        </div>
+
+        <h2>إعدادات الأمان</h2>
+        <ul>
+          <li><strong>كلمة المرور:</strong> غيّرها كل 3 أشهر</li>
+          <li><strong>المصادقة الثنائية:</strong> فعّلها لحماية إضافية</li>
+          <li><strong>سجل الدخول:</strong> راجع الأجهزة المتصلة</li>
+          <li><strong>الجلسات النشطة:</strong> أغلق الجلسات غير المستخدمة</li>
+        </ul>
+
+        <h2>إعدادات التطبيق</h2>
+        <ul>
+          <li><strong>اللغة:</strong> اختر لغة التطبيق (العربية/الإنجليزية)</li>
+          <li><strong>الوضع المظلم:</strong> فعّل الوضع المريح للعين</li>
+          <li><strong>الإشعارات:</strong> تحكم في نوع الإشعارات التي تتلقاها</li>
+          <li><strong>الخصوصية:</strong> تحكم في من يمكنه رؤية معلوماتك</li>
+        </ul>
+
+        <div class="warning-box">
+          <div class="box-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <div class="box-content">
+            <h4>تنبيه أمني</h4>
+            <p>لا تشارك كلمة المرور أو رمز التحقق مع أي شخص. فريق لن يطلب منك هذه المعلومات أبداً.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 14: FAQ -->
+    <div class="content-page" id="section14">
+      <div class="page-header">
+        <div class="page-logo"></div>
+        <div class="page-number">صفحة 14</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h1 class="section-title">الأسئلة الشائعة</h1>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">كيف يمكنني زيادة ظهوري في نتائج البحث؟</div>
+          <div class="faq-answer">
+            حافظ على تحديث ملفك الشخصي باستمرار، أضف صوراً عالية الجودة لأعمالك، وحصل على تقييمات إيجابية من العملاء.
+            الاستجابة السريعة لطلبات الحجز تساعد أيضاً في رفع تصنيفك.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">ما هي سياسة الإلغاء؟</div>
+          <div class="faq-answer">
+            يمكن للعملاء إلغاء الحجز مجاناً قبل 24 ساعة. بين 4-24 ساعة يتم خصم 25%، وأقل من 4 ساعات يتم خصم 50% من قيمة
+            الحجز.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">متى أستلم أرباحي؟</div>
+          <div class="faq-answer">
+            يتم تحويل الأرباح بعد 48 ساعة من إكمال الحجز. الحد الأدنى للسحب هو 100 ريال، والتحويل يتم أيام الأحد
+            والأربعاء.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">كيف أتواصل مع فريق الدعم؟</div>
+          <div class="faq-answer">
+            يمكنك التواصل معنا عبر: الدردشة المباشرة في التطبيق، البريد الإلكتروني support@.com، أو الهاتف على الرقم
+            الموحد.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">هل يمكنني تعديل موعد حجز مؤكد؟</div>
+          <div class="faq-answer">
+            نعم، يمكنك التواصل مع العميل لترتيب موعد بديل. في حال عدم الاتفاق، يمكن إلغاء الحجز وفقاً لسياسة الإلغاء
+            المعتمدة.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">ماذا يحدث إذا تأخرت عن موعد الحجز؟</div>
+          <div class="faq-answer">
+            الالتزام بالمواعيد مهم جداً. التأخير المتكرر قد يؤثر سلباً على تقييمك وقد يؤدي إلى إلغاء الحجز. في حال
+            التأخير، تواصل مع العميل فوراً.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">كيف يمكنني حظر عميل؟</div>
+          <div class="faq-answer">
+            في حال وجود مشكلة مع عميل، يمكنك الإبلاغ عنه من خلال صفحة الحجز أو الدردشة. فريقنا سيقوم بمراجعة البلاغ
+            واتخاذ الإجراء المناسب.
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div
+        style="margin-top: 15mm; padding-top: 8mm; border-top: 1px solid var(--border); text-align: center; color: var(--text-light); font-size: 9pt;"
+      >
+        <p style="margin-bottom: 2mm;">- منصة خدمات التجميل</p>
+        <p>© 2026 جميع الحقوق محفوظة</p>
+      </div>
+    </div>
+  </body>
+</html>
