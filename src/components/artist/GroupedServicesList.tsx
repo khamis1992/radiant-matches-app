@@ -32,8 +32,13 @@ export const GroupedServicesList = ({
   onToggleActive,
   language = "en",
 }: GroupedServicesListProps) => {
+  // Start with all categories expanded
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(["All"]) // All expanded by default
+    () => {
+      const categories = new Set<string>();
+      services.forEach(s => categories.add(s.category || "General"));
+      return categories;
+    }
   );
 
   // Define category order
