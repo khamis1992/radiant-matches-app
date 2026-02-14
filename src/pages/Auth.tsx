@@ -627,7 +627,7 @@ const Auth = () => {
 
           {/* Mode switcher */}
           {mode !== "verify-email" && mode !== "forgot-password" && (
-            <div className="mt-6 pt-6 border-t border-border/50">
+            <div className="mt-6 pt-6 border-t border-border/50 space-y-4">
               <p className="text-center text-sm text-muted-foreground">
                 {mode === "login" ? t.auth.noAccount : t.auth.hasAccount}{" "}
                 <button
@@ -638,6 +638,23 @@ const Auth = () => {
                   {mode === "login" ? t.auth.signup : t.auth.login}
                 </button>
               </p>
+              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => navigate("/artist-signup")}
+                  className="text-primary/80 hover:text-primary font-medium hover:underline transition-colors"
+                >
+                  {language === "ar" ? "انضمي كخبيرة تجميل" : "Join as Artist"}
+                </button>
+                <span className="text-border">|</span>
+                <button
+                  type="button"
+                  onClick={() => navigate("/seller-signup")}
+                  className="text-primary/80 hover:text-primary font-medium hover:underline transition-colors"
+                >
+                  {language === "ar" ? "انضمي كبائعة منتجات" : "Join as Seller"}
+                </button>
+              </div>
             </div>
           )}
         </div>
