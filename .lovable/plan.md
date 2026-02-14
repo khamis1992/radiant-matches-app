@@ -1,39 +1,92 @@
 
 
-## Phone Screenshots for Google Play
+# خطة إضافة دور "بائعة منتجات" (Seller)
 
-Google Play requires **2-8 phone screenshots** at recommended resolution **1080x1920** (9:16 ratio). I'll create a set of polished promotional screenshots with text overlays and device frames, designed as a static HTML page you can open and capture.
+## المشكلة
+حالياً النظام يدعم 3 أدوار فقط: `customer`, `artist`, `admin`. خبيرات التجميل اللي يبيعون منتجات فقط بدون تقديم خدمات تجميل ما عندهم دور مناسب. دور `artist` مصمم للي يقدمون خدمات حجوزات + منتجات.
 
-### Screenshots to Create (6 screens)
+## الحل المقترح
+إضافة دور جديد `seller` (بائعة منتجات) مع واجهة مخصصة تركز على المتجر فقط بدون نظام الحجوزات والخدمات.
 
-1. **Welcome/Hero** - App logo + tagline "Book Beauty Experts at Your Door"
-2. **Browse Categories** - Showing makeup, bridal, henna, nails categories grid
-3. **Artist Profile** - Artist card with rating, reviews, portfolio preview
-4. **Easy Booking** - Calendar/booking flow with date & time selection
-5. **Artist Dashboard** - Earnings, bookings overview, products store
-6. **Secure Payments** - SADAD payment integration, wallet balance
+---
 
-### Implementation
+## المراحل
 
-I'll create a single static HTML file `public/play-store-screenshots.html` that:
+### المرحلة 1: تعديل قاعدة البيانات
+- إضافة قيمة `seller` للـ `app_role` enum
+- تحديث دالة `has_role` لدعم الدور الجديد
+- إضافة RLS policies للسماح للبائعات بإدارة منتجاتهم
+- إنشاء سجل في جدول `artists` للبائعة (لأن المنتجات مرتبطة بـ `artist_id`) أو إنشاء جدول `sellers` منفصل
 
-- Renders 6 promotional screenshot cards at **1080x1920px** each
-- Uses the app's pink/rose color scheme and branding
-- Includes Arabic + English text overlays with feature highlights
-- Embeds actual app screenshots from `public/images/system/` folder
-- Each card has a gradient background, promotional text at top, and a phone mockup showing the app screen
+**قرار تصميمي مهم**: استخدام جدول `artists` نفسه للبائعات مع إضافة عمود `account_type` (قيم: `artist`, `seller`) لتمييز النوع. هذا يتجنب تكرار البنية ويحافظ على ربط المنتجات بنفس الطريقة.
 
-### How to Use
+### المرحلة 2: تحديث نظام الأدوار في الكود
+- تحديث `useUserRole.ts` لإضافة `seller` كنوع دور
+- تحديث `RoleGate.tsx` لدعم الدور الجديد
+- إضافة التوجيه الافتراضي للبائعة (`/seller-dashboard`)
 
-1. After publishing, visit `https://glamore.app/play-store-screenshots.html`
-2. Right-click each screenshot and "Save Image As" or use browser DevTools to capture at exact dimensions
-3. Upload the saved images to Google Play Console under "Phone screenshots"
+### المرحلة 3: إنشاء واجهة البائعة
+- **صفحة لوحة التحكم** (`/seller-dashboard`): إحصائيات المبيعات والطلبات
+- **صفحة المنتجات** (`/seller-products`): إعادة استخدام مكونات `ArtistProducts` الموجودة
+- **صفحة الطلبات** (`/seller-orders`): عرض وإدارة الطلبات
+- **شريط تنقل سفلي مخصص**: Dashboard, Products, Orders, Profile
 
-### Technical Details
+### المرحلة 4: صفحة تسجيل البائعات
+- إنشاء صفحة `/seller-signup` مشابهة لـ `/artist-signup`
+- حقول التسجيل: الاسم، البريد، الهاتف، كلمة المرور، وصف المتجر
+- عند التسجيل: إنشاء المستخدم + دور `seller` + سجل في `artists` مع `account_type = 'seller'`
 
-- Pure HTML/CSS with inline styles (no dependencies)
-- Uses CSS `aspect-ratio: 9/16` and fixed `1080px` width for each card
-- References existing system screenshots from `/images/system/` directory
-- Bilingual promotional text (Arabic primary, English secondary)
-- Gradient overlays matching app theme (`#E8A0BF` pink to rose gold palette)
+### المرحلة 5: تحديث صفحة اكتشاف البائعات
+- إضافة تبويب "المتجر" أو قسم منفصل في الصفحة الرئيسية لعرض منتجات البائعات
+- تعديل عرض بطاقة البائعة لإظهار المنتجات بدلاً من الخدمات
+
+### المرحلة 6: تحديث لوحة الأدمن
+- إضافة إدارة البائعات في لوحة الأدمن
+- إمكانية تغيير الدور من/إلى `seller`
+
+---
+
+## التفاصيل التقنية
+
+### تعديلات قاعدة البيانات
+```text
+1. ALTER TYPE app_role ADD VALUE 'seller'
+2. ALTER TABLE artists ADD COLUMN account_type text DEFAULT 'artist'
+3. تحديث RLS policies لجدول products للسماح للبائعات
+4. تحديث edge function: admin-update-role لدعم seller
+```
+
+### الملفات المتأثرة
+| الملف | التعديل |
+|-------|---------|
+| `src/hooks/useUserRole.ts` | إضافة `seller` للـ AppRole type ومنطق الأولوية |
+| `src/components/auth/RoleGate.tsx` | إضافة redirect للـ seller |
+| `src/components/BottomNavigation.tsx` | إضافة شريط تنقل البائعة |
+| `src/App.tsx` | إضافة routes البائعة |
+| `src/lib/translations/ar.ts` و `en.ts` | إضافة ترجمات البائعة |
+
+### صفحات جديدة
+| الصفحة | المسار |
+|--------|--------|
+| SellerDashboard | `/seller-dashboard` |
+| SellerProducts | `/seller-products` |
+| SellerOrders | `/seller-orders` |
+| SellerSignup | `/seller-signup` |
+
+### شريط التنقل السفلي للبائعة
+```text
+[Dashboard] [Products] [Orders] [Profile]
+```
+
+### أولوية الأدوار المحدثة
+```text
+admin > artist > seller > customer
+```
+
+---
+
+## ملاحظات
+- يمكن للبائعة لاحقاً الترقية لدور `artist` إذا أرادت تقديم خدمات تجميل
+- المنتجات والطلبات تستخدم نفس البنية الموجودة حالياً (جداول `products` و `product_orders`)
+- نظام المحادثات والإشعارات يعمل مع البائعة بنفس الطريقة
 
