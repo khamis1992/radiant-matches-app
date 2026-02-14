@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Clock, MapPin, Banknote, Check, X as XIcon, User } from "lucide-react";
+import { X, Clock, MapPin, Banknote, Check, X as XIcon, User, ExternalLink, Navigation } from "lucide-react";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -173,31 +173,55 @@ export const BookingBottomSheet = ({
                       <Clock className="w-4 h-4 shrink-0" />
                       <span>{booking.booking_time}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="w-4 h-4 shrink-0" />
-                      {booking.location_address ? (() => {
-                        const latMatch = booking.location_address.match(/Lat:\s*([\d.-]+)/);
-                        const lngMatch = booking.location_address.match(/Lng:\s*([\d.-]+)/);
-                        const lat = latMatch?.[1];
-                        const lng = lngMatch?.[1];
-                        const mapsUrl = lat && lng && lat !== '0' && lng !== '0'
-                          ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
-                          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location_address)}`;
-                        return (
+                    {booking.location_address ? (() => {
+                      const latMatch = booking.location_address.match(/Lat:\s*([\d.-]+)/);
+                      const lngMatch = booking.location_address.match(/Lng:\s*([\d.-]+)/);
+                      const lat = latMatch?.[1];
+                      const lng = lngMatch?.[1];
+                      const hasValidCoords = lat && lng && lat !== '0' && lng !== '0';
+                      const mapsUrl = hasValidCoords
+                        ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location_address)}`;
+                      
+                      // Parse readable address parts
+                      const addressParts = booking.location_address.match(/Area:\s*([^,]*),\s*Street:\s*([^,]*),\s*Building:\s*([^,]*)/);
+                      const area = addressParts?.[1]?.trim();
+                      const street = addressParts?.[2]?.trim();
+                      const building = addressParts?.[3]?.trim();
+
+                      return (
+                        <div className="space-y-2">
+                          <div className="flex items-start gap-2 text-muted-foreground">
+                            <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                            <div className="text-sm">
+                              {area && <span>{language === "ar" ? "منطقة" : "Area"}: {area}</span>}
+                              {street && <span> • {language === "ar" ? "شارع" : "St"}: {street}</span>}
+                              {building && <span> • {language === "ar" ? "مبنى" : "Bldg"}: {building}</span>}
+                              {!area && !street && !building && <span>{booking.location_address}</span>}
+                            </div>
+                          </div>
                           <a
                             href={mapsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors w-fit"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            {booking.location_address}
+                            <Navigation className="w-4 h-4" />
+                            {language === "ar" ? "فتح في خرائط جوجل" : "Open in Google Maps"}
+                            <ExternalLink className="w-3 h-3" />
                           </a>
-                        );
-                      })() : (
-                        <span>{booking.location_type}</span>
-                      )}
-                    </div>
+                        </div>
+                      );
+                    })() : (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="w-4 h-4 shrink-0" />
+                        <span>{booking.location_type === "client_home" 
+                          ? (language === "ar" ? "منزل العميل" : "Client's Home")
+                          : (language === "ar" ? "الاستوديو" : "Studio")
+                        }</span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Banknote className="w-4 h-4 shrink-0" />
                       <span>QAR {booking.total_price}</span>
