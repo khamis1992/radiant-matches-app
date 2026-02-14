@@ -28,6 +28,7 @@ export interface FilterState {
   minExperience: number;
   locations: string[];
   serviceTypes: string[];
+  accountType: "all" | "artist" | "seller";
 }
 
 interface ArtistFiltersSheetProps {
@@ -66,6 +67,7 @@ export const ArtistFiltersSheet = ({
       minExperience: 0,
       locations: [],
       serviceTypes: [],
+      accountType: "all",
     };
     setLocalFilters(defaultFilters);
     onFiltersChange(defaultFilters);
@@ -86,6 +88,7 @@ export const ArtistFiltersSheet = ({
     setLocalFilters({
       ...search.filters,
       priceRange: search.filters.priceRange || [0, maxPrice],
+      accountType: search.filters.accountType || "all",
     });
     toast.success(t.advancedFilters?.searchLoaded || "Filters loaded");
   };
@@ -115,6 +118,7 @@ export const ArtistFiltersSheet = ({
     filters.minExperience > 0,
     (filters.locations?.length || 0) > 0,
     (filters.serviceTypes?.length || 0) > 0,
+    filters.accountType !== "all",
   ].filter(Boolean).length;
 
   return (
@@ -238,6 +242,31 @@ export const ArtistFiltersSheet = ({
                       <Check className="w-3 h-3" />
                     )}
                     {t.categories?.[service.toLowerCase().replace(/\s+/g, "") as keyof typeof t.categories] || service}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Account Type Filter */}
+            <div className="space-y-3">
+              <h4 className="font-medium text-sm">{isRTL ? "نوع الحساب" : "Account Type"}</h4>
+              <div className="flex gap-2">
+                {([
+                  { key: "all" as const, label: isRTL ? "الكل" : "All" },
+                  { key: "artist" as const, label: isRTL ? "خبيرات تجميل" : "Beauty Experts" },
+                  { key: "seller" as const, label: isRTL ? "بائعات" : "Sellers" },
+                ]).map((option) => (
+                  <Button
+                    key={option.key}
+                    variant={localFilters.accountType === option.key ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setLocalFilters(prev => ({ ...prev, accountType: option.key }))}
+                    className="flex-1 text-xs gap-1"
+                  >
+                    {localFilters.accountType === option.key && (
+                      <Check className="w-3 h-3" />
+                    )}
+                    {option.label}
                   </Button>
                 ))}
               </div>

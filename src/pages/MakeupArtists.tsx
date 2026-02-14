@@ -79,6 +79,7 @@ const MakeupArtists = () => {
     minExperience: 0,
     locations: [],
     serviceTypes: [],
+    accountType: "all",
   });
   
   // Get category from URL params
@@ -229,6 +230,10 @@ const MakeupArtists = () => {
           (service) => artist.categories?.includes(service)
         );
         if (!hasMatchingService) return false;
+      }
+      // Account type filter
+      if (filters.accountType && filters.accountType !== "all") {
+        if ((artist as any).account_type !== filters.accountType) return false;
       }
       
       return true;
@@ -723,7 +728,7 @@ const MakeupArtists = () => {
                 setSearchQuery("");
                 setSelectedCategory(null);
                 setShowAvailableOnly(false);
-                setFilters({ priceRange: [0, maxPrice], minRating: 0, minExperience: 0, locations: [], serviceTypes: [] });
+                setFilters({ priceRange: [0, maxPrice], minRating: 0, minExperience: 0, locations: [], serviceTypes: [], accountType: "all" });
               }}
             >
               {t.artistsListing.resetFilters}
