@@ -17,7 +17,7 @@ type AuthMode = "login" | "signup" | "forgot-password" | "verify-email";
 
 type RoleRedirectResult = {
   path: string;
-  role: "admin" | "artist" | "customer";
+  role: "admin" | "artist" | "customer" | "seller";
   userName: string | null;
 };
 
@@ -33,13 +33,14 @@ const getRedirectInfo = async (userId: string): Promise<RoleRedirectResult> => {
 
     if (roles.includes("admin")) return { path: "/admin", role: "admin", userName };
     if (roles.includes("artist")) return { path: "/artist-dashboard", role: "artist", userName };
+    if (roles.includes("seller")) return { path: "/seller-dashboard", role: "seller", userName };
     return { path: "/home", role: "customer", userName };
   } catch {
     return { path: "/home", role: "customer", userName: null };
   }
 };
 
-const getWelcomeMessage = (role: "admin" | "artist" | "customer", userName: string | null, language: "en" | "ar") => {
+const getWelcomeMessage = (role: "admin" | "artist" | "customer" | "seller", userName: string | null, language: "en" | "ar") => {
   const name = userName?.split(" ")[0];
   
   if (language === "ar") {
