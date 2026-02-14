@@ -40,6 +40,7 @@ export const useArtists = () => {
         .from("artists")
         .select("*")
         .eq("is_available", true)
+        .eq("account_type", "artist")
         .order("rating", { ascending: false });
 
       if (artistsError) throw artistsError;
@@ -123,6 +124,7 @@ export const useArtistsByCategory = (category: string | null) => {
         .select("*")
         .in("id", artistIds)
         .eq("is_available", true)
+        .eq("account_type", "artist")
         .order("rating", { ascending: false });
 
       if (artistsError) throw artistsError;
