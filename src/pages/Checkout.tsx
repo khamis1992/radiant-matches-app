@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, CreditCard, Package, Check, ArrowLeft, Loader2, Navigation } from "lucide-react";
+import { MapPin, CreditCard, Package, Check, ArrowLeft, Loader2, Navigation, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { useUnifiedCart } from "@/hooks/useUnifiedCart";
 import { useCreateOrder } from "@/hooks/useProductOrders";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useSadadPayment } from "@/hooks/useSadadPayment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { ShippingAddress } from "@/types/product";
@@ -26,7 +27,21 @@ const Checkout = () => {
   const { data: profile } = useProfile();
   const { cartItems, isLoading, clearCart } = useUnifiedCart();
   const createOrder = useCreateOrder();
+
+  // Sadad payment integration
+  const { paymentState, initiatePayment, resetPayment } = useSadadPayment({
+    onSuccess: (paymentId, sadadOrderId) => {
+      // Cart will be cleared after successful payment callback
+      console.log('Payment initiated successfully:', { paymentId, sadadOrderId });
+    },
+    onError: (error) => {
+      console.error('Payment failed:', error);
+      setIsProcessing(false);
+    },
+  });
+
   const [isLocating, setIsLocating] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'sadad' | 'cash'>('sadad');
 
   // Load saved address from user metadata or use profile info
   const getInitialAddress = (): ShippingAddress => {
@@ -183,6 +198,7 @@ const Checkout = () => {
         price: item.product.price_qar,
       }));
 
+      // Create order first
       const order = await createOrder.mutateAsync({
         items: orderItems,
         total_qar: total,
@@ -196,14 +212,35 @@ const Checkout = () => {
         });
       }
 
-      // Clear the cart after successful order
-      clearCart.mutate();
+      // Initiate payment based on selected method
+      if (selectedPaymentMethod === 'sadad') {
+        // Initiate Sadad payment
+        try {
+          const returnUrl = `${window.location.origin}/payment-result`;
 
-      // Navigate to order confirmation page
-      navigate(`/order-confirmation?orderId=${order.id}`);
+          await initiatePayment({
+            orderId: order.id,
+            amount: total,
+            customerEmail: user?.email,
+            customerPhone: shippingAddress.phone || profile?.phone || user?.user_metadata?.phone,
+            customerName: shippingAddress.full_name || profile?.full_name || user?.user_metadata?.full_name,
+            returnUrl: returnUrl,
+          });
+
+          // Payment initiated, user will be redirected to Sadad
+          // Don't clear cart yet - wait for payment callback
+        } catch (error: any) {
+          console.error('Sadad payment initiation failed:', error);
+          toast.error(error.message || "Failed to initiate payment. Please try again or use cash on delivery.");
+          setIsProcessing(false);
+        }
+      } else {
+        // Cash payment - clear cart and navigate to confirmation
+        clearCart.mutate();
+        navigate(`/order-confirmation?orderId=${order.id}&paymentMethod=cash`);
+      }
     } catch (error: any) {
       toast.error(error.message || "Failed to place order");
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -410,18 +447,63 @@ const Checkout = () => {
             <h2 className="font-semibold text-foreground">Payment Method</h2>
           </div>
 
-          <div className="p-4 bg-muted/50 rounded-xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <CreditCard className="w-5 h-5 text-primary" />
+          <div className="space-y-3">
+            {/* Sadad Payment Option */}
+            <button
+              type="button"
+              onClick={() => setSelectedPaymentMethod('sadad')}
+              className={`w-full p-4 rounded-xl border-2 transition-all ${
+                selectedPaymentMethod === 'sadad'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-border/80'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <CreditCard className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-medium text-foreground text-sm">Pay with Sadad</p>
+                  <p className="text-xs text-muted-foreground">Secure online payment</p>
+                </div>
+                {selectedPaymentMethod === 'sadad' && (
+                  <Check className="w-5 h-5 text-primary" />
+                )}
               </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground text-sm">Pay with Card</p>
-                <p className="text-xs text-muted-foreground">Secure payment with Stripe</p>
+            </button>
+
+            {/* Cash Payment Option */}
+            <button
+              type="button"
+              onClick={() => setSelectedPaymentMethod('cash')}
+              className={`w-full p-4 rounded-xl border-2 transition-all ${
+                selectedPaymentMethod === 'cash'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-border/80'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Wallet className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-medium text-foreground text-sm">Cash on Delivery</p>
+                  <p className="text-xs text-muted-foreground">Pay when you receive</p>
+                </div>
+                {selectedPaymentMethod === 'cash' && (
+                  <Check className="w-5 h-5 text-primary" />
+                )}
               </div>
-              <Check className="w-5 h-5 text-primary" />
-            </div>
+            </button>
           </div>
+
+          {selectedPaymentMethod === 'sadad' && (
+            <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+              <p className="text-xs text-muted-foreground">
+                You will be redirected to Sadad's secure payment gateway to complete your payment.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Place Order Button */}
@@ -429,9 +511,14 @@ const Checkout = () => {
           type="submit"
           size="lg"
           className="w-full h-14 rounded-xl font-semibold text-base"
-          disabled={isProcessing || cartItems.length === 0}
+          disabled={isProcessing || paymentState.isProcessing || cartItems.length === 0}
         >
-          {isProcessing ? "Processing..." : `Place Order • QAR ${total.toFixed(2)}`}
+          {(isProcessing || paymentState.isProcessing)
+            ? "Processing..."
+            : selectedPaymentMethod === 'sadad'
+            ? `Pay with Sadad • QAR ${total.toFixed(2)}`
+            : `Place Order • QAR ${total.toFixed(2)}`
+          }
         </Button>
 
         <p className="text-xs text-center text-muted-foreground">

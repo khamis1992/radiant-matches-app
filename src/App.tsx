@@ -43,6 +43,7 @@ import Notifications from "./pages/Notifications";
 import HelpSupport from "./pages/HelpSupport";
 import PaymentMethods from "./pages/PaymentMethods";
 import PaymentResult from "./pages/PaymentResult";
+import ProductPaymentResult from "./pages/ProductPaymentResult";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -156,6 +157,7 @@ const App = () => (
           
           {/* Payment Result - Public route for callbacks */}
           <Route path="/payment-result" element={<PaymentResult />} />
+          <Route path="/product-payment-result" element={<ProductPaymentResult />} />
 
           {/* Artist-only Routes */}
           <Route
