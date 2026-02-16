@@ -249,7 +249,7 @@ const AdminUsers = () => {
                               <Mail className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
                               {sendingEmailUserId === user.id ? t.adminUsers.sendingEmail : t.adminUsers.sendWelcomeEmail}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { setSelectedUser({ id: user.id, name: user.full_name || user.email || "" }); setBlockIpAddress(""); setBlockIpReason(""); setBlockIpDialog(true); }}>
+                            <DropdownMenuItem onClick={() => { setSelectedUser({ id: user.id, name: user.full_name || user.email || "" }); setBlockIpAddress(user.last_ip || ""); setBlockIpReason(""); setBlockIpDialog(true); }}>
                               <ShieldBan className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
                               {language === "ar" ? "حظر IP" : "Block IP"}
                             </DropdownMenuItem>

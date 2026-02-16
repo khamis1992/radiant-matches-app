@@ -10,6 +10,7 @@ export interface AdminUser {
   avatar_url: string | null;
   location: string | null;
   created_at: string;
+  last_ip: string | null;
   roles: string[];
   bookings_count: number;
 }
