@@ -11,14 +11,49 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Require admin authentication
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
+    // Check admin role
+    const { data: roles } = await adminClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin");
+
+    if (!roles || roles.length === 0) {
+      return new Response(JSON.stringify({ error: "Admin access required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Demo artist data
     const demoEmail = "noura.demo@glambook.app";
-    const demoPassword = "Demo@123";
+    const demoPassword = crypto.randomUUID().slice(0, 8) + "Aa1!"; // Random password each time
 
     // Check if user already exists
     const { data: existingUsers } = await adminClient.auth.admin.listUsers();
@@ -257,10 +292,6 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       message: "تم إنشاء حساب خبيرة التجميل التجريبي بنجاح",
-      credentials: {
-        email: demoEmail,
-        password: demoPassword,
-      },
       artistId: artistId,
     }), {
       status: 200,
