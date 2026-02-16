@@ -232,13 +232,9 @@ serve(async (req) => {
     const checksumKey = secretKey + merchantId;
     const jsonForChecksum = phpJsonEncode(checksumData);
 
-    console.log("Checksum JSON:", jsonForChecksum);
-    console.log("Checksum Key (first 10 chars):", checksumKey.substring(0, 10) + "...");
-
     const checksumhash = await generateChecksumFromString(jsonForChecksum, checksumKey);
 
     console.log("Payment initiated successfully, order:", orderId);
-    console.log("Generated checksumhash:", checksumhash);
 
     // Return form data for SADAD redirect
     // Form structure as per SADAD documentation: https://developer.sadad.qa/
@@ -277,7 +273,7 @@ serve(async (req) => {
     const error = err as Error;
     console.error("Payment initiation error:", error);
     return new Response(
-      JSON.stringify({ error: "Failed to initiate payment", details: error.message }),
+      JSON.stringify({ error: "Failed to initiate payment" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

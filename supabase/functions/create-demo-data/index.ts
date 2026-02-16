@@ -238,12 +238,10 @@ Deno.serve(async (req) => {
       success: true,
       message: `تم إنشاء ${results.length} خبيرات تجميل وهميات بنجاح`,
       details: results,
-      credentials: demoArtists.map(a => ({ name: a.name, email: a.email, password: a.password })),
     }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("Error:", message);
-    return new Response(JSON.stringify({ error: message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    console.error("Error creating demo data:", error instanceof Error ? error.message : "Unknown error");
+    return new Response(JSON.stringify({ error: "Failed to create demo data" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

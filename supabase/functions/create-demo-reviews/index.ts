@@ -188,9 +188,8 @@ Deno.serve(async (req) => {
     });
 
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("Unexpected error:", message);
-    return new Response(JSON.stringify({ error: message }), {
+    console.error("Unexpected error:", error instanceof Error ? error.message : "Unknown error");
+    return new Response(JSON.stringify({ error: "Failed to create demo reviews" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
