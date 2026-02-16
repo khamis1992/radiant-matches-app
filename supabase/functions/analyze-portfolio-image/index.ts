@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const PORTFOLIO_CATEGORIES = [
@@ -16,12 +17,34 @@ const PORTFOLIO_CATEGORIES = [
 ];
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Authenticate user
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { imageBase64 } = await req.json();
 
     if (!imageBase64) {
@@ -131,10 +154,8 @@ Category Guidelines:
 
     console.log("AI response:", content);
 
-    // Parse the JSON from the response
     let suggestion;
     try {
-      // Extract JSON from the response (handle markdown code blocks)
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         suggestion = JSON.parse(jsonMatch[0]);
@@ -143,7 +164,6 @@ Category Guidelines:
       }
     } catch (parseError) {
       console.error("Failed to parse AI response:", parseError, content);
-      // Return default suggestion
       suggestion = {
         category: "General",
         title: "Portfolio Image",
@@ -152,7 +172,6 @@ Category Guidelines:
       };
     }
 
-    // Validate category
     if (!PORTFOLIO_CATEGORIES.includes(suggestion.category)) {
       suggestion.category = "General";
     }
@@ -165,7 +184,7 @@ Category Guidelines:
   } catch (error) {
     console.error("Error in analyze-portfolio-image:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "An error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
