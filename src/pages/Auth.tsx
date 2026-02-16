@@ -213,21 +213,10 @@ const Auth = () => {
 
     const result = await biometricAuth(savedEmail);
     if (result.success && result.email) {
-      // Biometric verified - now we need to get the stored password or use a token
-      const storedPassword = localStorage.getItem(`saved_password_${result.email}`);
-      if (storedPassword) {
-        setLoading(true);
-        const { error } = await supabase.auth.signInWithPassword({
-          email: result.email,
-          password: storedPassword,
-        });
-        setLoading(false);
-        
-        if (error) {
-          toast.error(language === "ar" ? "فشل تسجيل الدخول" : "Login failed");
-          // Clear stored data if login fails
-          localStorage.removeItem(`saved_password_${result.email}`);
-        }
+      // Biometric verified - use existing session (Supabase persists sessions)
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        toast.success(language === "ar" ? "تم تسجيل الدخول بنجاح" : "Logged in successfully");
       } else {
         toast.error(language === "ar" ? "يرجى تسجيل الدخول بالبريد وكلمة المرور أولاً" : "Please login with email and password first");
       }
@@ -275,14 +264,11 @@ const Auth = () => {
           }).catch(() => {});
         }
 
-        // Save email and password if remember me is checked
+        // Save email if remember me is checked (never store passwords)
         if (rememberMe) {
           localStorage.setItem("remembered_email", email.trim());
-          // Save password encrypted for biometric login (in production, use more secure storage)
-          localStorage.setItem(`saved_password_${email.trim()}`, password);
         } else {
           localStorage.removeItem("remembered_email");
-          localStorage.removeItem(`saved_password_${email.trim()}`);
         }
       } else {
         const { data, error } = await supabase.auth.signUp({

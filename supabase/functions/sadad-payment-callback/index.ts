@@ -199,21 +199,29 @@ serve(async (req) => {
       );
     }
 
-    // Verify checksum if provided
-    if (checksumhash) {
-      // Remove checksumhash from data before verification
-      const postDataForVerification = { ...callbackData };
-      delete postDataForVerification.checksumhash;
-      
-      const isValid = await verifyChecksumHash(postDataForVerification, checksumhash, secretKey, merchantId);
-      
-      if (!isValid) {
-        console.warn("Checksum verification failed for order:", orderId, "- continuing for debugging");
-        // Don't reject, just log for now to debug
-      } else {
-        console.log("Checksum verified successfully for order:", orderId);
-      }
+    // Verify checksum - required for all callbacks
+    if (!checksumhash) {
+      console.error("Missing checksum for order:", orderId);
+      return new Response(
+        JSON.stringify({ error: "Missing checksum" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    const postDataForVerification = { ...callbackData };
+    delete postDataForVerification.checksumhash;
+    
+    const isValid = await verifyChecksumHash(postDataForVerification, checksumhash, secretKey, merchantId);
+    
+    if (!isValid) {
+      console.error("Checksum verification failed for order:", orderId);
+      return new Response(
+        JSON.stringify({ error: "Invalid checksum" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    console.log("Checksum verified successfully for order:", orderId);
 
     // Map SADAD RESPCODE to our status
     // According to docs: 1 = Success, 400 = Pending, 402 = Pending confirmation, 810 = Failed
@@ -363,7 +371,7 @@ serve(async (req) => {
     const error = err as Error;
     console.error("Callback processing error:", error);
     return new Response(
-      JSON.stringify({ error: "Failed to process callback", details: error.message }),
+      JSON.stringify({ error: "Failed to process callback" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
