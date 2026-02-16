@@ -1489,7 +1489,47 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      instagram_connections_safe: {
+        Row: {
+          account_type: string | null
+          artist_id: string | null
+          created_at: string | null
+          id: string | null
+          instagram_user_id: string | null
+          instagram_username: string | null
+          token_expires_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_type?: string | null
+          artist_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          instagram_user_id?: string | null
+          instagram_username?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_type?: string | null
+          artist_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          instagram_user_id?: string | null
+          instagram_username?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instagram_connections_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: true
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
@@ -1498,6 +1538,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      wallet_topup: {
+        Args: { p_amount: number; p_description?: string }
+        Returns: undefined
+      }
+      wallet_withdraw: {
+        Args: { p_amount: number; p_description?: string }
+        Returns: undefined
       }
     }
     Enums: {

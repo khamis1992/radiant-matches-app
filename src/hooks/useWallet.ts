@@ -41,20 +41,7 @@ export const useWallet = () => {
         .maybeSingle();
 
       if (error) throw error;
-      
-      // If no wallet exists, create one
-      if (!data) {
-        const { data: newWallet, error: insertError } = await supabase
-          .from("wallet_balances")
-          .insert({ user_id: user.id, balance: 0, currency: "QAR" })
-          .select()
-          .single();
-        
-        if (insertError) throw insertError;
-        return newWallet as WalletBalance;
-      }
-      
-      return data as WalletBalance;
+      return data as WalletBalance | null;
     },
     enabled: !!user?.id,
   });
@@ -77,32 +64,17 @@ export const useWallet = () => {
     enabled: !!user?.id,
   });
 
-  // Top up wallet
+  // Top up wallet via secure RPC
   const topUpMutation = useMutation({
     mutationFn: async ({ amount, description }: { amount: number; description?: string }) => {
       if (!user?.id) throw new Error("User not authenticated");
       
-      // Create transaction record
-      const { error: txError } = await supabase
-        .from("wallet_transactions")
-        .insert({
-          user_id: user.id,
-          type: "topup",
-          amount,
-          description: description || "Wallet top-up",
-          status: "completed",
-        });
+      const { error } = await supabase.rpc("wallet_topup", {
+        p_amount: amount,
+        p_description: description || "Wallet top-up",
+      });
 
-      if (txError) throw txError;
-
-      // Update balance
-      const currentBalance = walletData?.balance || 0;
-      const { error: balanceError } = await supabase
-        .from("wallet_balances")
-        .update({ balance: currentBalance + amount })
-        .eq("user_id", user.id);
-
-      if (balanceError) throw balanceError;
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallet-balance"] });
@@ -115,36 +87,22 @@ export const useWallet = () => {
     },
   });
 
-  // Withdraw from wallet
+  // Withdraw from wallet via secure RPC
   const withdrawMutation = useMutation({
     mutationFn: async ({ amount, description }: { amount: number; description?: string }) => {
       if (!user?.id) throw new Error("User not authenticated");
       
-      const currentBalance = walletData?.balance || 0;
-      if (amount > currentBalance) {
-        throw new Error("Insufficient balance");
+      const { error } = await supabase.rpc("wallet_withdraw", {
+        p_amount: amount,
+        p_description: description || "Wallet withdrawal",
+      });
+
+      if (error) {
+        if (error.message?.includes("Insufficient balance")) {
+          throw new Error("Insufficient balance");
+        }
+        throw error;
       }
-
-      // Create transaction record
-      const { error: txError } = await supabase
-        .from("wallet_transactions")
-        .insert({
-          user_id: user.id,
-          type: "withdrawal",
-          amount: -amount,
-          description: description || "Wallet withdrawal",
-          status: "completed",
-        });
-
-      if (txError) throw txError;
-
-      // Update balance
-      const { error: balanceError } = await supabase
-        .from("wallet_balances")
-        .update({ balance: currentBalance - amount })
-        .eq("user_id", user.id);
-
-      if (balanceError) throw balanceError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallet-balance"] });

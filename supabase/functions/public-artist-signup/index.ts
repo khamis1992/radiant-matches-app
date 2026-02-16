@@ -22,24 +22,28 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { userId } = await req.json();
+    // Verify the caller's identity from JWT
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    const jwt = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await adminClient.auth.getUser(jwt);
 
-    if (!userId) {
-      return new Response(JSON.stringify({ error: "Missing userId" }), {
-        status: 400,
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    // Use the authenticated user's ID - ignore any userId from body
+    const targetUserId = user.id;
 
-    console.log("Processing public artist signup for user:", userId);
+    console.log("Processing public artist signup for user:", targetUserId);
 
     // 1. Delete default customer role
     const { error: deleteRoleError } = await adminClient
       .from("user_roles")
       .delete()
-      .eq("user_id", userId)
+      .eq("user_id", targetUserId)
       .eq("role", "customer");
 
     if (deleteRoleError) {
@@ -49,7 +53,7 @@ Deno.serve(async (req) => {
     // 2. Add artist role
     const { error: insertRoleError } = await adminClient
       .from("user_roles")
-      .insert({ user_id: userId, role: "artist" });
+      .insert({ user_id: targetUserId, role: "artist" });
 
     if (insertRoleError) {
       console.error("Error inserting artist role:", insertRoleError);
@@ -64,7 +68,7 @@ Deno.serve(async (req) => {
     // 3. Create artist profile
     const { error: insertArtistError } = await adminClient
       .from("artists")
-      .insert({ user_id: userId });
+      .insert({ user_id: targetUserId });
 
     if (insertArtistError) {
       console.error("Error creating artist profile:", insertArtistError);
@@ -76,7 +80,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log("Public artist signup completed successfully for user:", userId);
+    console.log("Public artist signup completed successfully for user:", targetUserId);
 
     return new Response(JSON.stringify({ 
       success: true,
@@ -89,7 +93,7 @@ Deno.serve(async (req) => {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Unexpected error:", message);
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
