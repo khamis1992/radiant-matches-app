@@ -315,6 +315,36 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_ips: {
+        Row: {
+          blocked_by: string | null
+          blocked_user_id: string | null
+          created_at: string
+          id: string
+          ip_address: string
+          is_active: boolean
+          reason: string | null
+        }
+        Insert: {
+          blocked_by?: string | null
+          blocked_user_id?: string | null
+          created_at?: string
+          id?: string
+          ip_address: string
+          is_active?: boolean
+          reason?: string | null
+        }
+        Update: {
+          blocked_by?: string | null
+          blocked_user_id?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string
+          is_active?: boolean
+          reason?: string | null
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           artist_earnings: number | null

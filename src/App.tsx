@@ -59,6 +59,7 @@ import AdminBanners from "./pages/admin/AdminBanners";
 import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminCampaigns from "./pages/admin/AdminCampaigns";
+import AdminBlockedIPs from "./pages/admin/AdminBlockedIPs";
 import ArtistSignup from "./pages/ArtistSignup";
 import CompareArtists from "./pages/CompareArtists";
 import Referrals from "./pages/Referrals";
@@ -318,6 +319,7 @@ const App = () => (
           <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/campaigns" element={<AdminCampaigns />} />
+          <Route path="/admin/blocked-ips" element={<AdminBlockedIPs />} />
           <Route path="/email-preview" element={<EmailPreview />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

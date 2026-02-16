@@ -19,6 +19,7 @@ import {
   Image,
   Wallet,
   Globe,
+  ShieldBan,
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ export const AdminSidebar = () => {
     { to: "/admin/finance", icon: DollarSign, label: t.adminNav.finance },
     { to: "/admin/withdrawals", icon: Wallet, label: t.adminNav.withdrawals },
     { to: "/admin/notifications", icon: Bell, label: t.adminNav.notificationLog },
+    { to: "/admin/blocked-ips", icon: ShieldBan, label: language === "ar" ? "حظر IP" : "Blocked IPs" },
     { to: "/admin/settings", icon: Settings, label: t.adminNav.settings },
   ];
 
