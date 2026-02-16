@@ -22,6 +22,19 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Optionally save IP to user profile
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch { /* no body */ }
+
+    if (body.userId && ip !== "unknown") {
+      await supabase
+        .from("profiles")
+        .update({ last_ip: ip, last_ip_at: new Date().toISOString() })
+        .eq("id", body.userId);
+    }
+
     const { data, error } = await supabase
       .from("blocked_ips")
       .select("id, reason")

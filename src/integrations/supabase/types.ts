@@ -898,6 +898,8 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          last_ip: string | null
+          last_ip_at: string | null
           location: string | null
           phone: string | null
           updated_at: string
@@ -908,6 +910,8 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          last_ip?: string | null
+          last_ip_at?: string | null
           location?: string | null
           phone?: string | null
           updated_at?: string
@@ -918,6 +922,8 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          last_ip?: string | null
+          last_ip_at?: string | null
           location?: string | null
           phone?: string | null
           updated_at?: string

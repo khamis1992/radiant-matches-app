@@ -267,6 +267,14 @@ const Auth = () => {
           return;
         }
 
+        // Save user IP after successful login
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.user?.id) {
+          supabase.functions.invoke("check-blocked-ip", {
+            body: { userId: sessionData.session.user.id },
+          }).catch(() => {});
+        }
+
         // Save email and password if remember me is checked
         if (rememberMe) {
           localStorage.setItem("remembered_email", email.trim());
