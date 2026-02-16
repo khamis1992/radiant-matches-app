@@ -118,10 +118,9 @@ async function verifyChecksumHash(postData: Record<string, unknown>, receivedHas
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
     
-    console.log("Verification - Expected hash:", hashHex);
-    console.log("Verification - Received hash:", hashValue);
+    const hashMatch = hashHex === hashValue;
     
-    return hashHex === hashValue;
+    return hashMatch;
   } catch (error) {
     console.error("Checksum verification error:", error);
     return false;
@@ -174,7 +173,7 @@ serve(async (req) => {
       });
     }
 
-    console.log("Received SADAD callback:", JSON.stringify(callbackData));
+    console.log("Received SADAD callback for order:", callbackData.ORDERID || callbackData.order_id);
 
     // SADAD uses uppercase field names in callback:
     // ORDERID, RESPCODE, RESPMSG, TXNAMOUNT, transaction_number, checksumhash
@@ -267,7 +266,7 @@ serve(async (req) => {
         });
         
         const verificationResult = await verifyResponse.json();
-        console.log("SADAD verification result:", JSON.stringify(verificationResult));
+        console.log("SADAD verification status:", verificationResult.status);
         
         // Check if verification failed
         if (verificationResult.status !== "success" || 

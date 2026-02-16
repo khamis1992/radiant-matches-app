@@ -244,13 +244,9 @@ serve(async (req) => {
     const checksumKey = secretKey + merchantId;
     const jsonForChecksum = phpJsonEncode(checksumData);
 
-    console.log("Product payment initiated successfully, sadad order:", sadadOrderId);
-    console.log("Checksum JSON length:", jsonForChecksum.length);
-    console.log("Checksum Key (first 10 chars):", checksumKey.substring(0, 10) + "...");
-
     const checksumhash = await generateChecksumFromString(jsonForChecksum, checksumKey);
 
-    console.log("Generated checksumhash successfully");
+    console.log("Product payment initiated successfully, sadad order:", sadadOrderId);
 
     // Return form data for SADAD redirect
     const paymentData = {
@@ -279,7 +275,7 @@ serve(async (req) => {
     const error = err as Error;
     console.error("Product payment initiation error:", error);
     return new Response(
-      JSON.stringify({ error: "Failed to initiate payment", details: error.message }),
+      JSON.stringify({ error: "Failed to initiate payment" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
