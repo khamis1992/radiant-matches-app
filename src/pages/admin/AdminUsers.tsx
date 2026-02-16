@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MoreVertical, Shield, Palette, Key, Eye, EyeOff, Trash2, UserPlus, Mail } from "lucide-react";
+import { Search, MoreVertical, Shield, Palette, Key, Eye, EyeOff, Trash2, UserPlus, Mail, ShieldBan } from "lucide-react";
 import { sendEmail } from "@/lib/email";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -23,6 +23,7 @@ import { ar, enUS } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { useBlockIp } from "@/hooks/useBlockedIps";
 
 const roleColors: Record<string, string> = { admin: "bg-purple-100 text-purple-800", artist: "bg-pink-100 text-pink-800", customer: "bg-blue-100 text-blue-800", seller: "bg-green-100 text-green-800" };
 
@@ -46,6 +47,10 @@ const AdminUsers = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [sendingEmailUserId, setSendingEmailUserId] = useState<string | null>(null);
+  const [blockIpDialog, setBlockIpDialog] = useState(false);
+  const [blockIpAddress, setBlockIpAddress] = useState("");
+  const [blockIpReason, setBlockIpReason] = useState("");
+  const blockIp = useBlockIp();
   
   // New user form state
   const [newUserEmail, setNewUserEmail] = useState("");
@@ -244,6 +249,10 @@ const AdminUsers = () => {
                               <Mail className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
                               {sendingEmailUserId === user.id ? t.adminUsers.sendingEmail : t.adminUsers.sendWelcomeEmail}
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setSelectedUser({ id: user.id, name: user.full_name || user.email || "" }); setBlockIpAddress(""); setBlockIpReason(""); setBlockIpDialog(true); }}>
+                              <ShieldBan className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                              {language === "ar" ? "حظر IP" : "Block IP"}
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openDeleteDialog(user.id, user.full_name || user.email || t.adminUsers.user)} className="text-destructive focus:text-destructive"><Trash2 className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.deleteUser}</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -398,6 +407,59 @@ const AdminUsers = () => {
             <Button variant="outline" onClick={() => setAddUserDialog(false)}>{t.adminUsers.cancel}</Button>
             <Button onClick={handleCreateUser} disabled={isCreating}>
               {isCreating ? t.adminUsers.creating : t.adminUsers.addUser}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Block IP Dialog */}
+      <Dialog open={blockIpDialog} onOpenChange={setBlockIpDialog}>
+        <DialogContent className="sm:max-w-md" dir={isRTL ? "rtl" : "ltr"}>
+          <DialogHeader>
+            <DialogTitle>{language === "ar" ? "حظر عنوان IP" : "Block IP Address"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              {language === "ar" ? "حظر IP للمستخدم:" : "Block IP for user:"} <span className="font-medium text-foreground">{selectedUser?.name}</span>
+            </p>
+            <div className="space-y-2">
+              <Label>{language === "ar" ? "عنوان IP" : "IP Address"} *</Label>
+              <Input
+                value={blockIpAddress}
+                onChange={(e) => setBlockIpAddress(e.target.value)}
+                placeholder={language === "ar" ? "مثال: 192.168.1.1" : "e.g. 192.168.1.1"}
+                dir="ltr"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{language === "ar" ? "السبب" : "Reason"}</Label>
+              <Input
+                value={blockIpReason}
+                onChange={(e) => setBlockIpReason(e.target.value)}
+                placeholder={language === "ar" ? "سبب الحظر (اختياري)" : "Block reason (optional)"}
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setBlockIpDialog(false)}>{t.adminUsers.cancel}</Button>
+            <Button
+              variant="destructive"
+              disabled={blockIp.isPending || !blockIpAddress.trim()}
+              onClick={async () => {
+                try {
+                  await blockIp.mutateAsync({
+                    ip_address: blockIpAddress.trim(),
+                    reason: blockIpReason.trim() || undefined,
+                    blocked_user_id: selectedUser?.id,
+                  });
+                  toast.success(language === "ar" ? "تم حظر IP بنجاح" : "IP blocked successfully");
+                  setBlockIpDialog(false);
+                } catch (err: any) {
+                  toast.error(err.message);
+                }
+              }}
+            >
+              {language === "ar" ? "حظر" : "Block"}
             </Button>
           </DialogFooter>
         </DialogContent>

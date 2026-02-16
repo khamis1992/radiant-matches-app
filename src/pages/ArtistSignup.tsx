@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Mail, Lock, User, Sparkles, AlertCircle, CheckCircle, Phone } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { z } from "zod";
+import { checkBlockedIp } from "@/hooks/useBlockedIps";
 
 interface InvitationData {
   id: string;
@@ -123,6 +124,14 @@ const ArtistSignup = () => {
     setSubmitting(true);
 
     try {
+      // Check if IP is blocked
+      const ipCheck = await checkBlockedIp();
+      if (ipCheck.blocked) {
+        toast.error(isRTL ? "تم حظر هذا الجهاز من التسجيل. تواصل مع الدعم." : "This device has been blocked. Contact support.");
+        setSubmitting(false);
+        return;
+      }
+
       // Create account
       const { data: authData, error: signupError } = await supabase.auth.signUp({
         email: email.trim(),

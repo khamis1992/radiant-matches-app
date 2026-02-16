@@ -12,6 +12,7 @@ import logo from "@/assets/logo.png";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBiometricAuth } from "@/hooks/useBiometricAuth";
 import { z } from "zod";
+import { checkBlockedIp } from "@/hooks/useBlockedIps";
 
 type AuthMode = "login" | "signup" | "forgot-password" | "verify-email";
 
@@ -243,6 +244,14 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Check if IP is blocked
+      const ipCheck = await checkBlockedIp();
+      if (ipCheck.blocked) {
+        toast.error(language === "ar" ? "تم حظر هذا الجهاز من التسجيل. تواصل مع الدعم." : "This device has been blocked. Contact support.");
+        setLoading(false);
+        return;
+      }
+
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
