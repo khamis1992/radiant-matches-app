@@ -54,11 +54,12 @@ const ArtistSignup = () => {
       }
 
       try {
-        const { data, error: fetchError } = await supabase
-          .from("artist_invitations")
-          .select("id, full_name, expires_at, used_at")
-          .eq("token", token)
-          .single();
+        const { data: fnResponse, error: fetchError } = await supabase.functions.invoke("validate-invitation", {
+          body: { token },
+        });
+        const data = fnResponse?.valid ? { id: fnResponse.invitation.id, full_name: fnResponse.invitation.full_name, expires_at: null, used_at: null } : null;
+        const isExpired = fnResponse?.reason === "expired";
+        const isUsed = fnResponse?.reason === "used";
 
         if (fetchError || !data) {
           setError(t.artistSignup.invalidLink);
@@ -66,13 +67,13 @@ const ArtistSignup = () => {
           return;
         }
 
-        if (new Date(data.expires_at) < new Date()) {
+        if (isExpired) {
           setError(t.artistSignup.linkExpired);
           setLoading(false);
           return;
         }
 
-        if (data.used_at) {
+        if (isUsed) {
           setError(t.artistSignup.linkUsed);
           setLoading(false);
           return;
