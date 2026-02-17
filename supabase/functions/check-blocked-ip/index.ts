@@ -11,10 +11,13 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Extract IP from headers
+    // Extract IP from various headers
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       req.headers.get("x-real-ip") ||
+      req.headers.get("cf-connecting-ip") ||
+      req.headers.get("x-client-ip") ||
+      req.headers.get("true-client-ip") ||
       "unknown";
 
     const supabase = createClient(
@@ -22,17 +25,37 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Optionally save IP to user profile
     let body: any = {};
     try {
       body = await req.json();
     } catch { /* no body */ }
 
-    if (body.userId && ip !== "unknown") {
+    // Also try to get user from auth header
+    let userId = body.userId;
+    if (!userId) {
+      const authHeader = req.headers.get("Authorization");
+      if (authHeader?.startsWith("Bearer ")) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+          if (user) userId = user.id;
+        } catch { /* ignore */ }
+      }
+    }
+
+    // Save IP to user profile - save even "unknown" so admin knows it was attempted
+    if (userId) {
       await supabase
         .from("profiles")
         .update({ last_ip: ip, last_ip_at: new Date().toISOString() })
-        .eq("id", body.userId);
+        .eq("id", userId);
+    }
+
+    // Only check blocked IPs if we have a real IP
+    if (ip === "unknown") {
+      return new Response(
+        JSON.stringify({ blocked: false, ip }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const { data, error } = await supabase
