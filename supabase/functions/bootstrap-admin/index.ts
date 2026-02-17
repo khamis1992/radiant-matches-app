@@ -14,6 +14,28 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+    // Require a bootstrap secret to prevent unauthorized access
+    const bootstrapSecret = Deno.env.get("BOOTSTRAP_SECRET");
+    if (!bootstrapSecret) {
+      console.error("BOOTSTRAP_SECRET not configured - function disabled");
+      return new Response(JSON.stringify({ error: "Bootstrap not available" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = await req.json();
+    const { email, password, bootstrap_secret } = body;
+
+    // Validate bootstrap secret
+    if (!bootstrap_secret || bootstrap_secret !== bootstrapSecret) {
+      console.warn("Invalid bootstrap secret attempt");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     // Check if any admin already exists
@@ -25,7 +47,7 @@ Deno.serve(async (req) => {
 
     if (checkError) {
       console.error("Error checking for existing admins:", checkError);
-      return new Response(JSON.stringify({ error: checkError.message }), {
+      return new Response(JSON.stringify({ error: "Setup check failed" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -38,8 +60,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { email, password } = await req.json();
-
     if (!email || !password) {
       return new Response(JSON.stringify({ error: "Email and password are required" }), {
         status: 400,
@@ -47,14 +67,22 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log("Setting up admin user:", email);
+    // Validate password strength
+    if (password.length < 8) {
+      return new Response(JSON.stringify({ error: "Password must be at least 8 characters" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log("Setting up admin user");
 
     // First, try to get the existing user by email
     const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers();
     
     if (listError) {
       console.error("Error listing users:", listError);
-      return new Response(JSON.stringify({ error: listError.message }), {
+      return new Response(JSON.stringify({ error: "Failed to check existing users" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -64,7 +92,6 @@ Deno.serve(async (req) => {
     let userId: string;
 
     if (existingUser) {
-      console.log("User already exists in auth, using existing user:", existingUser.id);
       userId = existingUser.id;
 
       // Update password
@@ -75,7 +102,7 @@ Deno.serve(async (req) => {
 
       if (updateError) {
         console.error("Error updating user:", updateError);
-        return new Response(JSON.stringify({ error: updateError.message }), {
+        return new Response(JSON.stringify({ error: "Failed to update user" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -114,7 +141,7 @@ Deno.serve(async (req) => {
 
       if (createError) {
         console.error("Error creating admin user:", createError.message);
-        return new Response(JSON.stringify({ error: createError.message }), {
+        return new Response(JSON.stringify({ error: "Failed to create admin user" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -149,20 +176,18 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log("Admin user setup complete:", userId);
+    console.log("Admin user setup complete");
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: "Admin account created successfully",
-      userId: userId 
+      message: "Admin account created successfully"
     }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("Unexpected error:", message);
-    return new Response(JSON.stringify({ error: message }), {
+    console.error("Unexpected error in bootstrap-admin");
+    return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
