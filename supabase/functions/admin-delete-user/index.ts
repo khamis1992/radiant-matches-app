@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { userId } = await req.json();
+    const { userId, reason } = await req.json();
 
     if (!userId) {
       console.error("Missing userId in request body");
@@ -76,6 +76,17 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Get target user info before deletion
+    const { data: targetUser } = await adminClient.auth.admin.getUserById(userId);
+    const targetEmail = targetUser?.user?.email || "unknown";
+    
+    // Get target profile name
+    const { data: targetProfile } = await adminClient
+      .from("profiles")
+      .select("full_name")
+      .eq("id", userId)
+      .single();
+
     console.log("Deleting user:", userId);
 
     // Delete user using admin API
@@ -88,6 +99,18 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Log the activity
+    await adminClient.from("admin_activity_log").insert({
+      admin_id: caller.id,
+      action: "delete_user",
+      target_type: "user",
+      target_id: userId,
+      target_email: targetEmail,
+      target_name: targetProfile?.full_name || null,
+      reason: reason || null,
+      metadata: { deleted_at: new Date().toISOString() },
+    });
 
     console.log("User deleted successfully:", userId);
 
