@@ -241,6 +241,13 @@ const Auth = () => {
         return;
       }
 
+      // Restrict signup to Qatar only
+      if (mode === "signup" && ipCheck.country_code && ipCheck.country_code !== "QA") {
+        toast.error(language === "ar" ? "التسجيل متاح فقط من داخل قطر" : "Registration is only available from Qatar");
+        setLoading(false);
+        return;
+      }
+
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),

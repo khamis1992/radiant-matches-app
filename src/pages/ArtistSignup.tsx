@@ -133,6 +133,13 @@ const ArtistSignup = () => {
         return;
       }
 
+      // Restrict signup to Qatar only
+      if (ipCheck.country_code && ipCheck.country_code !== "QA") {
+        toast.error(isRTL ? "التسجيل متاح فقط من داخل قطر" : "Registration is only available from Qatar");
+        setSubmitting(false);
+        return;
+      }
+
       // Create account
       const { data: authData, error: signupError } = await supabase.auth.signUp({
         email: email.trim(),
