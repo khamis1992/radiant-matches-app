@@ -48,6 +48,7 @@ const AdminUsers = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [sendingEmailUserId, setSendingEmailUserId] = useState<string | null>(null);
   const [blockIpDialog, setBlockIpDialog] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
   const [blockIpAddress, setBlockIpAddress] = useState("");
   const [blockIpReason, setBlockIpReason] = useState("");
   const blockIp = useBlockIp();
@@ -89,6 +90,7 @@ const AdminUsers = () => {
 
   const openDeleteDialog = (userId: string, userName: string) => {
     setSelectedUser({ id: userId, name: userName });
+    setDeleteReason("");
     setDeleteDialog(true);
   };
 
@@ -98,7 +100,7 @@ const AdminUsers = () => {
     setIsDeleting(true);
     try {
       const response = await supabase.functions.invoke("admin-delete-user", {
-        body: { userId: selectedUser.id },
+        body: { userId: selectedUser.id, reason: deleteReason || undefined },
       });
 
       if (response.error) {
@@ -336,6 +338,15 @@ const AdminUsers = () => {
               {t.adminUsers.deleteWarning}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="py-2">
+            <Label>{isRTL ? "سبب الحذف (اختياري)" : "Reason for deletion (optional)"}</Label>
+            <Input
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              placeholder={isRTL ? "أدخل سبب الحذف..." : "Enter reason..."}
+              className="mt-1"
+            />
+          </div>
           <AlertDialogFooter className="gap-2">
             <AlertDialogCancel>{t.adminUsers.cancel}</AlertDialogCancel>
             <AlertDialogAction
