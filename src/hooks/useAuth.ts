@@ -8,6 +8,8 @@ export const useAuth = () => {
   const ipCapturedRef = useRef(false);
 
   useEffect(() => {
+    let mounted = true;
+
     const captureIp = (userId: string) => {
       if (ipCapturedRef.current) return;
       ipCapturedRef.current = true;
@@ -16,23 +18,32 @@ export const useAuth = () => {
       }).catch(() => {});
     };
 
+    // Listen for auth changes - set up FIRST so we don't miss events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!mounted) return;
+        // Defer state update to avoid React queue error
+        setTimeout(() => {
+          if (!mounted) return;
+          setUser(session?.user ?? null);
+          setLoading(false);
+          if (session?.user) captureIp(session.user.id);
+        }, 0);
+      }
+    );
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       setUser(session?.user ?? null);
       setLoading(false);
       if (session?.user) captureIp(session.user.id);
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-        if (session?.user) captureIp(session.user.id);
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
