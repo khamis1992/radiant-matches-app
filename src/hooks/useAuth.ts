@@ -1,16 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const ipCapturedRef = useRef(false);
 
   useEffect(() => {
+    const captureIp = (userId: string) => {
+      if (ipCapturedRef.current) return;
+      ipCapturedRef.current = true;
+      supabase.functions.invoke("check-blocked-ip", {
+        body: { userId },
+      }).catch(() => {});
+    };
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      if (session?.user) captureIp(session.user.id);
     });
 
     // Listen for auth changes
@@ -18,6 +28,7 @@ export const useAuth = () => {
       (_event, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
+        if (session?.user) captureIp(session.user.id);
       }
     );
 
