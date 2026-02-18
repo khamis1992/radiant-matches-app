@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { checkBlockedIp } from "@/hooks/useBlockedIps";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +44,18 @@ const SellerSignup = () => {
     setSubmitting(true);
 
     try {
+      // Check if IP is blocked or not from Qatar
+      const ipCheck = await checkBlockedIp();
+      if (ipCheck.blocked) {
+        toast.error(isRTL ? "تم حظر هذا الجهاز من التسجيل. تواصل مع الدعم." : "This device has been blocked. Contact support.");
+        setSubmitting(false);
+        return;
+      }
+      if (ipCheck.country_code && ipCheck.country_code !== "QA") {
+        toast.error(isRTL ? "التسجيل متاح فقط من داخل قطر" : "Registration is only available from Qatar");
+        setSubmitting(false);
+        return;
+      }
       const { data: authData, error: signupError } = await supabase.auth.signUp({
         email: email.trim(),
         password,

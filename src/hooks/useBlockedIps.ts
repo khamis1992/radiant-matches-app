@@ -69,7 +69,7 @@ export const useDeleteBlockedIp = () => {
   });
 };
 
-export const checkBlockedIp = async (): Promise<{ blocked: boolean; ip: string; reason?: string }> => {
+export const checkBlockedIp = async (): Promise<{ blocked: boolean; ip: string; reason?: string; country_code?: string | null }> => {
   try {
     const { data, error } = await supabase.functions.invoke("check-blocked-ip");
     if (error) return { blocked: false, ip: "unknown" };
