@@ -211,12 +211,19 @@ const AdminUsers = () => {
           <div className="bg-card rounded-xl border border-border">
             {isLoading ? <div className="p-8 space-y-4">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16" />)}</div> : (
               <Table>
-                <TableHeader><TableRow><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.user}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.roles}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.bookings}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.registrationDate}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.actions}</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.user}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.roles}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>IP</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.bookings}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.registrationDate}</TableHead><TableHead className={isRTL ? "text-right" : "text-left"}>{t.adminUsers.actions}</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {users?.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell><div className="flex items-center gap-3"><Avatar className="h-10 w-10"><AvatarImage src={user.avatar_url || undefined} /><AvatarFallback>{user.full_name?.[0] || "U"}</AvatarFallback></Avatar><div><p className="font-medium">{user.full_name || t.adminUsers.noName}</p><p className="text-sm text-muted-foreground">{user.email}</p></div></div></TableCell>
                       <TableCell><div className="flex gap-1 flex-wrap">{user.roles.map((r) => <Badge key={r} variant="secondary" className={roleColors[r]}>{roleLabels[r]}</Badge>)}</div></TableCell>
+                      <TableCell>
+                        {user.last_ip ? (
+                          <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{user.last_ip}</code>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">{language === "ar" ? "غير متوفر" : "N/A"}</span>
+                        )}
+                      </TableCell>
                       <TableCell>{user.bookings_count}</TableCell>
                       <TableCell>{format(new Date(user.created_at), "d MMM yyyy", { locale: dateLocale })}</TableCell>
                       <TableCell>
@@ -249,9 +256,15 @@ const AdminUsers = () => {
                               <Mail className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
                               {sendingEmailUserId === user.id ? t.adminUsers.sendingEmail : t.adminUsers.sendWelcomeEmail}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { setSelectedUser({ id: user.id, name: user.full_name || user.email || "" }); setBlockIpAddress(user.last_ip || ""); setBlockIpReason(""); setBlockIpDialog(true); }}>
+                            <DropdownMenuItem 
+                              onClick={() => { setSelectedUser({ id: user.id, name: user.full_name || user.email || "" }); setBlockIpAddress(user.last_ip || ""); setBlockIpReason(""); setBlockIpDialog(true); }}
+                              disabled={!user.last_ip}
+                            >
                               <ShieldBan className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-                              {language === "ar" ? "حظر IP" : "Block IP"}
+                              {user.last_ip 
+                                ? (language === "ar" ? `حظر IP (${user.last_ip})` : `Block IP (${user.last_ip})`)
+                                : (language === "ar" ? "حظر IP (غير متوفر)" : "Block IP (N/A)")
+                              }
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openDeleteDialog(user.id, user.full_name || user.email || t.adminUsers.user)} className="text-destructive focus:text-destructive"><Trash2 className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.deleteUser}</DropdownMenuItem>
                           </DropdownMenuContent>
