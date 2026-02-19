@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { sendEmail } from "@/lib/email";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "sonner";
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Sparkles, Fingerprint } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Sparkles, Fingerprint, ShieldCheck } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBiometricAuth } from "@/hooks/useBiometricAuth";
@@ -95,7 +96,12 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
   const [signupEmail, setSignupEmail] = useState("");
+  const [signupName, setSignupName] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [otpValue, setOtpValue] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
+  const pendingOtpRef = useRef(false); // Prevents auto-redirect during OTP flow
   
   const { isSupported: biometricSupported, authenticate: biometricAuth, hasBiometricForEmail, isLoading: biometricLoading } = useBiometricAuth();
 
@@ -131,7 +137,7 @@ const Auth = () => {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
+      if (session?.user && !pendingOtpRef.current) {
         const showWelcome = event === "SIGNED_IN";
         setTimeout(() => {
           redirectUser(session.user.id, showWelcome);
@@ -298,10 +304,25 @@ const Auth = () => {
           return;
         }
         
-        if (data.user && !data.session) {
+        if (data.user && data.session) {
+          // Auto-confirmed — send OTP for custom verification
+          pendingOtpRef.current = true;
           setSignupEmail(email.trim());
+          setSignupName(fullName.trim());
           setMode("verify-email");
-          // Send welcome email with user manual
+          // Send OTP
+          supabase.functions.invoke("send-verification-otp", {
+            body: { email: email.trim(), name: fullName.trim() },
+          });
+          setOtpCooldown(60);
+          setEmail("");
+          setPassword("");
+          setFullName("");
+        } else if (data.user && !data.session) {
+          // Fallback if auto-confirm is off
+          setSignupEmail(email.trim());
+          setSignupName(fullName.trim());
+          setMode("verify-email");
           sendEmail({
             type: "welcome",
             to: email.trim(),
@@ -310,14 +331,6 @@ const Auth = () => {
           setEmail("");
           setPassword("");
           setFullName("");
-        } else {
-          toast.success(language === "ar" ? "تم إنشاء الحساب بنجاح!" : "Account created successfully!");
-          // Send welcome email
-          sendEmail({
-            type: "welcome",
-            to: email.trim(),
-            data: { name: fullName.trim() },
-          });
         }
       }
     } catch (error: any) {
@@ -332,30 +345,67 @@ const Auth = () => {
     setErrors({});
   };
 
-  const handleResendVerification = async () => {
-    if (!signupEmail) return;
+  const handleResendOTP = async () => {
+    if (!signupEmail || otpCooldown > 0) return;
     
-    setLoading(true);
+    setOtpLoading(true);
     try {
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email: signupEmail,
-        options: {
-          emailRedirectTo: `${window.location.origin}/home`,
-        },
+      const { error } = await supabase.functions.invoke("send-verification-otp", {
+        body: { email: signupEmail, name: signupName },
       });
       
       if (error) {
-        toast.error(error.message);
+        toast.error(language === "ar" ? "فشل في إعادة إرسال الرمز" : "Failed to resend OTP");
       } else {
-        toast.success(t.auth.emailSent);
+        toast.success(language === "ar" ? "تم إرسال رمز جديد!" : "New OTP sent!");
+        setOtpCooldown(60);
       }
-    } catch (error) {
-      toast.error(language === "ar" ? "فشل في إعادة إرسال بريد التحقق" : "Failed to resend verification email");
+    } catch {
+      toast.error(language === "ar" ? "فشل في إعادة إرسال الرمز" : "Failed to resend OTP");
     } finally {
-      setLoading(false);
+      setOtpLoading(false);
     }
   };
+
+  const handleVerifyOTP = async () => {
+    if (otpValue.length !== 6) return;
+    
+    setOtpLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("verify-email-otp", {
+        body: { otp: otpValue },
+      });
+      
+      if (error || !data?.verified) {
+        toast.error(language === "ar" ? "رمز غير صحيح أو منتهي الصلاحية" : "Invalid or expired OTP");
+        setOtpValue("");
+        return;
+      }
+      
+      toast.success(language === "ar" ? "تم التحقق بنجاح! 🎉" : "Email verified! 🎉");
+      // Send welcome email after verification
+      sendEmail({
+        type: "welcome",
+        to: signupEmail,
+        data: { name: signupName },
+      });
+      // Redirect to home
+      const { path, role, userName } = await getRedirectInfo((await supabase.auth.getUser()).data.user!.id);
+      toast.success(getWelcomeMessage(role, userName, language));
+      navigate(path, { replace: true });
+    } catch {
+      toast.error(language === "ar" ? "حدث خطأ أثناء التحقق" : "Verification error");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // OTP cooldown timer
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const timer = setTimeout(() => setOtpCooldown(otpCooldown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [otpCooldown]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/10 flex flex-col relative overflow-hidden">
@@ -401,41 +451,70 @@ const Auth = () => {
         <div className="bg-card/90 backdrop-blur-md rounded-3xl shadow-2xl p-6 max-w-md mx-auto w-full border border-border/50 animate-fade-in" style={{ animationDelay: "0.2s" }}>
           {mode === "verify-email" ? (
             <div className="text-center space-y-6 py-4">
-              <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center animate-pulse">
-                <Mail className="w-12 h-12 text-primary" />
+              <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                <ShieldCheck className="w-12 h-12 text-primary" />
               </div>
               
               <div className="space-y-3">
-                <p className="text-foreground font-medium">
-                  {language === "ar" ? "تم إرسال رابط التحقق!" : "Verification link sent!"}
+                <p className="text-foreground font-medium text-lg">
+                  {language === "ar" ? "أدخلي رمز التحقق" : "Enter verification code"}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {language === "ar" 
-                    ? "انقري على الرابط في بريدك الإلكتروني للتحقق من حسابك."
-                    : "Click the link in your email to verify your account."}
+                    ? "تم إرسال رمز مكون من 6 أرقام إلى بريدك"
+                    : "A 6-digit code was sent to your email"}
                 </p>
                 <div className="bg-muted/50 rounded-xl p-3">
-                  <p className="text-xs text-muted-foreground">
-                    📧 {signupEmail}
-                  </p>
+                  <p className="text-xs text-muted-foreground">📧 {signupEmail}</p>
                 </div>
+              </div>
+
+              {/* OTP Input */}
+              <div className="flex justify-center" dir="ltr">
+                <InputOTP
+                  maxLength={6}
+                  value={otpValue}
+                  onChange={(value) => setOtpValue(value)}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
               </div>
               
               <div className="space-y-3 pt-2">
                 <Button
-                  variant="outline"
-                  className="w-full rounded-xl h-12"
-                  onClick={handleResendVerification}
-                  disabled={loading}
+                  className="w-full h-14 rounded-xl text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+                  onClick={handleVerifyOTP}
+                  disabled={otpLoading || otpValue.length !== 6}
                 >
-                  {loading ? (
+                  {otpLoading ? (
                     <span className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      {language === "ar" ? "جاري الإرسال..." : "Sending..."}
+                      <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                      {language === "ar" ? "جاري التحقق..." : "Verifying..."}
                     </span>
                   ) : (
-                    t.auth.resendEmail
+                    <>
+                      {language === "ar" ? "تأكيد الرمز" : "Verify Code"}
+                      <ShieldCheck className="w-5 h-5 ms-2" />
+                    </>
                   )}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl h-12"
+                  onClick={handleResendOTP}
+                  disabled={otpLoading || otpCooldown > 0}
+                >
+                  {otpCooldown > 0
+                    ? (language === "ar" ? `إعادة الإرسال بعد ${otpCooldown}ث` : `Resend in ${otpCooldown}s`)
+                    : (language === "ar" ? "إعادة إرسال الرمز" : "Resend Code")}
                 </Button>
                 
                 <Button
