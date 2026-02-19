@@ -284,6 +284,8 @@ const Auth = () => {
           localStorage.removeItem("remembered_email");
         }
       } else {
+        // Set pendingOtp BEFORE signUp so onAuthStateChange won't redirect
+        pendingOtpRef.current = true;
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
@@ -296,6 +298,7 @@ const Auth = () => {
         });
         
         if (error) {
+          pendingOtpRef.current = false; // Reset on error
           if (error.message.includes("User already registered")) {
             toast.error(language === "ar" ? "يوجد حساب بهذا البريد بالفعل. يرجى تسجيل الدخول." : "An account with this email already exists. Please sign in.");
           } else {
@@ -306,7 +309,6 @@ const Auth = () => {
         
         if (data.user && data.session) {
           // Auto-confirmed — send OTP for custom verification
-          pendingOtpRef.current = true;
           setSignupEmail(email.trim());
           setSignupName(fullName.trim());
           setMode("verify-email");
