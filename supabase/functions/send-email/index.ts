@@ -247,7 +247,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: `Glamore <onboarding@resend.dev>`,
+        from: `Glamore <onboarding@glamore.app>`,
         to: [to],
         subject,
         html,
