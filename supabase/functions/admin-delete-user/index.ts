@@ -112,6 +112,17 @@ Deno.serve(async (req) => {
       metadata: { deleted_at: new Date().toISOString() },
     });
 
+    // Also log to permanent security audit log (survives account deletion)
+    await adminClient.from("security_audit_log").insert({
+      event_type: "account_deleted",
+      user_id: userId,
+      email: targetEmail,
+      full_name: targetProfile?.full_name || null,
+      ip_address: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null,
+      user_agent: req.headers.get("user-agent") || null,
+      metadata: { deleted_by: caller.id, reason: reason || null },
+    });
+
     console.log("User deleted successfully:", userId);
 
     return new Response(JSON.stringify({ success: true }), {

@@ -1226,6 +1226,45 @@ export type Database = {
           },
         ]
       }
+      security_audit_log: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          email: string | null
+          event_type: string
+          full_name: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          email?: string | null
+          event_type: string
+          full_name?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          email?: string | null
+          event_type?: string
+          full_name?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           artist_id: string

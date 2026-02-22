@@ -50,6 +50,36 @@ Deno.serve(async (req) => {
         .eq("id", userId);
     }
 
+    // Log to permanent security audit log
+    const eventType = body.eventType || (userId ? "login" : "ip_check");
+    if (userId || body.email) {
+      // Get user email if we have userId
+      let userEmail = body.email || null;
+      let userName = body.fullName || null;
+      if (userId && !userEmail) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("email, full_name")
+          .eq("id", userId)
+          .single();
+        if (profile) {
+          userEmail = profile.email;
+          userName = profile.full_name;
+        }
+      }
+      
+      await supabase.from("security_audit_log").insert({
+        event_type: eventType,
+        user_id: userId || null,
+        email: userEmail,
+        full_name: userName,
+        ip_address: ip,
+        user_agent: req.headers.get("user-agent") || null,
+        country_code: country_code,
+        metadata: body.metadata || {},
+      });
+    }
+
     // Detect country from IP using free geolocation API
     let country_code: string | null = null;
     if (ip !== "unknown") {
