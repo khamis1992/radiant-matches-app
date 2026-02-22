@@ -423,6 +423,15 @@ All colors MUST be HSL.
   }
 }
 
+/* Hide scrollbar for horizontal scroll areas (native mobile feel) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Custom Scrollbar for Horizontal Lists */
 .scrollbar-thin::-webkit-scrollbar {
   height: 6px;

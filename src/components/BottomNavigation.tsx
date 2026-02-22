@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Home, Calendar, User, LayoutDashboard, Palette, LucideIcon, Users, Heart, Images, Search, X, Gift, ShoppingBag, ClipboardList, Store } from "lucide-react";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePendingBookingsCount } from "@/hooks/usePendingBookings";
@@ -62,6 +63,7 @@ const BottomNavigation = () => {
   const { data: unreadCount = 0 } = useUnreadMessagesCount();
   const { data: referralsCount = 0 } = useReferrals();
   const { t, isRTL } = useLanguage();
+  const { tap } = useHapticFeedback();
   
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -113,6 +115,7 @@ const BottomNavigation = () => {
       <Link
         key={`${item.path}-${index}`}
         to={item.path}
+        onClick={() => tap()}
         className={`relative flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-xl transition-all duration-300 ${
           isActive
             ? "text-primary"
@@ -143,7 +146,7 @@ const BottomNavigation = () => {
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg safe-area-bottom">
           {/* زر البحث العائم في المنتصف */}
           <button
-            onClick={() => setSearchOpen(true)}
+            onClick={() => { tap(); setSearchOpen(true); }}
             className="absolute left-1/2 -translate-x-1/2 -top-6 w-12 h-12 bg-primary rounded-full shadow-md flex items-center justify-center text-primary-foreground border-[3px] border-background z-10"
           >
             <Search className="w-5 h-5" />
