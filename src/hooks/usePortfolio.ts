@@ -10,6 +10,8 @@ export interface PortfolioItem {
   display_order: number;
   is_featured: boolean;
   created_at: string;
+  moderation_status: string;
+  moderation_reason: string | null;
 }
 
 export const PORTFOLIO_CATEGORIES = [
@@ -47,7 +49,7 @@ export const useAddPortfolioItem = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (item: Omit<PortfolioItem, "id" | "created_at" | "display_order" | "is_featured"> & { display_order?: number; is_featured?: boolean }) => {
+    mutationFn: async (item: Omit<PortfolioItem, "id" | "created_at" | "display_order" | "is_featured" | "moderation_status" | "moderation_reason"> & { display_order?: number; is_featured?: boolean }) => {
       const { data, error } = await supabase
         .from("portfolio_items")
         .insert(item)
