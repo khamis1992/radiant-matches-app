@@ -85,18 +85,18 @@ const AppHeader = ({
 
     const styleClasses = {
       modern: cn(
-        "bg-gradient-to-b from-background via-background/95 to-background/80 backdrop-blur-xl border-b border-border/30"
+        "bg-background border-b border-border/40"
       ),
       minimal: cn(
-        "bg-background/80 backdrop-blur-md border-b border-border/20"
+        "bg-background border-b border-border/20"
       ),
       transparent: cn(
         isScrolled
-          ? "bg-background/90 backdrop-blur-xl border-b border-border/30 shadow-lg"
+          ? "bg-background/95 backdrop-blur-md border-b border-border/30"
           : "bg-transparent border-transparent"
       ),
       gradient: cn(
-        "bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 backdrop-blur-xl border-b border-primary/20"
+        "bg-background border-b border-border/30"
       ),
     };
 
@@ -123,7 +123,7 @@ const AppHeader = ({
             {showBack && (
               <button
                 onClick={() => navigate(-1)}
-                className="flex items-center justify-center w-10 h-10 -ms-2 rounded-2xl bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="flex items-center justify-center w-9 h-9 -ms-1 rounded-full hover:bg-muted transition-colors focus:outline-none"
               >
                 <ChevronLeft className="w-5 h-5 text-foreground" />
               </button>
@@ -133,7 +133,7 @@ const AppHeader = ({
                 <img
                   src={logo}
                   alt="Glam"
-                  className="h-24 w-auto object-contain drop-shadow-sm transition-all duration-200 hover:scale-105"
+                  className="h-10 w-auto object-contain"
                 />
               </div>
             )}
@@ -150,20 +150,20 @@ const AppHeader = ({
             {showSearch && (
               <button
                 onClick={handleSearch}
-                className="flex items-center justify-center w-10 h-10 rounded-2xl bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors focus:outline-none"
               >
-                <Search className="w-5 h-5 text-foreground" />
+                <Search className="w-[18px] h-[18px] text-muted-foreground" />
               </button>
             )}
 
             {/* Notification Button */}
             <button
               onClick={() => navigate("/notifications")}
-              className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors focus:outline-none"
             >
-              <Bell className="w-5 h-5 text-foreground" />
+              <Bell className="w-[18px] h-[18px] text-muted-foreground" />
               {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-primary-foreground bg-gradient-to-r from-primary to-primary/90 rounded-full shadow-lg animate-in zoom-in-50 duration-200">
+                <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-primary-foreground bg-primary rounded-full">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               )}
@@ -172,11 +172,11 @@ const AppHeader = ({
             {/* Cart Button */}
             <button
               onClick={() => navigate("/cart")}
-              className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors focus:outline-none"
             >
-              <ShoppingBag className="w-5 h-5 text-foreground" />
+              <ShoppingBag className="w-[18px] h-[18px] text-muted-foreground" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-primary-foreground bg-gradient-to-r from-gold to-gold/90 rounded-full shadow-lg animate-in zoom-in-50 duration-200">
+                <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-primary-foreground bg-primary rounded-full">
                   {cartItemCount > 99 ? '99+' : cartItemCount}
                 </span>
               )}
@@ -185,14 +185,14 @@ const AppHeader = ({
             {/* Profile Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center justify-center w-10 h-10 rounded-2xl bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-                  <Avatar className="w-8 h-8 ring-2 ring-background shadow-sm transition-all duration-200 hover:ring-primary/30">
+                <button className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors focus:outline-none">
+                  <Avatar className="w-7 h-7">
                     <AvatarImage
                       src={profile?.avatar_url || undefined}
                       alt={profile?.full_name || "Profile"}
                       className="object-cover"
                     />
-                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-xs font-semibold">
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                       {profile?.full_name?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
@@ -200,8 +200,8 @@ const AppHeader = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                sideOffset={12}
-                className="w-56 bg-card/95 backdrop-blur-xl border border-border/50 shadow-2xl rounded-2xl p-2 animate-in fade-in-0 zoom-in-95 duration-200"
+                sideOffset={8}
+                className="w-56 bg-card border border-border shadow-lg rounded-xl p-1.5"
               >
                 {user ? (
                   <>
@@ -210,11 +210,11 @@ const AppHeader = ({
                       className="p-0 mb-1 focus:bg-transparent cursor-pointer" 
                       onClick={() => navigate("/profile")}
                     >
-                      <div className="w-full px-3 py-3 bg-gradient-to-br from-muted/50 to-transparent rounded-xl hover:bg-muted/80 transition-colors">
+                      <div className="w-full px-3 py-2.5 rounded-lg hover:bg-muted transition-colors">
                         <div className="flex items-center gap-3">
-                          <Avatar className="w-10 h-10 ring-2 ring-primary/20">
+                          <Avatar className="w-9 h-9">
                             <AvatarImage src={profile?.avatar_url || undefined} />
-                            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
+                            <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
                               {profile?.full_name?.charAt(0) || "U"}
                             </AvatarFallback>
                           </Avatar>
@@ -229,26 +229,22 @@ const AppHeader = ({
                         </div>
                       </div>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-border/30 my-1" />
+                    <DropdownMenuSeparator className="my-1" />
                     <DropdownMenuItem
                       onClick={handleLogout}
-                      className="cursor-pointer rounded-xl py-3 px-3 text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors duration-150"
+                      className="cursor-pointer rounded-lg py-2 px-3 text-destructive focus:text-destructive focus:bg-destructive/10"
                     >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-destructive/10 me-3">
-                        <LogOut className="h-4 w-4 text-destructive" />
-                      </div>
-                      <span className="font-medium">{t.userMenu.logout}</span>
+                      <LogOut className="h-4 w-4 text-destructive me-2" />
+                      <span className="text-sm">{t.userMenu.logout}</span>
                     </DropdownMenuItem>
                   </>
                 ) : (
                   <DropdownMenuItem
                     onClick={() => navigate("/auth")}
-                    className="cursor-pointer rounded-xl py-3 px-3 focus:bg-muted/80 transition-colors duration-150"
+                    className="cursor-pointer rounded-lg py-2 px-3 focus:bg-muted"
                   >
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 me-3">
-                      <LogIn className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="font-medium">{t.auth.login}</span>
+                    <LogIn className="h-4 w-4 text-primary me-2" />
+                    <span className="text-sm">{t.auth.login}</span>
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -256,7 +252,7 @@ const AppHeader = ({
           </div>
         </div>
         {children && (
-          <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="mt-2">
             {children}
           </div>
         )}

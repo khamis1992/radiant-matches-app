@@ -144,9 +144,9 @@ const BottomNavigation = () => {
           {/* زر البحث العائم في المنتصف */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="absolute left-1/2 -translate-x-1/2 -top-7 w-14 h-14 bg-gradient-to-br from-primary to-primary/80 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-all border-4 border-background z-10"
+            className="absolute left-1/2 -translate-x-1/2 -top-6 w-12 h-12 bg-primary rounded-full shadow-md flex items-center justify-center text-primary-foreground border-[3px] border-background z-10"
           >
-            <Search className="w-6 h-6" />
+            <Search className="w-5 h-5" />
           </button>
           
           {/* شريط التنقل */}
