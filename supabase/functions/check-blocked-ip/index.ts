@@ -50,10 +50,25 @@ Deno.serve(async (req) => {
         .eq("id", userId);
     }
 
+    // Detect country from IP using free geolocation API
+    let country_code: string | null = null;
+    if (ip !== "unknown") {
+      try {
+        const geoResponse = await fetch(`http://ip-api.com/json/${ip}?fields=countryCode,status`);
+        if (geoResponse.ok) {
+          const geoData = await geoResponse.json();
+          if (geoData.status === "success") {
+            country_code = geoData.countryCode;
+          }
+        }
+      } catch (geoErr) {
+        console.error("Geolocation lookup failed:", geoErr);
+      }
+    }
+
     // Log to permanent security audit log
     const eventType = body.eventType || (userId ? "login" : "ip_check");
     if (userId || body.email) {
-      // Get user email if we have userId
       let userEmail = body.email || null;
       let userName = body.fullName || null;
       if (userId && !userEmail) {
@@ -78,22 +93,6 @@ Deno.serve(async (req) => {
         country_code: country_code,
         metadata: body.metadata || {},
       });
-    }
-
-    // Detect country from IP using free geolocation API
-    let country_code: string | null = null;
-    if (ip !== "unknown") {
-      try {
-        const geoResponse = await fetch(`http://ip-api.com/json/${ip}?fields=countryCode,status`);
-        if (geoResponse.ok) {
-          const geoData = await geoResponse.json();
-          if (geoData.status === "success") {
-            country_code = geoData.countryCode; // e.g. "QA" for Qatar
-          }
-        }
-      } catch (geoErr) {
-        console.error("Geolocation lookup failed:", geoErr);
-      }
     }
 
     // Only check blocked IPs if we have a real IP
