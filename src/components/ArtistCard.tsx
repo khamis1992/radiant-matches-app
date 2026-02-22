@@ -63,7 +63,7 @@ const ArtistCard = ({
 
   return (
     <Link to={`/artist/${id}`} className="block">
-      <div className="bg-card rounded-lg sm:rounded-2xl overflow-hidden shadow-sm sm:shadow-md hover:shadow-lg sm:hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 sm:hover:-translate-y-1 animate-fade-in border border-border/50">
+      <div className="bg-card rounded-lg sm:rounded-2xl overflow-hidden shadow-sm sm:shadow-md hover:shadow-lg transition-shadow border border-border/50">
         {/* Cover Image */}
         <div className="relative h-14 sm:h-32 overflow-hidden">
           <img
@@ -162,7 +162,8 @@ const ArtistCard = ({
 
           {/* Book Now Button */}
           <Button 
-            className="w-full mt-2 sm:mt-4 bg-[hsl(350,70%,65%)] hover:bg-[hsl(350,70%,55%)] text-white shadow-sm sm:shadow-md text-[10px] sm:text-base h-7 sm:h-9"
+            variant="outline"
+            className="w-full mt-2 sm:mt-4 text-[10px] sm:text-sm h-7 sm:h-9"
             size="sm"
           >
             {t.bookings.bookNow}
