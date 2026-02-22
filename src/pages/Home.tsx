@@ -91,7 +91,7 @@ const FilterTabs = ({
         <button
           key={tab.key}
           onClick={() => onSelect(tab.key)}
-          className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95 ${
+          className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
             activeTab === tab.key
               ? "bg-foreground text-background shadow-sm"
               : "bg-muted text-muted-foreground hover:bg-muted/80"

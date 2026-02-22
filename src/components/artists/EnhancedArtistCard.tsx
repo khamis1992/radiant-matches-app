@@ -94,7 +94,7 @@ const EnhancedArtistCard = ({
     return (
       <div
         onClick={() => navigate(`/artist/${artist.id}`)}
-        className="bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-all cursor-pointer animate-fade-in"
+        className="bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
       >
         <div className="flex items-start gap-3">
           <div className="relative">
