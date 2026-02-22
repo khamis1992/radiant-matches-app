@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { Camera, MapPin, Bell, Shield, ChevronRight } from "lucide-react";
+import { Camera, MapPin, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { translations } from "@/lib/translations";
 
 interface PermissionItem {
   id: string;
@@ -43,29 +42,29 @@ const requestLocationPermission = async (): Promise<boolean> => {
 const PERMISSIONS: PermissionItem[] = [
   {
     id: "notifications",
-    icon: <Bell className="w-6 h-6" />,
-    titleEn: "Notifications",
-    titleAr: "الإشعارات",
-    descEn: "Get updates on bookings and offers",
-    descAr: "احصلي على تحديثات الحجوزات والعروض",
+    icon: <Bell className="w-7 h-7" />,
+    titleEn: "Stay in the Loop",
+    titleAr: "ابقي على اطلاع",
+    descEn: "Get notified about booking confirmations, offers, and messages from your artist.",
+    descAr: "احصلي على إشعارات تأكيد الحجوزات والعروض والرسائل من خبيرتك.",
     request: requestNotificationPermission,
   },
   {
     id: "camera",
-    icon: <Camera className="w-6 h-6" />,
-    titleEn: "Camera",
-    titleAr: "الكاميرا",
-    descEn: "Take photos for your profile and reviews",
-    descAr: "التقطي صوراً لملفك الشخصي والتقييمات",
+    icon: <Camera className="w-7 h-7" />,
+    titleEn: "Show Your Look",
+    titleAr: "شاركي إطلالتك",
+    descEn: "Snap photos for your profile, share reviews, and show off your look.",
+    descAr: "التقطي صوراً لملفك الشخصي وشاركي تقييماتك وإطلالاتك.",
     request: requestCameraPermission,
   },
   {
     id: "location",
-    icon: <MapPin className="w-6 h-6" />,
-    titleEn: "Location",
-    titleAr: "الموقع",
-    descEn: "Find nearby artists and services",
-    descAr: "ابحثي عن خبيرات تجميل بالقرب منك",
+    icon: <MapPin className="w-7 h-7" />,
+    titleEn: "Find Artists Nearby",
+    titleAr: "اكتشفي الأقرب إليك",
+    descEn: "Discover beauty experts available in your area for home visits.",
+    descAr: "اكتشفي خبيرات التجميل المتاحات بالقرب منك للزيارات المنزلية.",
     request: requestLocationPermission,
   },
 ];
@@ -86,8 +85,7 @@ export const PermissionsPrompt = () => {
     const dismissed = localStorage.getItem("permissions-prompt-done");
     if (dismissed) return;
 
-    // Show after a short delay on first visit
-    const timer = setTimeout(() => setVisible(true), 1500);
+    const timer = setTimeout(() => setVisible(true), 1200);
     return () => clearTimeout(timer);
   }, []);
 
@@ -97,25 +95,18 @@ export const PermissionsPrompt = () => {
     const granted = await perm.request();
     setResults((prev) => ({ ...prev, [perm.id]: granted }));
     setRequesting(false);
+    advance();
+  };
 
+  const handleSkip = () => advance();
+
+  const advance = () => {
     if (currentIndex < PERMISSIONS.length - 1) {
       setCurrentIndex((i) => i + 1);
     } else {
-      finishAll();
+      localStorage.setItem("permissions-prompt-done", "true");
+      setVisible(false);
     }
-  };
-
-  const handleSkip = () => {
-    if (currentIndex < PERMISSIONS.length - 1) {
-      setCurrentIndex((i) => i + 1);
-    } else {
-      finishAll();
-    }
-  };
-
-  const finishAll = () => {
-    localStorage.setItem("permissions-prompt-done", "true");
-    setVisible(false);
   };
 
   if (!visible) return null;
@@ -123,69 +114,74 @@ export const PermissionsPrompt = () => {
   const perm = PERMISSIONS[currentIndex];
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div
-        className="bg-card border border-border rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300"
-        dir={isAr ? "rtl" : "ltr"}
-      >
-        {/* Progress */}
-        <div className="flex items-center justify-center gap-2">
+    <div className="fixed inset-0 z-[100] bg-background flex flex-col" dir={isAr ? "rtl" : "ltr"}>
+      {/* Skip All - top right */}
+      <div className="flex justify-end p-4 pt-6 safe-area-top">
+        <button
+          onClick={() => {
+            localStorage.setItem("permissions-prompt-done", "true");
+            setVisible(false);
+          }}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1"
+        >
+          {isAr ? "تخطي الكل" : "Skip All"}
+        </button>
+      </div>
+
+      {/* Content - centered */}
+      <div className="flex-1 flex flex-col items-center justify-center px-8 -mt-12">
+        {/* Icon */}
+        <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6">
+          {perm.icon}
+        </div>
+
+        {/* Title */}
+        <h2 className="text-xl font-bold text-foreground text-center mb-2">
+          {isAr ? perm.titleAr : perm.titleEn}
+        </h2>
+
+        {/* Description */}
+        <p className="text-sm text-muted-foreground text-center leading-relaxed max-w-[280px]">
+          {isAr ? perm.descAr : perm.descEn}
+        </p>
+      </div>
+
+      {/* Bottom section */}
+      <div className="px-6 pb-8 safe-area-bottom space-y-4">
+        {/* Progress dots */}
+        <div className="flex items-center justify-center gap-2 mb-2">
           {PERMISSIONS.map((_, i) => (
             <div
               key={i}
-              className={`h-1.5 rounded-full transition-all ${
-                i <= currentIndex ? "w-8 bg-primary" : "w-4 bg-muted"
+              className={`rounded-full transition-all duration-300 ${
+                i === currentIndex
+                  ? "w-6 h-2 bg-primary"
+                  : i < currentIndex
+                    ? "w-2 h-2 bg-primary/40"
+                    : "w-2 h-2 bg-muted"
               }`}
             />
           ))}
         </div>
 
-        {/* Icon */}
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            {perm.icon}
-          </div>
-        </div>
+        {/* Allow button */}
+        <Button
+          onClick={handleAllow}
+          disabled={requesting}
+          className="w-full h-13 rounded-xl text-base font-semibold"
+        >
+          {requesting
+            ? isAr ? "جاري الطلب..." : "Requesting..."
+            : isAr ? "السماح" : "Allow"}
+        </Button>
 
-        {/* Title & Description */}
-        <div className="text-center space-y-2">
-          <h3 className="text-lg font-semibold text-foreground">
-            {isAr ? perm.titleAr : perm.titleEn}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {isAr ? perm.descAr : perm.descEn}
-          </p>
-        </div>
-
-        {/* Actions */}
-        <div className="space-y-3">
-          <Button
-            onClick={handleAllow}
-            disabled={requesting}
-            className="w-full gap-2"
-          >
-            <Shield className="w-4 h-4" />
-            {requesting
-              ? isAr
-                ? "جاري الطلب..."
-                : "Requesting..."
-              : isAr
-              ? "السماح"
-              : "Allow"}
-          </Button>
-          <Button
-            onClick={handleSkip}
-            variant="ghost"
-            className="w-full text-muted-foreground"
-          >
-            {isAr ? "تخطي" : "Skip"}
-          </Button>
-        </div>
-
-        {/* Step counter */}
-        <p className="text-xs text-center text-muted-foreground">
-          {currentIndex + 1} / {PERMISSIONS.length}
-        </p>
+        {/* Skip this one */}
+        <button
+          onClick={handleSkip}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+        >
+          {isAr ? "ليس الآن" : "Not Now"}
+        </button>
       </div>
     </div>
   );
