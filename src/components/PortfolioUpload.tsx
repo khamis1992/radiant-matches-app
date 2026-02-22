@@ -169,6 +169,22 @@ const SortableImage = ({ item, index, onEdit, onDelete, onView, onSetFeatured, i
           {item.category}
         </Badge>
       </div>
+
+      {/* Moderation Status */}
+      {item.moderation_status === "pending" && (
+        <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] rounded-lg flex items-center justify-center pointer-events-none">
+          <Badge variant="secondary" className="text-xs">
+            ⏳ قيد المراجعة
+          </Badge>
+        </div>
+      )}
+      {item.moderation_status === "rejected" && (
+        <div className="absolute inset-0 bg-destructive/20 rounded-lg flex items-center justify-center pointer-events-none">
+          <Badge variant="destructive" className="text-xs">
+            ❌ مرفوضة
+          </Badge>
+        </div>
+      )}
     </div>
   );
 };
@@ -1030,7 +1046,7 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           .from("portfolio")
           .getPublicUrl(fileName);
 
-        await addItem.mutateAsync({
+        const insertedData = await addItem.mutateAsync({
           artist_id: artistId,
           image_url: publicUrl,
           category: item.category,
@@ -1038,6 +1054,16 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
           display_order: maxOrder + i + 1,
           is_featured: item.isFeatured,
         });
+
+        // Trigger AI moderation in background
+        supabase.functions.invoke("moderate-image", {
+          body: {
+            imageUrl: publicUrl,
+            sourceType: "portfolio",
+            sourceId: insertedData.id,
+            userId: (await supabase.auth.getUser()).data.user?.id,
+          },
+        }).catch((err) => console.error("Moderation error:", err));
 
         successCount++;
       } catch (error) {

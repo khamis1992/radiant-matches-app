@@ -583,6 +583,54 @@ export type Database = {
         }
         Relationships: []
       }
+      image_moderation_queue: {
+        Row: {
+          admin_notes: string | null
+          ai_confidence: number | null
+          ai_flagged: boolean | null
+          ai_reason: string | null
+          created_at: string
+          id: string
+          image_url: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_id: string | null
+          source_type: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          ai_confidence?: number | null
+          ai_flagged?: boolean | null
+          ai_reason?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_id?: string | null
+          source_type: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          ai_confidence?: number | null
+          ai_flagged?: boolean | null
+          ai_reason?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_id?: string | null
+          source_type?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       instagram_connections: {
         Row: {
           access_token: string
@@ -802,6 +850,8 @@ export type Database = {
           instagram_media_id: string | null
           instagram_permalink: string | null
           is_featured: boolean
+          moderation_reason: string | null
+          moderation_status: string
           title: string | null
         }
         Insert: {
@@ -814,6 +864,8 @@ export type Database = {
           instagram_media_id?: string | null
           instagram_permalink?: string | null
           is_featured?: boolean
+          moderation_reason?: string | null
+          moderation_status?: string
           title?: string | null
         }
         Update: {
@@ -826,6 +878,8 @@ export type Database = {
           instagram_media_id?: string | null
           instagram_permalink?: string | null
           is_featured?: boolean
+          moderation_reason?: string | null
+          moderation_status?: string
           title?: string | null
         }
         Relationships: [

@@ -21,6 +21,7 @@ import {
   Globe,
   ShieldBan,
   Shield,
+  ShieldCheck,
   ClipboardList,
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -61,6 +62,7 @@ export const AdminSidebar = () => {
     { to: "/admin/blocked-ips", icon: ShieldBan, label: language === "ar" ? "حظر IP" : "Blocked IPs" },
     { to: "/admin/activity-log", icon: ClipboardList, label: language === "ar" ? "سجل النشاط" : "Activity Log" },
     { to: "/admin/security-audit", icon: Shield, label: language === "ar" ? "السجل الأمني" : "Security Audit" },
+    { to: "/admin/image-moderation", icon: ShieldCheck, label: language === "ar" ? "مراجعة الصور" : "Image Moderation" },
     { to: "/admin/settings", icon: Settings, label: t.adminNav.settings },
   ];
 

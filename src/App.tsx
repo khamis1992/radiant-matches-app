@@ -62,6 +62,7 @@ import AdminCampaigns from "./pages/admin/AdminCampaigns";
 import AdminBlockedIPs from "./pages/admin/AdminBlockedIPs";
 import AdminActivityLog from "./pages/admin/AdminActivityLog";
 import AdminSecurityAudit from "./pages/admin/AdminSecurityAudit";
+import AdminImageModeration from "./pages/admin/AdminImageModeration";
 import ArtistSignup from "./pages/ArtistSignup";
 import CompareArtists from "./pages/CompareArtists";
 import Referrals from "./pages/Referrals";
@@ -324,6 +325,7 @@ const App = () => (
           <Route path="/admin/blocked-ips" element={<AdminBlockedIPs />} />
           <Route path="/admin/activity-log" element={<AdminActivityLog />} />
           <Route path="/admin/security-audit" element={<AdminSecurityAudit />} />
+          <Route path="/admin/image-moderation" element={<AdminImageModeration />} />
           <Route path="/email-preview" element={<EmailPreview />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
