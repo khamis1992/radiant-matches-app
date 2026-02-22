@@ -219,148 +219,95 @@ const EnhancedArtistCard = ({
   return (
     <div
       onClick={() => navigate(`/artist/${artist.id}`)}
-      className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer animate-fade-in border border-border/50 group h-full flex flex-col"
+      className="bg-card rounded-xl overflow-hidden shadow-sm border border-border/40 cursor-pointer h-full flex flex-col"
     >
       {/* Cover Image */}
-      <div className="relative h-28 sm:h-32 overflow-hidden flex-shrink-0">
+      <div className="relative h-24 sm:h-28 overflow-hidden flex-shrink-0">
         {coverImage ? (
           <img
             src={coverImage}
             alt={`${artist.profile?.full_name}'s work`}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5" />
+          <div className="w-full h-full bg-muted" />
         )}
         
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        
-        {/* Availability Badge */}
-        {availability !== undefined && (
-          <div className={`absolute top-2 ${isRTL ? "right-2" : "left-2"}`}>
-            <Badge
-              className={`text-[10px] px-2 py-0.5 ${
-                availability.isAvailableToday
-                  ? "bg-green-500/90 hover:bg-green-500 text-white"
-                  : "bg-muted/90 text-muted-foreground"
-              }`}
-            >
-              <Clock className="w-2.5 h-2.5 mr-1" />
-              {availability.isAvailableToday
-                ? availability.todayHours
-                  ? `${formatTime(availability.todayHours.start)} - ${formatTime(availability.todayHours.end)}`
-                  : t.availability?.availableToday || "Available"
-                : t.availability?.closedToday || "Closed"}
-            </Badge>
-          </div>
-        )}
-        
-        {/* Actions */}
-        <div className={`absolute top-2 ${isRTL ? "right-2" : "left-2"}`}>
+        {/* Favorite */}
+        <div className={`absolute top-2 ${isRTL ? "left-2" : "right-2"}`}>
           <FavoriteButton
             itemType="artist"
             itemId={artist.id}
-            className="bg-card/80 backdrop-blur-sm hover:bg-card w-8 h-8"
+            className="bg-card/80 hover:bg-card w-7 h-7"
           />
         </div>
 
-        {/* Price Badge */}
-        {artist.min_price && (
-          <div className={`absolute bottom-2 ${isRTL ? "left-2" : "right-2"}`}>
-            <Badge className="bg-card/90 backdrop-blur-sm text-foreground hover:bg-card text-xs">
-              {t.artistsListing?.startingFrom || "From"} {artist.min_price} QAR
-            </Badge>
+        {/* Availability dot */}
+        {availability !== undefined && availability.isAvailableToday && (
+          <div className={`absolute top-2 ${isRTL ? "right-2" : "left-2"}`}>
+            <span className="flex items-center gap-1 bg-card/90 text-[10px] px-1.5 py-0.5 rounded-full text-foreground">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              {t.availability?.open || "Open"}
+            </span>
           </div>
         )}
       </div>
 
       {/* Avatar */}
-      <div className="relative flex justify-center -mt-8">
-        <Avatar className="w-16 h-16 border-4 border-card shadow-lg">
+      <div className="relative flex justify-center -mt-6">
+        <Avatar className="w-12 h-12 border-2 border-card">
           <AvatarImage src={artist.profile?.avatar_url || undefined} alt={artist.profile?.full_name || ""} className="object-cover" />
-          <AvatarFallback className="text-xl font-semibold bg-primary/10 text-primary">
+          <AvatarFallback className="text-sm font-medium bg-primary/10 text-primary">
             {artist.profile?.full_name?.charAt(0) || "A"}
           </AvatarFallback>
         </Avatar>
       </div>
 
       {/* Content */}
-      <div className="px-3 pt-2 pb-3 text-center flex flex-col flex-grow">
-        {/* Account Type Badge */}
-        <div className="flex justify-center mb-1">
-          <Badge
-            variant="outline"
-            className={`text-[9px] px-2 py-0 ${
-              isSeller
-                ? "bg-accent/10 text-accent-foreground border-accent/30"
-                : "bg-primary/10 text-primary border-primary/20"
-            }`}
-          >
-            {isSeller ? (
-              <><ShoppingBag className="w-2.5 h-2.5 mr-0.5" />{isRTL ? "متجر" : "Shop"}</>
-            ) : (
-              <><Sparkles className="w-2.5 h-2.5 mr-0.5" />{isRTL ? "خبيرة تجميل" : "Beauty Expert"}</>
-            )}
-          </Badge>
-        </div>
+      <div className="px-3 pt-1.5 pb-3 text-center flex flex-col flex-grow">
         <h3 className="font-semibold text-foreground text-sm line-clamp-1">
           {artist.profile?.full_name || "Unknown Artist"}
         </h3>
         
-        {/* Categories - Fixed height container */}
-        <div className="h-6 flex flex-wrap justify-center gap-1 mt-1.5 overflow-hidden">
-          {artist.categories && artist.categories.length > 0 ? (
-            <>
-              {artist.categories.slice(0, 2).map((category) => (
-                <span
-                  key={category}
-                  className="px-2 py-0.5 text-[9px] font-medium bg-primary/10 text-primary rounded-full"
-                >
-                  {getCategoryLabel(category)}
-                </span>
-              ))}
-              {artist.categories.length > 2 && (
-                <span className="px-2 py-0.5 text-[9px] font-medium bg-muted text-muted-foreground rounded-full">
-                  +{artist.categories.length - 2}
-                </span>
-              )}
-            </>
-          ) : (
-            <span className="text-[9px] text-muted-foreground">—</span>
-          )}
-        </div>
+        {/* Specialty text */}
+        {artist.categories && artist.categories.length > 0 && (
+          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+            {artist.categories.slice(0, 2).map(c => getCategoryLabel(c)).join(" · ")}
+          </p>
+        )}
 
-        {/* Rating & Experience - Fixed height */}
-        <div className="h-5 flex items-center justify-center gap-2 mt-2">
+        {/* Rating */}
+        <div className="flex items-center justify-center gap-1 mt-1.5">
           {artist.rating !== null ? (
-            <div className="flex items-center gap-1 text-xs">
-              <Star className="w-3 h-3 fill-primary text-primary" />
-              <span className="font-medium">{Number(artist.rating).toFixed(1)}</span>
+            <>
+              <Star className="w-3 h-3 fill-[hsl(42,85%,55%)] text-[hsl(42,85%,55%)]" />
+              <span className="text-xs font-medium">{Number(artist.rating).toFixed(1)}</span>
               <span className="text-muted-foreground text-[10px]">({artist.total_reviews || 0})</span>
-            </div>
+            </>
           ) : (
             <span className="text-[10px] text-muted-foreground">{t.common?.new || "New"}</span>
           )}
         </div>
 
-        {/* Location - Fixed height */}
-        <div className="h-4 flex items-center justify-center gap-1 mt-1 text-primary text-xs">
-          {artist.profile?.location ? (
-            <>
-              <MapPin className="w-3 h-3" />
-              <span className="line-clamp-1">{artist.profile.location}</span>
-            </>
-          ) : (
-            <span className="text-muted-foreground">—</span>
-          )}
-        </div>
+        {/* Location */}
+        {artist.profile?.location && (
+          <div className="flex items-center justify-center gap-1 mt-1 text-muted-foreground text-[11px]">
+            <MapPin className="w-3 h-3" />
+            <span className="line-clamp-1">{artist.profile.location}</span>
+          </div>
+        )}
 
-        {/* Spacer to push button to bottom */}
+        {/* Price */}
+        {artist.min_price && (
+          <p className="text-xs font-medium text-primary mt-1">
+            {t.artistsListing?.startingFrom || "From"} {artist.min_price} QAR
+          </p>
+        )}
+
         <div className="flex-grow" />
 
-        {/* Book Button - Always at bottom */}
-        <Button className="w-full mt-2" size="sm">
+        {/* Book Button */}
+        <Button variant="outline" className="w-full mt-2 text-xs h-8" size="sm">
           {t.bookings.bookNow}
         </Button>
       </div>

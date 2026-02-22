@@ -384,8 +384,7 @@ const Home = () => {
                 {filteredArtists.map((artist, index) => (
                   <div
                     key={artist.id}
-                    className="min-w-[46%] max-w-[46%] animate-fade-in"
-                    style={{ animationDelay: `${index * 40}ms` }}
+                    className="min-w-[46%] max-w-[46%]"
                   >
                     <EnhancedArtistCard
                       artist={artist}
@@ -420,8 +419,7 @@ const Home = () => {
               {sellers.map((seller, index) => (
                 <div
                   key={seller.id}
-                  className="min-w-[46%] max-w-[46%] animate-fade-in"
-                  style={{ animationDelay: `${index * 40}ms` }}
+                    className="min-w-[46%] max-w-[46%]"
                 >
                   <EnhancedArtistCard
                     artist={seller}
