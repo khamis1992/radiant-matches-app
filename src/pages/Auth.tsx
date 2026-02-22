@@ -269,11 +269,11 @@ const Auth = () => {
           return;
         }
 
-        // Save user IP after successful login
+        // Save user IP and log login event
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData?.session?.user?.id) {
           supabase.functions.invoke("check-blocked-ip", {
-            body: { userId: sessionData.session.user.id },
+            body: { userId: sessionData.session.user.id, eventType: "login" },
           }).catch(() => {});
         }
 
@@ -312,6 +312,10 @@ const Auth = () => {
           setSignupEmail(email.trim());
           setSignupName(fullName.trim());
           setMode("verify-email");
+          // Log signup to security audit
+          supabase.functions.invoke("check-blocked-ip", {
+            body: { userId: data.user.id, eventType: "signup", email: email.trim(), fullName: fullName.trim() },
+          }).catch(() => {});
           // Send OTP
           supabase.functions.invoke("send-verification-otp", {
             body: { email: email.trim(), name: fullName.trim() },
