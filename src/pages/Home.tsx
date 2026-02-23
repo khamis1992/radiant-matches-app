@@ -425,6 +425,7 @@ const Home = () => {
                     artist={seller}
                     availability={availabilityMap?.get(seller.id)}
                     viewMode="grid"
+                    buttonLabel={isRTL ? "تسوق الآن" : "Shop Now"}
                   />
                 </div>
               ))}

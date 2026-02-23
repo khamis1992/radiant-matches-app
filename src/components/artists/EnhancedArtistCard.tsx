@@ -15,6 +15,7 @@ interface EnhancedArtistCardProps {
     todayHours?: { start: string; end: string } | null;
   };
   viewMode: "grid" | "list";
+  buttonLabel?: string;
 }
 
 const MAX_COMPARE_COUNT = 3;
@@ -23,6 +24,7 @@ const EnhancedArtistCard = ({
   artist,
   availability,
   viewMode,
+  buttonLabel,
 }: EnhancedArtistCardProps) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -308,7 +310,7 @@ const EnhancedArtistCard = ({
 
         {/* Book Button */}
         <Button variant="outline" className="w-full mt-2 text-xs h-8" size="sm">
-          {t.bookings.bookNow}
+          {buttonLabel || t.bookings.bookNow}
         </Button>
       </div>
     </div>
