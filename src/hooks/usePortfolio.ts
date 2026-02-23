@@ -57,6 +57,24 @@ export const useAddPortfolioItem = () => {
         .single();
 
       if (error) throw error;
+
+      // Auto-moderate uploaded image
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && data) {
+          supabase.functions.invoke("moderate-image", {
+            body: {
+              imageUrl: item.image_url,
+              sourceType: "portfolio",
+              sourceId: data.id,
+              userId: user.id,
+            },
+          }).catch(err => console.error("Moderation request failed:", err));
+        }
+      } catch (modErr) {
+        console.error("Failed to trigger moderation:", modErr);
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
