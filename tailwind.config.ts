@@ -27,6 +27,21 @@ export default {
   				DEFAULT: 'hsl(var(--gold))',
   				foreground: 'hsl(var(--gold-foreground))'
   			},
+  			glam: {
+  				ink: 'var(--glam-ink)',
+  				'ink-pressed': 'var(--glam-ink-pressed)',
+  				rose: 'var(--glam-rose-action)',
+  				'rose-pressed': 'var(--glam-rose-action-pressed)',
+  				blush: 'var(--glam-blush)',
+  				'blush-soft': 'var(--glam-blush-soft)',
+  				'blush-deep': 'var(--glam-blush-deep)',
+  				porcelain: 'var(--glam-porcelain)',
+  				surface: 'var(--glam-surface-soft)',
+  				muted: 'var(--glam-text-muted)',
+  				secondary: 'var(--glam-text-secondary)',
+  				border: 'var(--glam-border)',
+  				success: 'var(--glam-success)'
+  			},
   			nude: {
   				DEFAULT: 'hsl(var(--nude))',
   			},
@@ -120,7 +135,8 @@ export default {
   		},
   		fontFamily: {
   			sans: [
-  				'Poppins',
+  				'Inter',
+  				'IBM Plex Sans Arabic',
   				'ui-sans-serif',
   				'system-ui',
   				'-apple-system',

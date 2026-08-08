@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Sparkles, Store } from "lucide-react";
+import { ChevronRight, Award, Store, Star } from "lucide-react";
 import CategoryCard from "@/components/CategoryCard";
 import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUnreadNotificationsCount } from "@/hooks/useArtistNotifications";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Carousel,
   CarouselContent,
@@ -20,6 +21,8 @@ import {
   CarouselDots,
 } from "@/components/ui/carousel";
 import { useActiveBanners } from "@/hooks/useAdminBanners";
+
+type ArtistMeta = { account_type?: string; categories?: string[] };
 
 import promoBanner1 from "@/assets/promo-banner-1.jpg";
 import categoryMakeup from "@/assets/category-makeup.jpg";
@@ -57,7 +60,7 @@ const SectionHeader = ({
   <div className="flex items-center justify-between px-5 mb-3">
     <div className="flex items-center gap-2">
       {icon && (
-        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${accentClass || "bg-primary/10"}`}>
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${accentClass || "bg-glam-surface"}`}>
           {icon}
         </div>
       )}
@@ -66,7 +69,7 @@ const SectionHeader = ({
     {actionText && onAction && (
       <button
         onClick={onAction}
-        className="flex items-center gap-0.5 text-xs text-primary font-semibold active:opacity-70"
+        className="flex items-center gap-0.5 text-xs text-glam-rose font-semibold active:opacity-70"
       >
         {actionText}
         <ChevronRight className="w-3.5 h-3.5" />
@@ -93,8 +96,8 @@ const FilterTabs = ({
           onClick={() => onSelect(tab.key)}
           className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
             activeTab === tab.key
-              ? "bg-foreground text-background shadow-sm"
-              : "bg-muted text-muted-foreground hover:bg-muted/80"
+              ? "bg-glam-blush-soft text-glam-ink"
+              : "bg-glam-surface text-glam-secondary hover:bg-glam-blush-soft/60"
           }`}
         >
           {tab.label}
@@ -128,23 +131,21 @@ const PromotionsCarousel = ({
           <CarouselContent>
             {t.home.promos.map((promo, index) => (
               <CarouselItem key={index}>
-                <div className="relative overflow-hidden rounded-2xl h-[130px]">
+                <div className="relative overflow-hidden rounded-2xl h-[130px] bg-glam-porcelain border border-glam-border">
                   <img
                     src={promoBanner1}
                     alt={promo.title}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-y-0 end-0 w-1/2 h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-black/40" />
-                  <div className="relative z-10 p-5 flex items-center justify-between h-full">
-                    <div className="space-y-1">
-                      <h3 className="text-base font-bold text-white">
-                        {promo.title}
-                      </h3>
-                      <p className="text-xs text-white/70">{promo.subtitle}</p>
-                    </div>
+                  <div className="absolute inset-y-0 end-0 w-1/2 bg-gradient-to-l from-transparent to-glam-porcelain" />
+                  <div className="relative z-10 p-5 flex flex-col justify-center h-full max-w-[60%]">
+                    <h3 className="font-serif italic text-glam-rose text-xl leading-snug">
+                      {promo.title}
+                    </h3>
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-glam-secondary mt-1.5">{promo.subtitle}</p>
                     <button
                       onClick={() => navigate("/makeup-artists")}
-                      className="bg-white text-foreground px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shadow-lg hover:bg-white/90 transition-colors"
+                      className="mt-3 self-start bg-glam-rose text-white px-4 py-2 rounded-full text-xs font-bold hover:bg-glam-rose-pressed transition-colors"
                     >
                       {promo.button}
                     </button>
@@ -276,11 +277,11 @@ const Home = () => {
   // Filter artists (experts only) by active tab
   const filteredArtists = useMemo(() => {
     if (!artists) return [];
-    let result = artists.filter((a) => (a as any).account_type !== "seller");
+    let result = artists.filter((a) => (a as typeof a & ArtistMeta).account_type !== "seller");
     
     if (activeFilter !== "all") {
       result = result.filter((a) =>
-        (a as any).categories?.some((s: string) =>
+        (a as typeof a & ArtistMeta).categories?.some((s: string) =>
           s.toLowerCase().includes(activeFilter.toLowerCase()),
         ),
       );
@@ -292,7 +293,7 @@ const Home = () => {
   // Sellers/shops
   const sellers = useMemo(() => {
     if (!artists) return [];
-    return artists.filter((a) => (a as any).account_type === "seller");
+    return artists.filter((a) => (a as typeof a & ArtistMeta).account_type === "seller");
   }, [artists]);
 
   const artistIds = useMemo(
@@ -318,7 +319,7 @@ const Home = () => {
   if (isArtist) return null;
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div className="min-h-screen bg-glam-porcelain pb-28">
       {/* ─── Header ─── */}
       <AppHeader showLogo={true} style="modern" />
 
@@ -327,7 +328,11 @@ const Home = () => {
 
       {/* ─── Categories ─── */}
       <section className="pt-7 pb-2">
-        <SectionHeader title={t.home.browseCategory} />
+        <SectionHeader
+          title={t.home.browseCategory}
+          actionText={t.common.seeAll}
+          onAction={() => navigate("/makeup-artists")}
+        />
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-5 px-5 pb-2">
             {categories.map((cat) => (
@@ -357,8 +362,8 @@ const Home = () => {
           title={t.home.topRatedArtists}
           actionText={t.common.seeAll}
           onAction={() => navigate("/makeup-artists")}
-          icon={<Sparkles className="w-4 h-4 text-primary" />}
-          accentClass="bg-primary/10"
+          icon={<Award className="w-4 h-4 text-glam-ink" />}
+          accentClass="bg-glam-surface"
         />
 
         {/* Filter Tabs */}
@@ -406,30 +411,49 @@ const Home = () => {
       {/* ─── Shops Section ─── */}
       {sellers.length > 0 && (
         <section className="pb-6 pt-2">
-          <div className="mx-5 mb-4 h-px bg-border/60" />
           <SectionHeader
             title={isRTL ? "المتاجر" : "Shops"}
             actionText={t.common.seeAll}
             onAction={() => navigate("/shops")}
-            icon={<Store className="w-4 h-4 text-accent-foreground" />}
-            accentClass="bg-accent"
+            icon={<Store className="w-4 h-4 text-glam-ink" />}
+            accentClass="bg-glam-surface"
           />
-          <div className="overflow-x-auto scrollbar-hide">
-            <div className="flex gap-3 px-5 pb-2">
-              {sellers.map((seller, index) => (
-                <div
-                  key={seller.id}
-                    className="min-w-[46%] max-w-[46%]"
-                >
-                  <EnhancedArtistCard
-                    artist={seller}
-                    availability={availabilityMap?.get(seller.id)}
-                    viewMode="grid"
-                    buttonLabel={isRTL ? "تسوق الآن" : "Shop Now"}
+          <div className="px-5 space-y-3">
+            {sellers.slice(0, 4).map((seller) => (
+              <button
+                key={seller.id}
+                onClick={() => navigate(`/artist/${seller.id}`)}
+                className="w-full flex items-center gap-3 bg-white border border-glam-border rounded-2xl p-3 text-start transition-transform active:scale-[0.99]"
+              >
+                <Avatar className="w-14 h-14 rounded-xl shrink-0">
+                  <AvatarImage
+                    src={seller.profile?.avatar_url || undefined}
+                    alt={seller.profile?.full_name || "Shop"}
+                    className="object-cover"
                   />
+                  <AvatarFallback className="rounded-xl bg-glam-blush-soft text-glam-ink font-semibold">
+                    {seller.profile?.full_name?.charAt(0) || "S"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-glam-ink truncate">
+                    {seller.profile?.full_name || "Shop"}
+                  </p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <Star className="w-3 h-3 fill-glam-rose text-glam-rose" />
+                    <span className="text-xs font-semibold text-glam-ink">
+                      {Number(seller.rating ?? 0).toFixed(1)}
+                    </span>
+                    <span className="text-[10px] text-glam-muted">
+                      ({seller.total_reviews || 0})
+                    </span>
+                  </div>
                 </div>
-              ))}
-            </div>
+                <span className="rounded-full border border-glam-rose text-glam-rose px-4 py-2 text-xs font-semibold shrink-0">
+                  {isRTL ? "تسوق الآن" : "Shop Now"}
+                </span>
+              </button>
+            ))}
           </div>
         </section>
       )}

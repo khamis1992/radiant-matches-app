@@ -10,14 +10,14 @@ const CategoryCard = ({ name, image, onClick }: CategoryCardProps) => {
       onClick={onClick}
       className="flex flex-col items-center gap-2 flex-shrink-0 w-[72px] group"
     >
-      <div className="w-[60px] h-[60px] rounded-full overflow-hidden shadow-sm border border-border/30">
+      <div className="w-[60px] h-[60px] rounded-full overflow-hidden shadow-sm border-2 border-glam-blush-soft">
         <img
           src={image}
           alt={name}
           className="w-full h-full object-cover"
         />
       </div>
-      <span className="text-[11px] font-medium text-muted-foreground text-center leading-tight line-clamp-2">
+      <span className="text-[11px] font-medium text-glam-secondary text-center leading-tight line-clamp-2">
         {name}
       </span>
     </button>

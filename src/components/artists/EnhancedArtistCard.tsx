@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Star, MapPin, Clock, GitCompare, Sparkles, ShoppingBag } from "lucide-react";
+import { MapPin, Clock, GitCompare, ShoppingBag, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -88,7 +88,7 @@ const EnhancedArtistCard = ({
     return categoryMap[category] || category;
   };
 
-  const isSeller = (artist as any).account_type === "seller";
+  const isSeller = (artist as ArtistWithPricing & { account_type?: string }).account_type === "seller";
   const coverImage = artist.featured_image || artist.profile?.avatar_url;
   const hasPortfolioPreviews = artist.portfolio_previews && artist.portfolio_previews.length > 0;
 
@@ -100,19 +100,19 @@ const EnhancedArtistCard = ({
       >
         <div className="flex items-start gap-3">
           <div className="relative">
-            <Avatar className="w-16 h-16 border-2 border-primary/20">
+            <Avatar className="w-16 h-16 border-2 border-glam-blush-soft">
               <AvatarImage 
                 src={artist.profile?.avatar_url || undefined} 
                 alt={artist.profile?.full_name || "Artist"} 
               />
-              <AvatarFallback className="text-lg bg-primary/10 text-primary">
+              <AvatarFallback className="text-lg bg-glam-blush-soft text-glam-ink">
                 {artist.profile?.full_name?.charAt(0) || "A"}
               </AvatarFallback>
             </Avatar>
             {availability && (
               <div
                 className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-card ${
-                  availability.isAvailableToday ? "bg-green-500" : "bg-muted-foreground"
+                  availability.isAvailableToday ? "bg-glam-success" : "bg-muted-foreground"
                 }`}
               />
             )}
@@ -126,18 +126,18 @@ const EnhancedArtistCard = ({
               <Badge
                 className={`text-[10px] px-1.5 py-0 ${
                   isSeller
-                    ? "bg-accent/20 text-accent-foreground border border-accent/30"
-                    : "bg-primary/10 text-primary border border-primary/20"
+                    ? "bg-glam-surface text-glam-secondary border border-glam-border"
+                    : "bg-glam-porcelain text-glam-rose border border-glam-border"
                 }`}
               >
                 {isSeller ? (
                   <><ShoppingBag className="w-2.5 h-2.5 mr-0.5" />{isRTL ? "متجر" : "Shop"}</>
                 ) : (
-                  <><Sparkles className="w-2.5 h-2.5 mr-0.5" />{isRTL ? "خبيرة" : "Expert"}</>
+                  <>{isRTL ? "خبيرة" : "Expert"}</>
                 )}
               </Badge>
               {availability?.isAvailableToday && (
-                <Badge className="bg-green-500/90 hover:bg-green-500 text-white text-[10px] px-1.5 py-0">
+                <Badge className="bg-glam-success hover:bg-glam-success text-white text-[10px] px-1.5 py-0">
                   <Clock className="w-2.5 h-2.5 mr-0.5" />
                   {availability.todayHours
                     ? `${formatTime(availability.todayHours.start)} - ${formatTime(availability.todayHours.end)}`
@@ -159,7 +159,7 @@ const EnhancedArtistCard = ({
                 {artist.categories.slice(0, 3).map((category) => (
                   <span
                     key={category}
-                    className="px-2 py-0.5 text-[10px] font-medium bg-primary/10 text-primary rounded-full"
+                    className="px-2 py-0.5 text-[10px] font-medium bg-glam-blush-soft text-glam-ink rounded-full"
                   >
                     {getCategoryLabel(category)}
                   </span>
@@ -175,10 +175,9 @@ const EnhancedArtistCard = ({
             <div className="flex items-center gap-4 mt-2">
               {artist.rating !== null && (
                 <div className="flex items-center gap-1 text-sm">
-                  <Star className="w-3.5 h-3.5 fill-primary text-primary" />
-                  <span className="font-medium">{Number(artist.rating).toFixed(1)}</span>
+                  <span className="font-semibold text-glam-ink">{Number(artist.rating).toFixed(1)}</span>
                   {artist.total_reviews !== null && artist.total_reviews > 0 && (
-                    <span className="text-muted-foreground">({artist.total_reviews})</span>
+                    <span className="text-glam-muted">({artist.total_reviews})</span>
                   )}
                 </div>
               )}
@@ -188,7 +187,7 @@ const EnhancedArtistCard = ({
                 </span>
               )}
               {artist.min_price && (
-                <span className="text-sm font-medium text-primary">
+                <span className="text-sm font-medium text-glam-rose">
                   {t.artistsListing?.startingFrom || "From"} {artist.min_price} QAR
                 </span>
               )}
@@ -197,7 +196,7 @@ const EnhancedArtistCard = ({
           
           <div className="flex flex-col items-end gap-2">
             <FavoriteButton itemType="artist" itemId={artist.id} size="sm" />
-            <Button size="sm" className="shrink-0">
+            <Button size="sm" className="shrink-0 bg-glam-ink hover:bg-glam-ink-pressed text-white">
               {t.artistsListing.view}
             </Button>
           </div>
@@ -221,7 +220,7 @@ const EnhancedArtistCard = ({
   return (
     <div
       onClick={() => navigate(`/artist/${artist.id}`)}
-      className="bg-card rounded-xl overflow-hidden shadow-sm border border-border/40 cursor-pointer h-full flex flex-col"
+      className="bg-white rounded-xl overflow-hidden shadow-sm border border-glam-border cursor-pointer h-full flex flex-col"
     >
       {/* Cover Image */}
       <div className="relative h-24 sm:h-28 overflow-hidden flex-shrink-0">
@@ -240,33 +239,23 @@ const EnhancedArtistCard = ({
           <FavoriteButton
             itemType="artist"
             itemId={artist.id}
-            className="bg-card/80 hover:bg-card w-7 h-7"
+            className="bg-white/95 hover:bg-white w-7 h-7 shadow-sm"
           />
         </div>
-
-        {/* Availability dot */}
-        {availability !== undefined && availability.isAvailableToday && (
-          <div className={`absolute top-2 ${isRTL ? "right-2" : "left-2"}`}>
-            <span className="flex items-center gap-1 bg-card/90 text-[10px] px-1.5 py-0.5 rounded-full text-foreground">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              {t.availability?.open || "Open"}
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* Avatar */}
-      <div className="relative flex justify-center -mt-6">
+      {/* Avatar overlapping the cover's bottom-start edge */}
+      <div className="relative flex justify-start ps-4 -mt-6">
         <Avatar className="w-12 h-12 border-2 border-card">
           <AvatarImage src={artist.profile?.avatar_url || undefined} alt={artist.profile?.full_name || ""} className="object-cover" />
-          <AvatarFallback className="text-sm font-medium bg-primary/10 text-primary">
+          <AvatarFallback className="text-sm font-medium bg-glam-blush-soft text-glam-ink">
             {artist.profile?.full_name?.charAt(0) || "A"}
           </AvatarFallback>
         </Avatar>
       </div>
 
       {/* Content */}
-      <div className="px-3 pt-1.5 pb-3 text-center flex flex-col flex-grow">
+      <div className="px-3 pt-1.5 pb-3 text-start flex flex-col flex-grow">
         <h3 className="font-semibold text-foreground text-sm line-clamp-1">
           {artist.profile?.full_name || "Unknown Artist"}
         </h3>
@@ -279,12 +268,12 @@ const EnhancedArtistCard = ({
         )}
 
         {/* Rating */}
-        <div className="flex items-center justify-center gap-1 mt-1.5">
+        <div className="flex items-center gap-1 mt-1.5">
           {artist.rating !== null ? (
             <>
-              <Star className="w-3 h-3 fill-[hsl(42,85%,55%)] text-[hsl(42,85%,55%)]" />
-              <span className="text-xs font-medium">{Number(artist.rating).toFixed(1)}</span>
-              <span className="text-muted-foreground text-[10px]">({artist.total_reviews || 0})</span>
+              <Star className="w-3 h-3 fill-glam-rose text-glam-rose" />
+              <span className="text-xs font-semibold text-glam-ink">{Number(artist.rating).toFixed(1)}</span>
+              <span className="text-glam-muted text-[10px]">({artist.total_reviews || 0})</span>
             </>
           ) : (
             <span className="text-[10px] text-muted-foreground">{t.common?.new || "New"}</span>
@@ -293,7 +282,7 @@ const EnhancedArtistCard = ({
 
         {/* Location */}
         {artist.profile?.location && (
-          <div className="flex items-center justify-center gap-1 mt-1 text-muted-foreground text-[11px]">
+          <div className="flex items-center gap-1 mt-1 text-glam-muted text-[11px]">
             <MapPin className="w-3 h-3" />
             <span className="line-clamp-1">{artist.profile.location}</span>
           </div>
@@ -301,7 +290,7 @@ const EnhancedArtistCard = ({
 
         {/* Price */}
         {artist.min_price && (
-          <p className="text-xs font-medium text-primary mt-1">
+          <p className="text-xs font-medium text-glam-rose mt-1">
             {t.artistsListing?.startingFrom || "From"} {artist.min_price} QAR
           </p>
         )}
@@ -309,7 +298,7 @@ const EnhancedArtistCard = ({
         <div className="flex-grow" />
 
         {/* Book Button */}
-        <Button variant="outline" className="w-full mt-2 text-xs h-8" size="sm">
+        <Button className="w-full mt-2 text-xs h-9 rounded-full bg-glam-blush-soft text-glam-ink hover:bg-glam-blush font-semibold shadow-none" size="sm">
           {buttonLabel || t.bookings.bookNow}
         </Button>
       </div>

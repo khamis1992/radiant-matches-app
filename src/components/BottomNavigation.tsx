@@ -118,8 +118,8 @@ const BottomNavigation = () => {
         onClick={() => tap()}
         className={`relative flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-xl transition-all duration-300 ${
           isActive
-            ? "text-primary"
-            : "text-muted-foreground hover:text-primary"
+            ? "text-glam-rose"
+            : "text-glam-muted hover:text-glam-ink"
         }`}
       >
         <div className="relative">
@@ -129,7 +129,7 @@ const BottomNavigation = () => {
             }`}
           />
           {showBadge && (
-            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-primary-foreground bg-primary rounded-full px-1">
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white bg-glam-rose rounded-full px-1">
               {badgeCount > 99 ? "99+" : badgeCount}
             </span>
           )}
@@ -143,11 +143,11 @@ const BottomNavigation = () => {
   if (isCustomer) {
     return (
       <>
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg safe-area-bottom">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-glam-border shadow-sm safe-area-bottom">
           {/* زر البحث العائم في المنتصف */}
           <button
             onClick={() => { tap(); setSearchOpen(true); }}
-            className="absolute left-1/2 -translate-x-1/2 -top-6 w-12 h-12 bg-primary rounded-full shadow-md flex items-center justify-center text-primary-foreground border-[3px] border-background z-10"
+            className="absolute left-1/2 -translate-x-1/2 -top-6 w-12 h-12 bg-glam-rose rounded-full shadow-md flex items-center justify-center text-white border-[3px] border-white z-10"
           >
             <Search className="w-5 h-5" />
           </button>
@@ -187,7 +187,7 @@ const BottomNavigation = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className={`${isRTL ? "pr-12 pl-10" : "pl-12 pr-10"} h-14 text-lg rounded-2xl border-2 focus:border-primary`}
+                  className={`${isRTL ? "pr-12 pl-10" : "pl-12 pr-10"} h-14 text-lg rounded-2xl border-2 focus:border-glam-blush-deep`}
                   autoFocus
                   dir={isRTL ? "rtl" : "ltr"}
                 />
@@ -201,8 +201,8 @@ const BottomNavigation = () => {
                 )}
               </div>
               
-              <Button 
-                className="w-full h-12 rounded-xl"
+              <Button
+                className="w-full h-12 rounded-xl bg-glam-ink hover:bg-glam-ink-pressed text-white"
                 onClick={handleSearch}
                 disabled={!searchQuery.trim()}
               >
@@ -223,7 +223,7 @@ const BottomNavigation = () => {
                         navigate(`/makeup-artists?search=${term}`);
                         setSearchOpen(false);
                       }}
-                      className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm hover:bg-primary/20 transition-colors"
+                      className="px-4 py-2 bg-glam-porcelain text-glam-rose rounded-full text-sm hover:bg-glam-blush-soft transition-colors"
                     >
                       {term}
                     </button>
@@ -245,7 +245,7 @@ const BottomNavigation = () => {
   // عرض البائعة
   if (role === "seller") {
     return (
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg safe-area-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-glam-border shadow-sm safe-area-bottom">
         <div className="flex items-center justify-around h-16 max-w-md mx-auto px-4">
           {sellerNavItems.map((item, index) => renderNavItem(item, index))}
         </div>
@@ -255,7 +255,7 @@ const BottomNavigation = () => {
 
   // العرض العادي للفنان (backup)
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-glam-border shadow-sm safe-area-bottom">
       <div className="flex items-center justify-around h-16 max-w-md mx-auto px-4">
         {navItems.map((item, index) => renderNavItem(item, index))}
       </div>

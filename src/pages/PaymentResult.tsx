@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { LottieIcon } from "@/components/LottieIcon";
 
 const PaymentResult = () => {
   const [searchParams] = useSearchParams();
@@ -70,9 +71,16 @@ const PaymentResult = () => {
         <div className="text-center max-w-md">
           {isSuccess ? (
             <>
-              <div className="w-24 h-24 mx-auto rounded-full bg-green-500/10 flex items-center justify-center mb-6 animate-scale-in">
-                <CheckCircle className="w-14 h-14 text-green-500" />
-              </div>
+              <LottieIcon
+                src="/animations/success-check.json"
+                loop={false}
+                fallback={
+                  <div className="w-24 h-24 rounded-full bg-green-500/10 flex items-center justify-center">
+                    <CheckCircle className="w-14 h-14 text-green-500" />
+                  </div>
+                }
+                className="w-28 h-28 mx-auto mb-6"
+              />
               <h1 className="text-2xl font-bold text-foreground mb-2">
                 {t.payment?.paymentSuccess || "Payment Successful!"}
               </h1>

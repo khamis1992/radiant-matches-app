@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Check, Package, MapPin, Calendar, Clock, ChevronRight, Home, ShoppingBag, Sparkles } from "lucide-react";
+import { Check, Package, MapPin, Calendar, Clock, ChevronRight, Home, ShoppingBag } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Button } from "@/components/ui/button";
 import { useOrderDetails } from "@/hooks/useOrderDetails";
@@ -8,6 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import confetti from "@/lib/confetti";
+import { LottieIcon } from "@/components/LottieIcon";
 
 const OrderConfirmation = () => {
   const navigate = useNavigate();
@@ -88,13 +89,16 @@ const OrderConfirmation = () => {
         {/* Success Animation */}
         <div className={`text-center mb-8 transition-all duration-700 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <div className="relative inline-block mb-6">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-2xl shadow-primary/30 animate-scale-in">
-              <Check className="w-12 h-12 text-primary-foreground" strokeWidth={3} />
-            </div>
-            <div className="absolute -top-2 -right-2">
-              <Sparkles className="w-8 h-8 text-primary animate-pulse" />
-            </div>
-            <div className="absolute inset-0 w-24 h-24 rounded-full bg-primary/20 animate-ping" />
+            <LottieIcon
+              src="/animations/success-check.json"
+              loop={false}
+              fallback={
+                <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center shadow-2xl shadow-primary/30">
+                  <Check className="w-12 h-12 text-primary-foreground" strokeWidth={3} />
+                </div>
+              }
+              className="w-28 h-28"
+            />
           </div>
 
           <h1 className="text-3xl font-bold text-foreground mb-3">
@@ -102,7 +106,7 @@ const OrderConfirmation = () => {
           </h1>
           <p className="text-muted-foreground text-lg">
             {language === "ar" 
-              ? "شكراً لك! سنقوم بتجهيز طلبك قريباً" 
+              ? "شكرًا لك! سنقوم بتجهيز طلبك قريبًا" 
               : "Thank you! We'll prepare your order soon"}
           </p>
         </div>

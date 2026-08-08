@@ -17,7 +17,6 @@ import { useUnreadNotificationsCount } from "@/hooks/useArtistNotifications";
 import { useCartItemCount } from "@/hooks/useShoppingCart";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import logo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 
 // TypeScript types for header props
@@ -131,9 +130,9 @@ const AppHeader = ({
             {showLogo && (
               <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/home")}>
                 <img
-                  src={logo}
-                  alt="Glam"
-                  className="h-10 w-auto object-contain"
+                  src="/brand/glam-logo-light.png"
+                  alt="GLAM Beauty"
+                  className="h-9 w-auto object-contain"
                 />
               </div>
             )}
@@ -152,7 +151,7 @@ const AppHeader = ({
                 onClick={handleSearch}
                 className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors focus:outline-none"
               >
-                <Search className="w-[18px] h-[18px] text-muted-foreground" />
+                <Search className="w-[18px] h-[18px] text-glam-ink" />
               </button>
             )}
 
@@ -161,9 +160,9 @@ const AppHeader = ({
               onClick={() => navigate("/notifications")}
               className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors focus:outline-none"
             >
-              <Bell className="w-[18px] h-[18px] text-muted-foreground" />
+              <Bell className="w-[18px] h-[18px] text-glam-ink" />
               {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-primary-foreground bg-primary rounded-full">
+                <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-glam-rose rounded-full">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               )}
@@ -174,9 +173,9 @@ const AppHeader = ({
               onClick={() => navigate("/cart")}
               className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors focus:outline-none"
             >
-              <ShoppingBag className="w-[18px] h-[18px] text-muted-foreground" />
+              <ShoppingBag className="w-[18px] h-[18px] text-glam-ink" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-primary-foreground bg-primary rounded-full">
+                <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-glam-rose rounded-full">
                   {cartItemCount > 99 ? '99+' : cartItemCount}
                 </span>
               )}
@@ -192,7 +191,7 @@ const AppHeader = ({
                       alt={profile?.full_name || "Profile"}
                       className="object-cover"
                     />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                    <AvatarFallback className="bg-glam-blush-soft text-glam-ink text-xs font-medium">
                       {profile?.full_name?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
@@ -214,7 +213,7 @@ const AppHeader = ({
                         <div className="flex items-center gap-3">
                           <Avatar className="w-9 h-9">
                             <AvatarImage src={profile?.avatar_url || undefined} />
-                            <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
+                            <AvatarFallback className="bg-glam-blush-soft text-glam-ink font-medium text-sm">
                               {profile?.full_name?.charAt(0) || "U"}
                             </AvatarFallback>
                           </Avatar>
@@ -243,7 +242,7 @@ const AppHeader = ({
                     onClick={() => navigate("/auth")}
                     className="cursor-pointer rounded-lg py-2 px-3 focus:bg-muted"
                   >
-                    <LogIn className="h-4 w-4 text-primary me-2" />
+                    <LogIn className="h-4 w-4 text-glam-rose me-2" />
                     <span className="text-sm">{t.auth.login}</span>
                   </DropdownMenuItem>
                 )}

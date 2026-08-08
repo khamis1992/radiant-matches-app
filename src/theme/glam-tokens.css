@@ -1,0 +1,29 @@
+/**
+ * GLAM brand design tokens — single source of truth (CSS side).
+ * Mirror of src/theme/glam-colors.ts. See docs/brand/GLAM_Brand_Guidelines.md.
+ */
+:root {
+  color-scheme: light;
+
+  --glam-ink: #101417;
+  --glam-ink-pressed: #292D31;
+  --glam-rose-action: #A9475B;
+  --glam-rose-action-pressed: #913A4E;
+  --glam-blush: #EFA6A8;
+  --glam-blush-soft: #F8C2C3;
+  --glam-blush-deep: #CA8287;
+  --glam-porcelain: #FCF8F8;
+  --glam-white: #FFFFFF;
+
+  --glam-text-primary: #101417;
+  --glam-text-secondary: #5F6268;
+  --glam-text-muted: #8A8C91;
+  --glam-border: #E7E1E3;
+  --glam-disabled: #B9B5B7;
+  --glam-surface-soft: #F5F3F4;
+
+  --glam-success: #24745B;
+  --glam-warning: #9A6300;
+  --glam-error: #B3263E;
+  --glam-info: #2E5F9D;
+}

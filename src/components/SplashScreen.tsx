@@ -1,16 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import logo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 
 /**
- * SplashScreen - Modern Minimal Loading Experience
- *
- * A clean, elegant splash screen featuring:
- * - Soft gradient background using app's color palette
- * - Smooth fade-in animations
- * - Simple progress indicator
- * - Minimal typography
- * - Clean aesthetics matching the app's design system
+ * SplashScreen — GLAM brand launch screen.
+ * Light surface with the original logo lockup (brand rule: original asset only,
+ * no decorative accents), a thin ink progress line, and calm fade-in motion.
  */
 
 interface SplashScreenProps {
@@ -19,9 +13,9 @@ interface SplashScreenProps {
 }
 
 export const SplashScreen = ({ onComplete, duration = 2500 }: SplashScreenProps) => {
+  // Brand: light surface, original logo asset, no decorative accents
   const [progress, setProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const [pulse, setPulse] = useState(false);
 
   const progressLabel = useMemo(() => `${Math.min(progress, 100)}%`, [progress]);
 
@@ -42,11 +36,6 @@ export const SplashScreen = ({ onComplete, duration = 2500 }: SplashScreenProps)
       });
     }, duration / 50);
 
-    // Subtle pulse animation for logo glow
-    const pulseInterval = setInterval(() => {
-      setPulse((prev) => !prev);
-    }, 700);
-
     // Completion callback
     const completeTimer = setTimeout(() => {
       onComplete?.();
@@ -56,54 +45,26 @@ export const SplashScreen = ({ onComplete, duration = 2500 }: SplashScreenProps)
       clearTimeout(fadeTimer);
       clearTimeout(completeTimer);
       clearInterval(progressInterval);
-      clearInterval(pulseInterval);
       document.body.style.overflow = '';
     };
   }, [duration, onComplete]);
 
   return (
-    <div className="fixed inset-0 z-[9999] overflow-hidden bg-background">
-      {/* Premium Background with subtle texture */}
-      <div 
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}
-      />
-      
+    <div className="fixed inset-0 z-[9999] overflow-hidden bg-white">
       {/* Main Content */}
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center">
-        
-        {/* Animated Logo Container */}
+
+        {/* Brand lockup — original asset, 240px per brand splash sizing */}
         <div className={cn(
-          "mb-12 relative transition-all duration-1000 ease-out",
+          "mb-12 transition-all duration-1000 ease-out",
           isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
         )}>
-          {/* Subtle rotating glow ring */}
-          <div className="absolute inset-0 -m-16 rounded-full border border-primary/20 animate-spin-slow opacity-60" />
-          <div className="absolute inset-0 -m-8 rounded-full border border-gold/30 animate-[spin-slow_15s_linear_infinite_reverse] opacity-60" />
-          
-          {/* Logo */}
-          <div className="relative h-64 w-64 drop-shadow-2xl">
-            <img
-              src={logo}
-              alt="Glam"
-              className="w-full h-full object-contain"
-            />
-          </div>
-        </div>
-
-        {/* Typography */}
-        <div className={cn(
-          "text-center transition-all duration-1000 delay-300 ease-out",
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        )}>
-          <h1 className="text-6xl font-serif font-bold tracking-tight text-foreground mb-4">
-            GLAM
-          </h1>
-          <p className="text-sm uppercase tracking-[0.4em] text-muted-foreground font-medium">
-            Beauty, Redefined
-          </p>
+          <img
+            src="/brand/glam-logo-light.png"
+            alt="GLAM Beauty"
+            draggable={false}
+            className="w-60 mix-blend-multiply"
+          />
         </div>
 
         {/* Minimal Progress Indicator */}
@@ -111,13 +72,13 @@ export const SplashScreen = ({ onComplete, duration = 2500 }: SplashScreenProps)
           "absolute bottom-20 w-64 transition-all duration-1000 delay-500 ease-out",
           isVisible ? "opacity-100" : "opacity-0"
         )}>
-           <div className="h-0.5 w-full bg-muted overflow-hidden">
-             <div 
-               className="h-full bg-foreground transition-all duration-100 ease-out"
+           <div className="h-0.5 w-full bg-glam-surface overflow-hidden">
+             <div
+               className="h-full bg-glam-ink transition-all duration-100 ease-out"
                style={{ width: `${progress}%` }}
              />
            </div>
-           <div className="mt-2 text-center text-[10px] text-muted-foreground tracking-widest">
+           <div className="mt-2 text-center text-[10px] text-glam-muted tracking-widest">
              {progressLabel}
            </div>
         </div>
