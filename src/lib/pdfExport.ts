@@ -27,8 +27,8 @@ interface ReportSettings {
  const getReportSettings = async (templateId?: string): Promise<ReportSettings> => {
   const defaults: ReportSettings = {
     logoUrl: "",
-    primaryColor: "#8b5cf6",
-    secondaryColor: "#a855f7",
+    primaryColor: "#A9475B",
+    secondaryColor: "#EFA6A8",
     companyName: "Glam",
     footerText: "جميع الحقوق محفوظة",
   };

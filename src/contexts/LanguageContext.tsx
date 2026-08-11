@@ -18,7 +18,9 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const LANGUAGE_STORAGE_KEY = "glam-app-language";
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>("en");
+  // Default to Arabic — GLAM's primary market is Qatar. A stored
+  // preference always wins over this default.
+  const [language, setLanguageState] = useState<Language>("ar");
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Load language from localStorage on mount
@@ -73,12 +75,12 @@ export const useLanguage = (): LanguageContextType => {
     }
 
     return {
-      language: "en",
+      language: "ar",
       setLanguage: () => {
         // no-op fallback
       },
-      t: translations.en,
-      isRTL: false,
+      t: translations.ar,
+      isRTL: true,
       languageNames,
     };
   }

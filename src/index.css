@@ -1,6 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
+/* Brand fonts are self-hosted via @fontsource in main.tsx (Inter + IBM Plex Sans
+   Arabic + Playfair Display). No Google Fonts @imports here — they block offline
+   startup in the Capacitor shell and bypass the brand font policy. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,33 +11,36 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 20 15% 15%;
+    /* GLAM brand tokens (mirror of src/theme/glam-tokens.css).
+       All shadcn aliases resolve to brand colors so every screen is
+       brand-compliant without hard-coded HEX values. */
+    --background: 0 0% 100%;            /* glam-white #FFFFFF */
+    --foreground: 206 18% 8%;           /* glam-ink #101417 */
 
-    --card: 30 30% 99%;
-    --card-foreground: 20 15% 15%;
+    --card: 0 0% 100%;                  /* glam-white #FFFFFF */
+    --card-foreground: 206 18% 8%;      /* glam-ink */
 
-    --popover: 30 30% 99%;
-    --popover-foreground: 20 15% 15%;
+    --popover: 0 0% 100%;               /* glam-white */
+    --popover-foreground: 206 18% 8%;   /* glam-ink */
 
-    --primary: 350 60% 65%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 206 18% 8%;              /* glam-ink (default primary CTA) */
+    --primary-foreground: 0 0% 100%;    /* white on ink */
 
-    --secondary: 25 30% 90%;
-    --secondary-foreground: 20 15% 25%;
+    --secondary: 359 79% 87%;           /* glam-blush-soft #F8C2C3 */
+    --secondary-foreground: 206 18% 8%; /* glam-ink */
 
-    --muted: 25 20% 92%;
-    --muted-foreground: 20 10% 45%;
+    --muted: 330 9% 96%;                /* glam-surface-soft #F5F3F4 */
+    --muted-foreground: 223 4% 55%;     /* glam-text-muted #8A8C91 */
 
-    --accent: 45 50% 92%;
-    --accent-foreground: 35 50% 35%;
+    --accent: 358 71% 80%;              /* glam-blush #EFA6A8 */
+    --accent-foreground: 206 18% 8%;    /* glam-ink */
 
-    --destructive: 0 72% 50%;
-    --destructive-foreground: 0 85% 97%;
+    --destructive: 350 58% 47%;         /* glam-error #B3263E */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 25 20% 88%;
-    --input: 25 20% 88%;
-    --ring: 350 60% 65%;
+    --border: 340 12% 90%;              /* glam-border #E7E1E3 */
+    --input: 340 12% 90%;               /* glam-border */
+    --ring: 348 39% 51%;                /* glam-rose-action #A9475B */
 
     --radius: 1rem;
 
@@ -47,7 +50,7 @@ All colors MUST be HSL.
     --blush: 350 45% 88%;
 
     /* Editorial Design Tokens */
-    --font-serif-display: 'Playfair Display', 'Merriweather', ui-serif, Georgia, serif;
+    --font-serif-display: 'Playfair Display', ui-serif, Georgia, serif;
 
     --sidebar-background: 0 0% 98%;
 
@@ -79,9 +82,9 @@ All colors MUST be HSL.
 
     --font-sans: 'Inter', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
 
-    --font-serif: 'Merriweather', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-serif: 'Playfair Display', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
 
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
     --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
 
@@ -104,61 +107,147 @@ All colors MUST be HSL.
     --spacing: 0.25rem;
   }
 
-  .dark {
-    --background: 240 5% 10%;
-    --foreground: 0 0% 98%;
-
-    --card: 240 3% 15%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 240 5% 26%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 328 85% 70%;
-    --primary-foreground: 336 83% 17%;
-
-    --secondary: 240 3% 46%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 240 3% 46%;
-    --muted-foreground: 0 0% 98%;
-
-    --accent: 343 87% 15%;
-    --accent-foreground: 351 94% 71%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 85% 97%;
-
-    --border: 240 5% 33%;
-    --input: 240 5% 33%;
-    --ring: 328 85% 70%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 328 85% 70%;
-    --sidebar-primary-foreground: 336 83% 17%;
-    --sidebar-accent: 351 94% 71%;
-    --sidebar-accent-foreground: 343 87% 15%;
-    --sidebar-border: 240 5% 33%;
-    --sidebar-ring: 328 85% 70%;
-    --chart-1: 327 87% 81%;
-    --chart-2: 352 95% 81%;
-    --chart-3: 328 85% 70%;
-    --chart-4: 351 94% 71%;
-    --chart-5: 240 5% 33%;
-    --sidebar: 240 3% 15%;
-    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
-    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
-  }
-  
   /* Custom utilities for mobile and accessibility */
   .touch-manipulation {
     touch-action: manipulation;
+  }
+
+  /* GLAM brand map pin (MapLibre DOM markers) — Rose Action teardrop.
+     NOTE: MapLibre writes an inline positioning transform on the marker
+     element itself, so the teardrop rotation must live on the INNER span —
+     a class transform on the outer element would be overridden. */
+  .glam-map-pin {
+    display: block;
+    width: 30px;
+    height: 36px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+  .glam-map-pin-dot {
+    position: relative;
+    display: block;
+    width: 28px;
+    height: 28px;
+    margin: 0 auto;
+    border: 2px solid #ffffff;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    background: var(--glam-rose-action, #A9475B);
+    box-shadow: 0 4px 10px rgba(16, 20, 23, 0.35);
+    transition: transform 0.15s ease;
+  }
+  .glam-map-pin:hover .glam-map-pin-dot,
+  .glam-map-pin:focus-visible .glam-map-pin-dot {
+    transform: rotate(-45deg) scale(1.12);
+  }
+  .glam-map-pin:active .glam-map-pin-dot {
+    transform: rotate(-45deg) scale(0.95);
+  }
+  .glam-map-pin:focus-visible {
+    outline: 2px solid var(--glam-rose-action, #A9475B);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  .glam-map-pin-dot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffffff;
+  }
+
+  .glam-map-pin-dot.is-active {
+    transform: rotate(-45deg) scale(1.16);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--glam-rose-action) 20%, transparent),
+      0 6px 16px rgba(16, 20, 23, 0.28);
+  }
+
+  .glam-map-cluster-host {
+    background: transparent;
+    border: 0;
+  }
+
+  .glam-map-cluster {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-content: center;
+    border: 3px solid #ffffff;
+    border-radius: 999px;
+    background: var(--glam-rose-action, #A9475B);
+    color: #ffffff;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(16, 20, 23, 0.24);
+    transition: transform 0.18s ease;
+  }
+
+  .glam-map-cluster strong {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .glam-map-cluster small {
+    margin-top: 2px;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1;
+  }
+
+  .glam-map-cluster-host:hover .glam-map-cluster,
+  .glam-map-cluster-host:focus-visible .glam-map-cluster {
+    transform: scale(1.08);
+  }
+
+  .glam-map-results-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overscroll-behavior: contain;
+  }
+
+  .glam-map-results-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Leaflet map surface — warm neutral treatment aligned with GLAM.
+     Raster tiles remain legible while cool map colors are softened. */
+  .glam-leaflet-map {
+    width: 100%;
+    height: 100%;
+    background: var(--glam-porcelain, #FCF8F8);
+    font-family: inherit;
+  }
+
+  .glam-leaflet-map .leaflet-tile-pane {
+    filter: sepia(0.16) saturate(0.72) hue-rotate(314deg) brightness(1.035);
+  }
+
+  .glam-leaflet-map .leaflet-control-zoom,
+  .glam-leaflet-map .leaflet-control-attribution {
+    border: 1px solid var(--glam-border, #E8D8D8);
+    box-shadow: 0 4px 14px rgba(16, 20, 23, 0.1);
+  }
+
+  .glam-leaflet-map .leaflet-control-zoom a {
+    color: var(--glam-ink, #101417);
+    background: rgba(255, 255, 255, 0.94);
+  }
+
+  .glam-leaflet-marker-host {
+    width: 30px !important;
+    height: 36px !important;
+    background: transparent;
+    border: 0;
+  }
+
+  .glam-leaflet-marker-host:hover .glam-map-pin-dot,
+  .glam-leaflet-marker-host:focus-visible .glam-map-pin-dot {
+    transform: rotate(-45deg) scale(1.12);
   }
 
   .safe-area-top {
@@ -200,15 +289,13 @@ All colors MUST be HSL.
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: auto;
-    overflow-x: hidden;
-    overflow-y: auto !important;
+    overflow-x: clip;
     min-height: 100vh;
     min-height: 100dvh; /* Dynamic viewport height for mobile */
   }
 
   html {
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow-x: clip;
     min-height: 100vh;
     min-height: 100dvh;
   }
@@ -379,6 +466,26 @@ All colors MUST be HSL.
   .font-serif {
     font-family: var(--font-serif-display);
   }
+
+  /* Floating customer dock — frosted glass capsule + bottom fade scrim */
+  .glam-dock-glass {
+    background: color-mix(in srgb, var(--glam-white) 88%, transparent);
+    border: 1px solid color-mix(in srgb, var(--glam-white) 70%, transparent);
+    box-shadow:
+      0 16px 40px -12px color-mix(in srgb, var(--glam-ink) 28%, transparent),
+      inset 0 1px 0 color-mix(in srgb, var(--glam-white) 80%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    backdrop-filter: blur(20px) saturate(1.4);
+  }
+
+  .glam-dock-fade {
+    background: linear-gradient(
+      to top,
+      var(--glam-white) 0%,
+      color-mix(in srgb, var(--glam-white) 80%, transparent) 55%,
+      transparent 100%
+    );
+  }
 }
 
 @layer base {
@@ -431,6 +538,15 @@ All colors MUST be HSL.
     transform: translateY(-20px) scale(1);
   }
 }
+/* Gentle continuous float for real product cutouts (teaser card) */
+@keyframes product-float {
+  0%, 100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
 
 /* Hide scrollbar for horizontal scroll areas (native mobile feel) */
 .scrollbar-hide {
@@ -458,4 +574,95 @@ All colors MUST be HSL.
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background-color: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Favorite burst micro-interaction (uiverse-style like) */
+@keyframes fav-pop {
+  0% { transform: scale(0.6); }
+  40% { transform: scale(1.25); }
+  70% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fav-ripple {
+  0% { transform: scale(0.6); opacity: 0.55; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+.fav-burst {
+  animation: fav-pop 0.45s ease-out;
+}
+
+.fav-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid var(--glam-rose-action);
+  pointer-events: none;
+  animation: fav-ripple 0.5s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fav-burst,
+  .fav-ring {
+    animation: none;
+  }
+  .fav-ring {
+    display: none;
+  }
+}
+
+/* Photo-less artist cover: reveal the original GLAM asset, then keep it gently alive. */
+@keyframes glam-brand-cover-reveal {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0.7;
+  }
+  100% {
+    clip-path: inset(0);
+    opacity: 1;
+  }
+}
+
+@keyframes glam-brand-cover-drift {
+  0% {
+    transform: scale(1.12) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.16) translate3d(-1.25%, -0.75%, 0);
+  }
+}
+
+.glam-brand-cover__motion {
+  transform-origin: center;
+  animation: glam-brand-cover-drift 9s ease-in-out 1.1s infinite alternate;
+  will-change: transform;
+}
+
+.glam-brand-cover__image {
+  animation: glam-brand-cover-reveal 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: clip-path, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glam-brand-cover__motion,
+  .glam-brand-cover__image {
+    animation: none;
+  }
+
+  .glam-brand-cover__motion {
+    transform: scale(1.12);
+  }
+}
+
+/* GLAM-branded Leaflet popup */
+.leaflet-popup-content-wrapper {
+  border-radius: 16px;
+  box-shadow: 0 12px 28px -12px rgba(16, 20, 23, 0.25);
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px;
+  font-family: inherit;
+  line-height: 1.5;
 }

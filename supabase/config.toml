@@ -43,7 +43,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.send-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.check-blocked-ip]
 verify_jwt = false

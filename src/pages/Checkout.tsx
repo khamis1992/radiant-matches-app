@@ -4,22 +4,35 @@ import { MapPin, CreditCard, Package, Check, ArrowLeft, Loader2, Navigation, Wal
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUnifiedCart } from "@/hooks/useUnifiedCart";
 import { useCreateOrder } from "@/hooks/useProductOrders";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useSadadPayment } from "@/hooks/useSadadPayment";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { formatQAR } from "@/lib/locale";
 import type { ShippingAddress } from "@/types/product";
 
-// Qatar cities list
+// Qatar cities list (EN value is stored; AR label is display-only)
 const qatarCities = [
-  "Doha", "Al Wakrah", "Al Khor", "Al Rayyan", "Umm Salal", 
-  "Al Daayen", "Al Shamal", "Al Shahaniya", "Lusail", "Mesaieed", "Dukhan"
+  { en: "Doha", ar: "الدوحة" },
+  { en: "Al Wakrah", ar: "الوكرة" },
+  { en: "Al Khor", ar: "الخور" },
+  { en: "Al Rayyan", ar: "الريان" },
+  { en: "Umm Salal", ar: "أم صلال" },
+  { en: "Al Daayen", ar: "الضعاين" },
+  { en: "Al Shamal", ar: "الشمال" },
+  { en: "Al Shahaniya", ar: "الشحانية" },
+  { en: "Lusail", ar: "لوسيل" },
+  { en: "Mesaieed", ar: "مسيعيد" },
+  { en: "Dukhan", ar: "دخان" },
 ];
+
+// Qatar mobile: 8 digits, optionally prefixed with +974 / 00974 / 974
+const QATAR_PHONE_RE = /^(?:\+?974|00974)?\s?\d{8}$/;
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -27,6 +40,9 @@ const Checkout = () => {
   const { data: profile } = useProfile();
   const { cartItems, isLoading, clearCart } = useUnifiedCart();
   const createOrder = useCreateOrder();
+  const { t, language, isRTL } = useLanguage();
+  const ct = t.checkout;
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Sadad payment integration
   const { paymentState, initiatePayment, resetPayment } = useSadadPayment({
@@ -77,12 +93,19 @@ const Checkout = () => {
 
   const handleAddressChange = (field: keyof ShippingAddress, value: string) => {
     setShippingAddress({ ...shippingAddress, [field]: value });
+    // Clear the field's error as soon as the user types
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   };
 
   // Auto-detect location using Geolocation API
   const detectLocation = useCallback(async () => {
     if (!navigator.geolocation) {
-      toast.error("Geolocation is not supported by your browser");
+      toast.error(ct.geoUnsupported);
       return;
     }
 
@@ -113,9 +136,9 @@ const Checkout = () => {
           // Find the closest matching Qatar city
           const detectedCity = address.city || address.town || address.village || address.suburb || "";
           const matchedCity = qatarCities.find(
-            (city) => detectedCity.toLowerCase().includes(city.toLowerCase()) ||
-                      city.toLowerCase().includes(detectedCity.toLowerCase())
-          ) || detectedCity;
+            (city) => detectedCity.toLowerCase().includes(city.en.toLowerCase()) ||
+                      city.en.toLowerCase().includes(detectedCity.toLowerCase())
+          )?.en || detectedCity;
 
           // Build address line from components
           const addressParts = [
@@ -133,10 +156,10 @@ const Checkout = () => {
             postal_code: address.postcode || prev.postal_code,
           }));
 
-          toast.success("Location detected successfully!");
+          toast.success(ct.locationDetected);
         } catch (error) {
           console.error("Reverse geocoding error:", error);
-          toast.error("Could not get address details. Please enter manually.");
+          toast.error(ct.locationFailed);
         } finally {
           setIsLocating(false);
         }
@@ -145,16 +168,16 @@ const Checkout = () => {
         setIsLocating(false);
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            toast.error("Location access denied. Please enable location permissions.");
+            toast.error(ct.locationDenied);
             break;
           case error.POSITION_UNAVAILABLE:
-            toast.error("Location information unavailable.");
+            toast.error(ct.locationUnavailable);
             break;
           case error.TIMEOUT:
-            toast.error("Location request timed out. Please try again.");
+            toast.error(ct.locationTimeout);
             break;
           default:
-            toast.error("An error occurred while getting location.");
+            toast.error(ct.locationError);
         }
       },
       {
@@ -163,7 +186,7 @@ const Checkout = () => {
         maximumAge: 60000,
       }
     );
-  }, []);
+  }, [ct]);
 
   const hasPhysicalProducts = cartItems.some((item) => item.product.product_type === "physical");
   const total = cartItems.reduce(
@@ -175,14 +198,25 @@ const Checkout = () => {
     e.preventDefault();
 
     if (cartItems.length === 0) {
-      toast.error("Your cart is empty");
+      toast.error(ct.cartEmpty);
       return;
     }
 
-    // Validate shipping address for physical products
+    // Validate shipping address for physical products — with inline field errors
     if (hasPhysicalProducts) {
-      if (!shippingAddress.full_name || !shippingAddress.phone || !shippingAddress.address_line1 || !shippingAddress.city) {
-        toast.error("Please fill in all required shipping fields");
+      const errors: Record<string, string> = {};
+      if (!shippingAddress.full_name.trim()) errors.full_name = ct.fillRequired;
+      if (!shippingAddress.phone.trim()) {
+        errors.phone = ct.fillRequired;
+      } else if (!QATAR_PHONE_RE.test(shippingAddress.phone.trim())) {
+        errors.phone = ct.invalidPhone;
+      }
+      if (!shippingAddress.address_line1.trim()) errors.address_line1 = ct.fillRequired;
+      if (!shippingAddress.city.trim()) errors.city = ct.fillRequired;
+
+      setFieldErrors(errors);
+      if (Object.keys(errors).length > 0) {
+        toast.error(ct.fillRequired);
         return;
       }
     }
@@ -231,7 +265,7 @@ const Checkout = () => {
           // Don't clear cart yet - wait for payment callback
         } catch (error: any) {
           console.error('Sadad payment initiation failed:', error);
-          toast.error(error.message || "Failed to initiate payment. Please try again or use cash on delivery.");
+          toast.error(error.message || ct.paymentInitFailed);
           setIsProcessing(false);
         }
       } else {
@@ -240,7 +274,7 @@ const Checkout = () => {
         navigate(`/order-confirmation?orderId=${order.id}&paymentMethod=cash`);
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to place order");
+      toast.error(error.message || ct.orderFailed);
       setIsProcessing(false);
     }
   };
@@ -273,17 +307,17 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary/10 via-background to-background pt-8 pb-6 px-5">
+      <div className="safe-area-top bg-gradient-to-br from-primary/10 via-background to-background pt-4 pb-6 px-5">
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" />
-          Back
+          <ArrowLeft className={`w-5 h-5 ${isRTL ? "rotate-180" : ""}`} />
+          {ct.back}
         </button>
-        <h1 className="text-2xl font-bold text-foreground">Checkout</h1>
+        <h1 className="text-2xl font-bold text-foreground">{ct.title}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="px-5 py-6 space-y-6">
@@ -291,7 +325,7 @@ const Checkout = () => {
         <div className="bg-card rounded-2xl border border-border/50 p-4">
           <div className="flex items-center gap-2 mb-4">
             <Package className="w-5 h-5 text-primary" />
-            <h2 className="font-semibold text-foreground">Order Summary</h2>
+            <h2 className="font-semibold text-foreground">{ct.orderSummary}</h2>
           </div>
 
           {isLoading ? (
@@ -309,6 +343,8 @@ const Checkout = () => {
                       <img
                         src={item.product.images[0]}
                         alt={item.product.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -320,11 +356,11 @@ const Checkout = () => {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-foreground text-sm line-clamp-1">{item.product.title}</h3>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Qty: {item.quantity} × QAR {item.product.price_qar}
+                      {ct.qty}: {item.quantity} × {formatQAR(item.product.price_qar, language)}
                     </p>
                   </div>
                   <p className="font-medium text-foreground text-sm">
-                    QAR {(item.quantity * item.product.price_qar).toFixed(2)}
+                    {formatQAR(item.quantity * item.product.price_qar, language)}
                   </p>
                 </div>
               ))}
@@ -333,8 +369,8 @@ const Checkout = () => {
 
           <div className="border-t border-border/50 mt-4 pt-4">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-foreground">Total</span>
-              <span className="text-xl font-bold text-primary">QAR {total.toFixed(2)}</span>
+              <span className="font-semibold text-foreground">{ct.total}</span>
+              <span className="text-xl font-bold text-primary">{formatQAR(total, language)}</span>
             </div>
           </div>
         </div>
@@ -345,7 +381,7 @@ const Checkout = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-primary" />
-                <h2 className="font-semibold text-foreground">Shipping Address</h2>
+                <h2 className="font-semibold text-foreground">{ct.shippingAddress}</h2>
               </div>
               <Button
                 type="button"
@@ -358,12 +394,12 @@ const Checkout = () => {
                 {isLocating ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Detecting...
+                    {ct.detecting}
                   </>
                 ) : (
                   <>
                     <Navigation className="w-4 h-4" />
-                    Auto-detect
+                    {ct.autoDetect}
                   </>
                 )}
               </Button>
@@ -372,41 +408,52 @@ const Checkout = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name *</Label>
+                  <Label htmlFor="fullName">{ct.fullName} *</Label>
                   <Input
                     id="fullName"
                     value={shippingAddress.full_name}
                     onChange={(e) => handleAddressChange("full_name", e.target.value)}
-                    required
+                    aria-invalid={!!fieldErrors.full_name}
                     className="rounded-xl"
                   />
+                  {fieldErrors.full_name && (
+                    <p className="text-xs text-destructive">{fieldErrors.full_name}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone *</Label>
+                  <Label htmlFor="phone">{ct.phone} *</Label>
                   <Input
                     id="phone"
                     type="tel"
+                    dir="ltr"
+                    placeholder="+974 XXXX XXXX"
                     value={shippingAddress.phone}
                     onChange={(e) => handleAddressChange("phone", e.target.value)}
-                    required
-                    className="rounded-xl"
+                    aria-invalid={!!fieldErrors.phone}
+                    className={`rounded-xl ${isRTL ? "text-right" : ""}`}
                   />
+                  {fieldErrors.phone && (
+                    <p className="text-xs text-destructive">{fieldErrors.phone}</p>
+                  )}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address1">Address Line 1 *</Label>
+                <Label htmlFor="address1">{ct.addressLine1} *</Label>
                 <Input
                   id="address1"
                   value={shippingAddress.address_line1}
                   onChange={(e) => handleAddressChange("address_line1", e.target.value)}
-                  required
+                  aria-invalid={!!fieldErrors.address_line1}
                   className="rounded-xl"
                 />
+                {fieldErrors.address_line1 && (
+                  <p className="text-xs text-destructive">{fieldErrors.address_line1}</p>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address2">Address Line 2</Label>
+                <Label htmlFor="address2">{ct.addressLine2}</Label>
                 <Input
                   id="address2"
                   value={shippingAddress.address_line2}
@@ -417,19 +464,31 @@ const Checkout = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="city">City *</Label>
+                  <Label htmlFor="city">{ct.city} *</Label>
                   <Input
                     id="city"
+                    list="qatar-cities"
                     value={shippingAddress.city}
                     onChange={(e) => handleAddressChange("city", e.target.value)}
-                    required
+                    aria-invalid={!!fieldErrors.city}
                     className="rounded-xl"
                   />
+                  <datalist id="qatar-cities">
+                    {qatarCities.map((city) => (
+                      <option key={city.en} value={city.en}>
+                        {language === "ar" ? city.ar : city.en}
+                      </option>
+                    ))}
+                  </datalist>
+                  {fieldErrors.city && (
+                    <p className="text-xs text-destructive">{fieldErrors.city}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="postalCode">Postal Code</Label>
+                  <Label htmlFor="postalCode">{ct.postalCode}</Label>
                   <Input
                     id="postalCode"
+                    dir="ltr"
                     value={shippingAddress.postal_code}
                     onChange={(e) => handleAddressChange("postal_code", e.target.value)}
                     className="rounded-xl"
@@ -444,7 +503,7 @@ const Checkout = () => {
         <div className="bg-card rounded-2xl border border-border/50 p-4">
           <div className="flex items-center gap-2 mb-4">
             <CreditCard className="w-5 h-5 text-primary" />
-            <h2 className="font-semibold text-foreground">Payment Method</h2>
+            <h2 className="font-semibold text-foreground">{ct.paymentMethod}</h2>
           </div>
 
           <div className="space-y-3">
@@ -462,9 +521,9 @@ const Checkout = () => {
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <CreditCard className="w-5 h-5 text-primary" />
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="font-medium text-foreground text-sm">Pay with Sadad</p>
-                  <p className="text-xs text-muted-foreground">Secure online payment</p>
+                <div className="flex-1 text-start">
+                  <p className="font-medium text-foreground text-sm">{ct.payWithSadad}</p>
+                  <p className="text-xs text-muted-foreground">{ct.secureOnlinePayment}</p>
                 </div>
                 {selectedPaymentMethod === 'sadad' && (
                   <Check className="w-5 h-5 text-primary" />
@@ -486,9 +545,9 @@ const Checkout = () => {
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <Wallet className="w-5 h-5 text-primary" />
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="font-medium text-foreground text-sm">Cash on Delivery</p>
-                  <p className="text-xs text-muted-foreground">Pay when you receive</p>
+                <div className="flex-1 text-start">
+                  <p className="font-medium text-foreground text-sm">{ct.cashOnDelivery}</p>
+                  <p className="text-xs text-muted-foreground">{ct.payWhenYouReceive}</p>
                 </div>
                 {selectedPaymentMethod === 'cash' && (
                   <Check className="w-5 h-5 text-primary" />
@@ -500,7 +559,7 @@ const Checkout = () => {
           {selectedPaymentMethod === 'sadad' && (
             <div className="mt-3 p-3 bg-muted/30 rounded-lg">
               <p className="text-xs text-muted-foreground">
-                You will be redirected to Sadad's secure payment gateway to complete your payment.
+                {ct.sadadRedirectNote}
               </p>
             </div>
           )}
@@ -514,15 +573,15 @@ const Checkout = () => {
           disabled={isProcessing || paymentState.isProcessing || cartItems.length === 0}
         >
           {(isProcessing || paymentState.isProcessing)
-            ? "Processing..."
+            ? ct.processing
             : selectedPaymentMethod === 'sadad'
-            ? `Pay with Sadad • QAR ${total.toFixed(2)}`
-            : `Place Order • QAR ${total.toFixed(2)}`
+            ? `${ct.payWithSadad} • ${formatQAR(total, language)}`
+            : `${ct.placeOrder} • ${formatQAR(total, language)}`
           }
         </Button>
 
         <p className="text-xs text-center text-muted-foreground">
-          By placing this order, you agree to our Terms of Service
+          {ct.termsNote}
         </p>
       </form>
     </div>

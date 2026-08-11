@@ -27,8 +27,8 @@ const defaultSettings: PlatformSettings = {
   support_email: "support@example.com",
   support_phone: "+966500000000",
   report_logo_url: "",
-  report_primary_color: "#8b5cf6",
-  report_secondary_color: "#a855f7",
+  report_primary_color: "#A9475B",
+  report_secondary_color: "#EFA6A8",
   report_company_name: "Glam",
   report_footer_text: "جميع الحقوق محفوظة",
 };

@@ -21,6 +21,9 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      // Legacy `any` usage is being cleaned up incrementally — warn so CI can
+      // gate on real error classes (hooks rules, etc.) without blocking builds.
+      "@typescript-eslint/no-explicit-any": "warn",
     },
   },
 );

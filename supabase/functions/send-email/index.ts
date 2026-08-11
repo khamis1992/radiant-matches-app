@@ -24,9 +24,9 @@ const APP_NAME = "Glamore";
 const APP_URL = "https://radiant-matches-app.lovable.app";
 const LOGO_URL = "https://besjfzlgtssriqpluzgn.supabase.co/storage/v1/object/public/banners/logo.png";
 const USER_MANUAL_URL = `${APP_URL}/user-manual-ar.html`;
-const BRAND_COLOR = "#C4526E";
-const BRAND_LIGHT = "#FDF2F4";
-const BRAND_DARK = "#9B3A52";
+const BRAND_COLOR = "#A9475B"; // GLAM Rose Action
+const BRAND_LIGHT = "#F8C2C3"; // GLAM Soft Blush
+const BRAND_DARK = "#7E3546"; // Darkened Rose Action for depth
 
 function getEmailTemplate(type: EmailType, data: Record<string, unknown>): { subject: string; html: string } {
   const wrap = (title: string, emoji: string, content: string) => `
@@ -217,6 +217,39 @@ function getEmailTemplate(type: EmailType, data: Record<string, unknown>): { sub
   }
 }
 
+const ALLOWED_TYPES: readonly string[] = [
+  "welcome",
+  "booking_created",
+  "booking_confirmed",
+  "booking_cancelled",
+  "order_created",
+  "order_status_updated",
+];
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+// Escape HTML special chars to prevent injection through template data
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Recursively sanitize every string in the payload before template interpolation
+function sanitizeData(value: unknown): unknown {
+  if (typeof value === "string") return escapeHtml(value);
+  if (Array.isArray(value)) return value.map(sanitizeData);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, sanitizeData(v)])
+    );
+  }
+  return value;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -226,6 +259,30 @@ Deno.serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY is not configured");
+    }
+
+    // Require an authenticated caller — this function must never act as an open relay
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const body: EmailRequest = await req.json();
@@ -238,7 +295,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { subject, html } = getEmailTemplate(type, data || {});
+    if (!ALLOWED_TYPES.includes(type)) {
+      return new Response(JSON.stringify({ error: "Invalid email type" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (typeof to !== "string" || to.length > 254 || !EMAIL_RE.test(to)) {
+      return new Response(JSON.stringify({ error: "Invalid recipient" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { subject, html } = getEmailTemplate(type, (sanitizeData(data || {}) as Record<string, unknown>));
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",

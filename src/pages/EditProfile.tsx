@@ -106,6 +106,9 @@ const EditProfile = () => {
       if (error) throw error;
 
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
+      await queryClient.invalidateQueries({ queryKey: ["artists-with-pricing"] });
+      await queryClient.invalidateQueries({ queryKey: ["artists"] });
+      await queryClient.invalidateQueries({ queryKey: ["artist"] });
       toast.success(t.editProfile?.profileUpdated || "Profile updated successfully");
       navigate("/profile");
     } catch (error) {

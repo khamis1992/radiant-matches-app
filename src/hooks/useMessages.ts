@@ -14,6 +14,10 @@ interface Message {
   created_at: string;
 }
 
+// Cap initial load to the most recent messages so long conversations
+// don't fetch unbounded history on open.
+const MESSAGES_INITIAL_LIMIT = 100;
+
 export const useMessages = (conversationId: string | undefined) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -28,10 +32,12 @@ export const useMessages = (conversationId: string | undefined) => {
         .from("messages")
         .select("*")
         .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false })
+        .limit(MESSAGES_INITIAL_LIMIT);
 
       if (error) throw error;
-      return data as Message[];
+      // Return in chronological order for rendering
+      return (data as Message[]).reverse();
     },
     enabled: !!conversationId && !!user,
   });

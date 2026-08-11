@@ -8,6 +8,17 @@ export interface ArtistWithPricing extends Artist {
   service_areas?: string[] | null;
 }
 
+/**
+ * Single source of truth for an artist's card photo across every screen
+ * (home, artists listing, map, shops) — featured portfolio image first,
+ * then first portfolio preview, then profile avatar.
+ */
+export const getArtistPhoto = (artist: ArtistWithPricing): string | null =>
+  artist.featured_image ??
+  artist.portfolio_previews?.[0] ??
+  artist.profile?.avatar_url ??
+  null;
+
 export const useArtistsWithPricing = () => {
   return useQuery({
     queryKey: ["artists-with-pricing"],

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export const useReviewHelpful = (reviewId: string | undefined) => {
   const { user } = useAuth();
@@ -58,10 +58,8 @@ export const useReviewHelpful = (reviewId: string | undefined) => {
     },
     onError: (error) => {
       console.error("Error toggling vote:", error);
-      toast({
-        title: "حدث خطأ",
+      toast.error("حدث خطأ", {
         description: "يجب تسجيل الدخول للتصويت",
-        variant: "destructive",
       });
     },
   });

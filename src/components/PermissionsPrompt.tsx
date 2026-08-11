@@ -255,8 +255,8 @@ export const PermissionsPrompt = () => {
           disabled={requesting}
           className={cn(
             "group relative w-full h-14 rounded-full text-[15px] font-semibold tracking-wide transition-all duration-300",
-            "text-white bg-glam-rose hover:bg-glam-rose-pressed",
-            "active:scale-[0.97] shadow-lg shadow-black/30"
+            "text-white bg-glam-ink hover:bg-glam-ink-pressed border border-white/15",
+            "active:scale-[0.97] [box-shadow:0_20px_44px_-16px_rgba(16,20,23,0.55),inset_0_1px_0_rgba(255,255,255,0.12)]"
           )}
         >
           {requesting ? (

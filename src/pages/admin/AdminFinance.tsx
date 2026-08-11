@@ -60,7 +60,7 @@ const AdminFinance = () => {
     return (
       <div className="min-h-screen bg-background flex" dir={isRTL ? "rtl" : "ltr"}>
         <AdminSidebar />
-        <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
+        <main className={cn("flex-1 p-4 pt-20 lg:p-8", isRTL ? "lg:mr-64" : "lg:ml-64")}>
           <Skeleton className="h-8 w-48 mb-8" />
           <div className="grid grid-cols-4 gap-6 mb-8">
             {[...Array(4)].map((_, i) => (
@@ -252,7 +252,7 @@ const AdminFinance = () => {
     <div className="min-h-screen bg-background flex" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
 
-      <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
+      <main className={cn("flex-1 p-4 pt-20 lg:p-8", isRTL ? "lg:mr-64" : "lg:ml-64")}>
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">{t.adminFinance.title}</h1>
           <p className="text-muted-foreground mt-1">{t.adminFinance.subtitle}</p>

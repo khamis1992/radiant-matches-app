@@ -65,6 +65,16 @@ const SLIDES: Slide[] = [
   },
 ];
 
+const ONBOARDING_SEEN_KEY = "glam-onboarding-seen";
+
+const markOnboardingSeen = () => {
+  try {
+    localStorage.setItem(ONBOARDING_SEEN_KEY, "1");
+  } catch {
+    // storage unavailable
+  }
+};
+
 const Onboarding = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
@@ -127,6 +137,15 @@ const Onboarding = () => {
       if (session?.user) {
         redirectByRole(session.user.id);
       } else {
+        // Returning guests skip the intro entirely
+        try {
+          if (localStorage.getItem(ONBOARDING_SEEN_KEY)) {
+            navigate("/home", { replace: true });
+            return;
+          }
+        } catch {
+          // storage unavailable — show onboarding
+        }
         setCheckingAuth(false);
         const timer = setTimeout(() => setShowSplash(false), 2000);
         return () => clearTimeout(timer);
@@ -143,6 +162,7 @@ const Onboarding = () => {
   };
 
   const handleSkip = () => {
+    markOnboardingSeen();
     navigate("/home");
   };
 
@@ -282,11 +302,11 @@ const Onboarding = () => {
           <>
             <Button
               size="lg"
-              onClick={() => navigate("/auth")}
+              onClick={() => { markOnboardingSeen(); navigate("/auth"); }}
               className={cn(
                 "group relative w-full h-14 rounded-full text-[15px] font-semibold tracking-wide transition-all duration-300",
-                "text-white bg-glam-rose hover:bg-glam-rose-pressed",
-                "active:scale-[0.97] shadow-lg shadow-black/30"
+                "text-white bg-glam-ink hover:bg-glam-ink-pressed border border-white/15",
+                "active:scale-[0.97] [box-shadow:0_20px_44px_-16px_rgba(16,20,23,0.55),inset_0_1px_0_rgba(255,255,255,0.12)]"
               )}
             >
               {isAr ? "ابدئي الآن" : "Get Started"}
@@ -297,7 +317,7 @@ const Onboarding = () => {
 
             <div className="flex items-center justify-center gap-6 pt-5">
               <button
-                onClick={() => navigate("/auth")}
+                onClick={() => { markOnboardingSeen(); navigate("/auth"); }}
                 className="text-sm font-semibold text-white/90 transition-colors hover:text-white"
               >
                 {isAr ? "تسجيل الدخول" : "Sign In"}

@@ -4,7 +4,8 @@ import { Lock, Loader2, LucideIcon, LogIn, ArrowLeft, Sparkles } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
-import logo from "@/assets/logo.png";
+// Brand-mandated logo asset (light surfaces)
+const logo = "/brand/glam-logo-light.png";
 
 interface ProtectedRouteProps {
   children: ReactNode;

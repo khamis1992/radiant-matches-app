@@ -101,10 +101,11 @@ const AdminDashboard = () => {
       case "thisMonth":
         setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
         break;
-      case "lastMonth":
+      case "lastMonth": {
         const lastMonth = subMonths(today, 1);
         setDateRange({ from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) });
         break;
+      }
       case "thisYear":
         setDateRange({ from: startOfYear(today), to: today });
         break;
@@ -187,7 +188,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
 
-      <main className={cn("p-8", isRTL ? "mr-64" : "ml-64")}>
+      <main className={cn("p-4 pt-20 lg:p-8", isRTL ? "lg:mr-64" : "lg:ml-64")}>
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           {/* Header */}

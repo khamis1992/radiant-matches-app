@@ -4,7 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useProfile } from "@/hooks/useProfile";
 import { useUnreadNotificationsCount } from "@/hooks/useArtistNotifications";
-import logoImage from "@/assets/logo.png";
+// Brand-mandated logo asset (light surfaces)
+const logoImage = "/brand/glam-logo-light.png";
 
 const ArtistHeader = () => {
   const navigate = useNavigate();

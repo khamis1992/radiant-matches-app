@@ -79,6 +79,9 @@ export const useAddPortfolioItem = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["portfolio", variables.artist_id] });
+      queryClient.invalidateQueries({ queryKey: ["artists-with-pricing"] });
+      queryClient.invalidateQueries({ queryKey: ["artists"] });
+      queryClient.invalidateQueries({ queryKey: ["artist"] });
     },
   });
 };
@@ -102,6 +105,9 @@ export const useReorderPortfolio = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["portfolio", variables.artistId] });
+      queryClient.invalidateQueries({ queryKey: ["artists-with-pricing"] });
+      queryClient.invalidateQueries({ queryKey: ["artists"] });
+      queryClient.invalidateQueries({ queryKey: ["artist"] });
     },
   });
 };
@@ -123,6 +129,9 @@ export const useUpdatePortfolioItem = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["portfolio", variables.artistId] });
+      queryClient.invalidateQueries({ queryKey: ["artists-with-pricing"] });
+      queryClient.invalidateQueries({ queryKey: ["artists"] });
+      queryClient.invalidateQueries({ queryKey: ["artist"] });
     },
   });
 };
@@ -149,6 +158,9 @@ export const useDeletePortfolioItem = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["portfolio", variables.artistId] });
+      queryClient.invalidateQueries({ queryKey: ["artists-with-pricing"] });
+      queryClient.invalidateQueries({ queryKey: ["artists"] });
+      queryClient.invalidateQueries({ queryKey: ["artist"] });
     },
   });
 };

@@ -271,9 +271,6 @@ serve(async (req) => {
       }
     }
 
-    // Map our status to new schema status values
-    const txStatus = paymentStatus === "completed" ? "success" : paymentStatus;
-
     // Update payment transaction using new schema
     const paymentId = `SADAD-${orderId}`;
 
@@ -291,6 +288,22 @@ serve(async (req) => {
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Amount integrity check: the paid amount must match the recorded order amount
+    if (paymentStatus === "completed") {
+      const paidAmount = parseFloat(TXNAMOUNT || "NaN");
+      const expectedAmount = Number(existingTx.amount);
+      if (!isFinite(paidAmount) || Math.abs(paidAmount - expectedAmount) > 0.01) {
+        console.error(
+          `Amount mismatch for product order ${orderId}: paid=${TXNAMOUNT}, expected=${expectedAmount}`
+        );
+        paymentStatus = "failed";
+        errorMessage = "Paid amount does not match order amount";
+      }
+    }
+
+    // Map our status to new schema status values (after all checks)
+    const txStatus = paymentStatus === "completed" ? "success" : paymentStatus;
 
     const { error: txUpdateError } = await supabase
       .from("payment_transactions")

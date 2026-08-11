@@ -1,521 +1,624 @@
-import { useState, useMemo, useEffect } from "react";
-import BottomNavigation from "@/components/BottomNavigation";
-import AppHeader from "@/components/layout/AppHeader";
+import { useMemo, useState } from "react";
+import { format, formatDistanceToNow, isToday, isTomorrow, parseISO } from "date-fns";
+import { ar, enUS, type Locale } from "date-fns/locale";
 import {
-  Calendar, Clock, MapPin, MessageCircle, ChevronRight,
-  Sparkles, Star, CalendarCheck, History, AlertCircle,
-  CheckCircle2, XCircle, Timer, CreditCard
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+  ArrowLeft,
+  ArrowRight,
+  CalendarBlank,
+  CalendarCheck,
+  CalendarPlus,
+  CaretRight,
+  ChatCircleDots,
+  CheckCircle,
+  Clock,
+  ClockCounterClockwise,
+  HourglassMedium,
+  MapPin,
+  Receipt,
+  WarningCircle,
+  XCircle,
+} from "@phosphor-icons/react";
+import { useNavigate } from "react-router-dom";
+import BottomNavigation from "@/components/BottomNavigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUserBookings } from "@/hooks/useBookings";
-import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
+import { type Booking, useUserBookings } from "@/hooks/useBookings";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConversations } from "@/hooks/useConversations";
 import { formatBookingTime, formatQAR } from "@/lib/locale";
-import { format, formatDistanceToNow, isToday, isTomorrow, differenceInDays } from "date-fns";
-import { ar, enUS, type Locale } from "date-fns/locale";
-import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { LoginPromptModal } from "@/components/auth/LoginPromptModal";
 
-// Tab component
-const TabButton = ({ 
-  active, 
-  onClick, 
-  icon: Icon, 
-  label, 
-  count 
-}: { 
-  active: boolean; 
-  onClick: () => void; 
-  icon: React.ElementType; 
-  label: string; 
-  count: number;
-}) => (
-  <button
-    onClick={onClick}
-    className={`
-      flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-all duration-300
-      ${active 
-        ? "bg-primary text-white shadow-lg shadow-primary/25" 
-        : "bg-muted/50 text-muted-foreground hover:bg-muted"
-      }
-    `}
-  >
-    <Icon className="w-4 h-4" />
-    <span>{label}</span>
-    {count > 0 && (
-      <span className={`
-        min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold flex items-center justify-center
-        ${active ? "bg-white/20 text-white" : "bg-primary/10 text-primary"}
-      `}>
-        {count}
-      </span>
-    )}
-  </button>
-);
+type BookingTab = "upcoming" | "past";
 
-// Status badge component
-const StatusBadge = ({ status, language }: { status: string; language: string }) => {
-  const config: Record<string, { icon: React.ElementType; bg: string; text: string; label: string }> = {
-    pending: { 
-      icon: Timer, 
-      bg: "bg-amber-500/10", 
-      text: "text-amber-600",
-      label: language === "ar" ? "قيد الانتظار" : "Pending"
-    },
-    confirmed: { 
-      icon: CheckCircle2, 
-      bg: "bg-green-500/10", 
-      text: "text-green-600",
-      label: language === "ar" ? "مؤكد" : "Confirmed"
-    },
-    completed: { 
-      icon: Star, 
-      bg: "bg-primary/10", 
-      text: "text-primary",
-      label: language === "ar" ? "مكتمل" : "Completed"
-    },
-    cancelled: { 
-      icon: XCircle, 
-      bg: "bg-red-500/10", 
-      text: "text-red-500",
-      label: language === "ar" ? "ملغي" : "Cancelled"
-    },
-  };
+const statusStyles: Record<
+  Booking["status"],
+  {
+    icon: React.ElementType;
+    surface: string;
+    tone: string;
+  }
+> = {
+  pending: {
+    icon: HourglassMedium,
+    surface: "bg-[color-mix(in_srgb,var(--glam-warning)_10%,transparent)]",
+    tone: "text-[var(--glam-warning)]",
+  },
+  confirmed: {
+    icon: CheckCircle,
+    surface: "bg-[color-mix(in_srgb,var(--glam-success)_10%,transparent)]",
+    tone: "text-glam-success",
+  },
+  completed: {
+    icon: CheckCircle,
+    surface: "bg-[color-mix(in_srgb,var(--glam-info)_10%,transparent)]",
+    tone: "text-[var(--glam-info)]",
+  },
+  cancelled: {
+    icon: XCircle,
+    surface: "bg-[color-mix(in_srgb,var(--glam-error)_10%,transparent)]",
+    tone: "text-[var(--glam-error)]",
+  },
+};
 
-  const { icon: Icon, bg, text, label } = config[status] || config.pending;
+const StatusBadge = ({
+  status,
+  label,
+}: {
+  status: Booking["status"];
+  label: string;
+}) => {
+  const config = statusStyles[status];
+  const Icon = config.icon;
 
   return (
-    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${bg}`}>
-      <Icon className={`w-3.5 h-3.5 ${text}`} />
-      <span className={`text-xs font-semibold ${text}`}>{label}</span>
+    <span
+      className={`inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-semibold ${config.surface} ${config.tone}`}
+    >
+      <Icon size={14} weight="bold" aria-hidden="true" />
+      {label}
+    </span>
+  );
+};
+
+const ArtistIdentity = ({ booking, large = false }: { booking: Booking; large?: boolean }) => {
+  const artistName = booking.artist?.profile?.full_name || "GLAM Artist";
+
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <Avatar className={`${large ? "h-14 w-14" : "h-12 w-12"} shrink-0 rounded-2xl border border-glam-border`}>
+        <AvatarImage
+          src={booking.artist?.featured_image || booking.artist?.profile?.avatar_url || undefined}
+          alt={artistName}
+          className="object-cover"
+        />
+        <AvatarFallback className="rounded-2xl bg-glam-blush-soft font-semibold text-glam-ink">
+          {artistName.charAt(0)}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 text-start">
+        <p className="truncate text-[15px] font-bold text-glam-ink">{artistName}</p>
+        <p className="mt-0.5 truncate text-xs text-glam-secondary">
+          {booking.service?.name || "Beauty service"}
+        </p>
+      </div>
     </div>
   );
 };
 
-// Time until badge
-const TimeUntilBadge = ({ date, language }: { date: Date; language: string }) => {
-  const dateLocale = language === "ar" ? ar : enUS;
-  
+const DateTile = ({ date, locale }: { date: Date; locale: Locale }) => (
+  <div className="flex h-[72px] w-[64px] shrink-0 flex-col items-center justify-center rounded-2xl bg-glam-ink text-white">
+    <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-glam-blush-soft rtl:tracking-normal">
+      {format(date, "MMM", { locale })}
+    </span>
+    <span className="mt-0.5 text-2xl font-bold tabular-nums leading-none">{format(date, "d")}</span>
+    <span className="mt-1 text-[9px] text-white/70">{format(date, "EEE", { locale })}</span>
+  </div>
+);
+
+const BookingMoment = ({ date, locale, language }: { date: Date; locale: Locale; language: string }) => {
+  let label = formatDistanceToNow(date, { addSuffix: true, locale });
+  let Icon = CalendarBlank;
+  let tone = "text-glam-secondary";
+
   if (isToday(date)) {
-    return (
-      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 animate-pulse">
-        <AlertCircle className="w-3.5 h-3.5 text-green-600" />
-        <span className="text-xs font-semibold text-green-600">
-          {language === "ar" ? "اليوم!" : "Today!"}
-        </span>
-      </div>
-    );
-  }
-  
-  if (isTomorrow(date)) {
-    return (
-      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10">
-        <Clock className="w-3.5 h-3.5 text-amber-600" />
-        <span className="text-xs font-semibold text-amber-600">
-          {language === "ar" ? "غداً" : "Tomorrow"}
-        </span>
-      </div>
-    );
+    label = language === "ar" ? "موعدك اليوم" : "Your appointment is today";
+    Icon = CheckCircle;
+    tone = "text-glam-success";
+  } else if (isTomorrow(date)) {
+    label = language === "ar" ? "موعدك غداً" : "Your appointment is tomorrow";
+    Icon = Clock;
+    tone = "text-[var(--glam-warning)]";
   }
 
-  const days = differenceInDays(date, new Date());
-  if (days <= 7) {
-    return (
-      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10">
-        <Calendar className="w-3.5 h-3.5 text-blue-600" />
-        <span className="text-xs font-semibold text-blue-600">
-          {formatDistanceToNow(date, { addSuffix: true, locale: dateLocale })}
-        </span>
-      </div>
-    );
-  }
-
-  return null;
-};
-
-// Booking card component
-const BookingCard = ({ 
-  booking, 
-  isPast, 
-  language, 
-  dateLocale, 
-  onOpenChat, 
-  isChatLoading 
-}: { 
-  booking: any; 
-  isPast: boolean; 
-  language: string;
-  dateLocale: Locale;
-  onOpenChat: (e: React.MouseEvent, booking: any) => void;
-  isChatLoading: boolean;
-}) => {
-  const bookingDate = new Date(booking.booking_date);
-  
   return (
-    <Link to={`/bookings/${booking.id}`}>
-      <div className={`
-        group relative bg-card rounded-2xl border border-border overflow-hidden
-        transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5
-        ${isPast ? "opacity-75" : ""}
-      `}>
-        {/* Gradient accent for upcoming */}
-        {!isPast && booking.status === "confirmed" && (
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary" />
-        )}
-        
-        <div className="p-4">
-          {/* Header with artist info */}
-          <div className="flex items-start gap-3">
-            <div className="relative">
-              <Avatar className={`w-14 h-14 rounded-2xl ring-2 ring-border ${isPast ? "grayscale" : ""}`}>
-                <AvatarImage
-                  src={booking.artist?.featured_image || booking.artist?.profile?.avatar_url || undefined}
-                  alt={booking.artist?.profile?.full_name || "Artist"}
-                  className="object-cover"
-                />
-                <AvatarFallback className="rounded-2xl bg-primary/10 text-primary text-lg font-semibold">
-                  {booking.artist?.profile?.full_name?.charAt(0) || "A"}
-                </AvatarFallback>
-              </Avatar>
-              {!isPast && booking.status === "confirmed" && (
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-card">
-                  <CheckCircle2 className="w-3 h-3 text-white" />
-                </div>
-              )}
-            </div>
-            
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-foreground truncate">
-                    {booking.artist?.profile?.full_name || "Artist"}
-                  </h3>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    <p className="text-sm text-primary font-medium truncate">
-                      {booking.service?.name || "Service"}
-                    </p>
-                  </div>
-                </div>
-                <StatusBadge status={booking.status} language={language} />
-              </div>
-            </div>
-          </div>
-
-          {/* Booking details */}
-          <div className="mt-4 p-3 bg-muted/30 rounded-xl space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span className="text-foreground font-medium">
-                  {format(bookingDate, "EEEE, d MMMM", { locale: dateLocale })}
-                </span>
-              </div>
-              {!isPast && <TimeUntilBadge date={bookingDate} language={language} />}
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="w-4 h-4 text-muted-foreground" />
-              <span className="text-muted-foreground">
-                {formatBookingTime(booking.booking_time)}
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin className="w-4 h-4 text-muted-foreground" />
-              <span className="text-muted-foreground truncate">
-                {booking.location_type === "client_home" 
-                  ? (language === "ar" ? "في منزلي" : "At my location")
-                  : (language === "ar" ? "في الاستوديو" : "At studio")
-                }
-              </span>
-            </div>
-
-            {/* Price */}
-            <div className="flex items-center justify-between pt-2 border-t border-border/50">
-              <div className="flex items-center gap-2 text-sm">
-                <CreditCard className="w-4 h-4 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  {booking.payment_status === "completed" 
-                    ? (language === "ar" ? "تم الدفع" : "Paid")
-                    : (language === "ar" ? "عند الموعد" : "Pay at appointment")
-                  }
-                </span>
-              </div>
-              <span className="font-bold text-foreground">
-                {formatQAR(booking.total_price)}
-              </span>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex gap-2 mt-4">
-            {!isPast && booking.status !== "cancelled" && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 h-10 rounded-xl"
-                onClick={(e) => onOpenChat(e, booking)}
-                disabled={isChatLoading}
-              >
-                <MessageCircle className="w-4 h-4 me-1.5" />
-                {language === "ar" ? "محادثة" : "Chat"}
-              </Button>
-            )}
-            
-            {isPast && booking.status === "completed" && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 h-10 rounded-xl"
-                onClick={(e) => e.preventDefault()}
-              >
-                <Star className="w-4 h-4 me-1.5" />
-                {language === "ar" ? "تقييم" : "Review"}
-              </Button>
-            )}
-            
-            <Button 
-              variant="soft" 
-              size="sm" 
-              className="flex-1 h-10 rounded-xl group-hover:bg-primary group-hover:text-white transition-colors"
-            >
-              {language === "ar" ? "التفاصيل" : "Details"}
-              <ChevronRight className="w-4 h-4 ms-1" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </Link>
+    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${tone}`}>
+      <Icon size={15} weight="bold" aria-hidden="true" />
+      {label}
+    </span>
   );
 };
 
-// Empty state component
-const EmptyState = ({ 
-  type, 
-  language 
-}: { 
-  type: "upcoming" | "past" | "login"; 
+const FeaturedBookingCard = ({
+  booking,
+  language,
+  locale,
+  labels,
+  onDetails,
+  onChat,
+  chatLoading,
+}: {
+  booking: Booking;
   language: string;
+  locale: Locale;
+  labels: ReturnType<typeof getLabels>;
+  onDetails: () => void;
+  onChat: () => void;
+  chatLoading: boolean;
 }) => {
-  const config = {
-    upcoming: {
-      icon: CalendarCheck,
-      title: language === "ar" ? "لا توجد حجوزات قادمة" : "No Upcoming Bookings",
-      description: language === "ar" 
-        ? "ابحثي عن فنانة مكياج واحجزي موعدك الآن" 
-        : "Find a makeup artist and book your appointment",
-      action: {
-        label: language === "ar" ? "استكشفي الفنانات" : "Explore Artists",
-        to: "/makeup-artists"
-      }
-    },
-    past: {
-      icon: History,
-      title: language === "ar" ? "لا توجد حجوزات سابقة" : "No Past Bookings",
-      description: language === "ar" 
-        ? "سيظهر هنا سجل حجوزاتك" 
-        : "Your booking history will appear here",
-      action: null
-    },
-    login: {
-      icon: Calendar,
-      title: language === "ar" ? "تسجيل الدخول مطلوب" : "Login Required",
-      description: language === "ar" 
-        ? "سجلي دخولك لعرض حجوزاتك" 
-        : "Please login to view your bookings",
-      action: {
-        label: language === "ar" ? "تسجيل الدخول" : "Login",
-        to: "/auth"
-      }
-    }
-  };
-
-  const { icon: Icon, title, description, action } = config[type];
+  const bookingDate = parseISO(booking.booking_date);
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6">
-        <Icon className="w-10 h-10 text-primary" />
+    <article
+      data-testid="featured-booking-card"
+      className="overflow-hidden rounded-[28px] border border-glam-border bg-white shadow-[0_22px_54px_-40px_var(--glam-ink)]"
+    >
+      <div className="border-b border-glam-border bg-glam-porcelain px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <BookingMoment date={bookingDate} locale={locale} language={language} />
+          <StatusBadge status={booking.status} label={labels.status[booking.status]} />
+        </div>
       </div>
-      <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-6 max-w-xs">{description}</p>
-      {action && (
-        <Link to={action.to}>
-          <Button size="lg" className="rounded-xl px-8">
-            {action.label}
-          </Button>
-        </Link>
+
+      <div className="p-4">
+        <div className="flex items-center gap-4">
+          <DateTile date={bookingDate} locale={locale} />
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-glam-rose">
+              {labels.nextAppointment}
+            </p>
+            <h2 className="mt-1 truncate text-lg font-bold text-glam-ink">
+              {booking.service?.name || labels.beautyService}
+            </h2>
+            <p className="mt-1 text-xs text-glam-secondary">
+              {format(bookingDate, "EEEE, d MMMM", { locale })}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-2xl bg-glam-surface p-3.5">
+          <ArtistIdentity booking={booking} large />
+          <div className="mt-3 grid grid-cols-2 gap-2 border-t border-glam-border pt-3">
+            <span className="flex items-center gap-2 text-xs text-glam-secondary">
+              <Clock size={17} className="shrink-0 text-glam-ink" aria-hidden="true" />
+              {formatBookingTime(booking.booking_time)}
+            </span>
+            <span className="flex min-w-0 items-center gap-2 text-xs text-glam-secondary">
+              <MapPin size={17} className="shrink-0 text-glam-ink" aria-hidden="true" />
+              <span className="truncate">
+                {booking.location_type === "client_home" ? labels.atHome : labels.atStudio}
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <div className="text-start">
+            <p className="text-[10px] text-glam-muted">{labels.total}</p>
+            <p className="mt-0.5 text-base font-bold tabular-nums text-glam-ink">
+              {formatQAR(booking.total_price, language === "ar" ? "ar" : "en")}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onChat}
+              disabled={chatLoading}
+              aria-label={labels.chat}
+              className="grid h-12 w-12 place-items-center rounded-full border border-glam-border bg-white text-glam-ink transition-colors hover:bg-glam-surface active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-glam-rose"
+            >
+              <ChatCircleDots size={21} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={onDetails}
+              className="flex h-12 items-center gap-2 rounded-full bg-glam-ink px-5 text-sm font-semibold text-white transition-colors hover:bg-glam-ink-pressed active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-glam-rose focus-visible:ring-offset-2"
+            >
+              {labels.details}
+              <ArrowRight size={17} weight="bold" className="rtl:-scale-x-100" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const CompactBookingCard = ({
+  booking,
+  language,
+  locale,
+  labels,
+  showChat,
+  onDetails,
+  onChat,
+  chatLoading,
+}: {
+  booking: Booking;
+  language: string;
+  locale: Locale;
+  labels: ReturnType<typeof getLabels>;
+  showChat: boolean;
+  onDetails: () => void;
+  onChat: () => void;
+  chatLoading: boolean;
+}) => {
+  const bookingDate = parseISO(booking.booking_date);
+
+  return (
+    <article className="rounded-3xl border border-glam-border bg-white p-4 shadow-[0_16px_40px_-36px_var(--glam-ink)]">
+      <div className="flex items-start justify-between gap-3">
+        <ArtistIdentity booking={booking} />
+        <StatusBadge status={booking.status} label={labels.status[booking.status]} />
+      </div>
+
+      <div className="mt-4 flex items-center gap-3 rounded-2xl bg-glam-surface px-3 py-3">
+        <CalendarBlank size={19} className="shrink-0 text-glam-rose" aria-hidden="true" />
+        <div className="min-w-0 flex-1 text-start">
+          <p className="truncate text-xs font-semibold text-glam-ink">
+            {format(bookingDate, "EEEE, d MMMM", { locale })}
+          </p>
+          <p className="mt-0.5 text-[11px] text-glam-muted">
+            {formatBookingTime(booking.booking_time)} · {booking.location_type === "client_home" ? labels.atHome : labels.atStudio}
+          </p>
+        </div>
+        <p className="shrink-0 text-xs font-bold tabular-nums text-glam-ink">
+          {formatQAR(booking.total_price, language === "ar" ? "ar" : "en")}
+        </p>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onDetails}
+          className="flex h-11 flex-1 items-center justify-between rounded-full border border-glam-border px-4 text-xs font-semibold text-glam-ink transition-colors hover:bg-glam-surface active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-glam-rose"
+        >
+          {labels.details}
+          <CaretRight size={16} weight="bold" className="rtl:-scale-x-100" aria-hidden="true" />
+        </button>
+        {showChat && (
+          <button
+            type="button"
+            onClick={onChat}
+            disabled={chatLoading}
+            aria-label={labels.chat}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-glam-ink text-white transition-colors hover:bg-glam-ink-pressed active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-glam-rose focus-visible:ring-offset-2"
+          >
+            <ChatCircleDots size={19} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+    </article>
+  );
+};
+
+const TabButton = ({
+  active,
+  label,
+  count,
+  icon: Icon,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  count: number;
+  icon: React.ElementType;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    role="tab"
+    aria-selected={active}
+    onClick={onClick}
+    className={`flex h-12 flex-1 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-glam-rose ${
+      active ? "bg-glam-ink text-white shadow-sm" : "text-glam-secondary hover:bg-white"
+    }`}
+  >
+    <Icon size={18} weight={active ? "bold" : "regular"} aria-hidden="true" />
+    <span>{label}</span>
+    <span
+      className={`grid min-w-5 place-items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+        active ? "bg-white/15 text-white" : "bg-white text-glam-rose"
+      }`}
+    >
+      {count}
+    </span>
+  </button>
+);
+
+const EmptyState = ({
+  type,
+  labels,
+  onExplore,
+}: {
+  type: BookingTab;
+  labels: ReturnType<typeof getLabels>;
+  onExplore: () => void;
+}) => {
+  const isUpcoming = type === "upcoming";
+
+  return (
+    <div className="flex min-h-[420px] flex-col items-center justify-center px-6 py-12 text-center">
+      <div className="relative mb-6 grid h-28 w-28 place-items-center rounded-[32px] border border-glam-border bg-white shadow-[0_20px_48px_-38px_var(--glam-ink)]">
+        <CalendarPlus size={48} weight="light" className="text-glam-ink" aria-hidden="true" />
+        <span className="absolute bottom-3 h-1.5 w-10 rounded-full bg-glam-blush" aria-hidden="true" />
+      </div>
+      <h2 className="text-xl font-bold text-glam-ink">
+        {isUpcoming ? labels.emptyUpcomingTitle : labels.emptyPastTitle}
+      </h2>
+      <p className="mt-2 max-w-[280px] text-sm leading-6 text-glam-secondary">
+        {isUpcoming ? labels.emptyUpcomingDescription : labels.emptyPastDescription}
+      </p>
+      {isUpcoming && (
+        <button
+          type="button"
+          onClick={onExplore}
+          className="mt-6 flex h-12 items-center gap-2 rounded-full bg-glam-ink px-6 text-sm font-semibold text-white transition-colors hover:bg-glam-ink-pressed active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-glam-rose focus-visible:ring-offset-2"
+        >
+          {labels.explore}
+          <ArrowRight size={17} weight="bold" className="rtl:-scale-x-100" aria-hidden="true" />
+        </button>
       )}
     </div>
   );
 };
 
-// Main component
+const BookingsSkeleton = ({ labels, isRTL }: { labels: ReturnType<typeof getLabels>; isRTL: boolean }) => (
+  <div dir={isRTL ? "rtl" : "ltr"} className="min-h-[100dvh] bg-glam-porcelain pb-32">
+    <header className="safe-area-top bg-white px-5 pb-6 pt-4">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-11 w-11 rounded-full" />
+        <Skeleton className="h-11 w-11 rounded-2xl" />
+      </div>
+      <p className="mt-6 text-xs font-semibold text-glam-rose">{labels.schedule}</p>
+      <Skeleton className="mt-2 h-8 w-40" />
+      <Skeleton className="mt-2 h-4 w-64" />
+    </header>
+    <main className="px-5 py-4">
+      <Skeleton className="h-12 w-full rounded-full" />
+      <Skeleton className="mt-5 h-[354px] w-full rounded-[28px]" />
+    </main>
+    <BottomNavigation />
+  </div>
+);
+
+const getLabels = (language: string) =>
+  language === "ar"
+    ? {
+        title: "حجوزاتي",
+        schedule: "جدولك",
+        subtitle: "تابعي مواعيدك وتفاصيل كل خدمة بسهولة",
+        upcoming: "القادمة",
+        past: "السابقة",
+        nextAppointment: "الموعد الأقرب",
+        beautyService: "خدمة تجميل",
+        atHome: "في منزلك",
+        atStudio: "في الاستوديو",
+        total: "الإجمالي",
+        details: "عرض التفاصيل",
+        chat: "محادثة مع الفنانة",
+        moreAppointments: "مواعيد قادمة أخرى",
+        pastAppointments: "سجل الحجوزات",
+        emptyUpcomingTitle: "موعدك القادم يبدأ من هنا",
+        emptyUpcomingDescription: "اكتشفي الفنانات والخدمات المتاحة واحجزي الوقت الذي يناسبك.",
+        emptyPastTitle: "لا يوجد سجل حجوزات بعد",
+        emptyPastDescription: "بعد اكتمال أول موعد سيظهر هنا مع كل التفاصيل.",
+        explore: "استكشفي الفنانات",
+        loadErrorTitle: "تعذر تحميل الحجوزات",
+        loadErrorDescription: "تحققي من اتصالك ثم حاولي مرة أخرى.",
+        retry: "إعادة المحاولة",
+        status: {
+          pending: "بانتظار التأكيد",
+          confirmed: "مؤكد",
+          completed: "مكتمل",
+          cancelled: "ملغي",
+        },
+      }
+    : {
+        title: "My Bookings",
+        schedule: "Your schedule",
+        subtitle: "Keep every appointment and service detail in one place",
+        upcoming: "Upcoming",
+        past: "Past",
+        nextAppointment: "Next appointment",
+        beautyService: "Beauty service",
+        atHome: "At your home",
+        atStudio: "At the studio",
+        total: "Total",
+        details: "View details",
+        chat: "Chat with artist",
+        moreAppointments: "More upcoming appointments",
+        pastAppointments: "Booking history",
+        emptyUpcomingTitle: "Your next appointment starts here",
+        emptyUpcomingDescription: "Discover artists and services, then choose a time that works for you.",
+        emptyPastTitle: "No booking history yet",
+        emptyPastDescription: "Your completed appointments will appear here with all their details.",
+        explore: "Explore artists",
+        loadErrorTitle: "Bookings could not be loaded",
+        loadErrorDescription: "Check your connection and try again.",
+        retry: "Try again",
+        status: {
+          pending: "Awaiting confirmation",
+          confirmed: "Confirmed",
+          completed: "Completed",
+          cancelled: "Cancelled",
+        },
+      };
+
+const getBookingTimestamp = (booking: Booking) =>
+  new Date(`${booking.booking_date}T${booking.booking_time}`).getTime();
+
 const Bookings = () => {
-  const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
-  const { user, loading: authLoading } = useAuth();
-  const { data: bookings, isLoading } = useUserBookings();
+  const [activeTab, setActiveTab] = useState<BookingTab>("upcoming");
+  const { data: bookings, isLoading, isError, refetch } = useUserBookings();
   const { t, language } = useLanguage();
   const { getOrCreateBookingConversation } = useConversations();
   const navigate = useNavigate();
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const isRTL = language === "ar";
+  const locale = isRTL ? ar : enUS;
+  const labels = getLabels(language);
 
-  const dateLocale = language === "ar" ? ar : enUS;
+  const sortedUpcoming = useMemo(
+    () =>
+      [...(bookings?.upcoming || [])].sort(
+        (a, b) => getBookingTimestamp(a) - getBookingTimestamp(b),
+      ),
+    [bookings?.upcoming],
+  );
 
-  // Show login modal for guest users
-  useEffect(() => {
-    if (!user && !authLoading) {
-      setShowLoginModal(true);
-    }
-  }, [user, authLoading]);
+  const sortedPast = useMemo(
+    () =>
+      [...(bookings?.past || [])].sort(
+        (a, b) => getBookingTimestamp(b) - getBookingTimestamp(a),
+      ),
+    [bookings?.past],
+  );
 
-  const handleOpenChat = async (e: React.MouseEvent, booking: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const openChat = async (booking: Booking) => {
     try {
       const conversationId = await getOrCreateBookingConversation.mutateAsync({
         artistId: booking.artist_id,
         bookingId: booking.id,
       });
       navigate(`/chat/${conversationId}`);
-    } catch (error) {
+    } catch {
       toast.error(t.errors.somethingWrong);
     }
   };
 
-  const { upcoming = [], past = [] } = bookings || {};
-
-  // Sort upcoming bookings by date (nearest first)
-  const sortedUpcoming = useMemo(() => {
-    return [...upcoming].sort((a, b) => 
-      new Date(a.booking_date).getTime() - new Date(b.booking_date).getTime()
-    );
-  }, [upcoming]);
-
-  // Sort past bookings by date (most recent first)
-  const sortedPast = useMemo(() => {
-    return [...past].sort((a, b) => 
-      new Date(b.booking_date).getTime() - new Date(a.booking_date).getTime()
-    );
-  }, [past]);
-
-  if (authLoading || isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
-        <AppHeader title={t.bookings.title} style="modern" showBack={true}>
-          <div className="flex gap-2 mt-4">
-            <Skeleton className="h-12 flex-1 rounded-xl" />
-            <Skeleton className="h-12 flex-1 rounded-xl" />
-          </div>
-        </AppHeader>
-        <div className="px-5 py-4">
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-48 w-full rounded-2xl" />
-            ))}
-          </div>
-        </div>
-        <BottomNavigation />
-      </div>
-    );
+  if (isLoading) {
+    return <BookingsSkeleton labels={labels} isRTL={isRTL} />;
   }
 
-  // If user is not logged in, show normal page with login modal
-  // This allows guests to see dock and browse, then prompts login naturally
+  const activeBookings = activeTab === "upcoming" ? sortedUpcoming : sortedPast;
+  const featuredBooking = activeTab === "upcoming" ? activeBookings[0] : undefined;
+  const remainingBookings = featuredBooking ? activeBookings.slice(1) : activeBookings;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-32">
-      {/* Header */}
-      <AppHeader title={t.bookings.title} style="modern" showBack={true}>
-        {/* Tabs */}
-        <div className="flex gap-2 mt-4">
+    <div dir={isRTL ? "rtl" : "ltr"} className="min-h-[100dvh] bg-glam-porcelain pb-32 text-glam-ink">
+      <header className="safe-area-top border-b border-glam-border bg-white px-5 pb-6 pt-4">
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label={isRTL ? "رجوع" : "Back"}
+            className="grid h-11 w-11 place-items-center rounded-full border border-glam-border bg-white text-glam-ink transition-colors hover:bg-glam-surface active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-glam-rose"
+          >
+            <ArrowLeft size={20} className="rtl:-scale-x-100" aria-hidden="true" />
+          </button>
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-glam-surface text-glam-rose">
+            <CalendarCheck size={23} weight="duotone" aria-hidden="true" />
+          </div>
+        </div>
+
+        <div className="mt-6 text-start">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-glam-rose rtl:tracking-normal">{labels.schedule}</p>
+          <h1 className="mt-1.5 text-[28px] font-bold leading-tight text-glam-ink">{labels.title}</h1>
+          <p className="mt-2 max-w-sm text-sm leading-6 text-glam-secondary">{labels.subtitle}</p>
+        </div>
+      </header>
+
+      <main className="px-5 py-4">
+        <div role="tablist" aria-label={labels.title} className="flex gap-1 rounded-full bg-glam-surface p-1">
           <TabButton
             active={activeTab === "upcoming"}
-            onClick={() => setActiveTab("upcoming")}
-            icon={CalendarCheck}
-            label={language === "ar" ? "القادمة" : "Upcoming"}
+            label={labels.upcoming}
             count={sortedUpcoming.length}
+            icon={CalendarBlank}
+            onClick={() => setActiveTab("upcoming")}
           />
           <TabButton
             active={activeTab === "past"}
-            onClick={() => setActiveTab("past")}
-            icon={History}
-            label={language === "ar" ? "السابقة" : "Past"}
+            label={labels.past}
             count={sortedPast.length}
+            icon={ClockCounterClockwise}
+            onClick={() => setActiveTab("past")}
           />
         </div>
-      </AppHeader>
 
-      {/* Content */}
-      <div className="px-5 py-4">
-        {activeTab === "upcoming" && (
-          <div className="animate-fade-in">
-            {sortedUpcoming.length > 0 ? (
-              <div className="space-y-4">
-                {sortedUpcoming.map((booking, index) => (
-                  <div 
-                    key={booking.id} 
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <BookingCard
-                      booking={booking}
-                      isPast={false}
-                      language={language}
-                      dateLocale={dateLocale}
-                      onOpenChat={handleOpenChat}
-                      isChatLoading={getOrCreateBookingConversation.isPending}
-                    />
+        {isError ? (
+          <div className="flex min-h-[420px] flex-col items-center justify-center px-6 text-center">
+            <div className="grid h-20 w-20 place-items-center rounded-3xl bg-[color-mix(in_srgb,var(--glam-error)_10%,transparent)] text-[var(--glam-error)]">
+              <WarningCircle size={38} weight="light" aria-hidden="true" />
+            </div>
+            <h2 className="mt-5 text-lg font-bold text-glam-ink">{labels.loadErrorTitle}</h2>
+            <p className="mt-2 max-w-[270px] text-sm leading-6 text-glam-secondary">{labels.loadErrorDescription}</p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-6 h-12 rounded-full bg-glam-ink px-6 text-sm font-semibold text-white hover:bg-glam-ink-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-glam-rose focus-visible:ring-offset-2"
+            >
+              {labels.retry}
+            </button>
+          </div>
+        ) : activeBookings.length === 0 ? (
+          <EmptyState type={activeTab} labels={labels} onExplore={() => navigate("/makeup-artists")} />
+        ) : (
+          <div key={activeTab} className="animate-fade-in pt-5 motion-reduce:animate-none">
+            {featuredBooking && (
+              <FeaturedBookingCard
+                booking={featuredBooking}
+                language={language}
+                locale={locale}
+                labels={labels}
+                onDetails={() => navigate(`/bookings/${featuredBooking.id}`)}
+                onChat={() => openChat(featuredBooking)}
+                chatLoading={getOrCreateBookingConversation.isPending}
+              />
+            )}
+
+            {remainingBookings.length > 0 && (
+              <section className={featuredBooking ? "mt-7" : "mt-1"}>
+                <div className="mb-3 flex items-center justify-between gap-3 px-1">
+                  <div className="flex items-center gap-2">
+                    {activeTab === "upcoming" ? (
+                      <CalendarPlus size={19} className="text-glam-rose" aria-hidden="true" />
+                    ) : (
+                      <Receipt size={19} className="text-glam-rose" aria-hidden="true" />
+                    )}
+                    <h2 className="text-sm font-bold text-glam-ink">
+                      {activeTab === "upcoming" ? labels.moreAppointments : labels.pastAppointments}
+                    </h2>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <EmptyState type="upcoming" language={language} />
+                  <span className="text-xs font-semibold tabular-nums text-glam-muted">{remainingBookings.length}</span>
+                </div>
+
+                <div className="space-y-3">
+                  {remainingBookings.map((booking, index) => (
+                    <div
+                      key={booking.id}
+                      className="animate-fade-in motion-reduce:animate-none"
+                      style={{ animationDelay: `${Math.min(index, 4) * 70}ms` }}
+                    >
+                      <CompactBookingCard
+                        booking={booking}
+                        language={language}
+                        locale={locale}
+                        labels={labels}
+                        showChat={activeTab === "upcoming" && booking.status !== "cancelled"}
+                        onDetails={() => navigate(`/bookings/${booking.id}`)}
+                        onChat={() => openChat(booking)}
+                        chatLoading={getOrCreateBookingConversation.isPending}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
             )}
           </div>
         )}
-
-        {activeTab === "past" && (
-          <div className="animate-fade-in">
-            {sortedPast.length > 0 ? (
-              <div className="space-y-4">
-                {sortedPast.map((booking, index) => (
-                  <div 
-                    key={booking.id} 
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <BookingCard
-                      booking={booking}
-                      isPast={true}
-                      language={language}
-                      dateLocale={dateLocale}
-                      onOpenChat={handleOpenChat}
-                      isChatLoading={getOrCreateBookingConversation.isPending}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <EmptyState type="past" language={language} />
-            )}
-          </div>
-        )}
-      </div>
+      </main>
 
       <BottomNavigation />
-
-      {/* Login modal for guest users */}
-      <LoginPromptModal
-        open={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        featureName="bookings"
-      />
     </div>
   );
 };

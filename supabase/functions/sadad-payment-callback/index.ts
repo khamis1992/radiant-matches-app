@@ -281,9 +281,31 @@ serve(async (req) => {
       }
     }
 
+    // Amount integrity check: the paid amount must match the booking total.
+    // A mismatched amount on a "completed" response is treated as a failure.
+    if (paymentStatus === "completed") {
+      const { data: expectedBooking } = await supabase
+        .from("bookings")
+        .select("id, total_price")
+        .eq("sadad_order_id", orderId)
+        .single();
+
+      const paidAmount = parseFloat(TXNAMOUNT || "NaN");
+      if (expectedBooking) {
+        const expectedAmount = Number(expectedBooking.total_price);
+        if (!isFinite(paidAmount) || Math.abs(paidAmount - expectedAmount) > 0.01) {
+          console.error(
+            `Amount mismatch for order ${orderId}: paid=${TXNAMOUNT}, expected=${expectedAmount}`
+          );
+          paymentStatus = "failed";
+          errorMessage = "Paid amount does not match booking amount";
+        }
+      }
+    }
+
     // Map our status to new schema status values
     const txStatus = paymentStatus === "completed" ? "success" : paymentStatus;
-    
+
     // Update payment transaction using new schema
     const paymentId = `SADAD-${orderId}`;
     const { error: txUpdateError } = await supabase

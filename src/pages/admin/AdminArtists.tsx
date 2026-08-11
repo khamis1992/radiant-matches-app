@@ -119,7 +119,7 @@ const AdminArtists = () => {
   return (
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
-      <main className={`${isRTL ? "mr-64" : "ml-64"} p-8`}>
+      <main className={`${isRTL ? "lg:mr-64" : "lg:ml-64"} p-4 pt-20 lg:p-8`}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>

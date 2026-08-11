@@ -88,7 +88,7 @@ const AdminReviews = () => {
     return (
       <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
         <AdminSidebar />
-        <main className={cn("p-6 flex items-center justify-center min-h-screen", isRTL ? "mr-64" : "ml-64")}>
+        <main className={cn("p-6 pt-20 flex items-center justify-center min-h-screen", isRTL ? "lg:mr-64" : "lg:ml-64")}>
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </main>
       </div>
@@ -99,7 +99,7 @@ const AdminReviews = () => {
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
-      <main className={cn("p-6", isRTL ? "mr-64" : "ml-64")}>
+      <main className={cn("p-4 pt-20 lg:p-6", isRTL ? "lg:mr-64" : "lg:ml-64")}>
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -210,7 +210,7 @@ const AdminReviews = () => {
                         <TableCell>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={isDeleting}>
+                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={isDeleting} aria-label={t.adminReviews.deleteConfirmTitle || "Delete review"}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </AlertDialogTrigger>

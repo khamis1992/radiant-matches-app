@@ -97,7 +97,12 @@ const categories = [
   { value: "other", labelEn: "Other", labelAr: "أخرى" },
 ];
 
-const ArtistProducts = () => {
+interface ArtistProductsProps {
+  /** Role context: adjusts back-navigation destination (default: artist) */
+  role?: "artist" | "seller";
+}
+
+const ArtistProducts = ({ role = "artist" }: ArtistProductsProps) => {
   const navigate = useNavigate();
   const { t, isRTL, language } = useLanguage();
   const { data: products = [], isLoading } = useArtistProducts();
@@ -359,7 +364,8 @@ const ArtistProducts = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(role === "seller" ? "/seller-dashboard" : "/artist-dashboard")}
+              aria-label={isRTL ? "رجوع" : "Back"}
               className="shrink-0"
             >
               <ChevronLeft className={`h-5 w-5 ${isRTL ? "rotate-180" : ""}`} />

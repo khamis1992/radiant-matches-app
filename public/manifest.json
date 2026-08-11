@@ -1,12 +1,14 @@
 {
-  "name": "Radiant Matches",
-  "short_name": "Radiant",
-  "description": "Book makeup artists and beauty services",
+  "name": "GLAM — Beauty Marketplace",
+  "short_name": "GLAM",
+  "description": "Book makeup artists and beauty services in Qatar",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#7c3aed",
+  "background_color": "#FCF8F8",
+  "theme_color": "#FCF8F8",
   "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -58,14 +60,6 @@
     }
   ],
   "categories": ["beauty", "lifestyle", "shopping"],
-  "screenshots": [
-    {
-      "src": "/screenshots/home.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
-  ],
   "shortcuts": [
     {
       "name": "Browse Artists",

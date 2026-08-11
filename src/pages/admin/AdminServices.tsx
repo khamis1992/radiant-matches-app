@@ -81,7 +81,7 @@ const AdminServices = () => {
     return (
       <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
         <AdminSidebar />
-        <main className={cn("p-6 flex items-center justify-center min-h-screen", isRTL ? "mr-64" : "ml-64")}>
+        <main className={cn("p-6 pt-20 flex items-center justify-center min-h-screen", isRTL ? "lg:mr-64" : "lg:ml-64")}>
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </main>
       </div>
@@ -92,7 +92,7 @@ const AdminServices = () => {
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
-      <main className={cn("p-6", isRTL ? "mr-64" : "ml-64")}>
+      <main className={cn("p-4 pt-20 lg:p-6", isRTL ? "lg:mr-64" : "lg:ml-64")}>
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

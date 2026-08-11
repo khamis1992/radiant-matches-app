@@ -321,14 +321,11 @@ const Auth = () => {
           setFullName("");
         } else if (data.user && !data.session) {
           // Fallback if auto-confirm is off
+          // NOTE: welcome email is sent after OTP verification (authenticated),
+          // not here — the send-email function requires a valid session.
           setSignupEmail(email.trim());
           setSignupName(fullName.trim());
           setMode("verify-email");
-          sendEmail({
-            type: "welcome",
-            to: email.trim(),
-            data: { name: fullName.trim() },
-          });
           setEmail("");
           setPassword("");
           setFullName("");

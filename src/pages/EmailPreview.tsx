@@ -9,8 +9,8 @@ const APP_NAME = "Glamore";
 const APP_URL = "https://radiant-matches-app.lovable.app";
 const LOGO_URL = "https://besjfzlgtssriqpluzgn.supabase.co/storage/v1/object/public/banners/logo.png";
 const USER_MANUAL_URL = `${APP_URL}/user-manual-ar.html`;
-const BRAND_COLOR = "#C4526E";
-const BRAND_LIGHT = "#FDF2F4";
+const BRAND_COLOR = "#A9475B"; // GLAM Rose Action
+const BRAND_LIGHT = "#F8C2C3"; // GLAM Soft Blush
 
 function wrap(title: string, emoji: string, content: string) {
   return `
@@ -163,7 +163,7 @@ export default function EmailPreview() {
     <div className="min-h-screen bg-muted/30 p-4 md:p-8">
       <div className="max-w-3xl mx-auto space-y-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="رجوع">
             <ArrowRight className="h-5 w-5" />
           </Button>
           <h1 className="text-xl font-bold">معاينة قوالب الإيميل</h1>

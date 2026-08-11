@@ -63,7 +63,7 @@ const SellerOrders = () => {
     <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50 px-5 py-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label={isRTL ? "رجوع" : "Back"}>
             <ChevronLeft className={`h-5 w-5 ${isRTL ? "rotate-180" : ""}`} />
           </Button>
           <div>

@@ -434,7 +434,7 @@ const AdminBanners = () => {
   return (
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
-      <main className={cn("p-6", isRTL ? "mr-64" : "ml-64")}>
+      <main className={cn("p-4 pt-20 lg:p-6", isRTL ? "lg:mr-64" : "lg:ml-64")}>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t.adminBanners.title}</h1>

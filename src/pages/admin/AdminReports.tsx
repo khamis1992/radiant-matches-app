@@ -41,7 +41,7 @@ const AdminReports = () => {
   return (
     <div className="min-h-screen bg-background flex" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
-      <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
+      <main className={cn("flex-1 p-4 pt-20 lg:p-8", isRTL ? "lg:mr-64" : "lg:ml-64")}>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground mb-2">
           {t.reports.title}

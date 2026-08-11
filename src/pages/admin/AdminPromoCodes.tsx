@@ -85,7 +85,7 @@ const AdminPromoCodes = () => {
     return (
       <div className="min-h-screen bg-background flex">
         <AdminSidebar />
-        <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
+        <main className={cn("flex-1 p-4 pt-20 lg:p-8", isRTL ? "lg:mr-64" : "lg:ml-64")}>
           <Skeleton className="h-8 w-48 mb-8" />
           <Skeleton className="h-96 w-full" />
         </main>
@@ -169,7 +169,7 @@ const AdminPromoCodes = () => {
     <div className="min-h-screen bg-background flex" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
-      <main className={cn("flex-1 p-8", isRTL ? "mr-64" : "ml-64")}>
+      <main className={cn("flex-1 p-4 pt-20 lg:p-8", isRTL ? "lg:mr-64" : "lg:ml-64")}>
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t.adminPromoCodes.title}</h1>

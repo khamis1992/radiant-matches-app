@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { MapPin, Clock, GitCompare, ShoppingBag, Star } from "lucide-react";
+import { MapPin, Clock, ShoppingBag, Star, Eye, Heart, SealCheck, ArrowRight } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
-import { ArtistWithPricing } from "@/hooks/useArtistsWithPricing";
+import { ArtistWithPricing, getArtistPhoto } from "@/hooks/useArtistsWithPricing";
+import BrandCover from "@/components/BrandCover";
+import { cn } from "@/lib/utils";
 
 interface EnhancedArtistCardProps {
   artist: ArtistWithPricing;
@@ -89,14 +91,14 @@ const EnhancedArtistCard = ({
   };
 
   const isSeller = (artist as ArtistWithPricing & { account_type?: string }).account_type === "seller";
-  const coverImage = artist.featured_image || artist.profile?.avatar_url;
+  const coverImage = getArtistPhoto(artist);
   const hasPortfolioPreviews = artist.portfolio_previews && artist.portfolio_previews.length > 0;
 
   if (viewMode === "list") {
     return (
       <div
         onClick={() => navigate(`/artist/${artist.id}`)}
-        className="bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+        className="bg-white rounded-xl border border-glam-border p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
       >
         <div className="flex items-start gap-3">
           <div className="relative">
@@ -111,8 +113,8 @@ const EnhancedArtistCard = ({
             </Avatar>
             {availability && (
               <div
-                className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-card ${
-                  availability.isAvailableToday ? "bg-glam-success" : "bg-muted-foreground"
+                className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white ${
+                  availability.isAvailableToday ? "bg-glam-success" : "bg-glam-muted"
                 }`}
               />
             )}
@@ -120,7 +122,7 @@ const EnhancedArtistCard = ({
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold text-foreground">
+              <h3 className="font-semibold text-glam-ink">
                 {artist.profile?.full_name || "Unknown Artist"}
               </h3>
               <Badge
@@ -147,7 +149,7 @@ const EnhancedArtistCard = ({
             </div>
             
             {artist.profile?.location && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
+              <div className="flex items-center gap-1 text-sm text-glam-muted mt-0.5">
                 <MapPin className="w-3.5 h-3.5" />
                 <span className="truncate">{artist.profile.location}</span>
               </div>
@@ -165,7 +167,7 @@ const EnhancedArtistCard = ({
                   </span>
                 ))}
                 {artist.categories.length > 3 && (
-                  <span className="px-2 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground rounded-full">
+                  <span className="px-2 py-0.5 text-[10px] font-medium bg-glam-surface text-glam-muted rounded-full">
                     +{artist.categories.length - 3}
                   </span>
                 )}
@@ -182,7 +184,7 @@ const EnhancedArtistCard = ({
                 </div>
               )}
               {artist.experience_years !== null && artist.experience_years > 0 && (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-glam-muted">
                   {artist.experience_years} {artist.experience_years === 1 ? t.artistsListing.yearExp : t.artistsListing.yearsExp}
                 </span>
               )}
@@ -207,7 +209,7 @@ const EnhancedArtistCard = ({
           <div className="flex gap-2 mt-3 overflow-hidden">
             {artist.portfolio_previews!.slice(0, 3).map((img, idx) => (
               <div key={idx} className="w-20 h-14 rounded-lg overflow-hidden flex-shrink-0">
-                <img src={img} alt="" className="w-full h-full object-cover" />
+                <img src={img} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
@@ -216,91 +218,148 @@ const EnhancedArtistCard = ({
     );
   }
 
-  // Grid View
+  // Grid View — GLAM reference artist card
   return (
     <div
       onClick={() => navigate(`/artist/${artist.id}`)}
-      className="bg-white rounded-xl overflow-hidden shadow-sm border border-glam-border cursor-pointer h-full flex flex-col"
+      className="bg-white rounded-3xl overflow-hidden shadow-sm border border-glam-border cursor-pointer h-full flex flex-col"
     >
-      {/* Cover Image */}
-      <div className="relative h-24 sm:h-28 overflow-hidden flex-shrink-0">
+      {/* Cover (no overflow-hidden so the badge can straddle the edge; the card root clips the corners) */}
+      <div className="relative h-44 flex-shrink-0">
         {coverImage ? (
           <img
             src={coverImage}
             alt={`${artist.profile?.full_name}'s work`}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-muted" />
+          <BrandCover />
         )}
-        
+
+        {/* Top Rated pill */}
+        {(artist.rating ?? 0) >= 4.5 && (
+          <span className="absolute top-2.5 start-2.5 flex items-center gap-1 bg-white/95 rounded-full ps-2 pe-2.5 py-1 shadow-sm">
+            <Star size={12} weight="fill" className="text-glam-rose" />
+            <span className="text-[9px] font-bold tracking-[0.12em] text-glam-ink">
+              {isRTL ? "الأعلى تقييمًا" : "TOP RATED"}
+            </span>
+          </span>
+        )}
+
         {/* Favorite */}
-        <div className={`absolute top-2 ${isRTL ? "left-2" : "right-2"}`}>
+        <div className="absolute top-2.5 end-2.5">
           <FavoriteButton
             itemType="artist"
             itemId={artist.id}
-            className="bg-white/95 hover:bg-white w-7 h-7 shadow-sm"
+            className="bg-white hover:bg-white w-8 h-8 shadow-sm"
           />
         </div>
-      </div>
 
-      {/* Avatar overlapping the cover's bottom-start edge */}
-      <div className="relative flex justify-start ps-4 -mt-6">
-        <Avatar className="w-12 h-12 border-2 border-card">
-          <AvatarImage src={artist.profile?.avatar_url || undefined} alt={artist.profile?.full_name || ""} className="object-cover" />
-          <AvatarFallback className="text-sm font-medium bg-glam-blush-soft text-glam-ink">
-            {artist.profile?.full_name?.charAt(0) || "A"}
-          </AvatarFallback>
-        </Avatar>
+        {/* Curated badge straddling the cover edge */}
+        <div className="absolute -bottom-7 end-3 z-10 flex flex-col items-center">
+          <div className="w-16 h-16 rounded-full bg-white border border-glam-border shadow-md flex flex-col items-center justify-center">
+            <Heart size={16} weight="fill" className="text-glam-rose mb-0.5" />
+            <span className="text-[9px] font-bold text-glam-ink leading-none">
+              {isRTL ? "مختارة" : "Curated"}
+            </span>
+            <span className="text-[9px] italic font-serif text-glam-secondary leading-none mt-0.5">
+              {isRTL ? "بعناية" : "by GLAM"}
+            </span>
+          </div>
+          <div className="w-4 h-2.5 bg-glam-blush-soft [clip-path:polygon(0_0,100%_0,50%_100%)]" />
+        </div>
       </div>
 
       {/* Content */}
-      <div className="px-3 pt-1.5 pb-3 text-start flex flex-col flex-grow">
-        <h3 className="font-semibold text-foreground text-sm line-clamp-1">
-          {artist.profile?.full_name || "Unknown Artist"}
-        </h3>
-        
-        {/* Specialty text */}
+      <div className="px-3.5 pt-3 pb-3.5 text-start flex flex-col flex-grow">
+        {/* Name + verified */}
+        <div className="flex items-center gap-1.5 pe-14">
+          <h3 className="font-serif font-bold text-glam-ink text-lg leading-snug line-clamp-1">
+            {artist.profile?.full_name || "Unknown Artist"}
+          </h3>
+          <SealCheck size={20} weight="fill" className="text-glam-rose shrink-0" />
+        </div>
+
+        {/* Specialty */}
         {artist.categories && artist.categories.length > 0 && (
-          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-            {artist.categories.slice(0, 2).map(c => getCategoryLabel(c)).join(" · ")}
+          <p className="text-xs text-glam-muted mt-0.5 line-clamp-1">
+            {artist.categories.slice(0, 2).map((c) => getCategoryLabel(c)).join(" · ")}
           </p>
         )}
 
-        {/* Rating */}
-        <div className="flex items-center gap-1 mt-1.5">
+        {/* Rating + location */}
+        <div className="flex items-center gap-1.5 mt-2">
           {artist.rating !== null ? (
             <>
-              <Star className="w-3 h-3 fill-glam-rose text-glam-rose" />
-              <span className="text-xs font-semibold text-glam-ink">{Number(artist.rating).toFixed(1)}</span>
-              <span className="text-glam-muted text-[10px]">({artist.total_reviews || 0})</span>
+              <Star size={14} weight="fill" className="text-glam-rose" />
+              <span className="text-sm font-bold text-glam-ink">
+                {Number(artist.rating).toFixed(1)}
+              </span>
+              <span className="text-xs text-glam-muted">({artist.total_reviews || 0})</span>
             </>
           ) : (
-            <span className="text-[10px] text-muted-foreground">{t.common?.new || "New"}</span>
+            <span className="text-xs text-glam-muted">{t.common?.new || "New"}</span>
+          )}
+          {artist.profile?.location && (
+            <>
+              <span className="w-px h-3.5 bg-glam-border mx-1" />
+              <MapPin size={14} weight="fill" className="text-glam-rose shrink-0" />
+              <span className="text-xs text-glam-secondary line-clamp-1">
+                {artist.profile.location}
+              </span>
+            </>
           )}
         </div>
 
-        {/* Location */}
-        {artist.profile?.location && (
-          <div className="flex items-center gap-1 mt-1 text-glam-muted text-[11px]">
-            <MapPin className="w-3 h-3" />
-            <span className="line-clamp-1">{artist.profile.location}</span>
+        {/* Category chips */}
+        {artist.categories && artist.categories.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2.5">
+            {artist.categories.slice(0, 3).map((category) => (
+              <span
+                key={category}
+                className="px-2.5 py-1 rounded-full bg-glam-surface text-glam-secondary text-[10px] font-medium"
+              >
+                {getCategoryLabel(category)}
+              </span>
+            ))}
+            {artist.categories.length > 3 && (
+              <span className="px-2.5 py-1 rounded-full bg-glam-surface text-glam-muted text-[10px] font-medium">
+                +{artist.categories.length - 3}
+              </span>
+            )}
           </div>
-        )}
-
-        {/* Price */}
-        {artist.min_price && (
-          <p className="text-xs font-medium text-glam-rose mt-1">
-            {t.artistsListing?.startingFrom || "From"} {artist.min_price} QAR
-          </p>
         )}
 
         <div className="flex-grow" />
 
-        {/* Book Button */}
-        <Button className="w-full mt-2 text-xs h-9 rounded-full bg-glam-blush-soft text-glam-ink hover:bg-glam-blush font-semibold shadow-none" size="sm">
-          {buttonLabel || t.bookings.bookNow}
-        </Button>
+        {/* Actions */}
+        <div className="flex gap-2 mt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/artist/${artist.id}`);
+            }}
+            className="flex-1 h-10 rounded-xl border-glam-ink/20 text-glam-ink hover:bg-glam-porcelain text-xs font-semibold shadow-none"
+          >
+            <Eye size={16} className="me-1 text-glam-ink" />
+            {isRTL ? "عرض الملف" : "View Profile"}
+          </Button>
+          <Button
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(isSeller ? `/artist/${artist.id}` : `/booking/${artist.id}`);
+            }}
+            className="flex-1 h-10 rounded-xl bg-glam-ink hover:bg-glam-ink-pressed text-white text-xs font-semibold shadow-none"
+          >
+            {buttonLabel || t.bookings.bookNow}
+            <ArrowRight className={cn("w-4 h-4 ms-1", isRTL && "rotate-180")} />
+          </Button>
+        </div>
       </div>
     </div>
   );

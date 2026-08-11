@@ -264,7 +264,11 @@ const Favorites = () => {
               variant="outline" 
               className="group shadow-sm hover:shadow-md transition-all"
               onClick={() => {
-                searchQuery ? setSearchQuery("") : navigate("/home");
+                if (searchQuery) {
+                  setSearchQuery("");
+                } else {
+                  navigate("/home");
+                }
               }}
             >
               {searchQuery ? (

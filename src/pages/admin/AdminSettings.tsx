@@ -31,8 +31,8 @@ const AdminSettings = () => {
     support_email: "",
     support_phone: "",
     report_logo_url: "",
-    report_primary_color: "#8b5cf6",
-    report_secondary_color: "#a855f7",
+    report_primary_color: "#A9475B",
+    report_secondary_color: "#EFA6A8",
     report_company_name: "Glam",
     report_footer_text: "جميع الحقوق محفوظة",
   });
@@ -50,8 +50,8 @@ const AdminSettings = () => {
         support_email: settings.support_email,
         support_phone: settings.support_phone,
         report_logo_url: settings.report_logo_url || "",
-        report_primary_color: settings.report_primary_color || "#8b5cf6",
-        report_secondary_color: settings.report_secondary_color || "#a855f7",
+        report_primary_color: settings.report_primary_color || "#A9475B",
+        report_secondary_color: settings.report_secondary_color || "#EFA6A8",
         report_company_name: settings.report_company_name || "Glam",
         report_footer_text: settings.report_footer_text || "جميع الحقوق محفوظة",
       });
@@ -125,7 +125,7 @@ const AdminSettings = () => {
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
 
-      <main className={cn("p-8", isRTL ? "mr-64" : "ml-64")}>
+      <main className={cn("p-4 pt-20 lg:p-8", isRTL ? "lg:mr-64" : "lg:ml-64")}>
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">

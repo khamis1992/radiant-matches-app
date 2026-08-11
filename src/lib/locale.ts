@@ -19,9 +19,26 @@ export function formatCurrency(amount: number): string {
 }
 
 /**
- * Format a number with the QAR symbol (shorter format)
+ * Read the current UI language without requiring a React context
+ * (safe to call from any render path; the context persists to storage).
  */
-export function formatQAR(amount: number): string {
+function getCurrentLanguage(): "en" | "ar" {
+  try {
+    return localStorage.getItem("glam-app-language") === "en" ? "en" : "ar";
+  } catch {
+    return "ar";
+  }
+}
+
+/**
+ * Format a number with the QAR symbol (shorter format), localized:
+ * Arabic → "١٢٣ ر.ق", English → "QAR 123"
+ */
+export function formatQAR(amount: number, lang?: "en" | "ar"): string {
+  const language = lang ?? getCurrentLanguage();
+  if (language === "ar") {
+    return `${amount.toLocaleString("ar-QA")} ر.ق`;
+  }
   return `QAR ${amount.toLocaleString(QATAR_LOCALE)}`;
 }
 

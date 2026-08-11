@@ -30,6 +30,18 @@ import PaymentProcessing from "@/components/ui/payment-processing";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, isBefore, startOfDay } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 
+// Flat home-service travel fee (QAR). TODO: move to admin-configurable settings.
+const TRAVEL_FEE_QAR = 90;
+
+// Localized label for a slot like "10:00 AM" → "10:00 AM" / "10:00 ص"
+const formatTimeSlotLabel = (slot: string, lang: string): string => {
+  const [time, period] = slot.split(" ");
+  if (lang === "ar") {
+    return `${time} ${period === "AM" ? "ص" : "م"}`;
+  }
+  return slot;
+};
+
 // Generate time slots from start to end time
 const generateTimeSlots = (startTime: string | null, endTime: string | null): string[] => {
   if (!startTime || !endTime) return [];
@@ -113,61 +125,6 @@ const StepIndicator = ({
   </div>;
 
 
-// Floating artist card component
-const FloatingArtistCard = ({
-  artistName,
-  artistAvatar,
-  serviceName,
-  price,
-  duration
-
-
-
-
-
-
-}: {artistName: string;artistAvatar?: string;serviceName: string;price: number;duration?: number;}) =>
-<div className="mx-4 -mt-2 mb-4">
-    <div className="bg-gradient-to-br from-card via-card to-primary/5 rounded-2xl p-4 shadow-xl border border-primary/10 backdrop-blur-sm">
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          {artistAvatar ?
-        <img
-          src={artistAvatar}
-          alt={artistName}
-          className="w-16 h-16 rounded-2xl object-cover ring-2 ring-primary/20" /> :
-
-
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center ring-2 ring-primary/20">
-              <span className="text-2xl font-bold text-primary">
-                {artistName.charAt(0)}
-              </span>
-            </div>
-        }
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg">
-            <Star className="w-3 h-3 text-white fill-white" />
-          </div>
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-foreground truncate">{artistName}</h3>
-          <div className="flex items-center gap-1.5 mt-1">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <p className="text-sm text-primary font-medium truncate">{serviceName}</p>
-          </div>
-        </div>
-        <div className="text-end">
-          <p className="text-xl font-bold text-foreground">{formatQAR(price)}</p>
-          {duration &&
-        <p className="text-xs text-muted-foreground mt-0.5">
-              {Math.floor(duration / 60)}h {duration % 60 > 0 ? `${duration % 60}m` : ''}
-            </p>
-        }
-        </div>
-      </div>
-    </div>
-  </div>;
-
-
 import { LocationPicker } from "@/components/LocationPicker";
 
 const Booking = () => {
@@ -186,12 +143,12 @@ const Booking = () => {
   const serviceName = searchParams.get("service") || "Service";
   const serviceId = searchParams.get("serviceId");
   const artistId = searchParams.get("artistId") || id;
-  const priceParam = searchParams.get("price");
-  const servicePrice = priceParam ? parseFloat(priceParam) : 0;
+  // Price is never read from the URL (tamperable) — always from the DB below.
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<string>("client_home");
+  const [selectedLocation, setSelectedLocation] = useState<"client_home" | "artist_studio">("client_home");
+  const [artistLocation, setArtistLocation] = useState<string>("");
   const [addressDetails, setAddressDetails] = useState({
     area: "",
     street: "",
@@ -226,17 +183,9 @@ const Booking = () => {
   });
 
   const { data: userProfile } = useProfile();
-
-  useEffect(() => {
-    const meta = document.createElement('meta');
-    meta.name = 'viewport';
-    meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-    document.head.appendChild(meta);
-
-    return () => {
-      document.head.removeChild(meta);
-    };
-  }, []);
+  // NOTE: this page previously injected a second viewport meta with
+  // user-scalable=no (blocks pinch-zoom — a WCAG violation). Removed;
+  // the single viewport meta in index.html applies app-wide.
 
   const createBooking = useCreateBooking();
   const { data: workingHours = [] } = useWorkingHours(artistId || undefined);
@@ -280,8 +229,8 @@ const Booking = () => {
   });
 
   const actualServiceName = serviceInfo?.name || serviceName;
-  const actualServicePrice = serviceInfo?.price || servicePrice;
-  const travelFee = selectedLocation === "client_home" ? 90 : 0;
+  const actualServicePrice = serviceInfo?.price ?? 0;
+  const travelFee = selectedLocation === "client_home" ? TRAVEL_FEE_QAR : 0;
   const totalPrice = actualServicePrice + travelFee;
   const dateFnsLocale = language === "ar" ? ar : enUS;
 
@@ -449,8 +398,15 @@ const Booking = () => {
         service_id: serviceId,
         booking_date: selectedDate.toISOString().split("T")[0],
         booking_time: convertTimeToDbFormat(selectedTime),
-        location_type: "client_home",
-        location_address: `Lat: ${coordinates?.lat || 0}, Lng: ${coordinates?.lng || 0} | Area: ${addressDetails.area}, Street: ${addressDetails.street}, Building: ${addressDetails.building}, Details: ${addressDetails.details}`,
+        location_type: selectedLocation,
+        location_address: selectedLocation === "client_home"
+          ? [
+              coordinates ? `Lat: ${coordinates.lat}, Lng: ${coordinates.lng}` : null,
+              `Area: ${addressDetails.area}, Street: ${addressDetails.street}, Building: ${addressDetails.building}, Details: ${addressDetails.details}`,
+            ]
+              .filter(Boolean)
+              .join(" | ")
+          : artistLocation,
         total_price: totalPrice,
         notes: notes || undefined
       });
@@ -521,13 +477,12 @@ const Booking = () => {
         document.body.appendChild(form);
         form.submit();
       } else {
-        setPaymentState((prev) => ({ ...prev, isProcessing: true }));
-        setTimeout(() => {
-          setPaymentState({ isProcessing: false, isSuccess: true, error: null });
-          setIsConfirmed(true);
-          toast.success(t.bookings.bookingConfirmedToast);
-          setTimeout(() => navigate("/bookings"), 2000);
-        }, 1500);
+        // Cash booking: the server round-trip already happened in createBooking —
+        // no artificial processing delay. Show confirmation, then move on.
+        setPaymentState({ isProcessing: false, isSuccess: true, error: null });
+        setIsConfirmed(true);
+        toast.success(t.bookings.bookingConfirmedToast);
+        setTimeout(() => navigate("/bookings"), 1500);
       }
     } catch (error) {
       console.error("Booking error:", error);
@@ -537,7 +492,7 @@ const Booking = () => {
       setBookingError(errorMessage);
       toast.error(t.bookings.bookingFailed || "Failed to create booking");
     }
-  }, [user, artistId, serviceId, selectedDate, selectedTime, validateForm, selectedLocation, totalPrice, notes, paymentMethod, createBooking, navigate, t, artistInfo, userProfile]);
+  }, [user, artistId, serviceId, selectedDate, selectedTime, validateForm, selectedLocation, totalPrice, notes, paymentMethod, createBooking, navigate, t, artistInfo, userProfile, addressDetails, artistLocation, coordinates]);
 
   const handleSubmit = useCallback(() => {
     if (step === 3) {
@@ -783,7 +738,7 @@ const Booking = () => {
                     `
                   }>
 
-                    AM
+                    {language === "ar" ? "صباحاً" : "AM"}
                   </button>
                   <button
                   onClick={() => setTimeFilter("PM")}
@@ -795,7 +750,7 @@ const Booking = () => {
                     `
                   }>
 
-                    PM
+                    {language === "ar" ? "مساءً" : "PM"}
                   </button>
                 </div>
               </div>
@@ -819,7 +774,7 @@ const Booking = () => {
             <div className="grid grid-cols-3 gap-3">
                   {filteredTimeSlots.map((time) => {
                 const isTimeSelected = selectedTime === time;
-                const hourDisplay = time.replace(" AM", ".00").replace(" PM", ".00");
+                const hourDisplay = formatTimeSlotLabel(time, language);
                 const isPastTime = selectedDate && isToday(selectedDate) &&
                 new Date(`${format(selectedDate, "yyyy-MM-dd")} ${time.replace(" AM", ":00 AM").replace(" PM", ":00 PM")}`) < new Date();
 
@@ -894,32 +849,78 @@ const Booking = () => {
               </div>
               
               <div className="space-y-4">
-                {/* Home Service Only */}
-                <div className="w-full p-4 rounded-2xl border-2 border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-lg flex items-start gap-4">
+                {/* Home Service */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedLocation("client_home")}
+                  className={`w-full p-4 rounded-2xl border-2 transition-all duration-200 text-start flex items-start gap-4 ${
+                    selectedLocation === "client_home"
+                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                      : "border-border bg-card hover:border-primary/40"
+                  }`}
+                >
                   <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center">
                     <Home className="w-6 h-6" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold text-primary">
+                      <p className="font-semibold text-foreground">
                         {t.bookings.atMyLocation}
                       </p>
-                      <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                        <Check className="w-4 h-4 text-white" />
-                      </div>
+                      {selectedLocation === "client_home" && (
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
                       {t.bookings.artistComesToYou}
                     </p>
                     <div className="flex items-center gap-1.5 mt-2">
                       <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                        +{formatQAR(90)} {language === "ar" ? "رسوم تنقل" : "travel fee"}
+                        +{formatQAR(TRAVEL_FEE_QAR)} {language === "ar" ? "رسوم تنقل" : "travel fee"}
                       </span>
                     </div>
                   </div>
-                </div>
+                </button>
 
-            {/* Address Form */}
+                {/* Artist Studio */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedLocation("artist_studio")}
+                  className={`w-full p-4 rounded-2xl border-2 transition-all duration-200 text-start flex items-start gap-4 ${
+                    selectedLocation === "artist_studio"
+                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                      : "border-border bg-card hover:border-primary/40"
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-xl bg-glam-rose text-white flex items-center justify-center">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-foreground">
+                        {t.bookings.artistStudio}
+                      </p>
+                      {selectedLocation === "artist_studio" && (
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {t.bookings.visitArtistWorkspace}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <span className="text-xs font-medium text-glam-success bg-glam-success/10 px-2 py-0.5 rounded-full">
+                        {language === "ar" ? "بدون رسوم تنقل" : "No travel fee"}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+
+            {/* Address Form - only for home service */}
+            {selectedLocation === "client_home" && (
                 <div className="space-y-4 pt-2">
                   {/* Location Detection */}
                   <div className="bg-muted/30 rounded-2xl p-4 border border-border/50">
@@ -1022,8 +1023,32 @@ const Booking = () => {
                 <p className="text-sm text-destructive mt-1">{errors.location}</p>
                 }
                 </div>
+            )}
               </div>
             </div>
+
+            {/* Artist Studio Address */}
+            {selectedLocation === "artist_studio" && (
+              <div className="bg-card rounded-2xl p-5 shadow-sm border border-border/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-glam-rose/10 flex items-center justify-center">
+                    <Building2 className="w-4 h-4 text-glam-rose" />
+                  </div>
+                  <h3 className="font-medium text-foreground text-sm">
+                    {language === "ar" ? "عنوان الاستوديو" : "Studio Address"}
+                  </h3>
+                </div>
+                <Input
+                  value={artistLocation}
+                  onChange={(e) => setArtistLocation(e.target.value)}
+                  placeholder={language === "ar" ? "اسم المنطقة أو عنوان الاستوديو" : "Area or studio address"}
+                  className="h-12 rounded-xl"
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  {language === "ar" ? "سيتم تأكيد العنوان مع الفنانة" : "Address will be confirmed with the artist"}
+                </p>
+              </div>
+            )}
 
             {/* Notes Section */}
             <div className="bg-card rounded-2xl p-5 shadow-sm border border-border/50">
@@ -1126,16 +1151,25 @@ const Booking = () => {
               <div className="bg-card rounded-2xl p-4 shadow-sm border border-border/50 hover:border-primary/30 transition-all duration-300">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                    <Home className="w-6 h-6 text-primary" />
+                    {selectedLocation === "artist_studio" ? (
+                      <Building2 className="w-6 h-6 text-glam-rose" />
+                    ) : (
+                      <Home className="w-6 h-6 text-primary" />
+                    )}
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{t.bookings.location}</p>
                     <p className="text-base font-semibold text-foreground mt-0.5">
-                      {t.bookings.atMyLocation}
+                      {selectedLocation === "artist_studio" ? t.bookings.artistStudio : t.bookings.atMyLocation}
                     </p>
-                    {addressDetails.area &&
+                    {selectedLocation === "client_home" && addressDetails.area &&
                   <p className="text-sm text-muted-foreground truncate">
                         {addressDetails.area} {addressDetails.street ? `, ${addressDetails.street}` : ''}
+                      </p>
+                  }
+                    {selectedLocation === "artist_studio" && artistLocation &&
+                  <p className="text-sm text-muted-foreground truncate">
+                        {artistLocation}
                       </p>
                   }
                   </div>

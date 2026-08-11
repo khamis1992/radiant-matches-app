@@ -255,10 +255,10 @@ const CarouselDots = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLD
             key={index}
             onClick={() => api?.scrollTo(index)}
             className={cn(
-              "w-2 h-2 rounded-full transition-all duration-300",
+              "h-2 rounded-full transition-all duration-300",
               selectedIndex === index
-                ? "bg-primary w-6"
-                : "bg-primary/30 hover:bg-primary/50"
+                ? "bg-glam-rose w-5"
+                : "bg-glam-surface hover:bg-glam-blush-soft w-2"
             )}
             aria-label={`Go to slide ${index + 1}`}
           />

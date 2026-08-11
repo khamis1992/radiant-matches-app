@@ -14,7 +14,9 @@ export const NotificationPrompt = () => {
     // Only show prompt if user is logged in, notifications are supported,
     // permission hasn't been granted/denied, and user hasn't dismissed
     const wasDismissed = localStorage.getItem("notification-prompt-dismissed");
-    if (user && isSupported && permission === "default" && !wasDismissed) {
+    // Don't stack with the first-launch permissions prompt — show on a later visit instead
+    const permissionsPending = !localStorage.getItem("permissions-prompt-done");
+    if (user && isSupported && permission === "default" && !wasDismissed && !permissionsPending) {
       // Delay showing the prompt
       const timer = setTimeout(() => setShow(true), 3000);
       return () => clearTimeout(timer);

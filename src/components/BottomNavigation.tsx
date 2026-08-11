@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, Calendar, User, LayoutDashboard, Palette, LucideIcon, Users, Heart, Images, Search, X, Gift, ShoppingBag, ClipboardList, Store } from "lucide-react";
+import { House, Calendar, User, SquaresFour, Palette, Users, Storefront, Images, MagnifyingGlass, X, ShoppingBag, ClipboardText } from "@phosphor-icons/react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { ArtistTabBar } from "@/components/artist/ArtistTabBar";
 
 interface NavItem {
-  icon: LucideIcon;
+  icon: React.ElementType;
   labelKey: keyof typeof import("@/lib/translations/en").en.nav;
   path: string;
   badgeType?: "bookings" | "messages" | "referrals";
@@ -26,12 +26,12 @@ interface NavItem {
 
 // عناصر العميل - مقسمة ليسار ويمين الزر المركزي
 const customerNavItemsLeft: NavItem[] = [
-  { icon: Home, labelKey: "home", path: "/home" },
+  { icon: House, labelKey: "home", path: "/home" },
   { icon: Users, labelKey: "artists", path: "/makeup-artists" },
 ];
 
 const customerNavItemsRight: NavItem[] = [
-  { icon: Heart, labelKey: "favorites", path: "/favorites" },
+  { icon: Storefront, labelKey: "shops", path: "/shops" },
   { icon: Calendar, labelKey: "bookings", path: "/bookings", badgeType: "bookings" },
 ];
 
@@ -41,7 +41,7 @@ const customerNavItems: NavItem[] = [
 ];
 
 const artistNavItems: NavItem[] = [
-  { icon: LayoutDashboard, labelKey: "dashboard", path: "/artist-dashboard" },
+  { icon: SquaresFour, labelKey: "dashboard", path: "/artist-dashboard" },
   { icon: Calendar, labelKey: "bookings", path: "/artist-bookings", badgeType: "bookings" },
   { icon: Images, labelKey: "gallery", path: "/artist-gallery" },
   { icon: Palette, labelKey: "services", path: "/artist-services" },
@@ -49,9 +49,9 @@ const artistNavItems: NavItem[] = [
 ];
 
 const sellerNavItems: NavItem[] = [
-  { icon: LayoutDashboard, labelKey: "dashboard", path: "/seller-dashboard" },
+  { icon: SquaresFour, labelKey: "dashboard", path: "/seller-dashboard" },
   { icon: ShoppingBag, labelKey: "products", path: "/seller-products" },
-  { icon: ClipboardList, labelKey: "orders", path: "/seller-orders" },
+  { icon: ClipboardText, labelKey: "orders", path: "/seller-orders" },
   { icon: User, labelKey: "profile", path: "/profile" },
 ];
 
@@ -106,6 +106,46 @@ const BottomNavigation = () => {
     return 0;
   };
 
+  const renderCustomerNavItem = (item: NavItem, index: number) => {
+    const isActive = location.pathname === item.path;
+    const badgeCount = getBadgeCount(item.badgeType);
+    const showBadge = badgeCount > 0;
+
+    return (
+      <Link
+        key={`${item.path}-${index}`}
+        to={item.path}
+        onClick={() => tap()}
+        aria-current={isActive ? "page" : undefined}
+        className={`relative flex w-[64px] flex-col items-center justify-center rounded-2xl pt-1.5 pb-2.5 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-glam-rose ${
+          isActive ? "text-glam-rose" : "text-glam-ink hover:text-glam-rose"
+        }`}
+      >
+        <div className="relative">
+          <item.icon
+            size={23}
+            weight="regular"
+            className="transition-transform duration-300"
+          />
+          {showBadge && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white bg-glam-rose rounded-full px-1">
+              {badgeCount > 99 ? "99+" : badgeCount}
+            </span>
+          )}
+        </div>
+        <span className={`mt-0.5 text-[10.5px] leading-none ${isActive ? "font-semibold" : "font-medium"}`}>
+          {t.nav[item.labelKey]}
+        </span>
+        <span
+          aria-hidden="true"
+          className={`absolute -bottom-[9px] start-1/2 h-[3px] w-8 -translate-x-1/2 rounded-full bg-glam-rose transition-all duration-300 ${
+            isActive ? "opacity-100" : "opacity-0 scale-x-50"
+          }`}
+        />
+      </Link>
+    );
+  };
+
   const renderNavItem = (item: NavItem, index: number) => {
     const isActive = location.pathname === item.path;
     const badgeCount = getBadgeCount(item.badgeType);
@@ -119,12 +159,14 @@ const BottomNavigation = () => {
         className={`relative flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-xl transition-all duration-300 ${
           isActive
             ? "text-glam-rose"
-            : "text-glam-muted hover:text-glam-ink"
+            : "text-glam-blush-deep hover:text-glam-rose"
         }`}
       >
         <div className="relative">
           <item.icon
-            className={`w-5 h-5 transition-transform duration-300 ${
+            size={20}
+            weight={isActive ? "fill" : "regular"}
+            className={`transition-transform duration-300 ${
               isActive ? "scale-110" : ""
             }`}
           />
@@ -143,29 +185,35 @@ const BottomNavigation = () => {
   if (isCustomer) {
     return (
       <>
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-glam-border shadow-sm safe-area-bottom">
+        <nav
+          aria-label={isRTL ? "التنقل الرئيسي" : "Primary navigation"}
+          className="fixed inset-x-0 bottom-0 z-50 pointer-events-none"
+        >
+          <div aria-hidden="true" className="glam-dock-fade absolute inset-x-0 bottom-0 h-32" />
+          <div className="relative mx-auto max-w-md px-4 pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
+            <div className="glam-dock-glass pointer-events-auto relative flex h-[74px] items-center justify-between rounded-full px-4">
           {/* زر البحث العائم في المنتصف */}
           <button
+            type="button"
+            aria-label={isRTL ? "فتح البحث" : "Open search"}
             onClick={() => { tap(); setSearchOpen(true); }}
-            className="absolute left-1/2 -translate-x-1/2 -top-6 w-12 h-12 bg-glam-rose rounded-full shadow-md flex items-center justify-center text-white border-[3px] border-white z-10"
+            className="absolute left-1/2 top-1/2 z-10 flex h-[64px] w-[64px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[4px] border-white bg-glam-rose text-white shadow-[0_14px_26px_-8px_var(--glam-rose-action)] transition-transform duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-glam-blush-deep focus-visible:ring-offset-2"
           >
-            <Search className="w-5 h-5" />
+            <MagnifyingGlass size={25} weight="bold" />
           </button>
           
           {/* شريط التنقل */}
-          <div className="bg-card">
-            <div className="flex items-center justify-between h-16 max-w-md mx-auto px-2">
               {/* العناصر اليسرى */}
-              <div className="flex items-center gap-1">
-                {customerNavItemsLeft.map((item, index) => renderNavItem(item, index))}
+              <div className="flex items-center gap-2">
+                {customerNavItemsLeft.map((item, index) => renderCustomerNavItem(item, index))}
               </div>
               
               {/* مسافة للزر المركزي */}
-              <div className="w-16" />
+              <div aria-hidden="true" className="w-[72px] shrink-0" />
               
               {/* العناصر اليمنى */}
-              <div className="flex items-center gap-1">
-                {customerNavItemsRight.map((item, index) => renderNavItem(item, index + 2))}
+              <div className="flex items-center gap-2">
+                {customerNavItemsRight.map((item, index) => renderCustomerNavItem(item, index + 2))}
               </div>
             </div>
           </div>
@@ -181,7 +229,7 @@ const BottomNavigation = () => {
             </SheetHeader>
             <div className="space-y-4">
               <div className="relative">
-                <Search className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground`} />
+                <MagnifyingGlass size={20} className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 text-glam-muted`} />
                 <Input
                   placeholder={t.home.searchPlaceholder}
                   value={searchQuery}
@@ -194,9 +242,9 @@ const BottomNavigation = () => {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className={`absolute ${isRTL ? "left-4" : "right-4"} top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full`}
+                    className={`absolute ${isRTL ? "left-4" : "right-4"} top-1/2 -translate-y-1/2 p-1 hover:bg-glam-surface rounded-full`}
                   >
-                    <X className="w-5 h-5 text-muted-foreground" />
+                    <X size={20} className="text-glam-muted" />
                   </button>
                 )}
               </div>
@@ -206,13 +254,13 @@ const BottomNavigation = () => {
                 onClick={handleSearch}
                 disabled={!searchQuery.trim()}
               >
-                <Search className="w-5 h-5 me-2" />
+                <MagnifyingGlass size={20} className="me-2" />
                 {isRTL ? "بحث" : "Search"}
               </Button>
               
               {/* اقتراحات سريعة */}
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-glam-muted">
                   {isRTL ? "بحث سريع:" : "Quick search:"}
                 </p>
                 <div className="flex flex-wrap gap-2">

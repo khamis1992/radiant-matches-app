@@ -8,7 +8,7 @@ export const GLAM_COLORS = {
   blush: "#EFA6A8",
   softBlush: "#F8C2C3",
   deepBlush: "#CA8287",
-  porcelain: "#FCF8F8",
+  porcelain: "#FFFFFF",
   white: "#FFFFFF",
 
   textPrimary: "#101417",

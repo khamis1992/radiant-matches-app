@@ -18,14 +18,18 @@ export const useHapticFeedback = () => {
     try {
       const { Haptics, ImpactStyle } = await import("@capacitor/haptics");
       await Haptics.impact({ style: ImpactStyle.Medium });
-    } catch {}
+    } catch {
+      // Not available on web — ignore
+    }
   }, []);
 
   const success = useCallback(async () => {
     try {
       const { Haptics, NotificationType } = await import("@capacitor/haptics");
       await Haptics.notification({ type: NotificationType.Success });
-    } catch {}
+    } catch {
+      // Not available on web — ignore
+    }
   }, []);
 
   return { tap, medium, success };

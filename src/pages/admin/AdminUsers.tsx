@@ -201,7 +201,7 @@ const AdminUsers = () => {
   return (
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
-      <main className={cn("p-8", isRTL ? "mr-64" : "ml-64")}>
+      <main className={cn("p-4 pt-20 lg:p-8", isRTL ? "lg:mr-64" : "lg:ml-64")}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div><h1 className="text-3xl font-bold text-foreground">{t.adminUsers.title}</h1><p className="text-muted-foreground mt-1">{users?.length || 0} {t.adminUsers.userCount}</p></div>
@@ -229,7 +229,7 @@ const AdminUsers = () => {
                       <TableCell>{user.bookings_count}</TableCell>
                       <TableCell>{format(new Date(user.created_at), "d MMM yyyy", { locale: dateLocale })}</TableCell>
                       <TableCell>
-                        <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                        <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="User actions"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, "admin")} disabled={user.roles.includes("admin")}><Shield className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.makeAdmin}</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, "artist")} disabled={user.roles.includes("artist")}><Palette className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />{t.adminUsers.makeArtist}</DropdownMenuItem>

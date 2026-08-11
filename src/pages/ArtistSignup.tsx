@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Eye, EyeOff, Mail, Lock, User, Sparkles, AlertCircle, CheckCircle, Phone } from "lucide-react";
-import logo from "@/assets/logo.png";
+// Brand-mandated logo asset (light surfaces)
+const logo = "/brand/glam-logo-light.png";
 import { z } from "zod";
 import { checkBlockedIp } from "@/hooks/useBlockedIps";
 

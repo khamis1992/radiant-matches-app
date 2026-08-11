@@ -58,16 +58,27 @@ export default defineConfig(({ mode }) => ({
     // Optimize chunk splitting for mobile
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Separate vendor chunks for better caching
-          'react-vendor': ['react', 'react-dom'],
-          'radix-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-          'supabase-vendor': ['@supabase/supabase-js'],
-        }
-      }
+        // Function form: react/react-dom are aliased to absolute paths above,
+        // so name-based matching never works. Match normalized module IDs instead.
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          const p = id.replace(/\\/g, "/");
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(p)) return "react-vendor";
+          if (p.includes("@supabase") || p.includes("websocket") && p.includes("phoenix")) return "supabase-vendor";
+          if (p.includes("@radix-ui")) return "radix-vendor";
+          if (p.includes("recharts") || /node_modules\/d3-/.test(p) || p.includes("victory-vendor")) return "charts-vendor";
+          if (p.includes("leaflet") || p.includes("react-leaflet") || p.includes("maplibre")) return "map-vendor";
+          if (p.includes("embla-carousel")) return "carousel-vendor";
+          if (p.includes("lottie")) return "lottie-vendor";
+          if (p.includes("@phosphor-icons")) return "phosphor-icons";
+          if (p.includes("lucide-react")) return "lucide-icons";
+          if (p.includes("date-fns")) return "date-vendor";
+        },
+      },
     },
-    // Target modern browsers but ensure mobile compatibility
-    target: 'es2015',
+    // es2020 required by maplibre-gl (BigInt literals); safe for all
+    // Capacitor-supported WebViews (Android 10+ / iOS 14+)
+    target: 'es2020',
     minify: 'terser',
     terserOptions: {
       compress: {

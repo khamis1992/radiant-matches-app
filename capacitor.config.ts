@@ -36,7 +36,8 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,
-      backgroundColor: '#d97b8c',
+      // GLAM Signature Blush (brand token)
+      backgroundColor: '#EFA6A8',
       androidSplashResourceName: 'splash',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false

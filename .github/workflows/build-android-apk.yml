@@ -39,6 +39,13 @@ jobs:
           npm ci
           echo "Dependencies installed successfully"
 
+      - name: Quality gate (typecheck + lint)
+        run: |
+          echo "Type checking..."
+          npx tsc -p tsconfig.app.json --noEmit
+          echo "Linting..."
+          npm run lint
+
       - name: Build web app
         run: |
           echo "Building web app..."

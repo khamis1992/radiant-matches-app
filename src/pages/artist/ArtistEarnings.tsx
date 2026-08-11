@@ -54,6 +54,20 @@ const ArtistEarnings = () => {
     account_holder_name: "",
     notes: "",
   });
+  const [withdrawErrors, setWithdrawErrors] = useState<Record<string, string>>({});
+
+  const formError = (field: string) => withdrawErrors[field];
+
+  const resetWithdrawForm = () => {
+    setWithdrawForm({
+      amount: "",
+      bank_name: "",
+      account_number: "",
+      account_holder_name: "",
+      notes: "",
+    });
+    setWithdrawErrors({});
+  };
 
   // الرصيد المتاح (مؤقتاً من الأرباح المكتملة)
   const availableBalance = (artist as any)?.available_balance || earnings?.totalEarnings || 0;
@@ -108,36 +122,37 @@ const ArtistEarnings = () => {
 
   const handleWithdrawSubmit = async () => {
     const amount = parseFloat(withdrawForm.amount);
-    
+    const requiredMsg = language === "ar" ? "هذا الحقل مطلوب" : "This field is required";
+    const errors: Record<string, string> = {};
+
     if (!amount || amount <= 0) {
-      return;
+      errors.amount = language === "ar" ? "أدخل مبلغاً صحيحاً" : "Enter a valid amount";
+    } else if (amount > availableBalance) {
+      errors.amount = language === "ar"
+        ? "المبلغ يتجاوز الرصيد المتاح"
+        : "Amount exceeds available balance";
     }
-    
-    if (amount > availableBalance) {
-      return;
+    if (!withdrawForm.bank_name.trim()) errors.bank_name = requiredMsg;
+    if (!withdrawForm.account_number.trim()) errors.account_number = requiredMsg;
+    if (!withdrawForm.account_holder_name.trim()) errors.account_holder_name = requiredMsg;
+
+    setWithdrawErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    try {
+      await createWithdrawal.mutateAsync({
+        artist_id: artist.id,
+        amount,
+        bank_name: withdrawForm.bank_name.trim(),
+        account_number: withdrawForm.account_number.trim(),
+        account_holder_name: withdrawForm.account_holder_name.trim(),
+        notes: withdrawForm.notes.trim(),
+      });
+      setWithdrawDialogOpen(false);
+      resetWithdrawForm();
+    } catch {
+      // Error toast handled by the mutation
     }
-
-    if (!withdrawForm.bank_name || !withdrawForm.account_number || !withdrawForm.account_holder_name) {
-      return;
-    }
-
-    await createWithdrawal.mutateAsync({
-      artist_id: artist.id,
-      amount,
-      bank_name: withdrawForm.bank_name,
-      account_number: withdrawForm.account_number,
-      account_holder_name: withdrawForm.account_holder_name,
-      notes: withdrawForm.notes,
-    });
-
-    setWithdrawDialogOpen(false);
-    setWithdrawForm({
-      amount: "",
-      bank_name: "",
-      account_number: "",
-      account_holder_name: "",
-      notes: "",
-    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -494,8 +509,137 @@ const ArtistEarnings = () => {
       </div>
 
       {/* Withdrawal Request Dialog */}
-      <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
-        {/* ... content ... */}
+      <Dialog
+        open={withdrawDialogOpen}
+        onOpenChange={(open) => {
+          setWithdrawDialogOpen(open);
+          if (!open) resetWithdrawForm();
+        }}
+      >
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
+          <DialogHeader>
+            <DialogTitle>{t.earnings.requestWithdrawal}</DialogTitle>
+            <DialogDescription>
+              {t.earnings.availableBalance}: {formatQAR(availableBalance)}
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            className="space-y-4 pt-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleWithdrawSubmit();
+            }}
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="withdraw-amount">{t.earnings.amount}</Label>
+                <button
+                  type="button"
+                  className="text-xs text-primary font-medium hover:underline"
+                  onClick={() =>
+                    setWithdrawForm((f) => ({ ...f, amount: String(availableBalance) }))
+                  }
+                >
+                  {t.earnings.withdrawAll}
+                </button>
+              </div>
+              <Input
+                id="withdraw-amount"
+                type="number"
+                inputMode="decimal"
+                min="1"
+                step="0.01"
+                max={availableBalance}
+                dir="ltr"
+                value={withdrawForm.amount}
+                onChange={(e) =>
+                  setWithdrawForm((f) => ({ ...f, amount: e.target.value }))
+                }
+                aria-invalid={!!formError("amount")}
+              />
+              {formError("amount") && (
+                <p className="text-xs text-destructive">{formError("amount")}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="withdraw-bank">{t.earnings.bankName}</Label>
+              <Input
+                id="withdraw-bank"
+                value={withdrawForm.bank_name}
+                placeholder={t.earnings.bankNamePlaceholder}
+                onChange={(e) =>
+                  setWithdrawForm((f) => ({ ...f, bank_name: e.target.value }))
+                }
+                aria-invalid={!!formError("bank_name")}
+              />
+              {formError("bank_name") && (
+                <p className="text-xs text-destructive">{formError("bank_name")}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="withdraw-account">{t.earnings.accountNumber}</Label>
+              <Input
+                id="withdraw-account"
+                dir="ltr"
+                value={withdrawForm.account_number}
+                placeholder={t.earnings.accountNumberPlaceholder}
+                onChange={(e) =>
+                  setWithdrawForm((f) => ({ ...f, account_number: e.target.value }))
+                }
+                aria-invalid={!!formError("account_number")}
+              />
+              {formError("account_number") && (
+                <p className="text-xs text-destructive">{formError("account_number")}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="withdraw-holder">{t.earnings.accountHolderName}</Label>
+              <Input
+                id="withdraw-holder"
+                value={withdrawForm.account_holder_name}
+                placeholder={t.earnings.accountHolderPlaceholder}
+                onChange={(e) =>
+                  setWithdrawForm((f) => ({ ...f, account_holder_name: e.target.value }))
+                }
+                aria-invalid={!!formError("account_holder_name")}
+              />
+              {formError("account_holder_name") && (
+                <p className="text-xs text-destructive">{formError("account_holder_name")}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="withdraw-notes">{t.earnings.notes}</Label>
+              <Textarea
+                id="withdraw-notes"
+                value={withdrawForm.notes}
+                placeholder={t.earnings.notesPlaceholder}
+                rows={2}
+                onChange={(e) =>
+                  setWithdrawForm((f) => ({ ...f, notes: e.target.value }))
+                }
+              />
+            </div>
+
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 shrink-0" />
+              {t.earnings.reviewTime}
+            </p>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={createWithdrawal.isPending}
+            >
+              {createWithdrawal.isPending
+                ? t.earnings.submitting
+                : t.earnings.submitWithdrawal}
+            </Button>
+          </form>
+        </DialogContent>
       </Dialog>
 
       {/* Earnings Details Dialog */}

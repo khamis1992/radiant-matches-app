@@ -156,7 +156,7 @@ const AdminBookings = () => {
     <div className="flex min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       
-      <main className={cn("flex-1 p-6", isRTL ? "mr-64" : "ml-64")}>
+      <main className={cn("flex-1 p-4 pt-20 lg:p-6", isRTL ? "lg:mr-64" : "lg:ml-64")}>
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-foreground">{t.adminNav.bookings}</h1>
           <p className="text-muted-foreground">{isRTL ? "عرض وإدارة جميع الحجوزات" : "View and manage all bookings"}</p>
@@ -287,7 +287,7 @@ const AdminBookings = () => {
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" aria-label="Booking actions">
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>

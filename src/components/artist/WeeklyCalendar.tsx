@@ -325,10 +325,10 @@ const WeeklyCalendar = ({
       {/* رأس التقويم */}
       <div className="flex items-center justify-between p-4 border-b bg-muted/30">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
+          <Button variant="outline" size="icon" onClick={goToPreviousWeek} aria-label={language === "ar" ? "الأسبوع السابق" : "Previous week"}>
             {isRTL ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </Button>
-          <Button variant="outline" size="icon" onClick={goToNextWeek}>
+          <Button variant="outline" size="icon" onClick={goToNextWeek} aria-label={language === "ar" ? "الأسبوع التالي" : "Next week"}>
             {isRTL ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </Button>
           <Button variant="ghost" size="sm" onClick={goToToday}>

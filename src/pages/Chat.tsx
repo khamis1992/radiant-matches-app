@@ -293,6 +293,7 @@ const Chat = () => {
             size="icon"
             onClick={() => fileInputRef.current?.click()}
             disabled={sendMessage.isPending}
+            aria-label={isRTL ? "إرفاق صورة" : "Attach image"}
           >
             <ImageIcon className="w-5 h-5" />
           </Button>
@@ -307,6 +308,7 @@ const Chat = () => {
             onClick={handleSend}
             disabled={(!newMessage.trim() && !selectedImage) || sendMessage.isPending}
             size="icon"
+            aria-label={isRTL ? "إرسال" : "Send message"}
           >
             {sendMessage.isPending ? (
               <Loader2 className="w-4 h-4 animate-spin" />

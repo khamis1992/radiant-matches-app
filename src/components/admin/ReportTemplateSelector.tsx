@@ -77,7 +77,7 @@
            <div className="flex items-center gap-2 w-full">
              <div
                className="w-4 h-4 rounded"
-               style={{ background: "linear-gradient(135deg, #8b5cf6, #a855f7)" }}
+               style={{ background: "linear-gradient(135deg, #A9475B, #EFA6A8)" }}
              />
              <span className="flex-1">{isRTL ? "النمط الافتراضي" : "Default Style"}</span>
            </div>

@@ -17,12 +17,15 @@ const PaymentResult = () => {
   const transactionNumber = searchParams.get("transaction_number") || searchParams.get("transactionNumber") || searchParams.get("TRANSACTIONNUMBER");
   const respMsg = searchParams.get("RESPMSG") || searchParams.get("respmsg");
 
-  // Fetch booking details based on order_id
+  const [timedOut, setTimedOut] = useState(false);
+
+  // Fetch booking details based on order_id — poll while the gateway
+  // callback may still be updating the payment status server-side.
   const { data: booking, isLoading } = useQuery({
     queryKey: ["payment-result", orderId],
     queryFn: async () => {
       if (!orderId) return null;
-      
+
       const { data, error } = await supabase
         .from("bookings")
         .select(`
@@ -35,15 +38,21 @@ const PaymentResult = () => {
         `)
         .eq("sadad_order_id", orderId)
         .maybeSingle();
-      
+
       if (error) {
         console.error("Error fetching booking:", error);
         return null;
       }
-      
+
       return data;
     },
     enabled: !!orderId,
+    refetchInterval: (query) => {
+      if (timedOut) return false;
+      const b = query.state.data;
+      if (b?.payment_status === "completed" || b?.payment_status === "failed") return false;
+      return 4000;
+    },
   });
 
   // SADAD commonly returns RESPCODE: 1 success, 810 failed
@@ -53,6 +62,13 @@ const PaymentResult = () => {
 
   const isSuccess = isRespCodeSuccess || statusLower === "success" || statusLower === "completed" || booking?.payment_status === "completed";
   const isFailed = isRespCodeFailed || statusLower === "failed" || statusLower === "error" || booking?.payment_status === "failed";
+
+  // Hard timeout: never let the user sit on the "Processing" spinner forever
+  useEffect(() => {
+    if (isSuccess || isFailed) return;
+    const timer = setTimeout(() => setTimedOut(true), 30000);
+    return () => clearTimeout(timer);
+  }, [isSuccess, isFailed]);
 
   if (isLoading) {
     return (
@@ -126,6 +142,20 @@ const PaymentResult = () => {
                 {t.payment?.paymentFailedDesc || "Unfortunately, your payment could not be processed. Please try again or choose a different payment method."}
               </p>
             </>
+          ) : timedOut ? (
+            <>
+              <div className="w-24 h-24 mx-auto rounded-full bg-amber-500/10 flex items-center justify-center mb-6">
+                <XCircle className="w-14 h-14 text-amber-500" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground mb-2">
+                {isRTL ? "استغرق التحقق وقتاً طويلاً" : "Verification is taking longer than expected"}
+              </h1>
+              <p className="text-muted-foreground mb-6">
+                {isRTL
+                  ? "إذا تم خصم المبلغ سيظهر حجزك مؤكداً خلال دقائق. تحقق من صفحة حجوزاتك."
+                  : "If the amount was deducted, your booking will appear as confirmed within minutes. Check your bookings page."}
+              </p>
+            </>
           ) : (
             <>
               <div className="w-24 h-24 mx-auto rounded-full bg-muted flex items-center justify-center mb-6">
@@ -142,13 +172,24 @@ const PaymentResult = () => {
 
           <div className="flex flex-col gap-3">
             {isSuccess && (
-              <Button 
-                onClick={() => navigate("/bookings")} 
+              <Button
+                onClick={() => navigate("/bookings")}
                 className="w-full"
                 size="lg"
               >
                 <CalendarCheck className="w-5 h-5 me-2" />
                 {t.bookings.viewDetails || "View My Bookings"}
+              </Button>
+            )}
+
+            {timedOut && !isSuccess && !isFailed && (
+              <Button
+                onClick={() => navigate("/bookings")}
+                className="w-full"
+                size="lg"
+              >
+                <CalendarCheck className="w-5 h-5 me-2" />
+                {isRTL ? "عرض حجوزاتي" : "View My Bookings"}
               </Button>
             )}
             

@@ -35,12 +35,14 @@ interface ArtistFiltersSheetProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   maxPrice: number;
+  trigger?: React.ReactNode;
 }
 
 export const ArtistFiltersSheet = ({
   filters,
   onFiltersChange,
   maxPrice,
+  trigger,
 }: ArtistFiltersSheetProps) => {
   const { t, isRTL } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -124,9 +126,10 @@ export const ArtistFiltersSheet = ({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5 relative">
-          <SlidersHorizontal className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">{t.artistsListing?.filters || "Filters"}</span>
+        {trigger ?? (
+          <Button variant="outline" size="sm" className="h-8 gap-1.5 relative">
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{t.artistsListing?.filters || "Filters"}</span>
           {activeFiltersCount > 0 && (
             <Badge 
               className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px] bg-primary"
@@ -134,7 +137,8 @@ export const ArtistFiltersSheet = ({
               {activeFiltersCount}
             </Badge>
           )}
-        </Button>
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent side={isRTL ? "right" : "left"} className="w-full sm:max-w-md flex flex-col">
         <SheetHeader>

@@ -41,8 +41,8 @@
  const defaultTemplate: ReportTemplateInsert = {
    name: "",
    description: "",
-   primary_color: "#8b5cf6",
-   secondary_color: "#a855f7",
+   primary_color: "#A9475B",
+   secondary_color: "#EFA6A8",
    logo_url: null,
    company_name: "Glam",
    footer_text: "جميع الحقوق محفوظة",

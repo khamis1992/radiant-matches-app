@@ -122,6 +122,28 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Authenticate the caller — only the order's owner may initiate its payment
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await userClient.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { order_id, customer_email, customer_phone, customer_name, return_url } = await req.json();
 
     if (!order_id) {
@@ -145,6 +167,23 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Product order not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // IDOR guard: the caller must own this order
+    if (order.customer_id !== user.id) {
+      console.warn(`User ${user.id} attempted to pay for order ${order_id} owned by ${order.customer_id}`);
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Do not restart an already-paid order
+    if (order.payment_status === "completed" || order.payment_status === "paid") {
+      return new Response(
+        JSON.stringify({ error: "Order is already paid" }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

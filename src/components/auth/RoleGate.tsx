@@ -11,6 +11,12 @@ type RoleGateProps = {
   redirectTo?: string;
   /** Show a minimal loading state while role/auth is loading (prevents UI flashing) */
   showLoading?: boolean;
+  /**
+   * When true, unauthenticated visitors are redirected to /auth (with a
+   * `from` state so they return after login). When false (default),
+   * guests are allowed through and the page handles them gracefully.
+   */
+  requireAuth?: boolean;
 };
 
 const defaultRedirectForRole = (role: AppRole | null) => {
@@ -25,6 +31,7 @@ export const RoleGate = ({
   children,
   redirectTo,
   showLoading = false,
+  requireAuth = false,
 }: RoleGateProps) => {
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
@@ -41,8 +48,15 @@ export const RoleGate = ({
     );
   }, [showLoading]);
 
-  // Keep existing public/unauth behavior (don't force redirect) unless we later decide otherwise.
-  if (!user) return <>{children}</>;
+  // Guests: either send them to login, or let the page handle guest mode.
+  if (!user) {
+    if (authLoading) return <>{fallback}</>;
+    if (requireAuth) {
+      const from = location.pathname + location.search;
+      return <Navigate to="/auth" replace state={{ from }} />;
+    }
+    return <>{children}</>;
+  }
 
   if (isLoading) return <>{fallback}</>;
 

@@ -13,8 +13,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <AdminSidebar />
       <main className={cn(
-        "p-8",
-        isRTL ? "mr-64" : "ml-64"
+        "p-4 pt-20 lg:p-8",
+        isRTL ? "lg:mr-64" : "lg:ml-64"
       )}>
         <div className="max-w-7xl mx-auto">
           {children}

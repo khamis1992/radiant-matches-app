@@ -50,15 +50,17 @@ const LazyImage = ({ src, alt = "", className = "", loading = false, onLoad }: L
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
       )}
-      <img
-        ref={imgRef}
-        src={src}
-        alt={alt}
-        className={`transition-opacity duration-300 ${isInView ? "opacity-100" : "opacity-0"} ${className}`}
-        onLoad={handleLoad}
-        loading="lazy"
-        decoding="async"
-      />
+      {/* src is only attached once the image nears the viewport (true lazy loading) */}
+      {isInView && (
+        <img
+          src={src}
+          alt={alt}
+          className={`transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"} ${className}`}
+          onLoad={handleLoad}
+          loading="lazy"
+          decoding="async"
+        />
+      )}
     </div>
   );
 };

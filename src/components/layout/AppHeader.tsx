@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, User, LogOut, LogIn, ChevronLeft, Search, Menu, ShoppingBag } from "lucide-react";
+import { Bell, SignOut, SignIn, CaretLeft, MagnifyingGlass, ShoppingBag } from "@phosphor-icons/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -84,18 +84,18 @@ const AppHeader = ({
 
     const styleClasses = {
       modern: cn(
-        "bg-background border-b border-border/40"
+        "bg-white border-b border-glam-border"
       ),
       minimal: cn(
-        "bg-background border-b border-border/20"
+        "bg-white border-b border-glam-border"
       ),
       transparent: cn(
         isScrolled
-          ? "bg-background/95 backdrop-blur-md border-b border-border/30"
+          ? "bg-white/95 backdrop-blur-md border-b border-glam-border"
           : "bg-transparent border-transparent"
       ),
       gradient: cn(
-        "bg-background border-b border-border/30"
+        "bg-white border-b border-glam-border"
       ),
     };
 
@@ -122,9 +122,9 @@ const AppHeader = ({
             {showBack && (
               <button
                 onClick={() => navigate(-1)}
-                className="flex items-center justify-center w-9 h-9 -ms-1 rounded-full hover:bg-muted transition-colors focus:outline-none"
+                className="flex items-center justify-center w-9 h-9 -ms-1 rounded-full hover:bg-glam-surface transition-colors focus:outline-none"
               >
-                <ChevronLeft className="w-5 h-5 text-foreground" />
+                <CaretLeft size={20} className="text-glam-ink rtl:-scale-x-100" />
               </button>
             )}
             {showLogo && (
@@ -137,7 +137,7 @@ const AppHeader = ({
               </div>
             )}
             {title && (
-              <h1 className="text-lg font-semibold text-foreground truncate">
+              <h1 className="text-lg font-semibold text-glam-ink truncate">
                 {title}
               </h1>
             )}
@@ -149,18 +149,18 @@ const AppHeader = ({
             {showSearch && (
               <button
                 onClick={handleSearch}
-                className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors focus:outline-none"
+                className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-glam-surface transition-colors focus:outline-none"
               >
-                <Search className="w-[18px] h-[18px] text-glam-ink" />
+                <MagnifyingGlass size={18} className="text-glam-ink" />
               </button>
             )}
 
             {/* Notification Button */}
             <button
               onClick={() => navigate("/notifications")}
-              className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors focus:outline-none"
+              className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-glam-surface transition-colors focus:outline-none"
             >
-              <Bell className="w-[18px] h-[18px] text-glam-ink" />
+              <Bell size={18} className="text-glam-ink" />
               {unreadCount > 0 && (
                 <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-glam-rose rounded-full">
                   {unreadCount > 99 ? '99+' : unreadCount}
@@ -171,9 +171,9 @@ const AppHeader = ({
             {/* Cart Button */}
             <button
               onClick={() => navigate("/cart")}
-              className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors focus:outline-none"
+              className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-glam-surface transition-colors focus:outline-none"
             >
-              <ShoppingBag className="w-[18px] h-[18px] text-glam-ink" />
+              <ShoppingBag size={18} className="text-glam-ink" />
               {cartItemCount > 0 && (
                 <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-glam-rose rounded-full">
                   {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -184,7 +184,7 @@ const AppHeader = ({
             {/* Profile Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors focus:outline-none">
+                <button className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-glam-surface transition-colors focus:outline-none">
                   <Avatar className="w-7 h-7">
                     <AvatarImage
                       src={profile?.avatar_url || undefined}
@@ -200,7 +200,7 @@ const AppHeader = ({
               <DropdownMenuContent
                 align="end"
                 sideOffset={8}
-                className="w-56 bg-card border border-border shadow-lg rounded-xl p-1.5"
+                className="w-56 bg-white border border-glam-border shadow-lg rounded-xl p-1.5"
               >
                 {user ? (
                   <>
@@ -209,7 +209,7 @@ const AppHeader = ({
                       className="p-0 mb-1 focus:bg-transparent cursor-pointer" 
                       onClick={() => navigate("/profile")}
                     >
-                      <div className="w-full px-3 py-2.5 rounded-lg hover:bg-muted transition-colors">
+                      <div className="w-full px-3 py-2.5 rounded-lg hover:bg-glam-surface transition-colors">
                         <div className="flex items-center gap-3">
                           <Avatar className="w-9 h-9">
                             <AvatarImage src={profile?.avatar_url || undefined} />
@@ -218,10 +218,10 @@ const AppHeader = ({
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0 text-start">
-                            <p className="text-sm font-semibold text-foreground truncate">
+                            <p className="text-sm font-semibold text-glam-ink truncate">
                               {profile?.full_name || t.userMenu.myProfile}
                             </p>
-                            <p className="text-xs text-muted-foreground truncate">
+                            <p className="text-xs text-glam-muted truncate">
                               {profile?.email || user.email}
                             </p>
                           </div>
@@ -231,18 +231,18 @@ const AppHeader = ({
                     <DropdownMenuSeparator className="my-1" />
                     <DropdownMenuItem
                       onClick={handleLogout}
-                      className="cursor-pointer rounded-lg py-2 px-3 text-destructive focus:text-destructive focus:bg-destructive/10"
+                      className="cursor-pointer rounded-lg py-2 px-3 text-[var(--glam-error)] focus:text-[var(--glam-error)] focus:bg-[color-mix(in_srgb,var(--glam-error)_10%,transparent)]"
                     >
-                      <LogOut className="h-4 w-4 text-destructive me-2" />
+                      <SignOut size={16} className="text-[var(--glam-error)] me-2" />
                       <span className="text-sm">{t.userMenu.logout}</span>
                     </DropdownMenuItem>
                   </>
                 ) : (
                   <DropdownMenuItem
                     onClick={() => navigate("/auth")}
-                    className="cursor-pointer rounded-lg py-2 px-3 focus:bg-muted"
+                    className="cursor-pointer rounded-lg py-2 px-3 focus:bg-glam-surface"
                   >
-                    <LogIn className="h-4 w-4 text-glam-rose me-2" />
+                    <SignIn size={16} className="text-glam-rose me-2" />
                     <span className="text-sm">{t.auth.login}</span>
                   </DropdownMenuItem>
                 )}

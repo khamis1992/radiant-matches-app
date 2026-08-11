@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -23,6 +24,9 @@ import {
   Shield,
   ShieldCheck,
   ClipboardList,
+  BarChart3,
+  Megaphone,
+  Menu,
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
@@ -32,6 +36,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -44,6 +53,7 @@ export const AdminSidebar = () => {
   const { signOut } = useAuth();
   const { t, isRTL, language } = useLanguage();
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotifications } = useAdminNotifications();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const dateLocale = language === "ar" ? ar : enUS;
 
@@ -58,6 +68,8 @@ export const AdminSidebar = () => {
     { to: "/admin/banners", icon: Image, label: t.adminNav.banners },
     { to: "/admin/finance", icon: DollarSign, label: t.adminNav.finance },
     { to: "/admin/withdrawals", icon: Wallet, label: t.adminNav.withdrawals },
+    { to: "/admin/reports", icon: BarChart3, label: t.adminNav.reports },
+    { to: "/admin/campaigns", icon: Megaphone, label: t.adminNav.campaigns },
     { to: "/admin/notifications", icon: Bell, label: t.adminNav.notificationLog },
     { to: "/admin/blocked-ips", icon: ShieldBan, label: language === "ar" ? "حظر IP" : "Blocked IPs" },
     { to: "/admin/activity-log", icon: ClipboardList, label: language === "ar" ? "سجل النشاط" : "Activity Log" },
@@ -87,11 +99,8 @@ export const AdminSidebar = () => {
 
   const BackIcon = isRTL ? ChevronLeft : ChevronRight;
 
-  return (
-    <aside className={cn(
-      "fixed top-0 h-full w-64 bg-card border-border flex flex-col z-50",
-      isRTL ? "right-0 border-l" : "left-0 border-r"
-    )}>
+  const sidebarBody = (
+    <>
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
@@ -210,6 +219,7 @@ export const AdminSidebar = () => {
               key={item.to}
               to={item.to}
               end={item.to === "/admin"}
+              onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
@@ -237,7 +247,44 @@ export const AdminSidebar = () => {
           <span>{t.adminNav.signOut}</span>
         </Button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile top bar (below lg) */}
+      <div className="safe-area-top fixed top-0 inset-x-0 z-40 flex items-center justify-between gap-2 border-b border-border bg-card/95 px-4 py-3 backdrop-blur lg:hidden">
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={language === "ar" ? "فتح القائمة" : "Open menu"}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent
+            side={isRTL ? "right" : "left"}
+            className="w-72 p-0"
+            dir={isRTL ? "rtl" : "ltr"}
+          >
+            <div className="flex h-full flex-col">{sidebarBody}</div>
+          </SheetContent>
+        </Sheet>
+        <h1 className="text-base font-bold text-foreground">{t.adminNav.adminPanel}</h1>
+        {/* Spacer keeps the title centered */}
+        <div className="w-10" />
+      </div>
+
+      {/* Desktop sidebar (lg and up) */}
+      <aside className={cn(
+        "fixed top-0 h-full w-64 bg-card border-border hidden lg:flex flex-col z-50",
+        isRTL ? "right-0 border-l" : "left-0 border-r"
+      )}>
+        {sidebarBody}
+      </aside>
+    </>
   );
 };
 
