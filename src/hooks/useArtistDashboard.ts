@@ -305,7 +305,7 @@ export const useUpdateArtistProfile = () => {
       
       const { data, error } = await supabase
         .from("artists")
-        .update(updates)
+        .update(updates as never)
         .eq("user_id", user.id)
         .select()
         .single();
