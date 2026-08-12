@@ -109,7 +109,7 @@ export const SwipeableServiceCard = ({
     }
   };
 
-  let longPressTimer: NodeJS.Timeout;
+  let longPressTimer: ReturnType<typeof setTimeout>;
   const handleMouseDown = () => {
     longPressTimer = setTimeout(handleLongPress, 500);
   };
