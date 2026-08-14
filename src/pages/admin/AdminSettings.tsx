@@ -27,6 +27,7 @@ const AdminSettings = () => {
     min_booking_hours: 24,
     max_booking_days: 30,
     cancellation_hours: 24,
+    travel_fee: 90,
     platform_name: "",
     support_email: "",
     support_phone: "",
@@ -46,6 +47,7 @@ const AdminSettings = () => {
         min_booking_hours: settings.min_booking_hours,
         max_booking_days: settings.max_booking_days,
         cancellation_hours: settings.cancellation_hours,
+        travel_fee: settings.travel_fee,
         platform_name: settings.platform_name,
         support_email: settings.support_email,
         support_phone: settings.support_phone,
@@ -165,6 +167,18 @@ const AdminSettings = () => {
                         className="max-w-xs"
                       />
                       <p className="text-sm text-muted-foreground">{t.adminSettings.commissionHelp}</p>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="travel_fee">{t.adminSettings.travelFee}</Label>
+                      <Input
+                        id="travel_fee"
+                        type="number"
+                        min="0"
+                        value={formData.travel_fee}
+                        onChange={(e) => handleChange("travel_fee", Number(e.target.value))}
+                        className="max-w-xs"
+                      />
+                      <p className="text-sm text-muted-foreground">{t.adminSettings.travelFeeHelp}</p>
                     </div>
                   </div>
                 </CardContent>

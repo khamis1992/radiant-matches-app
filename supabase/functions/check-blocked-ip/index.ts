@@ -25,24 +25,33 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    let body: any = {};
+    // Optional event type from body (audit label only; identity comes from JWT)
+    let eventType = "login";
+    let metadata: Record<string, unknown> = {};
     try {
-      body = await req.json();
+      const body = await req.json();
+      if (typeof body?.eventType === "string") eventType = body.eventType;
+      if (body?.metadata && typeof body.metadata === "object") metadata = body.metadata;
     } catch { /* no body */ }
 
-    // Also try to get user from auth header
-    let userId = body.userId;
-    if (!userId) {
-      const authHeader = req.headers.get("Authorization");
-      if (authHeader?.startsWith("Bearer ")) {
-        try {
-          const { data: { user } } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
-          if (user) userId = user.id;
-        } catch { /* ignore */ }
+    // Resolve the user from the JWT when present. Writes (profile IP, audit
+    // log) only happen for authenticated callers — identity must come from
+    // the token, never from the request body (body userId/email are spoofable).
+    // Unauthenticated callers (pre-login IP/country check) get the check only.
+    let userId: string | null = null;
+    let userEmail: string | null = null;
+    let userName: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+      if (!userError && user) {
+        userId = user.id;
+        userEmail = user.email || null;
+        userName = user.user_metadata?.full_name || null;
       }
     }
 
-    // Save IP to user profile
+    // Save IP to user profile (authenticated callers only)
     if (userId) {
       await supabase
         .from("profiles")
@@ -66,32 +75,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Log to permanent security audit log
-    const eventType = body.eventType || (userId ? "login" : "ip_check");
-    if (userId || body.email) {
-      let userEmail = body.email || null;
-      let userName = body.fullName || null;
-      if (userId && !userEmail) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("email, full_name")
-          .eq("id", userId)
-          .single();
-        if (profile) {
-          userEmail = profile.email;
-          userName = profile.full_name;
-        }
-      }
-      
+    // Log to permanent security audit log (authenticated callers only)
+    if (userId) {
       await supabase.from("security_audit_log").insert({
         event_type: eventType,
-        user_id: userId || null,
+        user_id: userId,
         email: userEmail,
         full_name: userName,
         ip_address: ip,
         user_agent: req.headers.get("user-agent") || null,
         country_code: country_code,
-        metadata: body.metadata || {},
+        metadata: metadata,
       });
     }
 
@@ -120,6 +114,7 @@ Deno.serve(async (req) => {
 
     const blocked = data && data.length > 0;
 
+    // Blocked users are signed out client-side; the response carries the flag.
     return new Response(
       JSON.stringify({ blocked, ip, country_code, reason: blocked ? data[0].reason : null }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -163,11 +163,29 @@ export const en = {
     multipleTyping: "Several people are typing...",
   },
 
+  // Reviews
+  reviews: {
+    title: "Rate your experience",
+    subtitle: "How was your experience with",
+    ratingLabels: ["No rating", "Poor", "Fair", "Good", "Very good", "Excellent"],
+    commentLabel: "Share your thoughts",
+    commentPlaceholder: "Tell us about your experience... (optional)",
+    photosLabel: "Add photos",
+    photosHint: "Up to 3 photos",
+    submit: "Submit review",
+    submitting: "Submitting...",
+    successToast: "Thank you! Your review is live",
+    errorToast: "Could not submit your review, please try again",
+    rateExperience: "Rate your experience",
+    reviewedDone: "Reviewed",
+  },
+
   // Home page
   home: {
     browseCategory: "Browse by Category",
     topRatedArtists: "Top Rated Artists",
     featuredArtists: "Featured Artists",
+    marketingWords: ["Glow every day", "You deserve the best", "Radiance, your way", "Treat yourself", "The experts' touch"],
     noArtistsYet: "No artists available yet",
     searchPlaceholder: "Search for makeup artists...",
     heroBadge: "Premium Beauty Services",
@@ -1300,6 +1318,8 @@ export const en = {
     platformEmail: "Support Email",
     platformPhone: "Support Phone",
     commissionRate: "Commission Rate (%)",
+    travelFee: "Home Service Travel Fee (QAR)",
+    travelFeeHelp: "Flat fee added to bookings at the customer's home",
     minWithdrawal: "Minimum Withdrawal (QAR)",
     autoApproveBookings: "Auto-approve Bookings",
     enableNotifications: "Enable Notifications",
@@ -1425,6 +1445,17 @@ export const en = {
     linkCopied: "Link copied",
     copyFailed: "Failed to copy link",
     validFor7Days: "Valid for 7 days",
+    featuredArtist: "Featured Artist",
+    featuredArtistDescription: "Choose the artist showcased at the top of the artists page.",
+    noFeaturedArtist: "No featured artist selected",
+    setFeatured: "Feature artist",
+    currentlyFeatured: "Currently featured",
+    removeFeatured: "Remove selection",
+    enableToFeature: "Enable first",
+    featuredArtistUpdated: "Featured artist updated",
+    featuredArtistRemoved: "Featured artist removed",
+    featuredArtistError: "Could not update the featured artist",
+    featuredArtistUnavailable: "This artist is unavailable and will not appear publicly.",
   },
 
   // Admin Finance

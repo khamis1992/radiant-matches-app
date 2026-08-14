@@ -1,19 +1,17 @@
-/**
- * Brand fallback cover for photo-less cards — the dark GLAM app icon,
- * full-bleed with a slight zoom so its transparent corners stay hidden
- * inside the card's rounded frame.
+﻿/**
+ * Brand fallback cover for photo-less cards — full-bleed GLAM brand mark.
+ * The asset is pre-cropped solid (no transparent corners), so it fills
+ * the card frame exactly with no gaps and no animation.
  */
 const BrandCover = () => (
-  <div className="glam-brand-cover absolute inset-0 overflow-hidden bg-glam-ink">
-    <div className="glam-brand-cover__motion absolute inset-0">
-      <img
-        src="/brand/glam-app-icon.png"
-        alt="GLAM"
-        loading="lazy"
-        draggable={false}
-        className="glam-brand-cover__image h-full w-full object-cover"
-      />
-    </div>
+  <div className="absolute inset-0 overflow-hidden bg-glam-ink">
+    <img
+      src="/brand/glam-brand-cover.jpg"
+      alt="GLAM"
+      loading="lazy"
+      draggable={false}
+      className="h-full w-full object-cover"
+    />
   </div>
 );
 

@@ -21,7 +21,12 @@
       "Bash(npm run dev)",
       "Bash(netstat:*)",
       "Bash(timeout:*)",
-      "Bash(powershell -Command \"Stop-Process -Id 16740 -Force; Start-Sleep -Seconds 2; npm run dev\")"
+      "Bash(powershell -Command \"Stop-Process -Id 16740 -Force; Start-Sleep -Seconds 2; npm run dev\")",
+      "Skill(business-scenario-explorer)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "claude-flow"
+  ]
 }

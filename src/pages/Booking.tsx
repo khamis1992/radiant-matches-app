@@ -30,8 +30,9 @@ import PaymentProcessing from "@/components/ui/payment-processing";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, isBefore, startOfDay } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 
-// Flat home-service travel fee (QAR). TODO: move to admin-configurable settings.
-const TRAVEL_FEE_QAR = 90;
+// Flat home-service travel fee (QAR). Admin-configurable via platform_settings
+// key "travel_fee" (value {"value": 90}); falls back to 90 QAR.
+const DEFAULT_TRAVEL_FEE_QAR = 90;
 
 // Localized label for a slot like "10:00 AM" → "10:00 AM" / "10:00 ص"
 const formatTimeSlotLabel = (slot: string, lang: string): string => {
@@ -230,7 +231,21 @@ const Booking = () => {
 
   const actualServiceName = serviceInfo?.name || serviceName;
   const actualServicePrice = serviceInfo?.price ?? 0;
-  const travelFee = selectedLocation === "client_home" ? TRAVEL_FEE_QAR : 0;
+  const { data: travelFeeSetting } = useQuery({
+    queryKey: ["travel-fee"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("platform_settings")
+        .select("value")
+        .eq("key", "travel_fee")
+        .maybeSingle();
+      if (error) throw error;
+      const raw = data?.value as { value?: number } | null;
+      return typeof raw?.value === "number" ? raw.value : DEFAULT_TRAVEL_FEE_QAR;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+  const travelFee = selectedLocation === "client_home" ? (travelFeeSetting ?? DEFAULT_TRAVEL_FEE_QAR) : 0;
   const totalPrice = actualServicePrice + travelFee;
   const dateFnsLocale = language === "ar" ? ar : enUS;
 
@@ -878,7 +893,7 @@ const Booking = () => {
                     </p>
                     <div className="flex items-center gap-1.5 mt-2">
                       <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                        +{formatQAR(TRAVEL_FEE_QAR)} {language === "ar" ? "رسوم تنقل" : "travel fee"}
+                        +{formatQAR(travelFeeSetting ?? DEFAULT_TRAVEL_FEE_QAR)} {language === "ar" ? "رسوم تنقل" : "travel fee"}
                       </span>
                     </div>
                   </div>

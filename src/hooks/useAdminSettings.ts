@@ -7,6 +7,7 @@ export interface PlatformSettings {
   min_booking_hours: number;
   max_booking_days: number;
   cancellation_hours: number;
+  travel_fee: number;
   platform_name: string;
   support_email: string;
   support_phone: string;
@@ -23,6 +24,7 @@ const defaultSettings: PlatformSettings = {
   min_booking_hours: 24,
   max_booking_days: 30,
   cancellation_hours: 24,
+  travel_fee: 90,
   platform_name: "منصة التجميل",
   support_email: "support@example.com",
   support_phone: "+966500000000",
@@ -70,8 +72,8 @@ export const useUpdatePlatformSettings = () => {
   return useMutation({
     mutationFn: async (settings: Partial<PlatformSettings>) => {
       const updates = Object.entries(settings).map(async ([key, value]) => {
-        const settingValue = key === "commission_rate" 
-          ? { rate: value } 
+        const settingValue = key === "commission_rate"
+          ? { rate: value }
           : { value };
 
         const { error } = await supabase

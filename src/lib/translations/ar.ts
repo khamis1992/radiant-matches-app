@@ -168,11 +168,29 @@ export const ar = {
     multipleTyping: "عدة أشخاص يكتبون...",
   },
 
+  // Reviews
+  reviews: {
+    title: "قيّمي تجربتك",
+    subtitle: "كيف كانت تجربتك مع",
+    ratingLabels: ["بدون تقييم", "لم تعجبني", "مقبولة", "جيدة", "جيدة جداً", "ممتازة"],
+    commentLabel: "شاركينا رأيك",
+    commentPlaceholder: "اكتبي تفاصيل تجربتك... (اختياري)",
+    photosLabel: "أضيفي صوراً",
+    photosHint: "حتى 3 صور",
+    submit: "إرسال التقييم",
+    submitting: "جارٍ الإرسال...",
+    successToast: "شكراً لك! تم نشر تقييمك",
+    errorToast: "تعذر إرسال التقييم، حاولي مرة أخرى",
+    rateExperience: "قيّمي تجربتك",
+    reviewedDone: "تم تقييمها",
+  },
+
   // Home page
   home: {
     browseCategory: "تصفح حسب الفئة",
     topRatedArtists: "أعلى الفنانات تقييمًا",
     featuredArtists: "الفنانات المميزة",
+    marketingWords: ["تألّقي كل يوم", "جمالكِ يستحق الأفضل", "إشراقة تليق بكِ", "دلّلي نفسكِ", "لمسة الخبيرات"],
     noArtistsYet: "لا توجد فنانات متاحة بعد",
     searchPlaceholder: "البحث عن فنانات مكياج...",
     heroBadge: "خدمات جمالية مميزة",
@@ -1215,6 +1233,8 @@ export const ar = {
     platformEmail: "بريد الدعم",
     platformPhone: "هاتف الدعم",
     commissionRate: "نسبة العمولة (%)",
+    travelFee: "رسوم الزيارة المنزلية (ر.ق)",
+    travelFeeHelp: "رسوم ثابتة تضاف للحجوزات في منزل العميلة",
     minWithdrawal: "الحد الأدنى للسحب (ر.ق)",
     autoApproveBookings: "الموافقة التلقائية على الحجوزات",
     enableNotifications: "تفعيل الإشعارات",
@@ -1448,6 +1468,17 @@ export const ar = {
     linkCopied: "تم نسخ الرابط",
     copyFailed: "فشل نسخ الرابط",
     validFor7Days: "صالح لمدة 7 أيام",
+    featuredArtist: "الفنانة المميزة",
+    featuredArtistDescription: "اختاري الفنانة التي تظهر في أعلى صفحة الفنانات.",
+    noFeaturedArtist: "لم يتم اختيار فنانة مميزة",
+    setFeatured: "تعيين كمميزة",
+    currentlyFeatured: "المميزة حالياً",
+    removeFeatured: "إزالة الاختيار",
+    enableToFeature: "فعّليها أولاً",
+    featuredArtistUpdated: "تم تحديث الفنانة المميزة",
+    featuredArtistRemoved: "تمت إزالة الفنانة المميزة",
+    featuredArtistError: "تعذر تحديث الفنانة المميزة",
+    featuredArtistUnavailable: "هذه الفنانة غير متاحة ولن تظهر للعامة.",
   },
 
   // Admin Finance

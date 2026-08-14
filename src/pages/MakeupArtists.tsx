@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { SERVICE_CATEGORIES, ServiceCategory } from "@/hooks/useArtists";
 import { useArtistsWithPricing, ArtistWithPricing, getArtistPhoto } from "@/hooks/useArtistsWithPricing";
+import { useFeaturedArtistSelection } from "@/hooks/useFeaturedArtistSelection";
 import { useArtistsAvailability, ArtistAvailability } from "@/hooks/useArtistAvailability";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -99,6 +100,7 @@ const MakeupArtists = () => {
   const showMap = searchParams.get("map") === "true";
 
   const { data: artists, isLoading, isError: isArtistsError, refetch: refetchArtists } = useArtistsWithPricing();
+  const { data: featuredSelection } = useFeaturedArtistSelection();
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Get artist IDs for availability check
@@ -269,19 +271,18 @@ const MakeupArtists = () => {
     });
   }, [artists, sortBy, debouncedSearchQuery, selectedCategory, showAvailableOnly, topRatedOnly, availabilityMap, filters]);
 
-  // Featured artist: highest rated with a photo (showcase only on the unfiltered view)
+  // The administrator explicitly controls this showcase slot. There is no
+  // rating-based fallback: an empty selection means no featured card.
   const isDefaultView =
     !debouncedSearchQuery.trim() && !selectedCategory && !showAvailableOnly && !topRatedOnly;
   const featuredArtist = useMemo(() => {
-    if (!isDefaultView || !artists) return null;
-    const candidates = artists.filter(
-      (a) =>
-        (a as ArtistWithPricing & { account_type?: string }).account_type !== "seller" &&
-        getArtistPhoto(a)
-    );
-    if (candidates.length === 0) return null;
-    return [...candidates].sort((x, y) => (Number(y.rating) || 0) - (Number(x.rating) || 0))[0];
-  }, [artists, isDefaultView]);
+    if (!isDefaultView || !artists || !featuredSelection?.artist_id) return null;
+    return artists.find(
+      (artist) =>
+        artist.id === featuredSelection.artist_id &&
+        (artist as ArtistWithPricing & { account_type?: string }).account_type !== "seller",
+    ) ?? null;
+  }, [artists, featuredSelection?.artist_id, isDefaultView]);
 
   const artistSpecialty = (a: ArtistWithPricing) => {
     const cats = (a.categories || []).slice(0, 2);

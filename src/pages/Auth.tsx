@@ -268,7 +268,7 @@ const Auth = () => {
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData?.session?.user?.id) {
           supabase.functions.invoke("check-blocked-ip", {
-            body: { userId: sessionData.session.user.id, eventType: "login" },
+            body: { eventType: "login" },
           }).catch(() => {});
         }
 
@@ -309,7 +309,7 @@ const Auth = () => {
           setMode("verify-email");
           // Log signup to security audit
           supabase.functions.invoke("check-blocked-ip", {
-            body: { userId: data.user.id, eventType: "signup", email: email.trim(), fullName: fullName.trim() },
+            body: { eventType: "signup" },
           }).catch(() => {});
           // Send OTP
           supabase.functions.invoke("send-verification-otp", {

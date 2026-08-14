@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useAdminArtists, useToggleArtistAvailability } from "@/hooks/useAdminArtists";
+import {
+  useClearFeaturedArtist,
+  useFeaturedArtistSelection,
+  useSetFeaturedArtist,
+} from "@/hooks/useFeaturedArtistSelection";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Navigate } from "react-router-dom";
@@ -13,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Search, Star, UserPlus, Copy, Check, Link } from "lucide-react";
+import { Search, Star, UserPlus, Copy, Check, Link, Pin, CircleCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -33,8 +38,26 @@ const AdminArtists = () => {
   const { role, loading: roleLoading } = useUserRole();
   const { t, isRTL } = useLanguage();
   const [search, setSearch] = useState("");
-  const { data: artists, isLoading } = useAdminArtists(search);
+  const { data: allArtists, isLoading } = useAdminArtists();
   const toggleAvailability = useToggleArtistAvailability();
+  const { data: featuredSelection, isLoading: featuredSelectionLoading } = useFeaturedArtistSelection();
+  const setFeaturedArtist = useSetFeaturedArtist();
+  const clearFeaturedArtist = useClearFeaturedArtist();
+
+  const artists = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    if (!normalizedSearch) return allArtists ?? [];
+
+    return (allArtists ?? []).filter(
+      (artist) =>
+        artist.profile?.full_name?.toLowerCase().includes(normalizedSearch) ||
+        artist.profile?.email?.toLowerCase().includes(normalizedSearch) ||
+        artist.profile?.phone?.includes(search.trim()),
+    );
+  }, [allArtists, search]);
+
+  const selectedArtist = allArtists?.find((artist) => artist.id === featuredSelection?.artist_id);
+  const featuredMutationPending = setFeaturedArtist.isPending || clearFeaturedArtist.isPending;
 
   // Invitation dialog state
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
@@ -48,9 +71,30 @@ const AdminArtists = () => {
 
   const handleToggle = async (artistId: string, currentState: boolean) => {
     try {
+      if (currentState && featuredSelection?.artist_id === artistId) {
+        await clearFeaturedArtist.mutateAsync();
+      }
       await toggleAvailability.mutateAsync({ artistId, isAvailable: !currentState });
       toast.success(currentState ? t.adminArtists.artistDisabled : t.adminArtists.artistEnabled);
     } catch { toast.error(t.adminArtists.error); }
+  };
+
+  const handleSetFeatured = async (artistId: string) => {
+    try {
+      await setFeaturedArtist.mutateAsync(artistId);
+      toast.success(t.adminArtists.featuredArtistUpdated);
+    } catch {
+      toast.error(t.adminArtists.featuredArtistError);
+    }
+  };
+
+  const handleClearFeatured = async () => {
+    try {
+      await clearFeaturedArtist.mutateAsync();
+      toast.success(t.adminArtists.featuredArtistRemoved);
+    } catch {
+      toast.error(t.adminArtists.featuredArtistError);
+    }
   };
 
   // Create invitation link
@@ -124,7 +168,7 @@ const AdminArtists = () => {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold text-foreground">{t.adminArtists.title}</h1>
-              <p className="text-muted-foreground mt-1">{artists?.length || 0} {t.adminArtists.artistCount}</p>
+              <p className="text-muted-foreground mt-1">{allArtists?.length || 0} {t.adminArtists.artistCount}</p>
             </div>
             <div className="flex items-center gap-4">
               <Button onClick={() => setInviteDialogOpen(true)} className="gap-2">
@@ -137,6 +181,59 @@ const AdminArtists = () => {
               </div>
             </div>
           </div>
+          <section className="mb-6 rounded-2xl border border-glam-border bg-white p-4 shadow-sm sm:p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-start gap-3">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-glam-surface text-glam-rose">
+                  <Pin className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-glam-ink">{t.adminArtists.featuredArtist}</h2>
+                  <p className="mt-1 text-sm text-glam-secondary">
+                    {t.adminArtists.featuredArtistDescription}
+                  </p>
+                </div>
+              </div>
+
+              {featuredSelectionLoading ? (
+                <Skeleton className="h-12 w-full rounded-xl sm:w-72" />
+              ) : selectedArtist ? (
+                <div className="flex min-w-0 items-center gap-3 rounded-xl border border-glam-border bg-glam-porcelain p-2.5 sm:min-w-72">
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarImage src={selectedArtist.profile?.avatar_url || undefined} />
+                    <AvatarFallback className="bg-glam-blush-soft text-glam-ink">
+                      {selectedArtist.profile?.full_name?.[0] || "A"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-glam-ink">
+                      {selectedArtist.profile?.full_name || t.common.notAvailable}
+                    </p>
+                    <p className="text-xs text-glam-rose">{t.adminArtists.currentlyFeatured}</p>
+                    {!selectedArtist.is_available && (
+                      <p className="mt-0.5 text-xs text-glam-warning">
+                        {t.adminArtists.featuredArtistUnavailable}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={featuredMutationPending}
+                    onClick={handleClearFeatured}
+                    className="shrink-0 border-glam-border text-glam-ink"
+                  >
+                    {t.adminArtists.removeFeatured}
+                  </Button>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-glam-border bg-glam-porcelain px-4 py-3 text-sm text-glam-muted sm:min-w-72">
+                  {t.adminArtists.noFeaturedArtist}
+                </div>
+              )}
+            </div>
+          </section>
           <div className="bg-card rounded-xl border border-border">
             {isLoading ? <div className="p-8 space-y-4">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16" />)}</div> : (
               <Table>
@@ -147,11 +244,12 @@ const AdminArtists = () => {
                     <TableHead className={textAlign}>{t.adminArtists.services}</TableHead>
                     <TableHead className={textAlign}>{t.adminArtists.bookings}</TableHead>
                     <TableHead className={textAlign}>{t.adminArtists.earnings}</TableHead>
+                    <TableHead className={textAlign}>{t.adminArtists.featuredArtist}</TableHead>
                     <TableHead className={textAlign}>{t.adminArtists.status}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {artists?.map((artist) => (
+                  {artists.map((artist) => (
                     <TableRow key={artist.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -175,6 +273,26 @@ const AdminArtists = () => {
                       <TableCell>{artist.services_count}</TableCell>
                       <TableCell>{artist.bookings_count}</TableCell>
                       <TableCell>{artist.total_earnings.toFixed(0)} QAR</TableCell>
+                      <TableCell>
+                        {featuredSelection?.artist_id === artist.id ? (
+                          <div className="inline-flex min-h-10 items-center gap-2 rounded-full bg-glam-blush-soft px-3 text-xs font-semibold text-glam-ink">
+                            <CircleCheck className="h-4 w-4 text-glam-rose" aria-hidden="true" />
+                            {t.adminArtists.currentlyFeatured}
+                          </div>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={!artist.is_available || featuredMutationPending}
+                            onClick={() => handleSetFeatured(artist.id)}
+                            className="min-h-10 border-glam-border text-glam-ink hover:border-glam-rose hover:bg-glam-porcelain"
+                          >
+                            <Pin className="h-4 w-4" aria-hidden="true" />
+                            {artist.is_available ? t.adminArtists.setFeatured : t.adminArtists.enableToFeature}
+                          </Button>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Switch 

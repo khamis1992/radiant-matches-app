@@ -15,14 +15,17 @@ import {
   HourglassMedium,
   MapPin,
   Receipt,
+  Star,
   WarningCircle,
   XCircle,
 } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
+import ReviewDialog from "@/components/ReviewDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type Booking, useUserBookings } from "@/hooks/useBookings";
+import { useReviewedBookingIds } from "@/hooks/useSubmitReview";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useConversations } from "@/hooks/useConversations";
 import { formatBookingTime, formatQAR } from "@/lib/locale";
@@ -242,6 +245,8 @@ const CompactBookingCard = ({
   onDetails,
   onChat,
   chatLoading,
+  rated,
+  onRate,
 }: {
   booking: Booking;
   language: string;
@@ -251,6 +256,8 @@ const CompactBookingCard = ({
   onDetails: () => void;
   onChat: () => void;
   chatLoading: boolean;
+  rated?: boolean;
+  onRate?: () => void;
 }) => {
   const bookingDate = parseISO(booking.booking_date);
 
@@ -297,6 +304,23 @@ const CompactBookingCard = ({
           </button>
         )}
       </div>
+
+      {booking.status === "completed" &&
+        (rated ? (
+          <p className="mt-2.5 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-glam-muted">
+            <Star size={13} weight="fill" className="text-glam-rose" aria-hidden="true" />
+            {labels.reviewedDone}
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={onRate}
+            className="mt-2.5 flex h-11 w-full items-center justify-center gap-2 rounded-full border border-glam-rose/40 text-xs font-semibold text-glam-rose transition-colors hover:bg-glam-rose/5 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-glam-rose"
+          >
+            <Star size={16} weight="bold" aria-hidden="true" />
+            {labels.rateExperience}
+          </button>
+        ))}
     </article>
   );
 };
@@ -416,6 +440,8 @@ const getLabels = (language: string) =>
         loadErrorTitle: "تعذر تحميل الحجوزات",
         loadErrorDescription: "تحققي من اتصالك ثم حاولي مرة أخرى.",
         retry: "إعادة المحاولة",
+        rateExperience: "قيّمي تجربتك",
+        reviewedDone: "تم تقييمها",
         status: {
           pending: "بانتظار التأكيد",
           confirmed: "مؤكد",
@@ -446,6 +472,8 @@ const getLabels = (language: string) =>
         loadErrorTitle: "Bookings could not be loaded",
         loadErrorDescription: "Check your connection and try again.",
         retry: "Try again",
+        rateExperience: "Rate your experience",
+        reviewedDone: "Reviewed",
         status: {
           pending: "Awaiting confirmation",
           confirmed: "Confirmed",
@@ -466,6 +494,8 @@ const Bookings = () => {
   const isRTL = language === "ar";
   const locale = isRTL ? ar : enUS;
   const labels = getLabels(language);
+  const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
+  const { data: reviewedIds } = useReviewedBookingIds();
 
   const sortedUpcoming = useMemo(
     () =>
@@ -608,6 +638,8 @@ const Bookings = () => {
                         onDetails={() => navigate(`/bookings/${booking.id}`)}
                         onChat={() => openChat(booking)}
                         chatLoading={getOrCreateBookingConversation.isPending}
+                        rated={reviewedIds?.has(booking.id) ?? false}
+                        onRate={() => setReviewBooking(booking)}
                       />
                     </div>
                   ))}
@@ -617,6 +649,14 @@ const Bookings = () => {
           </div>
         )}
       </main>
+
+      <ReviewDialog
+        booking={reviewBooking}
+        open={reviewBooking !== null}
+        onOpenChange={(next) => {
+          if (!next) setReviewBooking(null);
+        }}
+      />
 
       <BottomNavigation />
     </div>

@@ -6,6 +6,7 @@ import { EnhancedArtistCard } from "@/components/artists/EnhancedArtistCard";
 import BottomNavigation from "@/components/BottomNavigation";
 import { ShopCard } from "@/components/ShopCard";
 import AppHeader from "@/components/layout/AppHeader";
+import HeaderBeautyTicker from "@/components/home/HeaderBeautyTicker";
 import { HeroSection } from "@/components/HeroSection";
 import LottieIcon from "@/components/LottieIcon";
 import { useArtistsWithPricing } from "@/hooks/useArtistsWithPricing";
@@ -49,7 +50,7 @@ const SectionHeader = ({
   actionText,
   onAction,
   icon,
-  iconImage,
+  iconImage, iconImageClassName,
   iconAnimation,
   iconAlt,
   accentClass,
@@ -63,7 +64,7 @@ const SectionHeader = ({
   actionText?: string;
   onAction?: () => void;
   icon?: React.ReactNode;
-  iconImage?: string;
+  iconImage?: string; iconImageClassName?: string;
   iconAnimation?: string;
   iconAlt?: string;
   accentClass?: string;
@@ -95,7 +96,7 @@ const SectionHeader = ({
                 <img
                   src={iconImage}
                   alt={iconAlt || ""}
-                  className={featured ? "h-11 w-11 object-contain" : "h-10 w-10 object-contain"}
+                  className={`${featured ? "h-11 w-11" : "h-10 w-10"} ${iconImageClassName || "object-contain"}`}
                   loading="lazy"
                 />
               ) : null
@@ -110,7 +111,7 @@ const SectionHeader = ({
           <img
             src={iconImage}
             alt={iconAlt || ""}
-            className={featured ? "h-11 w-11 object-contain" : "h-10 w-10 object-contain"}
+            className={`${featured ? "h-11 w-11" : "h-10 w-10"} ${iconImageClassName || "object-contain"}`}
             loading="lazy"
           />
         </div>
@@ -320,7 +321,9 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-glam-porcelain pb-28">
       {/* ─── Header ─── */}
-      <AppHeader showLogo={true} style="modern" />
+      <AppHeader showLogo={true} style="modern">
+        <HeaderBeautyTicker />
+      </AppHeader>
 
       {/* ─── Hero ─── */}
       <HeroSection />
@@ -362,8 +365,7 @@ const Home = () => {
           title={t.home.featuredArtists}
           actionText={t.common.seeAll}
           onAction={() => navigate("/makeup-artists")}
-          iconAnimation="/projects/glam-featured-icons/scene-1/lottie.json"
-          iconImage="/icons/featured-artists/featured-artist-clean.svg"
+          iconImage="/icons/featured-artists/featured-artist-photo.png" iconImageClassName="h-12 w-12 rounded-2xl object-cover"
           iconAlt={isRTL ? "أيقونة أفضل الفنانات" : "Top rated artists"}
           subtitle={isRTL ? "مختارات موثوقة في قطر" : "Trusted beauty experts in Qatar"}
           progress={artistRailProgress}
@@ -424,8 +426,7 @@ const Home = () => {
             title={isRTL ? "المتاجر المميزة" : "Featured Shops"}
             actionText={t.common.seeAll}
             onAction={() => navigate("/shops")}
-            iconAnimation="/projects/glam-featured-icons/scene-2/lottie.json"
-            iconImage="/icons/featured-shops/featured-shops-clean.svg"
+            iconImage="/icons/featured-shops/featured-shops-photo.png" iconImageClassName="h-12 w-12 rounded-2xl object-cover"
             iconAlt={isRTL ? "أيقونة المتاجر المميزة" : "Featured shops"}
             subtitle={isRTL ? "متاجر ومنتجات مختارة بعناية" : "Curated shops and beauty products"}
             showIndicator

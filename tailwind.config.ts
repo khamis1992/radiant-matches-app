@@ -40,8 +40,11 @@ export default {
   				surface: 'var(--glam-surface-soft)',
   				muted: 'var(--glam-text-muted)',
   				secondary: 'var(--glam-text-secondary)',
-  				border: 'var(--glam-border)',
-  				success: 'var(--glam-success)'
+				border: 'var(--glam-border)',
+				success: 'var(--glam-success)',
+				warning: 'var(--glam-warning)',
+				error: 'var(--glam-error)',
+				info: 'var(--glam-info)'
   			},
   			nude: {
   				DEFAULT: 'hsl(var(--nude))',

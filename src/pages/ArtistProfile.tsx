@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useParams, useNavigate } from "react-router-dom";
-import { Star, MapPin, Heart, Share2, Clock, Crown, MessageCircle, CalendarOff, Camera, Briefcase, ChevronRight, ChevronDown, Play, Sparkles, Check, ShoppingBag, Package, Brush, Scissors, Hand, Gem, Leaf, Eye, Image as ImageIcon, Info } from "lucide-react";
+import { Star, MapPin, Heart, Share2, Clock, Crown, MessageCircle, CalendarOff, Camera, Briefcase, ChevronRight, ChevronDown, Play, Sparkles, Check, Brush, Scissors, Hand, Gem, Leaf, Eye, Image as ImageIcon } from "lucide-react";
 import SellerProfile from "@/pages/SellerProfile";
 import { toast } from "sonner";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -17,8 +17,6 @@ import { useArtist, useArtists } from "@/hooks/useArtists";
 import { useArtistServices } from "@/hooks/useServices";
 import { useArtistReviews } from "@/hooks/useReviews";
 import { useArtistPortfolio, PORTFOLIO_CATEGORIES } from "@/hooks/usePortfolio";
-import { useProducts } from "@/hooks/useProducts";
-import { useUnifiedCart } from "@/hooks/useUnifiedCart";
 
 import { useWorkingHours } from "@/hooks/useWorkingHours";
 import { useBlockedDates } from "@/hooks/useBlockedDates";
@@ -34,7 +32,7 @@ import HelpfulReviewButton from "@/components/HelpfulReviewButton";
 import artist1 from "@/assets/artist-1.jpg";
 
 type ReviewSort = "newest" | "highest";
-type ActiveTab = "services" | "reviews" | "gallery" | "market" | "about";
+type ActiveTab = "services" | "reviews" | "gallery";
 
 const SPECIALTY_ICONS: Record<string, typeof Brush> = {
   Makeup: Brush,
@@ -60,8 +58,6 @@ const ArtistProfile = () => {
   const { data: services, isLoading: servicesLoading } = useArtistServices(id);
   const { data: reviews, isLoading: reviewsLoading } = useArtistReviews(id);
   const { data: portfolioItems = [], isLoading: portfolioLoading } = useArtistPortfolio(artist?.id);
-  const { data: products = [], isLoading: productsLoading } = useProducts(artist?.id);
-  const { addToCart } = useUnifiedCart();
   
   const { data: workingHours = [], isLoading: workingHoursLoading } = useWorkingHours(artist?.id);
   const { data: blockedDates = [] } = useBlockedDates(artist?.id);
@@ -579,14 +575,12 @@ const ArtistProfile = () => {
             <div ref={servicesSectionRef}>
               <TabsList
                 aria-label={isRTL ? "أقسام ملف الفنانة" : "Artist profile sections"}
-                className="grid h-auto w-full grid-cols-5 gap-1 rounded-2xl border border-glam-border bg-glam-surface p-1 shadow-sm"
+                className="grid h-auto w-full grid-cols-3 gap-1 rounded-2xl border border-glam-border bg-glam-surface p-1 shadow-sm"
               >
                 {([
                   { value: "services", label: isRTL ? "الخدمات" : "Services", Icon: Briefcase, count: services?.length ?? 0 },
                   { value: "reviews", label: isRTL ? "التقييمات" : "Reviews", Icon: Star, count: reviews?.length ?? 0 },
                   { value: "gallery", label: isRTL ? "المعرض" : "Gallery", Icon: ImageIcon, count: portfolioItems.length },
-                  { value: "market", label: isRTL ? "المتجر" : "Market", Icon: ShoppingBag, count: products.length },
-                  { value: "about", label: isRTL ? "نبذة" : "About", Icon: Info, count: 0 },
                 ] as const).map(({ value, label, Icon, count }) => (
                   <TabsTrigger
                     key={value}
@@ -964,177 +958,6 @@ const ArtistProfile = () => {
             )}
           </TabsContent>
 
-          {/* Market Tab */}
-          <TabsContent value="market" className="mt-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{products.length} {language === "ar" ? "منتجات" : "Products"}</span>
-            </div>
-
-            {productsLoading ? (
-              <div className="grid grid-cols-2 gap-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-48 w-full rounded-2xl" />
-                ))}
-              </div>
-            ) : products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3">
-                {products.map((product, index) => (
-                  <div
-                    key={product.id}
-                    className="bg-card rounded-2xl border border-border/50 overflow-hidden group hover:border-primary/30 transition-all duration-300 animate-fade-in"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    {/* Product Image */}
-                    <div className="relative aspect-square overflow-hidden bg-muted">
-                      {product.images && product.images[0] ? (
-                        <img
-                          src={product.images[0]}
-                          alt={product.title}
-                          className={`w-full h-full object-cover transition-transform group-hover:scale-105 ${
-                            product.product_type === "physical" && product.inventory_count === 0 ? "opacity-50 grayscale" : ""
-                          }`}
-                        />
-                      ) : (
-                        <div className={`w-full h-full flex items-center justify-center ${
-                          product.product_type === "physical" && product.inventory_count === 0 ? "opacity-50" : ""
-                        }`}>
-                          <Package className="w-12 h-12 text-muted-foreground/30" />
-                        </div>
-                      )}
-                      {/* Out of Stock Overlay */}
-                      {product.product_type === "physical" && product.inventory_count === 0 && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[2px]">
-                          <Badge className="text-xs px-3 py-1 bg-destructive text-destructive-foreground border-0">
-                            {language === "ar" ? "نفذت الكمية" : "Out of Stock"}
-                          </Badge>
-                        </div>
-                      )}
-                      {/* Badges */}
-                      <div className="absolute top-2 left-2 flex gap-1 flex-wrap">
-                        {product.is_featured && (
-                          <Badge className="text-[10px] px-2 py-0.5 bg-glam-rose text-white border-0">
-                            Featured
-                          </Badge>
-                        )}
-                        {product.compare_at_price && product.compare_at_price > product.price_qar && (
-                          <Badge className="text-[10px] px-2 py-0.5 bg-destructive text-destructive-foreground border-0">
-                            Sale
-                          </Badge>
-                        )}
-                        {/* Low stock warning badge */}
-                        {product.product_type === "physical" && product.inventory_count > 0 && product.inventory_count <= 5 && (
-                          <Badge className="text-[10px] px-2 py-0.5 bg-amber-500 text-white border-0">
-                            {language === "ar" ? `متبقي ${product.inventory_count} فقط` : `Only ${product.inventory_count} left`}
-                          </Badge>
-                        )}
-                      </div>
-                      {/* Product Type Badge */}
-                      <div className="absolute bottom-2 right-2">
-                        <Badge className="text-[10px] px-2 py-0.5 bg-background/90 backdrop-blur-sm">
-                          {product.product_type}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* Product Info */}
-                    <div className="p-3">
-                      <h3 className="font-semibold text-foreground text-sm line-clamp-2 mb-2">
-                        {product.title}
-                      </h3>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-primary">QAR {product.price_qar}</span>
-                          {product.compare_at_price && product.compare_at_price > product.price_qar && (
-                            <span className="text-xs text-muted-foreground line-through">
-                              QAR {product.compare_at_price}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Add to Cart Button */}
-                      <Button
-                        size="sm"
-                        className="w-full mt-3 rounded-xl"
-                        disabled={product.product_type === "physical" && product.inventory_count === 0}
-                        onClick={() => {
-                          addToCart.mutate(
-                            { productId: product.id, quantity: 1 },
-                            {
-                              onSuccess: () => {
-                                toast.success(language === "ar" ? "تمت الإضافة للسلة ✓" : "Added to cart ✓", {
-                                  description: product.title,
-                                  action: {
-                                    label: language === "ar" ? "عرض السلة" : "View Cart",
-                                    onClick: () => navigate("/cart"),
-                                  },
-                                });
-                              },
-                              onError: (error: any) => {
-                                toast.error(error.message || "Failed to add to cart");
-                              },
-                            }
-                          );
-                        }}
-                      >
-                        <ShoppingBag className="w-4 h-4 mr-1" />
-                        {language === "ar" ? "أضف للسلة" : "Add to Cart"}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                  <ShoppingBag className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <p className="text-muted-foreground">{t.artist.noProducts}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {language === "ar" ? "تحقق مرة أخرى قريباً" : "Check back soon for products from this artist"}
-                </p>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* About Tab */}
-          <TabsContent value="about" className="mt-4 space-y-4">
-            <div className="bg-white rounded-2xl border border-glam-border/60 p-5 space-y-4">
-              <p className="text-sm leading-relaxed text-glam-ink/80">
-                {artist.bio || (isRTL ? "لم تضف الفنانة نبذة عنها بعد." : "The artist hasn't added a bio yet.")}
-              </p>
-              <div className="pt-4 border-t border-glam-border/60 space-y-3">
-                {(artist.experience_years || 0) > 0 && (
-                  <div className="flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-full bg-glam-blush-soft/50 flex items-center justify-center shrink-0">
-                      <Crown className="w-4 h-4 text-glam-rose" strokeWidth={1.75} />
-                    </span>
-                    <p className="text-sm text-glam-ink">
-                      <span className="font-bold">{artist.experience_years}+</span>{" "}
-                      {t.artist.yearsExperience || "Years Experience"}
-                    </p>
-                  </div>
-                )}
-                <div className="flex items-center gap-3">
-                  <span className="w-9 h-9 rounded-full bg-glam-blush-soft/50 flex items-center justify-center shrink-0">
-                    <MapPin className="w-4 h-4 text-glam-rose" strokeWidth={1.75} />
-                  </span>
-                  <p className="text-sm text-glam-ink">{displayLocation}</p>
-                </div>
-                {(services?.length || 0) > 0 && (
-                  <div className="flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-full bg-glam-blush-soft/50 flex items-center justify-center shrink-0">
-                      <Brush className="w-4 h-4 text-glam-rose" strokeWidth={1.75} />
-                    </span>
-                    <p className="text-sm text-glam-ink">
-                      <span className="font-bold">{services.length}</span>{" "}
-                      {t.artist.servicesOffered || "Services"}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </TabsContent>
           </div>
         </Tabs>
       </div>

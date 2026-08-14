@@ -138,11 +138,11 @@ const Wallet = () => {
         </div>
 
         {/* Loyalty Points Quick View */}
-        <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-2xl p-4 mb-6 border border-amber-500/20">
+        <div className="bg-glam-warning/10 rounded-2xl p-4 mb-6 border border-glam-warning/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                <Crown className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 rounded-xl bg-glam-warning/20 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-glam-warning" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -206,8 +206,8 @@ const Wallet = () => {
                     <div key={tx.id} className="flex items-center gap-3 p-4">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         tx.amount > 0 
-                          ? 'bg-green-500/10 text-green-600' 
-                          : 'bg-red-500/10 text-red-600'
+                          ? 'bg-glam-success/10 text-glam-success' 
+                          : 'bg-glam-error/10 text-glam-error'
                       }`}>
                         {tx.amount > 0 ? (
                           <ArrowDownRight className="w-5 h-5" />
@@ -223,7 +223,7 @@ const Wallet = () => {
                           {format(new Date(tx.created_at), 'MMM d, yyyy • h:mm a')}
                         </p>
                       </div>
-                      <span className={`font-bold ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <span className={`font-bold ${tx.amount > 0 ? 'text-glam-success' : 'text-glam-error'}`}>
                         {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)}
                       </span>
                     </div>
@@ -348,7 +348,7 @@ const Wallet = () => {
                   {loyaltyTransactions.slice(0, 5).map((tx) => (
                     <div key={tx.id} className="flex items-center gap-3 p-4">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        tx.points > 0 ? 'bg-green-500/10 text-green-600' : 'bg-amber-500/10 text-amber-600'
+                        tx.points > 0 ? 'bg-glam-success/10 text-glam-success' : 'bg-glam-warning/10 text-glam-warning'
                       }`}>
                         <Star className="w-4 h-4" />
                       </div>
@@ -358,7 +358,7 @@ const Wallet = () => {
                           {format(new Date(tx.created_at), 'MMM d, yyyy')}
                         </p>
                       </div>
-                      <span className={`font-bold text-sm ${tx.points > 0 ? 'text-green-600' : 'text-amber-600'}`}>
+                      <span className={`font-bold text-sm ${tx.points > 0 ? 'text-glam-success' : 'text-glam-warning'}`}>
                         {tx.points > 0 ? '+' : ''}{tx.points.toLocaleString()}
                       </span>
                     </div>

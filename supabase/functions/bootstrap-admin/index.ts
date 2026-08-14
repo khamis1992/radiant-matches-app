@@ -27,8 +27,16 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { email, password, bootstrap_secret } = body;
 
-    // Validate bootstrap secret
-    if (!bootstrap_secret || bootstrap_secret !== bootstrapSecret) {
+    // Validate bootstrap secret with a constant-time comparison
+    const secretOk = typeof bootstrap_secret === "string" &&
+      typeof bootstrapSecret === "string" &&
+      bootstrap_secret.length === bootstrapSecret.length &&
+      crypto.subtle.timingSafeEqual(
+        new TextEncoder().encode(bootstrap_secret),
+        new TextEncoder().encode(bootstrapSecret)
+      );
+
+    if (!secretOk) {
       console.warn("Invalid bootstrap secret attempt");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 403,

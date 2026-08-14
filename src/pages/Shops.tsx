@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   CaretDown,
   Check,
 
@@ -17,7 +16,7 @@ import {
   Storefront,
 } from "@phosphor-icons/react";
 import BottomNavigation from "@/components/BottomNavigation";
-import { CategoryVideoCover } from "@/components/CategoryVideoCover";
+import { ShopsStoryHero } from "@/components/shops/ShopsStoryHero";
 import {
   useArtistsWithPricing,
   type ArtistWithPricing,
@@ -413,7 +412,6 @@ const Shops = () => {
   const [sortBy, setSortBy] = useState<SortKey>("rating");
   const [sortOpen, setSortOpen] = useState(false);
   const debouncedSearch = useDebounce(searchQuery, 300);
-  const BackArrow = ArrowLeft;
 
   const sellers = useMemo(() => {
     if (!artists) return [];
@@ -457,51 +455,18 @@ const Shops = () => {
   return (
     <div className="min-h-screen bg-glam-porcelain pb-32">
       {/* ─── Header ─── */}
-      <div className="relative px-5 pt-[410px]">
-        <div className="safe-area-top absolute inset-x-5 top-0 z-20 flex items-center justify-between pt-4">
-          <button
-            onClick={() => navigate(-1)}
-            aria-label={isRTL ? "رجوع" : "Back"}
-            className="grid h-11 w-11 place-items-center rounded-full border border-glam-border/60 bg-white/95 shadow-md backdrop-blur-sm transition-transform active:scale-95"
-          >
-            <BackArrow
-              size={18}
-              className={cn("text-glam-ink", isRTL && "rotate-180")}
-            />
-          </button>
-          <img
-            src="/brand/glam-logo-light.png"
-            alt="GLAM"
-            className="box-content h-7 rounded-full border border-glam-border/60 bg-white/95 px-4 py-2 object-contain shadow-md backdrop-blur-sm"
+      <div className="relative px-5">
+        <div className="-mx-5">
+          <ShopsStoryHero
+            isRTL={isRTL}
+            onBack={() => navigate(-1)}
+            onExplore={() =>
+              document.getElementById("shops-results")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              })
+            }
           />
-        </div>
-
-        <div className="absolute inset-x-0 top-0 h-[390px] overflow-hidden rounded-b-[36px] bg-glam-surface shadow-sm">
-          <CategoryVideoCover
-            src="/videos/shops/shops-hero.mp4"
-            poster="/videos/shops/shops-hero-start.png"
-            label={isRTL ? "مجموعة منتجات تجميل مختارة" : "Curated beauty product collection"}
-            className="object-[58%_center]"
-          />
-          <div className="hidden">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-glam-ink">
-              {isRTL ? "مختارات GLAM" : "THE GLAM EDIT"}
-            </span>
-          </div>
-        </div>
-
-        <div className="absolute right-4 top-[92px] z-20 w-[47%] rounded-3xl border border-white/70 bg-white/78 p-4 text-right shadow-md backdrop-blur-md">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-glam-rose">
-            {isRTL ? "متاجر GLAM" : "GLAM SHOPS"}
-          </p>
-          <h1 className="mt-3 font-serif text-[32px] font-bold leading-[1.15] tracking-tight text-glam-ink">
-            {isRTL ? "الجمال، بانتقاءٍ يليق بكِ." : "Beauty, beautifully curated."}
-          </h1>
-          <p className="mt-3 text-[12px] font-medium leading-relaxed text-glam-ink">
-            {isRTL
-              ? "محلات مستقلة، وتوصيلٌ منّا لبابك."
-              : "Independent shops, delivered to your door."}
-          </p>
         </div>
 
         {/* ─── Filter pills ─── */}
@@ -594,7 +559,7 @@ const Shops = () => {
       </div>
 
       {/* ─── Results ─── */}
-      <div className="px-5 mt-6">
+      <div id="shops-results" className="scroll-mt-4 px-5 mt-6">
         {isLoading ? (
           <div className="space-y-3.5">
             <Skeleton className="h-[380px] rounded-[28px]" />

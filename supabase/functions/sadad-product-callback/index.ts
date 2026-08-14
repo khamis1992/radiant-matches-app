@@ -139,15 +139,18 @@ serve(async (req) => {
     const secretKey = Deno.env.get("SADAD_SECRET_KEY")!;
     const isTestMode = Deno.env.get("SADAD_TEST_MODE") === "true";
 
-    // Verify request is coming from SADAD servers (optional check)
-    const clientIP = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
+    // Verify request is coming from SADAD servers.
+    // The checksum is the primary gate; this IP check is defense in depth.
+    // SADAD_SKIP_IP_VERIFICATION must only be set to "true" in test environments.
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "";
     const sadadIPs = isTestMode ? SADAD_IPS.TEST : SADAD_IPS.PRODUCTION;
-
-    // Allow the request if IP is from SADAD or if IP verification is disabled
     const skipIPVerification = Deno.env.get("SADAD_SKIP_IP_VERIFICATION") === "true";
     if (!skipIPVerification && clientIP && !sadadIPs.some(ip => clientIP.includes(ip))) {
-      console.warn("IP not in SADAD whitelist:", clientIP, "- continuing anyway for debugging");
-      // Don't reject, just log for now
+      console.error("Rejecting callback from non-SADAD IP:", clientIP);
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
