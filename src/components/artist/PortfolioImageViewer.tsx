@@ -43,7 +43,7 @@ export const PortfolioImageViewer = ({
   const [showOverlays, setShowOverlays] = useState(true);
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const overlaysTimeoutRef = useRef<NodeJS.Timeout>();
+  const overlaysTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const currentItem = items[currentIndex];
   const isRTL = language === "ar";
