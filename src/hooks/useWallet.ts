@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { toast } from "sonner";
@@ -26,7 +26,6 @@ export interface WalletTransaction {
 
 export const useWallet = () => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
   // Fetch wallet balance
   const { data: walletData, isLoading: balanceLoading } = useQuery({
@@ -64,58 +63,23 @@ export const useWallet = () => {
     enabled: !!user?.id,
   });
 
-  // Top up wallet via secure RPC
+  // Financial operations must be initiated through a verified payment or payout provider.
+  // The browser must never be able to credit or debit a wallet directly.
   const topUpMutation = useMutation({
-    mutationFn: async ({ amount, description }: { amount: number; description?: string }) => {
-      if (!user?.id) throw new Error("User not authenticated");
-      
-      const { error } = await supabase.rpc("wallet_topup", {
-        p_amount: amount,
-        p_description: description || "Wallet top-up",
-      });
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wallet-balance"] });
-      queryClient.invalidateQueries({ queryKey: ["wallet-transactions"] });
-      toast.success("Wallet topped up successfully");
+    mutationFn: async (_: { amount: number; description?: string }) => {
+      throw new Error("Wallet top-ups are temporarily unavailable while secure payment processing is being configured.");
     },
     onError: (error) => {
-      toast.error("Failed to top up wallet");
-      console.error("Top up error:", error);
+      toast.error(error instanceof Error ? error.message : "Wallet top-ups are temporarily unavailable.");
     },
   });
 
-  // Withdraw from wallet via secure RPC
   const withdrawMutation = useMutation({
-    mutationFn: async ({ amount, description }: { amount: number; description?: string }) => {
-      if (!user?.id) throw new Error("User not authenticated");
-      
-      const { error } = await supabase.rpc("wallet_withdraw", {
-        p_amount: amount,
-        p_description: description || "Wallet withdrawal",
-      });
-
-      if (error) {
-        if (error.message?.includes("Insufficient balance")) {
-          throw new Error("Insufficient balance");
-        }
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wallet-balance"] });
-      queryClient.invalidateQueries({ queryKey: ["wallet-transactions"] });
-      toast.success("Withdrawal successful");
+    mutationFn: async (_: { amount: number; description?: string }) => {
+      throw new Error("Wallet withdrawals are temporarily unavailable while secure payout processing is being configured.");
     },
     onError: (error) => {
-      if (error.message === "Insufficient balance") {
-        toast.error("Insufficient balance");
-      } else {
-        toast.error("Failed to withdraw");
-      }
-      console.error("Withdraw error:", error);
+      toast.error(error instanceof Error ? error.message : "Wallet withdrawals are temporarily unavailable.");
     },
   });
 
