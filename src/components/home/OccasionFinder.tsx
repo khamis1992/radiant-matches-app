@@ -2,6 +2,7 @@ import { CalendarDays, MapPin, Sparkles, WalletCards } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { trackProductEvent } from "@/lib/productAnalytics";
 
 const OCCASIONS = [
   { value: "bridal", category: "Bridal", ar: "زفاف", en: "Bridal" },
@@ -18,6 +19,13 @@ const BUDGETS = [
   { value: "2000", ar: "حتى ٢٬٠٠٠ ر.ق", en: "Up to QAR 2,000" },
 ];
 
+const VISUAL_STYLES = [
+  { value: "", ar: "أي ستايل", en: "Any style" },
+  { value: "natural", ar: "طبيعي وناعم", en: "Natural & soft" },
+  { value: "soft_glam", ar: "سوفت جلام", en: "Soft glam" },
+  { value: "full_glam", ar: "فول جلام", en: "Full glam" },
+];
+
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
 export const OccasionFinder = () => {
@@ -28,6 +36,7 @@ export const OccasionFinder = () => {
   const [date, setDate] = useState("");
   const [area, setArea] = useState("");
   const [budget, setBudget] = useState("");
+  const [visualStyle, setVisualStyle] = useState("");
 
   const selectedOccasion = useMemo(
     () => OCCASIONS.find((item) => item.value === occasion),
@@ -45,6 +54,8 @@ export const OccasionFinder = () => {
     if (date) params.set("date", date);
     if (area.trim()) params.set("location", area.trim());
     if (budget) params.set("maxPrice", budget);
+    if (visualStyle) params.set("style", visualStyle);
+    void trackProductEvent("occasion_search", { occasion, date, area: area.trim() || null, budget: budget || null, visual_style: visualStyle || null }, "home");
     navigate(`/makeup-artists?${params.toString()}`);
   };
 
@@ -134,6 +145,21 @@ export const OccasionFinder = () => {
           </select>
         </label>
       </div>
+
+      <label className="mt-2.5 block rounded-2xl border border-glam-border bg-glam-porcelain px-3 py-2.5">
+        <span className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold text-glam-muted">
+          <Sparkles className="h-3 w-3 text-glam-rose" aria-hidden="true" />
+          {isRTL ? "ستايل اللوك" : "Look style"}
+        </span>
+        <select
+          value={visualStyle}
+          onChange={(event) => setVisualStyle(event.target.value)}
+          className="w-full bg-transparent text-xs font-semibold text-glam-ink outline-none"
+          aria-label={isRTL ? "اختاري ستايل اللوك" : "Choose a look style"}
+        >
+          {VISUAL_STYLES.map((item) => <option key={item.value || "any"} value={item.value}>{label(item)}</option>)}
+        </select>
+      </label>
 
       <button
         type="button"

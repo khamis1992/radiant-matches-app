@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ProfileSummary } from "@/components/artist/ProfileSummary";
+import { ArtistReadinessCard } from "@/components/artist/ArtistReadinessCard";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 
 const ArtistProfilePage = () => {
@@ -21,6 +23,20 @@ const ArtistProfilePage = () => {
   const { data: artist, isLoading: artistLoading } = useCurrentArtist();
   const { data: reviews = [], isLoading: reviewsLoading } = useArtistReviews(artist?.id);
   const { t, isRTL, language } = useLanguage();
+  const { data: readinessData } = useQuery({
+    queryKey: ["artist-profile-readiness", artist?.id],
+    queryFn: async () => {
+      if (!artist?.id) return { services: 0, hours: 0 };
+      const [servicesResult, hoursResult] = await Promise.all([
+        supabase.from("services").select("id", { count: "exact", head: true }).eq("artist_id", artist.id).eq("is_active", true),
+        supabase.from("artist_working_hours").select("id", { count: "exact", head: true }).eq("artist_id", artist.id).eq("is_working", true),
+      ]);
+      if (servicesResult.error) throw servicesResult.error;
+      if (hoursResult.error) throw hoursResult.error;
+      return { services: servicesResult.count || 0, hours: hoursResult.count || 0 };
+    },
+    enabled: !!artist?.id,
+  });
 
   const [availabilityToggling, setAvailabilityToggling] = useState(false);
 
@@ -66,6 +82,10 @@ const ArtistProfilePage = () => {
   }
 
   const handleToggleAvailability = async () => {
+    if (artist.onboarding_status !== "approved") {
+      toast.error(language === "ar" ? "أكملي الملف وانتظري اعتماد الإدارة قبل تفعيل استقبال الحجوزات" : "Complete your profile and wait for admin approval before receiving bookings");
+      return;
+    }
     setAvailabilityToggling(true);
     try {
       const { error } = await supabase
@@ -102,7 +122,19 @@ const ArtistProfilePage = () => {
     <div className="min-h-screen bg-background pb-32" dir={isRTL ? "rtl" : "ltr"}>
       <ArtistHeader />
 
-      <div className="px-4 py-4">
+      <div className="px-4 py-4 space-y-4">
+        <ArtistReadinessCard
+          language={language}
+          onboardingStatus={artist.onboarding_status}
+          readiness={{
+            profile: Boolean(profile?.full_name && profile?.avatar_url && artist.bio),
+            services: (readinessData?.services || 0) > 0,
+            areas: (artist.service_areas || []).length > 0,
+            hours: (readinessData?.hours || 0) > 0,
+            portfolio: (artist.portfolio_images || []).length > 0,
+          }}
+          onNavigate={navigate}
+        />
         {/* Profile Summary */}
         <ProfileSummary
           artist={{
@@ -116,6 +148,7 @@ const ArtistProfilePage = () => {
             bio: artist.bio,
             experience_years: artist.experience_years,
             studio_address: artist.studio_address,
+            service_areas: artist.service_areas,
           }}
           reviews={reviews}
           language={language}

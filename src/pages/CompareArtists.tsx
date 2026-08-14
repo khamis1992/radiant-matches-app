@@ -30,6 +30,8 @@ interface ArtistWithProfile {
   total_reviews: number | null;
   experience_years?: number | null;
   is_available?: boolean | null;
+  service_areas?: string[];
+  minimum_notice_hours?: number;
   user_id: string;
   profile: {
     full_name: string | null;
@@ -57,7 +59,7 @@ const CompareArtists = () => {
       
       const { data: artistsData, error } = await supabase
         .from("artists")
-        .select("id, bio, rating, total_reviews, experience_years, is_available, user_id")
+        .select("id, bio, rating, total_reviews, experience_years, is_available, service_areas, minimum_notice_hours, user_id")
         .in("id", artistIds);
 
       if (error) throw error;
@@ -311,9 +313,7 @@ const CompareArtists = () => {
                           {artist.profile?.full_name?.charAt(0) || "A"}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                        <Check className="w-3.5 h-3.5 text-primary-foreground" />
-                      </div>
+
                     </div>
                     <h3 className="text-lg font-bold text-foreground mb-1">
                       {artist.profile?.full_name || t.artist.anonymous}
@@ -365,6 +365,28 @@ const CompareArtists = () => {
                     </p>
                   </div>
                 </div>
+
+                <div className="mb-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl bg-emerald-500/5 p-3">
+                    <p className="text-xs text-muted-foreground">{isRTL ? "السعر يبدأ من" : "Starting from"}</p>
+                    <p className="mt-1 font-bold text-foreground">
+                      {(() => {
+                        const artistServices = services?.filter((service) => service.artist_id === artist.id) || [];
+                        return artistServices.length ? `${Math.min(...artistServices.map((service) => service.price))} ${isRTL ? "ر.ق" : "QAR"}` : "—";
+                      })()}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-primary/5 p-3">
+                    <p className="text-xs text-muted-foreground">{isRTL ? "مهلة الحجز" : "Booking notice"}</p>
+                    <p className="mt-1 font-bold text-foreground">{artist.minimum_notice_hours || 24} {isRTL ? "ساعة" : "hrs"}</p>
+                  </div>
+                </div>
+
+                {artist.service_areas && artist.service_areas.length > 0 && (
+                  <div className="mb-4 flex flex-wrap gap-1.5">
+                    {artist.service_areas.slice(0, 3).map((area) => <span key={area} className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">{area}</span>)}
+                  </div>
+                )}
 
                 {artist.bio && (
                   <div className="mb-4">

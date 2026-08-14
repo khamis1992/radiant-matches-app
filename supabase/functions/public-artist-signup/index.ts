@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     // 3. Create artist profile
     const { error: insertArtistError } = await adminClient
       .from("artists")
-      .insert({ user_id: targetUserId });
+      .insert({ user_id: targetUserId, onboarding_status: "pending_review", is_available: false });
 
     if (insertArtistError) {
       console.error("Error creating artist profile:", insertArtistError);
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       success: true,
-      message: "Artist profile created successfully"
+      message: "Artist profile created and queued for readiness review"
     }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

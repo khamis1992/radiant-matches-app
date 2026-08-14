@@ -6,7 +6,7 @@ import { WeeklyCalendarList } from "@/components/artist/WeeklyCalendarList";
 import { BookingBottomSheet } from "@/components/artist/BookingBottomSheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Calendar } from "lucide-react";
+import { Briefcase, Calendar, AlertTriangle, Clock3, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentArtist, useArtistBookings, useUpdateBookingStatus } from "@/hooks/useArtistDashboard";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -96,6 +96,10 @@ const ArtistBookings = () => {
   const allBookings = [...upcoming, ...past];
 
   const currentWeekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
+  const todayKey = format(new Date(), "yyyy-MM-dd");
+  const pendingBookings = upcoming.filter((booking) => booking.status === "pending");
+  const todayBookings = upcoming.filter((booking) => booking.booking_date === todayKey && booking.status !== "cancelled");
+  const priorityBookings = [...pendingBookings, ...todayBookings.filter((booking) => !pendingBookings.some((pending) => pending.id === booking.id))].slice(0, 4);
   // Filter for future bookings (after current week) and sort by date ascending
   const distantBookings = upcoming
     .filter(b => new Date(b.booking_date) > currentWeekEnd)
@@ -112,6 +116,40 @@ const ArtistBookings = () => {
             {t.artistBookings.title}
           </h2>
         </div>
+
+        {!bookingsLoading && priorityBookings.length > 0 && (
+          <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-primary" />
+                <h3 className="font-semibold text-foreground">{language === "ar" ? "عمليات اليوم" : "Today’s actions"}</h3>
+              </div>
+              <span className="rounded-full bg-background px-2 py-1 text-xs font-semibold text-primary">{priorityBookings.length}</span>
+            </div>
+            <div className="space-y-2">
+              {priorityBookings.map((booking) => {
+                const needsResponse = booking.status === "pending";
+                return (
+                  <button
+                    key={booking.id}
+                    type="button"
+                    onClick={() => handleDaySelect(new Date(booking.booking_date), [booking])}
+                    className="flex w-full items-center gap-3 rounded-xl bg-background p-3 text-start hover:bg-card"
+                  >
+                    <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/10 text-primary">
+                      {needsResponse ? <Clock3 className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-foreground">{booking.service?.name || (language === "ar" ? "خدمة" : "Service")}</p>
+                      <p className="text-xs text-muted-foreground">{booking.booking_date === todayKey ? (language === "ar" ? "اليوم" : "Today") : booking.booking_date} · {booking.booking_time}</p>
+                    </div>
+                    <span className="text-xs font-medium text-primary">{needsResponse ? (language === "ar" ? "رد مطلوب" : "Reply needed") : (language === "ar" ? "موعد اليوم" : "Today")}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Vertical Calendar */}
         {bookingsLoading ? (

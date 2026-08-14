@@ -18,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Search, Star, UserPlus, Copy, Check, Link, Pin, CircleCheck } from "lucide-react";
+import { Search, Star, UserPlus, Copy, Check, Link, Pin, CircleCheck, ShieldCheck, CircleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -65,6 +65,7 @@ const AdminArtists = () => {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [generatedLink, setGeneratedLink] = useState("");
   const [copied, setCopied] = useState(false);
+  const [reviewingArtistId, setReviewingArtistId] = useState<string | null>(null);
 
   if (roleLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><Skeleton className="h-8 w-32" /></div>;
   if (role !== "admin") return <Navigate to="/home" replace />;
@@ -94,6 +95,26 @@ const AdminArtists = () => {
       toast.success(t.adminArtists.featuredArtistRemoved);
     } catch {
       toast.error(t.adminArtists.featuredArtistError);
+    }
+  };
+
+  const handleReviewArtist = async (artistId: string, status: "approved" | "pending_review") => {
+    setReviewingArtistId(artistId);
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) throw new Error("not_authenticated");
+      const update = status === "approved"
+        ? { onboarding_status: status, approved_at: new Date().toISOString(), approved_by: auth.user.id, onboarding_notes: null }
+        : { onboarding_status: status, approved_at: null, approved_by: null };
+      const { error } = await supabase.from("artists").update(update).eq("id", artistId);
+      if (error) throw error;
+      toast.success(status === "approved" ? (isRTL ? "تم اعتماد الفنانة" : "Artist approved") : (isRTL ? "أعيدت للمراجعة" : "Returned for review"));
+      window.location.reload();
+    } catch (error) {
+      console.error("Artist review error", error);
+      toast.error(isRTL ? "تعذر تحديث حالة المراجعة" : "Could not update review status");
+    } finally {
+      setReviewingArtistId(null);
     }
   };
 
@@ -244,6 +265,7 @@ const AdminArtists = () => {
                     <TableHead className={textAlign}>{t.adminArtists.services}</TableHead>
                     <TableHead className={textAlign}>{t.adminArtists.bookings}</TableHead>
                     <TableHead className={textAlign}>{t.adminArtists.earnings}</TableHead>
+                    <TableHead className={textAlign}>{isRTL ? "الجاهزية" : "Readiness"}</TableHead>
                     <TableHead className={textAlign}>{t.adminArtists.featuredArtist}</TableHead>
                     <TableHead className={textAlign}>{t.adminArtists.status}</TableHead>
                   </TableRow>
@@ -273,6 +295,22 @@ const AdminArtists = () => {
                       <TableCell>{artist.services_count}</TableCell>
                       <TableCell>{artist.bookings_count}</TableCell>
                       <TableCell>{artist.total_earnings.toFixed(0)} QAR</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col items-start gap-2">
+                          <Badge variant={artist.onboarding_status === "approved" ? "default" : "secondary"} className="gap-1">
+                            {artist.onboarding_status === "approved" ? <ShieldCheck className="h-3.5 w-3.5" /> : <CircleAlert className="h-3.5 w-3.5" />}
+                            {artist.onboarding_status === "approved" ? (isRTL ? "معتمدة" : "Approved") : (isRTL ? "قيد المراجعة" : "Review")}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant={artist.onboarding_status === "approved" ? "outline" : "default"}
+                            disabled={reviewingArtistId === artist.id}
+                            onClick={() => handleReviewArtist(artist.id, artist.onboarding_status === "approved" ? "pending_review" : "approved")}
+                          >
+                            {artist.onboarding_status === "approved" ? (isRTL ? "إعادة للمراجعة" : "Review again") : (isRTL ? "اعتماد" : "Approve")}
+                          </Button>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         {featuredSelection?.artist_id === artist.id ? (
                           <div className="inline-flex min-h-10 items-center gap-2 rounded-full bg-glam-blush-soft px-3 text-xs font-semibold text-glam-ink">

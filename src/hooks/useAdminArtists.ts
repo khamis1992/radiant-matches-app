@@ -8,8 +8,10 @@ export interface AdminArtist {
   experience_years: number | null;
   rating: number | null;
   total_reviews: number | null;
-  is_available: boolean | null;
-  studio_address: string | null;
+  is_available: boolean | null
+  onboarding_status: string
+  approved_at: string | null
+  studio_address: string | null
   created_at: string;
   profile: {
     full_name: string | null;

@@ -195,54 +195,174 @@ export type Database = {
       artists: {
         Row: {
           account_type: string
+          approved_at: string | null
+          approved_by: string | null
           available_balance: number | null
           bio: string | null
           created_at: string
           experience_years: number | null
           id: string
           is_available: boolean | null
+          minimum_notice_hours: number
+          onboarding_notes: string | null
+          onboarding_status: string
           pending_balance: number | null
           portfolio_images: string[] | null
           rating: number | null
+          service_areas: string[]
           studio_address: string | null
           total_reviews: number | null
           total_withdrawn: number | null
+          travel_buffer_minutes: number
           updated_at: string
           user_id: string
         }
         Insert: {
           account_type?: string
+          approved_at?: string | null
+          approved_by?: string | null
           available_balance?: number | null
           bio?: string | null
           created_at?: string
           experience_years?: number | null
           id?: string
           is_available?: boolean | null
+          minimum_notice_hours?: number
+          onboarding_notes?: string | null
+          onboarding_status?: string
           pending_balance?: number | null
           portfolio_images?: string[] | null
           rating?: number | null
+          service_areas?: string[]
           studio_address?: string | null
           total_reviews?: number | null
           total_withdrawn?: number | null
+          travel_buffer_minutes?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           account_type?: string
+          approved_at?: string | null
+          approved_by?: string | null
           available_balance?: number | null
           bio?: string | null
           created_at?: string
           experience_years?: number | null
           id?: string
           is_available?: boolean | null
+          minimum_notice_hours?: number
+          onboarding_notes?: string | null
+          onboarding_status?: string
           pending_balance?: number | null
           portfolio_images?: string[] | null
           rating?: number | null
+          service_areas?: string[]
           studio_address?: string | null
           total_reviews?: number | null
           total_withdrawn?: number | null
+          travel_buffer_minutes?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      occasion_lists: {
+        Row: {
+          area: string | null
+          budget_max: number | null
+          budget_min: number | null
+          created_at: string
+          id: string
+          is_shared: boolean
+          occasion_date: string | null
+          occasion_type: string | null
+          share_token: string
+          title: string
+          updated_at: string
+          user_id: string
+          visual_style: string | null
+        }
+        Insert: {
+          area?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          id?: string
+          is_shared?: boolean
+          occasion_date?: string | null
+          occasion_type?: string | null
+          share_token?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          visual_style?: string | null
+        }
+        Update: {
+          area?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          id?: string
+          is_shared?: boolean
+          occasion_date?: string | null
+          occasion_type?: string | null
+          share_token?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          visual_style?: string | null
+        }
+        Relationships: []
+      }
+      occasion_list_items: {
+        Row: {
+          artist_id: string
+          created_at: string
+          id: string
+          note: string | null
+          occasion_list_id: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          occasion_list_id: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          occasion_list_id?: string
+        }
+        Relationships: []
+      }
+      product_events: {
+        Row: {
+          created_at: string
+          event_name: string
+          id: string
+          properties: Json
+          source: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_name: string
+          id?: string
+          properties?: Json
+          source?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_name?: string
+          id?: string
+          properties?: Json
+          source?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

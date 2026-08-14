@@ -17,12 +17,13 @@ import artist1 from "@/assets/artist-1.jpg";
 import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { LoginPromptModal } from "@/components/auth/LoginPromptModal";
+import { OccasionListActions } from "@/components/OccasionListActions";
 
 const Favorites = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { favorites, isLoading: favoritesLoading } = useFavorites();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -229,6 +230,7 @@ const Favorites = () => {
                       size="sm"
                       className="flex-1"
                     />
+                    <OccasionListActions artistId={artist.id} language={language} />
                     <Button 
                       size="sm" 
                       variant="outline"

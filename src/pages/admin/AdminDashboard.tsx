@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { StatsCard } from "@/components/admin/StatsCard";
 import { useAdminStats, useRecentBookings, useMonthlyRevenue } from "@/hooks/useAdminStats";
+import { useAdminOperations } from "@/hooks/useAdminOperations";
 import { useTopServices, useTopArtists, DateRange } from "@/hooks/useAdvancedReports";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -22,6 +23,8 @@ import {
   FileText,
   ShieldCheck,
   RotateCcw,
+  AlertTriangle,
+  ClipboardCheck,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -69,6 +72,7 @@ const AdminDashboard = () => {
   const { data: stats, isLoading: statsLoading } = useAdminStats();
   const { data: recentBookings, isLoading: bookingsLoading } = useRecentBookings(5);
   const { data: monthlyRevenue, isLoading: revenueLoading } = useMonthlyRevenue();
+  const { data: operations, isLoading: operationsLoading } = useAdminOperations();
   
   const dateLocale = language === "ar" ? ar : enUS;
 
@@ -278,6 +282,61 @@ const AdminDashboard = () => {
               </>
             )}
           </div>
+
+          <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-primary" />
+                  <h2 className="font-semibold text-foreground">{isRTL ? "طابور الاستثناءات" : "Exception queue"}</h2>
+                </div>
+                <Badge variant="secondary">{(operations?.bookings.length || 0) + (operations?.pendingArtists.length || 0)}</Badge>
+              </div>
+              {operationsLoading ? <Skeleton className="h-32" /> : (
+                <div className="space-y-2">
+                  {operations?.bookings.slice(0, 4).map((booking) => (
+                    <div key={booking.id} className="flex items-center justify-between gap-3 rounded-lg bg-muted/50 p-3 text-sm">
+                      <div>
+                        <p className="font-medium text-foreground">{booking.status === "pending" ? (isRTL ? "طلب بانتظار رد الفنانة" : "Artist response pending") : (isRTL ? "حجز يحتاج بديلًا" : "Booking needs recovery")}</p>
+                        <p className="text-xs text-muted-foreground">{booking.booking_date} · #{booking.id.slice(0, 6).toUpperCase()}</p>
+                      </div>
+                      <Badge variant={booking.status === "pending" ? "secondary" : "destructive"}>{booking.status}</Badge>
+                    </div>
+                  ))}
+                  {operations?.pendingArtists.slice(0, 3).map((artist) => (
+                    <div key={artist.id} className="flex items-center justify-between gap-3 rounded-lg bg-primary/5 p-3 text-sm">
+                      <div>
+                        <p className="font-medium text-foreground">{isRTL ? "فنانة بانتظار اعتماد الملف" : "Artist readiness review pending"}</p>
+                        <p className="text-xs text-muted-foreground">{format(new Date(artist.created_at), "d MMM", { locale: dateLocale })}</p>
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => window.location.assign("/admin/artists")}>{isRTL ? "مراجعة" : "Review"}</Button>
+                    </div>
+                  ))}
+                  {!operations?.bookings.length && !operations?.pendingArtists.length && <p className="py-6 text-center text-sm text-muted-foreground">{isRTL ? "لا توجد حالات تتطلب متابعة الآن" : "No exceptions need action right now"}</p>}
+                </div>
+              )}
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <ClipboardCheck className="h-5 w-5 text-primary" />
+                <h2 className="font-semibold text-foreground">{isRTL ? "قمع التحويل — آخر 30 يومًا" : "Conversion funnel — last 30 days"}</h2>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  ["occasion_search", isRTL ? "بحث مناسبة" : "Occasion searches"],
+                  ["artist_view", isRTL ? "فتح ملف" : "Artist views"],
+                  ["booking_started", isRTL ? "بدء الحجز" : "Booking started"],
+                  ["booking_requested", isRTL ? "طلب حجز" : "Booking requests"],
+                ].map(([event, label]) => (
+                  <div key={event} className="rounded-xl bg-muted/50 p-3">
+                    <p className="text-xs text-muted-foreground">{label}</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground">{operations?.eventCounts[event] || 0}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-xs text-muted-foreground">{isRTL ? "تستخدم هذه الأرقام لاتخاذ قرار القناة والمنطقة قبل زيادة الإنفاق." : "Use these numbers to decide channel and area priorities before increasing spend."}</p>
+            </div>
+          </section>
 
           {/* Charts and Tables */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

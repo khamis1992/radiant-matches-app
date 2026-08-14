@@ -33,6 +33,8 @@ import {
 } from "@/components/ui/dialog";
 import { useWorkingHours } from "@/hooks/useWorkingHours";
 import { useBlockedDates } from "@/hooks/useBlockedDates";
+import { BookingJourneyTimeline } from "@/components/bookings/BookingJourneyTimeline";
+import { trackProductEvent } from "@/lib/productAnalytics";
 
 // Generate time slots from start to end time
 const generateTimeSlots = (startTime: string | null, endTime: string | null): string[] => {
@@ -164,6 +166,7 @@ const BookingDetails = () => {
       return data.booking;
     },
     onSuccess: () => {
+      void trackProductEvent("rebook_started", { booking_id: id, intent: "cancelled_booking" });
       queryClient.invalidateQueries({ queryKey: ["booking-details", id] });
       queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
       toast.success(language === "ar" ? "تم إلغاء الحجز بنجاح" : "Booking cancelled successfully");
@@ -340,6 +343,12 @@ const BookingDetails = () => {
           </span>
         </div>
 
+        <BookingJourneyTimeline
+          status={booking.status}
+          arrivalStatus={booking.arrival_status}
+          language={language}
+        />
+
         {/* Artist Card */}
         <div className="bg-card rounded-2xl border border-border p-4">
           <div className="flex items-center gap-3">
@@ -465,12 +474,31 @@ const BookingDetails = () => {
               variant="outline"
               size="sm"
               className="mt-3 w-full border-emerald-600/30 text-emerald-700"
-              onClick={() => navigate(`/makeup-artists?journey=rebook&available=true&date=${booking.booking_date}`)}
+              onClick={() => {
+                void trackProductEvent("rebook_started", { booking_id: booking.id, reason: "artist_cancellation" });
+                navigate(`/makeup-artists?journey=rebook&available=true&date=${booking.booking_date}`);
+              }}
             >
               {language === "ar" ? "اعرضي بدائل متاحة" : "Find available alternatives"}
             </Button>
           )}
         </div>
+
+        {booking.status === "confirmed" && (
+          <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+            <div className="flex items-start gap-3">
+              <Clock className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              <div>
+                <h3 className="font-semibold text-foreground">{language === "ar" ? "تذكير قبل الموعد" : "Before your appointment"}</h3>
+                <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                  {language === "ar"
+                    ? "راجعي عنوان الخدمة، تواصلي مع الفنانة عند الحاجة، وكوني جاهزة قبل الموعد بعشر دقائق."
+                    : "Review the service address, message the artist if needed, and be ready 10 minutes before your appointment."}
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Price Summary */}
         <div className="bg-card rounded-2xl border border-border p-4">
