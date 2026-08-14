@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { secureDelete } from "@/lib/secureStorage";
 
 export interface PortfolioItem {
   id: string;
@@ -153,7 +154,7 @@ export const useDeletePortfolioItem = () => {
       const urlParts = imageUrl.split("/portfolio/");
       if (urlParts.length > 1) {
         const filePath = urlParts[1];
-        await supabase.storage.from("portfolio").remove([filePath]);
+        await secureDelete("portfolio", filePath);
       }
     },
     onSuccess: (_, variables) => {

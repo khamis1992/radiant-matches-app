@@ -6,6 +6,7 @@ import ImageCropper from "@/components/ImageCropper";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { compressImage, formatFileSize, rotateImage } from "@/lib/imageCompression";
+import { secureUpload } from "@/lib/secureStorage";
 import { toast } from "sonner";
 import {
   Select,
@@ -1036,15 +1037,14 @@ const PortfolioUpload = ({ artistId }: PortfolioUploadProps) => {
         const fileExt = item.file.name.split(".").pop();
         const fileName = `${artistId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from("portfolio")
-          .upload(fileName, item.file, { upsert: true });
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from("portfolio")
-          .getPublicUrl(fileName);
+                const uploadResult = await secureUpload({
+          bucket: "portfolio",
+          path: fileName,
+          file: item.file,
+          upsert: true,
+        });
+        if (!uploadResult.publicUrl) throw new Error("storage_url_unavailable");
+        const publicUrl = uploadResult.publicUrl;
 
         const insertedData = await addItem.mutateAsync({
           artist_id: artistId,

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { secureUpload } from "@/lib/secureStorage";
 
 export interface Product {
   id: string;
@@ -185,14 +186,9 @@ export const useUploadProductImage = () => {
       // Use artist ID as folder name to match RLS policy
       const filePath = `${artist.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("portfolio")
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage.from("portfolio").getPublicUrl(filePath);
-      return data.publicUrl;
+      const result = await secureUpload({ bucket: "portfolio", path: filePath, file });
+      if (!result.publicUrl) throw new Error("storage_url_unavailable");
+      return result.publicUrl;
     },
   });
 };

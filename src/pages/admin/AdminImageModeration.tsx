@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
+import { secureDelete } from "@/lib/secureStorage";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -97,7 +98,7 @@ const AdminImageModeration = () => {
         if (action === "rejected") {
           const urlParts = item.image_url.split("/portfolio/");
           if (urlParts.length > 1) {
-            await supabase.storage.from("portfolio").remove([urlParts[1]]);
+            await secureDelete("portfolio", urlParts[1]);
           }
           await supabase.from("portfolio_items").delete().eq("id", item.source_id);
         }

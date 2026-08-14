@@ -36,6 +36,7 @@
    ReportTemplateInsert,
  } from "@/hooks/useReportTemplates";
  import { supabase } from "@/integrations/supabase/client";
+ import { secureUpload } from "@/lib/secureStorage";
  import { toast } from "sonner";
  
  const defaultTemplate: ReportTemplateInsert = {
@@ -106,17 +107,14 @@
        const fileExt = file.name.split(".").pop();
        const fileName = `report-logo-${Date.now()}.${fileExt}`;
  
-       const { error: uploadError } = await supabase.storage
-         .from("banners")
-         .upload(fileName, file, { upsert: true });
- 
-       if (uploadError) throw uploadError;
- 
-       const { data: urlData } = supabase.storage
-         .from("banners")
-         .getPublicUrl(fileName);
- 
-       setFormData((prev) => ({ ...prev, logo_url: urlData.publicUrl }));
+       const uploadResult = await secureUpload({
+         bucket: "banners",
+         path: fileName,
+         file,
+         upsert: true,
+       });
+       if (!uploadResult.publicUrl) throw new Error("storage_url_unavailable");
+       setFormData((prev) => ({ ...prev, logo_url: uploadResult.publicUrl }));
        toast.success("تم رفع الشعار بنجاح");
      } catch (error) {
        console.error("Error uploading logo:", error);

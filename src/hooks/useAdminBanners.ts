@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { secureUpload } from "@/lib/secureStorage";
 
 interface Banner {
   id: string;
@@ -179,17 +180,9 @@ export const useAdminBanners = () => {
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from("banners")
-      .upload(filePath, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data } = supabase.storage
-      .from("banners")
-      .getPublicUrl(filePath);
-
-    return data.publicUrl;
+    const result = await secureUpload({ bucket: "banners", path: filePath, file });
+    if (!result.publicUrl) throw new Error("storage_url_unavailable");
+    return result.publicUrl;
   };
 
   return {

@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Settings, Percent, Clock, Phone, Mail, Building, FileText, Palette, Image, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { secureUpload } from "@/lib/secureStorage";
 import { toast } from "sonner";
  import { ReportTemplatesManager } from "@/components/admin/ReportTemplatesManager";
 
@@ -103,17 +104,9 @@ const AdminSettings = () => {
       const fileName = `report-logo-${Date.now()}.${fileExt}`;
       const filePath = `logos/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("banners")
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("banners")
-        .getPublicUrl(filePath);
-
-      setFormData((prev) => ({ ...prev, report_logo_url: urlData.publicUrl }));
+      const uploadResult = await secureUpload({ bucket: "banners", path: filePath, file });
+      if (!uploadResult.publicUrl) throw new Error("storage_url_unavailable");
+      setFormData((prev) => ({ ...prev, report_logo_url: uploadResult.publicUrl }));
       toast.success("تم رفع الشعار بنجاح");
     } catch (error) {
       console.error("Error uploading logo:", error);

@@ -11,6 +11,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
+import { secureUpload } from "@/lib/secureStorage";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -67,17 +68,14 @@ const EditProfile = () => {
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      setAvatarUrl(urlData.publicUrl);
+      const uploadResult = await secureUpload({
+        bucket: "avatars",
+        path: filePath,
+        file,
+        upsert: true,
+      });
+      if (!uploadResult.publicUrl) throw new Error("storage_url_unavailable");
+      setAvatarUrl(uploadResult.publicUrl);
       toast.success(t.editProfile?.avatarUpdated || "Avatar updated");
     } catch (error) {
       console.error("Error uploading avatar:", error);

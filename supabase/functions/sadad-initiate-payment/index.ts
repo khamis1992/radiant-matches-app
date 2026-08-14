@@ -108,7 +108,7 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseServiceKey = (JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}") ["default"] ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const merchantId = Deno.env.get("SADAD_MERCHANT_ID")!;
     const secretKey = Deno.env.get("SADAD_SECRET_KEY")!;
     const isTestMode = Deno.env.get("SADAD_TEST_MODE") === "true";
@@ -132,7 +132,7 @@ serve(async (req) => {
       );
     }
 
-    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    const userClient = createClient(supabaseUrl, (JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") ?? "{}") ["default"] ?? Deno.env.get("SUPABASE_ANON_KEY")!), {
       global: { headers: { Authorization: authHeader } },
     });
     const token = authHeader.replace("Bearer ", "");

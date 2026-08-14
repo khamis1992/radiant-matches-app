@@ -24,8 +24,8 @@ Deno.serve(async (req) => {
 
     // Create a Supabase client with the user's token
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = (JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") ?? "{}") ["default"] ?? Deno.env.get("SUPABASE_ANON_KEY")!);
+    const supabaseServiceRoleKey = (JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}") ["default"] ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     // Client to verify the user
     const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {

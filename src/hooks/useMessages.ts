@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useEffect, useRef } from "react";
 import { playNotificationSound } from "@/lib/notificationSound";
+import { secureSignedUrl, secureUpload } from "@/lib/secureStorage";
 
 interface Message {
   id: string;
@@ -17,6 +18,15 @@ interface Message {
 // Cap initial load to the most recent messages so long conversations
 // don't fetch unbounded history on open.
 const MESSAGES_INITIAL_LIMIT = 100;
+
+const hydrateMessageImage = async (message: Message): Promise<Message> => {
+  if (!message.image_url || message.image_url.startsWith("http")) return message;
+  try {
+    return { ...message, image_url: await secureSignedUrl("chat-attachments", message.image_url) };
+  } catch {
+    return { ...message, image_url: null };
+  }
+};
 
 export const useMessages = (conversationId: string | undefined) => {
   const { user } = useAuth();
@@ -36,8 +46,8 @@ export const useMessages = (conversationId: string | undefined) => {
         .limit(MESSAGES_INITIAL_LIMIT);
 
       if (error) throw error;
-      // Return in chronological order for rendering
-      return (data as Message[]).reverse();
+      // Return in chronological order and resolve private attachment paths to short-lived URLs.
+      return Promise.all((data as Message[]).reverse().map(hydrateMessageImage));
     },
     enabled: !!conversationId && !!user,
   });
@@ -67,8 +77,8 @@ export const useMessages = (conversationId: string | undefined) => {
           table: "messages",
           filter: `conversation_id=eq.${conversationId}`,
         },
-        (payload) => {
-          const newMessage = payload.new as Message;
+        async (payload) => {
+          const newMessage = await hydrateMessageImage(payload.new as Message);
           
           // Play sound only for messages from others (not sent by current user)
           // and not during initial load
@@ -129,17 +139,12 @@ export const useMessages = (conversationId: string | undefined) => {
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
         
-        const { error: uploadError } = await supabase.storage
-          .from('chat-attachments')
-          .upload(fileName, imageFile);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('chat-attachments')
-          .getPublicUrl(fileName);
-
-        imageUrl = publicUrl;
+        const uploadResult = await secureUpload({
+          bucket: "chat-attachments",
+          path: fileName,
+          file: imageFile,
+        });
+        imageUrl = uploadResult.path ?? fileName;
       }
 
       const { data, error } = await supabase
@@ -156,13 +161,13 @@ export const useMessages = (conversationId: string | undefined) => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (newRow) => {
-      // Immediately reflect the sent message in UI (realtime may not be enabled)
+    onSuccess: async (newRow) => {
+      // Immediately reflect the sent message in UI (realtime may not be enabled).
+      const msg = await hydrateMessageImage(newRow as Message);
       if (conversationId) {
         queryClient.setQueryData(["messages", conversationId], (old: Message[] | undefined) => {
           const next = old ? [...old] : [];
-          const msg = newRow as Message;
-          if (!next.some((m) => m.id === msg.id)) next.push(msg);
+          if (!next.some((message) => message.id === msg.id)) next.push(msg);
           return next;
         });
       }
