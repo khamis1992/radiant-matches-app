@@ -286,7 +286,7 @@ const ArtistSignup = () => {
           </h1>
           <p className="text-muted-foreground max-w-xs mx-auto">
             {isPublicSignup 
-              ? (isRTL ? "سجّلي حسابك وابدئي باستقبال الحجوزات وزيادة دخلك" : "Create your account and start receiving bookings and growing your income")
+              ? (isRTL ? "أنشئي حسابك، أكملي ملفك وخدماتك، ثم نراجع الجاهزية قبل تفعيل استقبال الحجوزات" : "Create your account, complete your profile and services, then pass readiness review before receiving bookings")
               : t.artistSignup.createAccount}
           </p>
         </div>
@@ -311,7 +311,7 @@ const ArtistSignup = () => {
                   {isRTL ? "تسجيل مجاني لخبيرات التجميل" : "Free registration for Beauty Experts"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {isRTL ? "أنشئي حسابك وأضيفي خدماتك ومعرض أعمالك" : "Create your account, add services & portfolio"}
+                  {isRTL ? "أكملي الملف والخدمات ومعرض الأعمال لتبدئي مراجعة الجاهزية" : "Complete your profile, services and portfolio to start readiness review"}
                 </p>
               </div>
             </div>

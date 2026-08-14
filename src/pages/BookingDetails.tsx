@@ -153,15 +153,15 @@ const BookingDetails = () => {
   const { data: workingHours = [] } = useWorkingHours(artistId || undefined);
   const { data: blockedDates = [] } = useBlockedDates(artistId || undefined);
 
-  // Cancel booking mutation
+  // Cancellation is evaluated server-side against the booking policy.
   const cancelMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from("bookings")
-        .update({ status: "cancelled" })
-        .eq("id", id);
-
+      const { data, error } = await supabase.functions.invoke("manage-booking-lifecycle", {
+        body: { action: "cancel", bookingId: id },
+      });
       if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "booking_update_failed");
+      return data.booking;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["booking-details", id] });
@@ -173,19 +173,15 @@ const BookingDetails = () => {
     },
   });
 
-  // Update booking mutation
+  // Rescheduling is also validated by the server for the artist's working hours and slot conflicts.
   const updateMutation = useMutation({
     mutationFn: async ({ date, time, notes }: { date: string; time: string; notes: string }) => {
-      const { error } = await supabase
-        .from("bookings")
-        .update({
-          booking_date: date,
-          booking_time: time,
-          notes: notes || null,
-        })
-        .eq("id", id);
-
+      const { data, error } = await supabase.functions.invoke("manage-booking-lifecycle", {
+        body: { action: "reschedule", bookingId: id, bookingDate: date, bookingTime: time, notes },
+      });
       if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "booking_update_failed");
+      return data.booking;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["booking-details", id] });
@@ -432,7 +428,7 @@ const BookingDetails = () => {
             <div>
               <p className="text-sm text-muted-foreground">{t.bookings.location}</p>
               <p className="font-medium text-foreground">
-                {booking.location_type === "client" ? t.bookings.atMyLocation : t.bookings.artistStudio}
+                {booking.location_type === "client_home" ? t.bookings.atMyLocation : t.bookings.artistStudio}
               </p>
               {booking.location_address && (
                 <p className="text-sm text-muted-foreground">{booking.location_address}</p>
@@ -448,6 +444,34 @@ const BookingDetails = () => {
           )}
         </div>
 
+        <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/5 p-4">
+          <div className="flex items-start gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500/15">
+              <Check className="h-5 w-5 text-emerald-700" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">
+                {language === "ar" ? "ضمان GLAM للحجز" : "Glam Booking Guarantee"}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                {language === "ar"
+                  ? `يمكنك إلغاء الحجز حتى ${booking.cancellation_policy_hours ?? 24} ساعة قبل الموعد حسب السياسة. عند تعذّر الخدمة من قبل الفنانة، نساعدك في العثور على بديل.`
+                  : `You can cancel up to ${booking.cancellation_policy_hours ?? 24} hours before the appointment under the policy. If the artist cannot fulfil the service, we help you find an alternative.`}
+              </p>
+            </div>
+          </div>
+          {booking.rebooking_eligible && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 w-full border-emerald-600/30 text-emerald-700"
+              onClick={() => navigate(`/makeup-artists?journey=rebook&available=true&date=${booking.booking_date}`)}
+            >
+              {language === "ar" ? "اعرضي بدائل متاحة" : "Find available alternatives"}
+            </Button>
+          )}
+        </div>
+
         {/* Price Summary */}
         <div className="bg-card rounded-2xl border border-border p-4">
           <h3 className="font-semibold text-foreground mb-3">{t.bookings.totalPrice}</h3>
@@ -458,7 +482,7 @@ const BookingDetails = () => {
                 {formatQAR(booking.service?.price || booking.total_price)}
               </span>
             </div>
-            {booking.location_type === "client" && (
+            {booking.location_type === "client_home" && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t.bookings.travelFee}</span>
                 <span className="font-medium text-foreground">{formatQAR(90)}</span>
@@ -502,8 +526,8 @@ const BookingDetails = () => {
                   </AlertDialogTitle>
                   <AlertDialogDescription>
                     {language === "ar"
-                      ? "هل أنت متأكد من إلغاء هذا الحجز؟ لا يمكن التراجع عن هذا الإجراء."
-                      : "Are you sure you want to cancel this booking? This action cannot be undone."}
+                      ? `يمكنك الإلغاء وفق نافذة سياسة الحجز (${booking.cancellation_policy_hours ?? 24} ساعة قبل الموعد).`
+                      : `You can cancel within the booking policy window (${booking.cancellation_policy_hours ?? 24} hours before the appointment).`}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

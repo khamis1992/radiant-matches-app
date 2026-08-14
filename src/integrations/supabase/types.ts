@@ -388,11 +388,19 @@ export type Database = {
         Row: {
           artist_earnings: number | null
           artist_id: string
+          artist_response_at: string | null
+          arrival_status: string
           booking_date: string
+          booking_end_time: string | null
           booking_time: string
+          cancellation_policy_hours: number
+          cancellation_reason: string | null
+          cancellation_requested_at: string | null
+          cancelled_by: string | null
           created_at: string
           customer_id: string
           discount_amount: number | null
+          guarantee_status: string
           id: string
           location_address: string | null
           location_type: string
@@ -402,6 +410,7 @@ export type Database = {
           payment_transaction_id: string | null
           platform_fee: number | null
           promo_code_id: string | null
+          rebooking_eligible: boolean
           sadad_order_id: string | null
           sadad_transaction_id: string | null
           service_id: string | null
@@ -412,11 +421,19 @@ export type Database = {
         Insert: {
           artist_earnings?: number | null
           artist_id: string
+          artist_response_at?: string | null
+          arrival_status?: string
           booking_date: string
+          booking_end_time?: string | null
           booking_time: string
+          cancellation_policy_hours?: number
+          cancellation_reason?: string | null
+          cancellation_requested_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           customer_id: string
           discount_amount?: number | null
+          guarantee_status?: string
           id?: string
           location_address?: string | null
           location_type: string
@@ -426,6 +443,7 @@ export type Database = {
           payment_transaction_id?: string | null
           platform_fee?: number | null
           promo_code_id?: string | null
+          rebooking_eligible?: boolean
           sadad_order_id?: string | null
           sadad_transaction_id?: string | null
           service_id?: string | null
@@ -436,11 +454,19 @@ export type Database = {
         Update: {
           artist_earnings?: number | null
           artist_id?: string
+          artist_response_at?: string | null
+          arrival_status?: string
           booking_date?: string
+          booking_end_time?: string | null
           booking_time?: string
+          cancellation_policy_hours?: number
+          cancellation_reason?: string | null
+          cancellation_requested_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           customer_id?: string
           discount_amount?: number | null
+          guarantee_status?: string
           id?: string
           location_address?: string | null
           location_type?: string
@@ -450,6 +476,7 @@ export type Database = {
           payment_transaction_id?: string | null
           platform_fee?: number | null
           promo_code_id?: string | null
+          rebooking_eligible?: boolean
           sadad_order_id?: string | null
           sadad_transaction_id?: string | null
           service_id?: string | null

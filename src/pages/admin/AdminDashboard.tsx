@@ -20,6 +20,8 @@ import {
   CalendarDays,
   Download,
   FileText,
+  ShieldCheck,
+  RotateCcw,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -239,10 +241,10 @@ const AdminDashboard = () => {
           </div>
 
           {/* Secondary Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-8">
             {statsLoading ? (
               <>
-                {[...Array(3)].map((_, i) => (
+                {[...Array(5)].map((_, i) => (
                   <Skeleton key={i} className="h-24 rounded-xl" />
                 ))}
               </>
@@ -262,6 +264,16 @@ const AdminDashboard = () => {
                   title={t.adminDashboard.revenueThisMonth}
                   value={`${stats?.thisMonthRevenue?.toFixed(0) || 0} ${t.adminDashboard.qar}`}
                   icon={<TrendingUp className="h-6 w-6" />}
+                />
+                <StatsCard
+                  title={isRTL ? "حجوزات تحت الضمان" : "Bookings under guarantee"}
+                  value={stats?.protectedBookings || 0}
+                  icon={<ShieldCheck className="h-6 w-6" />}
+                />
+                <StatsCard
+                  title={isRTL ? "بدائل مطلوبة" : "Rebooking recovery queue"}
+                  value={stats?.artistCancellationRecoveries || 0}
+                  icon={<RotateCcw className="h-6 w-6" />}
                 />
               </>
             )}

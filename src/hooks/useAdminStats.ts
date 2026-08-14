@@ -9,6 +9,8 @@ interface AdminStats {
   platformEarnings: number;
   pendingBookings: number;
   completedBookings: number;
+  protectedBookings: number;
+  artistCancellationRecoveries: number;
   thisMonthBookings: number;
   thisMonthRevenue: number;
   lastMonthRevenue: number;
@@ -75,6 +77,8 @@ export const useAdminStats = () => {
         platformEarnings,
         pendingBookings: bookings.filter((b) => b.status === "pending").length,
         completedBookings: bookings.filter((b) => b.status === "completed").length,
+        protectedBookings: bookings.filter((b) => (b.status === "pending" || b.status === "confirmed") && b.guarantee_status === "covered").length,
+        artistCancellationRecoveries: bookings.filter((b) => b.status === "cancelled" && b.rebooking_eligible).length,
         thisMonthBookings: thisMonthBookings.length,
         thisMonthRevenue,
         lastMonthRevenue,

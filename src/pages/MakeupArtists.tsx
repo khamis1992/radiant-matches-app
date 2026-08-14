@@ -11,7 +11,6 @@ import {
   MapPin,
   CalendarCheck,
   Heart,
-  BadgeCheck,
 
   SlidersHorizontal,
 } from "lucide-react";
@@ -72,8 +71,13 @@ const MakeupArtists = () => {
 
   // Initialize search query from URL param
   const searchParam = searchParams.get("search") || "";
+  const requestedOccasion = searchParams.get("occasion") || "";
+  const requestedDate = searchParams.get("date") || "";
+  const requestedLocation = searchParams.get("location") || "";
+  const requestedMaxPrice = Number(searchParams.get("maxPrice") || 0);
+  const isOccasionJourney = searchParams.get("journey") === "occasion";
   const [searchQuery, setSearchQuery] = useState(searchParam);
-  const [showAvailableOnly, setShowAvailableOnly] = useState(false);
+  const [showAvailableOnly, setShowAvailableOnly] = useState(searchParams.get("available") === "true");
   const [topRatedOnly, setTopRatedOnly] = useState(false);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -203,10 +207,22 @@ const MakeupArtists = () => {
         if (!hasCategory) return false;
       }
 
-      // Availability filter
+      // Availability filter. Exact slot verification is repeated during booking;
+      // this keeps discovery useful without overstating a guarantee before a slot is selected.
       if (showAvailableOnly && availabilityMap) {
         const availability = availabilityMap.get(artist.id);
         if (!availability?.isAvailableToday) return false;
+      }
+
+      // Occasion-search location context. Match on a normalized substring so the
+      // customer can enter a district while profiles keep a concise service area.
+      if (requestedLocation.trim()) {
+        const artistLocation = artist.profile?.location?.toLowerCase() || "";
+        if (!artistLocation.includes(requestedLocation.trim().toLowerCase())) return false;
+      }
+
+      if (requestedMaxPrice > 0 && (artist.min_price ?? 0) > requestedMaxPrice) {
+        return false;
       }
 
       // Top rated quick filter
@@ -269,7 +285,7 @@ const MakeupArtists = () => {
           return 0;
       }
     });
-  }, [artists, sortBy, debouncedSearchQuery, selectedCategory, showAvailableOnly, topRatedOnly, availabilityMap, filters]);
+  }, [artists, sortBy, debouncedSearchQuery, selectedCategory, showAvailableOnly, topRatedOnly, availabilityMap, filters, requestedLocation, requestedMaxPrice]);
 
   // The administrator explicitly controls this showcase slot. There is no
   // rating-based fallback: an empty selection means no featured card.
@@ -562,6 +578,25 @@ const MakeupArtists = () => {
           />
         </div>
 
+        {isOccasionJourney && (
+          <div className="mb-4 rounded-2xl border border-glam-blush/60 bg-glam-blush-soft px-4 py-3 text-start">
+            <p className="text-xs font-bold text-glam-ink">
+              {isRTL ? "نتائج مهيأة لمناسبتك" : "Results tailored to your occasion"}
+            </p>
+            <p className="mt-1 text-[11px] leading-5 text-glam-secondary">
+              {[
+                requestedOccasion && (isRTL ? `المناسبة: ${requestedOccasion}` : `Occasion: ${requestedOccasion}`),
+                requestedDate && (isRTL ? `التاريخ: ${requestedDate}` : `Date: ${requestedDate}`),
+                requestedLocation && (isRTL ? `المنطقة: ${requestedLocation}` : `Area: ${requestedLocation}`),
+                requestedMaxPrice > 0 && (isRTL ? `حتى ${requestedMaxPrice} ر.ق` : `Up to QAR ${requestedMaxPrice}`),
+              ].filter(Boolean).join(" · ")}
+            </p>
+            <p className="mt-1.5 text-[10px] text-glam-muted">
+              {isRTL ? "سيتم تأكيد الوقت النهائي قبل إتمام الحجز." : "Final time availability is confirmed before booking."}
+            </p>
+          </div>
+        )}
+
         {/* ─── Featured artist ─── */}
         {featuredArtist && (
           <section className="mb-6">
@@ -849,7 +884,6 @@ const FeaturedCard = ({
 
       <h3 className="mt-1 text-[19px] leading-snug font-bold text-glam-ink truncate pe-8 flex items-center gap-1.5">
         <span className="truncate">{artist.profile?.full_name || "Artist"}</span>
-        <BadgeCheck className="w-[18px] h-[18px] shrink-0 fill-glam-rose text-white" />
       </h3>
 
       <p className="text-xs text-glam-secondary truncate">{specialty}</p>
@@ -973,7 +1007,6 @@ const ArtistGridCard = ({
         <h3 className="text-[15px] font-bold text-glam-ink truncate">
           {artist.profile?.full_name || "Artist"}
         </h3>
-        <BadgeCheck className="w-4 h-4 shrink-0 fill-glam-rose text-white" />
       </div>
       <p className="mt-0.5 text-[11px] text-glam-secondary truncate">{specialty}</p>
 

@@ -7,6 +7,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import { ShopCard } from "@/components/ShopCard";
 import AppHeader from "@/components/layout/AppHeader";
 import HeaderBeautyTicker from "@/components/home/HeaderBeautyTicker";
+import OccasionFinder from "@/components/home/OccasionFinder";
 import { HeroSection } from "@/components/HeroSection";
 import LottieIcon from "@/components/LottieIcon";
 import { useArtistsWithPricing } from "@/hooks/useArtistsWithPricing";
@@ -327,6 +328,9 @@ const Home = () => {
 
       {/* ─── Hero ─── */}
       <HeroSection />
+
+      {/* ─── Occasion-first discovery ─── */}
+      <OccasionFinder />
 
       {/* ─── Categories ─── */}
       <section className="pt-7 pb-2">

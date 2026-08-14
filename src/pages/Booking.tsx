@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useProfile } from "@/hooks/useProfile";
+import { usePlatformSettings } from "@/hooks/useAdminSettings";
 import { BookingSkeleton } from "@/components/ui/skeleton-loader";
 import ErrorDisplay from "@/components/ui/error-display";
 import PaymentProcessing from "@/components/ui/payment-processing";
@@ -184,6 +185,10 @@ const Booking = () => {
   });
 
   const { data: userProfile } = useProfile();
+  const { data: platformSettings } = usePlatformSettings();
+  const minBookingHours = platformSettings?.min_booking_hours ?? 24;
+  const maxBookingDays = platformSettings?.max_booking_days ?? 30;
+  const cancellationHours = platformSettings?.cancellation_hours ?? 24;
   // NOTE: this page previously injected a second viewport meta with
   // user-scalable=no (blocks pinch-zoom — a WCAG violation). Removed;
   // the single viewport meta in index.html applies app-wide.
@@ -266,11 +271,15 @@ const Booking = () => {
 
   // Filter time slots based on AM/PM toggle
   const filteredTimeSlots = useMemo(() => {
+    const earliestBookableAt = new Date(Date.now() + minBookingHours * 60 * 60 * 1000);
     return availableTimeSlots.filter((slot) => {
-      if (timeFilter === "AM") return slot.includes("AM");
-      return slot.includes("PM");
+      const matchesPeriod = timeFilter === "AM" ? slot.includes("AM") : slot.includes("PM");
+      if (!matchesPeriod) return false;
+      if (!selectedDate) return true;
+      const candidate = new Date(`${format(selectedDate, "yyyy-MM-dd")}T${convertTimeToDbFormat(slot)}`);
+      return candidate >= earliestBookableAt;
     });
-  }, [availableTimeSlots, timeFilter]);
+  }, [availableTimeSlots, timeFilter, selectedDate, minBookingHours]);
 
   // Generate calendar days for the current month
   const calendarDays = useMemo(() => {
@@ -303,8 +312,12 @@ const Booking = () => {
 
   const hasAvailability = (date: Date): boolean => {
     if (!isWorkingDay(date)) return false;
-    if (isBefore(startOfDay(date), startOfDay(new Date()))) return false;
-    return true;
+    const now = new Date();
+    const earliestBookableAt = new Date(now.getTime() + minBookingHours * 60 * 60 * 1000);
+    const latestBookableDate = new Date(startOfDay(now).getTime() + maxBookingDays * 24 * 60 * 60 * 1000);
+    if (isBefore(startOfDay(date), startOfDay(now))) return false;
+    if (startOfDay(date) > latestBookableDate) return false;
+    return new Date(`${format(date, "yyyy-MM-dd")}T23:59:59`) >= earliestBookableAt;
   };
 
   const validateForm = useCallback(() => {
@@ -422,8 +435,8 @@ const Booking = () => {
               .filter(Boolean)
               .join(" | ")
           : artistLocation,
-        total_price: totalPrice,
-        notes: notes || undefined
+        notes: notes || undefined,
+        payment_method: paymentMethod
       });
 
       if (paymentMethod === "sadad") {
@@ -1201,7 +1214,7 @@ const Booking = () => {
               
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">{serviceName}</span>
+                  <span className="text-sm text-muted-foreground">{actualServiceName}</span>
                   <span className="font-medium text-foreground">{formatQAR(actualServicePrice)}</span>
                 </div>
                 
@@ -1221,6 +1234,24 @@ const Booking = () => {
                       {formatQAR(totalPrice)}
                     </span>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-emerald-500/25 bg-emerald-500/5 p-4">
+              <div className="flex items-start gap-3">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500/15">
+                  <Shield className="h-5 w-5 text-emerald-700" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-foreground">
+                    {language === "ar" ? "ضمان GLAM للحجز" : "Glam Booking Guarantee"}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {language === "ar"
+                      ? `السعر الموضح هو السعر النهائي. يمكنك الإلغاء حتى ${cancellationHours} ساعة قبل الموعد وفق السياسة، وسنعرض بدائل عند تعذّر تنفيذ الخدمة من قبل الفنانة.`
+                      : `The total shown is final. Cancel up to ${cancellationHours} hours before your appointment under the policy, and we will help you find alternatives if the artist cannot fulfil the service.`}
+                  </p>
                 </div>
               </div>
             </div>
@@ -1291,7 +1322,7 @@ const Booking = () => {
                 <Shield className="w-5 h-5 text-emerald-600" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">{language === "ar" ? "حجز آمن" : "Secure Booking"}</p>
+                <p className="text-sm font-medium text-foreground">{language === "ar" ? "السعر والسياسة واضحان قبل التأكيد" : "Price and policy are clear before confirmation"}</p>
                 <p className="text-xs text-muted-foreground">{t.bookings.agreeToTerms}</p>
               </div>
             </div>

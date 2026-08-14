@@ -1,4 +1,3 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { sendEmail } from "@/lib/email";
@@ -10,45 +9,59 @@ interface CreateBookingData {
   booking_time: string;
   location_type: "artist_studio" | "client_home";
   location_address?: string;
-  total_price: number;
   notes?: string;
+  payment_method: "cash" | "sadad";
 }
+
+const bookingErrorMessage = (code: string) => {
+  const messages: Record<string, string> = {
+    slot_no_longer_available: "هذا الموعد لم يعد متاحًا. اختاري وقتًا آخر.",
+    artist_unavailable_on_date: "الفنانة غير متاحة في هذا التاريخ.",
+    artist_not_working_on_date: "الفنانة لا تعمل في هذا التاريخ.",
+    slot_outside_working_hours: "اختاري وقتًا ضمن ساعات عمل الفنانة.",
+    booking_outside_allowed_window: "هذا الموعد خارج نافذة الحجز المسموح بها.",
+    booking_exceeds_service_day: "مدة الخدمة لا تتناسب مع ساعات العمل المتاحة.",
+  };
+  return messages[code] || "تعذر تأكيد الحجز. يرجى المحاولة مرة أخرى.";
+};
 
 export const useCreateBooking = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: CreateBookingData) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
-
-      const { data: booking, error } = await supabase
-        .from("bookings")
-        .insert({
-          customer_id: user.id,
-          artist_id: data.artist_id,
-          service_id: data.service_id,
-          booking_date: data.booking_date,
-          booking_time: data.booking_time,
-          location_type: data.location_type,
-          location_address: data.location_address,
-          total_price: data.total_price,
+      const { data: response, error } = await supabase.functions.invoke("create-secure-booking", {
+        body: {
+          artistId: data.artist_id,
+          serviceId: data.service_id,
+          bookingDate: data.booking_date,
+          bookingTime: data.booking_time,
+          locationType: data.location_type,
+          locationAddress: data.location_address,
           notes: data.notes,
-          status: "pending",
-        })
-        .select()
-        .single();
+          paymentMethod: data.payment_method,
+        },
+      });
 
-      if (error) throw error;
+      if (error) throw new Error(error.message || "booking_creation_failed");
+      if (!response?.success || !response.booking) {
+        throw new Error(response?.error || "booking_creation_failed");
+      }
 
-      // Send booking confirmation email (fire and forget)
+      const booking = response.booking;
+
+      // The notification is deliberately non-blocking: booking integrity has
+      // already been enforced by the server-side booking function.
       try {
-        const [profileRes, serviceRes, artistRes] = await Promise.all([
-          supabase.from("profiles").select("full_name, email").eq("id", user.id).single(),
+        const [{ data: auth }, serviceRes, artistRes] = await Promise.all([
+          supabase.auth.getUser(),
           supabase.from("services").select("name").eq("id", data.service_id).single(),
           supabase.from("artists").select("user_id").eq("id", data.artist_id).single(),
         ]);
-        
+        const customerId = auth.user?.id;
+        const profileRes = customerId
+          ? await supabase.from("profiles").select("full_name, email").eq("id", customerId).single()
+          : { data: null };
         const artistProfile = artistRes.data?.user_id
           ? (await supabase.from("profiles").select("full_name").eq("id", artistRes.data.user_id).single()).data
           : null;
@@ -63,12 +76,12 @@ export const useCreateBooking = () => {
               serviceName: serviceRes.data?.name || "",
               bookingDate: data.booking_date,
               bookingTime: data.booking_time,
-              totalPrice: String(data.total_price),
+              totalPrice: String(booking.total_price),
             },
           });
         }
       } catch (emailErr) {
-        console.error("Email send failed (non-blocking):", emailErr);
+        console.error("Booking notification failed (non-blocking):", emailErr);
       }
 
       return booking;
@@ -77,10 +90,12 @@ export const useCreateBooking = () => {
       queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
       queryClient.invalidateQueries({ queryKey: ["artist-bookings"] });
       queryClient.invalidateQueries({ queryKey: ["pending-bookings-count"] });
+      queryClient.invalidateQueries({ queryKey: ["artist-availability"] });
+      queryClient.invalidateQueries({ queryKey: ["artists-availability"] });
     },
     onError: (error: Error) => {
-      console.error("Booking creation error:", error);
-      toast.error("فشل في إنشاء الحجز");
+      console.error("Booking creation error:", error.message);
+      toast.error(bookingErrorMessage(error.message));
     },
   });
 };
